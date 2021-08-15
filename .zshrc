@@ -4,6 +4,7 @@ ZSH_THEME="robbyrussell"
 
 alias c='clear'
 alias gs='git status'
+alias gpr='git pull --rebase'
 alias cgr='cargo run'
 alias cgt='cargo test'
 alias cgb='cargo build'

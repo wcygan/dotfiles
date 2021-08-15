@@ -8,11 +8,16 @@ alias cgr='cargo run'
 alias cgt='cargo test'
 alias cgb='cargo build'
 alias cgc='cargo check'
+alias es='ember serve'
 alias vzsh='vim ~/.zshrc'
 alias szsh='source ~/.zshrc'
+
+# windows
 alias will='cd /mnt/c/wcygan'
 alias dev='cd /mnt/c/wcygan/dev'
 alias school='cd /mnt/c/wcygan/school'
+
+# mac / linux (tbd)
 
 plugins=(
 	git
@@ -26,6 +31,8 @@ plugins=(
 # 4. `brew install yadm`
 # 5. `brew install gh`
 # 6. `brew install java`
+# 7. `brew install npm`
+# 8. `npm install -g ember-cli`
 
 LS_COLORS=$LS_COLORS:'ow=1;34:' ; export LS_COLORS
 

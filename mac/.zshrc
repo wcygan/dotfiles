@@ -14,6 +14,7 @@ alias vzsh='vim ~/.zshrc'
 alias szsh='source ~/.zshrc'
 alias will='cd ~'
 alias dev='cd ~/Dev'
+alias rbs='git pull --rebase'
 alias school='cd ~/School'
 
 plugins=(git)

@@ -12,10 +12,12 @@ alias cgc='cargo check'
 alias es='ember serve'
 alias vzsh='vim ~/.zshrc'
 alias szsh='source ~/.zshrc'
+alias rbs='git pull --rebase'
 alias will='cd /mnt/c/wcygan'
 alias dev='cd /mnt/c/wcygan/dev'
 alias school='cd /mnt/c/wcygan/school'
 
+# mac / linux (tbd)
 
 plugins=(
 	git

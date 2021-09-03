@@ -32,6 +32,10 @@ function Get-Git-Log {
     git log
 }
 
+function Get-Git-Diff {
+    git diff
+}
+
 function Set-Git-Commit {
     git commit $args
 }
@@ -45,6 +49,10 @@ function Set-Git-Pull-Rebase {
 
 function Set-Git-Add-All {
     git add .
+}
+
+function Set-Git-Push {
+    git push
 }
 
 
@@ -70,6 +78,8 @@ Set-Alias -Name gaa -Value Set-Git-Add-All
 Set-Alias -Name gs -Value Get-Git-Status
 Set-Alias -Name gitc -Value Set-Git-Commit
 Set-Alias -Name glog -Value  Get-Git-Log
+Set-Alias -Name gpu -Value  Set-Git-Push
+Set-Alias -Name gd -Value  Get-Git-Diff
 Set-Alias -Name gcl -Value Set-Git-Clone
 Set-Alias -Name gpr -Value Set-Git-Pull-Rebase
 Set-Alias -Name cgc -Value Get-Cargo-Check

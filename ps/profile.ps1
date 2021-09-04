@@ -2,11 +2,9 @@
 # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.1#how-to-create-a-profile
 
 function pro {code $PROFILE}
-
-function dev { Set-Location C:\Users\Will\Development }
-
-function sem { Set-Location C:\Users\Will\School }
-function will { Set-Location C:\Users\Will }
+function dev { Set-Location ~\Development }
+function sem { Set-Location ~\School }
+function will { Set-Location ~ }
 
 function .. {
     Set-Location ..

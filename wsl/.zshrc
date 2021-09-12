@@ -26,6 +26,7 @@ alias es='ember serve'
 
 alias gob='go build'
 alias got='go test'
+alias gotb='go test -bench=.'
 alias gor='go run'
 alias goc='go clean'
 alias gof='go format'

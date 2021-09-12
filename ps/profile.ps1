@@ -6,6 +6,10 @@ function dev { Set-Location ~\Development }
 function sem { Set-Location ~\School }
 function will { Set-Location ~ }
 
+function prompt {
+    "PS ~\$($executionContext.SessionState.Path.CurrentLocation | Split-Path -Leaf)$('> ' * ($nestedPromptLevel + 1))"
+}
+
 function .. {
     Set-Location ..
 }

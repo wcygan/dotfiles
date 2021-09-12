@@ -2,20 +2,36 @@ export ZSH="/home/wcygan/.oh-my-zsh"
 
 ZSH_THEME="robbyrussell"
 
+
+
+alias will='cd /mnt/c/wcygan'
+alias dev='cd /mnt/c/wcygan/dev'
+alias school='cd /mnt/c/wcygan/school'
+
+# TODO put all of these in a different file and source them
+alias vzsh='vim ~/.zshrc'
+alias szsh='source ~/.zshrc'
 alias c='clear'
+
+# Git
 alias gs='git status'
 alias gpr='git pull --rebase'
+alias rbs='git pull --rebase'
+
 alias cgr='cargo run'
 alias cgt='cargo test'
 alias cgb='cargo build'
 alias cgc='cargo check'
 alias es='ember serve'
-alias vzsh='vim ~/.zshrc'
-alias szsh='source ~/.zshrc'
-alias rbs='git pull --rebase'
-alias will='cd /mnt/c/wcygan'
-alias dev='cd /mnt/c/wcygan/dev'
-alias school='cd /mnt/c/wcygan/school'
+
+alias gob='go build'
+alias got='go test'
+alias gor='go run'
+alias goc='go clean'
+alias gof='go format'
+alias goi='go install'
+alias gofix='go fix'
+alias god='go doc'
 
 # mac / linux (tbd)
 

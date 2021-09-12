@@ -110,6 +110,10 @@ function Get-Go-Test-Bench {
     go test -bench="."
 }
 
+function Get-Go-Test-Cover {
+    go test -cover
+}
+
 Set-Alias -Name l -Value "ls"
 Set-Alias -Name c -Value "clear"
 Set-Alias -Name gaa -Value Set-Git-Add-All
@@ -127,6 +131,7 @@ Set-Alias -Name cgt -Value Get-Cargo-Test
 Set-Alias -Name gob -Value Get-Go-Build
 Set-Alias -Name got -Value Get-Go-Test
 Set-Alias -Name gotb -Value Get-Go-Test-Bench
+Set-Alias -Name gotc -Value Get-Go-Test-Cover
 Set-Alias -Name gor -Value Get-Go-Run
 Set-Alias -Name goc -Value Get-Go-Clean
 Set-Alias -Name gof -Value Get-Go-Format

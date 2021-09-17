@@ -6,6 +6,10 @@ function dev { Set-Location ~\Development }
 function sem { Set-Location ~\School }
 function will { Set-Location ~ }
 
+# https://github.com/kelleyma49/PSFzf
+# replace 'Ctrl+t' and 'Ctrl+r' with your preferred bindings:
+Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+
 function prompt {
     "PS ~\$($executionContext.SessionState.Path.CurrentLocation | Split-Path -Leaf)$('> ' * ($nestedPromptLevel + 1))"
 }

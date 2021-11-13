@@ -1,16 +1,19 @@
-export ZSH="/Users/wcygan/.oh-my-zsh"
-
-ZSH_THEME="robbyrussell"
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+autoload -Uz compinit && compinit
 
 # Platform Based
 alias will='cd ~'
-alias dev='cd ~/Dev'
-alias school='cd ~/School'
+alias dev='cd ~/Development'
 
 # General
 alias c='clear'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
 alias vzsh='vim ~/.zshrc'
 alias szsh='source ~/.zshrc'
+alias ls='exa'
+alias l='exa -l'
 
 # NPM - related
 alias es='ember serve'
@@ -19,8 +22,15 @@ alias npi='npm install'
 
 # Git
 alias gs='git status'
+alias gc='git commit'
+alias gaa='git add .'
+alias glog='git log'
+alias gcb='git checkout branch'
+alias gb='git branch'
+alias gp='git push'
 alias gpr='git pull --rebase'
-alias rbs='git pull --rebase'
+alias gcl='git clone'
+alias gd='git diff'
 
 # Rust
 alias cgr='cargo run'
@@ -40,10 +50,5 @@ alias goi='go install'
 alias gofix='go fix'
 alias god='go doc'
 
-plugins=(git)
-
-source $ZSH/oh-my-zsh.sh
-
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

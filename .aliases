@@ -1,0 +1,133 @@
+##############################################################################
+#   Filename: .aliases                                                       #
+# Maintainer: Will Cygan <wcygan.io@gmail.com>                               #
+#        URL: http://github.com/wcygan/dotfiles                              #
+#                                                                            #
+# Sections:                                                                  #
+#   01. General ................. General aliases                            #
+#   02. Git ..................... Git aliases                                #
+#   03. Programming ............. Aliases  for programming                   #
+#   04. Networking .............. Networking aliases                         #
+#   XX. Misc .................... Miscellaneous aliases                      #
+##############################################################################
+
+##############################################################################
+# 01. General                                                                #
+##############################################################################
+
+alias c='clear'
+alias .='open .'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias vv='vim ~/.zshrc'
+alias ss='source ~/.zshrc'
+alias d='cd ~/Development'
+
+##############################################################################
+# 02. Git                                                                    #
+##############################################################################
+
+# Git defaults
+git config --global user.name "Will Cygan"
+git config --global user.email "wcygan.io@gmail.com"
+git config --global core.editor "vim"
+
+# Dotfile management
+alias cfg='/usr/bin/git --git-dir=/Users/wcygan/.cfg/ --work-tree=/Users/wcygan'
+
+# Git aliases
+alias gaa='git add .'
+alias gb='git branch'
+alias gc='git commit'
+alias gca='git commit --amend --no-edit'
+alias gcl='git clone'
+alias gco='git checkout'
+alias gcb='git checkout'
+alias gd='git diff'
+alias gl='git log --decorate --graph --pretty=format:"%Cgreen%h%Creset [%ar - %Cred%an%Creset], %s %C(auto)%d%Creset"'
+alias gll='git log --graph --decorate --pretty=medium'
+alias glog='git log'
+alias gp='git push'
+alias gpu='eval git push -u origin $(git rev-parse --abbrev-ref HEAD)'
+alias gpr='git pull --rebase'
+alias gpro='git pull --rebase origin master'
+alias gri='git rebase -i origin/master'
+alias grco='git rebase --continue'
+alias gs='git status'
+alias gsw='git switch -c'
+
+##############################################################################
+# 03. Programming                                                            #
+##############################################################################
+
+# Gradle
+alias gw='./gradlew'
+alias gwr='gw run'
+alias gwi='gw idea'
+
+# Rust
+alias cgr='cargo run'
+alias cdo='cargo doc --open'
+alias cgt='cargo test'
+alias cgb='cargo build'
+
+##############################################################################
+# 04. Networking                                                             #
+##############################################################################
+
+# IP addresses
+alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
+alias localip="ipconfig getifaddr en0"
+alias ips="ifconfig -a | grep -o 'inet6\? \(addr:\)\?\s\?\(\(\([0-9]\+\.\)\{3\}[0-9]\+\)\|[a-fA-F0-9:]\+\)' | awk '{ sub(/inet6? (addr:)? ?/, \"\"); print }'"
+
+# Show active network interfaces
+alias ifactive="ifconfig | pcregrep -M -o '^[^\t:]+:([^\n]|\n\t)*status: active'"
+
+# Flush Directory Service cache
+alias flush="dscacheutil -flushcache && killall -HUP mDNSResponder"
+
+for method in GET HEAD POST PUT DELETE TRACE OPTIONS; do
+	alias "${method}"="lwp-request -m '${method}'"
+done
+
+
+##############################################################################
+# XX. Misc                                                                   #
+##############################################################################
+
+# Canonical hex dump; some systems have this symlinked
+command -v hd > /dev/null || alias hd="hexdump -C"
+
+# macOS has no `md5sum`, so use `md5` as a fallback
+command -v md5sum > /dev/null || alias md5sum="md5"
+
+# macOS has no `sha1sum`, so use `shasum` as a fallback
+command -v sha1sum > /dev/null || alias sha1sum="shasum"
+
+# Recursively delete `.DS_Store` files
+alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
+
+# Empty the Trash on all mounted volumes and the main HDD.
+# Also, clear Apple’s System Logs to improve shell startup speed.
+# Finally, clear download history from quarantine. https://mths.be/bum
+alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl; sqlite3 ~/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV* 'delete from LSQuarantineEvent'"
+
+# Show/hide hidden files in Finder
+alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
+alias hide="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
+
+# Hide/show all desktop icons (useful when presenting)
+alias hidedesktop="defaults write com.apple.finder CreateDesktop -bool false && killall Finder"
+alias showdesktop="defaults write com.apple.finder CreateDesktop -bool true && killall Finder"
+
+# URL-encode strings
+alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'
+
+# Intuitive map function
+# For example, to list all directories that contain a certain file:
+# find . -name .gitattributes | map dirname
+alias map="xargs -n1"
+
+# Print each PATH entry on a separate line
+alias path='echo -e ${PATH//:/\\n}'

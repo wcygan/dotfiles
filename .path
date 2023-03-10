@@ -1,2 +1,2 @@
 export PATH="/usr/local/bin:$PATH"
-echo "hello"
+echo "path loaded"

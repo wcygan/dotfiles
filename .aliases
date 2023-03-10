@@ -23,6 +23,7 @@ alias ....='cd ../../..'
 alias vv='vim ~/.zshrc'
 alias ss='source ~/.zshrc'
 alias d='cd ~/Development'
+alias l='ls -lah'
 
 ##############################################################################
 # 02. Git                                                                    #

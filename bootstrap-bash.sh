@@ -8,7 +8,8 @@ function doIt() {
 	rsync --exclude ".git/" \
 		--exclude ".DS_Store" \
 		--exclude ".osx" \
-		--exclude "bootstrap.sh" \
+		--exclude "bootstrap-bash.sh" \
+    --exclude "bootstrap-zshrc" \
 		--exclude "README.md" \
 		--exclude "LICENSE-MIT.txt" \
 		-avh --no-perms . ~;

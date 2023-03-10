@@ -2,8 +2,22 @@
 
 ## Installation
 
+### Clone the repo
+
 ```bash
-git clone https://github.com/wcygan/dotfiles.git && cd dotfiles && source bootstrap.sh
+git clone https://github.com/wcygan/dotfiles.git && cd dotfiles
+```
+
+### Install the dotfiles for zsh
+
+```bash
+ source bootstrap-zsh.sh
+```
+
+### Install the dotfiles for bash
+
+```bash
+ source bootstrap-bash.sh
 ```
 
 ## Programs to install

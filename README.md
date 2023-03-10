@@ -19,3 +19,9 @@ Install these programs and add them to either
 - [tldr](https://github.com/tldr-pages/tldr)
 - [delta](https://github.com/dandavison/delta)
 - [jq](https://github.com/stedolan/jq)
+
+## Extensions to install
+
+### Zsh
+
+- [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting)

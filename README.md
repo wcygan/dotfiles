@@ -8,6 +8,8 @@
 git clone https://github.com/wcygan/dotfiles.git && cd dotfiles
 ```
 
+Depending on which shell you use, run either `bootstrap-zsh.sh` or `bootstrap-bash.sh`
+
 ### Install the dotfiles for zsh
 
 ```bash
@@ -19,6 +21,10 @@ git clone https://github.com/wcygan/dotfiles.git && cd dotfiles
 ```bash
  source bootstrap-bash.sh
 ```
+
+## Machine-specific configuration
+
+If you have machine-specific configuration, you can add it to `~/.platform`. This file is loaded last, so it can override any settings.
 
 ## Programs to install
 

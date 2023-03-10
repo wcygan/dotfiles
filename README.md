@@ -39,3 +39,7 @@ Install these programs and add them to either
 ### Zsh
 
 - [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting)
+
+# How did you do this?
+
+I copied https://github.com/mathiasbynens/dotfiles and modified it

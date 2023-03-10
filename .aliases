@@ -72,6 +72,7 @@ alias cgr='cargo run'
 alias cdo='cargo doc --open'
 alias cgt='cargo test'
 alias cgb='cargo build'
+alias cgc='cargo check'
 
 ##############################################################################
 # 04. Networking                                                             #

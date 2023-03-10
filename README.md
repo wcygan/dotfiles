@@ -3,5 +3,5 @@
 ## Installation
 
 ```bash
-git clone https://github.com/mathiasbynens/dotfiles.git && cd dotfiles && source bootstrap.sh
+git clone https://github.com/wcygan/dotfiles.git && cd dotfiles && source bootstrap.sh
 ```

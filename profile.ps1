@@ -1,12 +1,30 @@
 # Place this file into `C:\Users\Will\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
 # Or create the file with `New-Item -path $profile -type file -force`
 
+# Copy profile.ps1 to Microsoft.PowerShell_profile.ps1 so that it is loaded on startup
+function Copy-Profile {
+    copy profile.ps1 C:\Users\Will\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
+    Write-Output "Profile copied!"
+}
+
+Set-Alias -Name cpro -Value Copy-Profile
+
+# Reload the profile after making changes to the development environment
+function Reload-Profile {
+    . $PROFILE
+    Write-Output "Profile reloaded!"
+}
+
+Set-Alias -Name rl -Value Reload-Profile
+
+# Switch to the development directory
 function Switch-To-Dev {
     cd 'C:\Users\Will\Development'
 }
 
 Set-Alias -Name dev -Value Switch-To-Dev
 
+# Clear the screen
 function Clear {
     clear
 }

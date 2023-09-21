@@ -31,6 +31,24 @@ function Clear {
 
 Set-Alias -Name c -Value Clear
 
+function Docker-Compose-Up {
+    docker-compose up -d
+}
+
+Set-Alias -Name dcu -Value Docker-Compose-Up
+
+function Docker-Compose-Down {
+    docker-compose down
+}
+
+Set-Alias -Name dcd -Value Docker-Compose-Down
+
+function Docker-Compose-Build {
+    docker-compose build
+}
+
+Set-Alias -Name dcb -Value Docker-Compose-Build
+
 function Cargo-Check {
     cargo check
 }

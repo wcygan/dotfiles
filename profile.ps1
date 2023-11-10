@@ -7,7 +7,14 @@ function Copy-Profile {
     Write-Output "Profile copied!"
 }
 
+
 Set-Alias -Name cpro -Value Copy-Profile
+
+function Edit-Profile {
+    code C:\Users\Will\Development\dotfiles
+}
+
+Set-Alias -Name pro -Value Edit-Profile
 
 # Reload the profile after making changes to the development environment
 function Reload-Profile {
@@ -16,6 +23,9 @@ function Reload-Profile {
 }
 
 Set-Alias -Name rl -Value Reload-Profile
+
+# replace 'Ctrl+t' and 'Ctrl+r' with your preferred bindings:
+Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
 
 # Switch to the development directory
 function Switch-To-Dev {

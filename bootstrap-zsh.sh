@@ -19,10 +19,6 @@ function doIt() {
 if [ "$1" = "--force" ]; then
 	doIt;
 else
-	read -p "This may overwrite existing files in your home directory. Are you sure? (y/n) " -n 1;
-	echo "";
-	if [[ $REPLY =~ ^[Yy]$ ]]; then
-		doIt;
-	fi;
+	echo "Run it with --force if you really want to do this";
 fi;
 unset doIt;

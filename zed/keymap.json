@@ -44,7 +44,8 @@
       "cmd-shift-a": "command_palette::Toggle",
       "cmd-alt-o": "project_symbols::Toggle",
       "cmd-6": "diagnostics::Deploy",
-      "alt-f12": "dock::FocusDock"
+      "alt-f12": "dock::FocusDock",
+      "cmd-t": "workspace::NewTerminal"
     }
   },
   {
@@ -66,6 +67,12 @@
       "cmd-alt-,": "zed::OpenDefaultSettings", // ⚙️ DEFAULT Settings
       "cmd-alt-left": "pane::ActivatePrevItem", // ⬅️ Previous Window
       "cmd-alt-right": "pane::ActivateNextItem" // ➡️ Next Window
+    }
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "cmd-t": "workspace::NewTerminal"
     }
   },
   {

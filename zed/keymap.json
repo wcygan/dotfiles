@@ -25,8 +25,8 @@
 // CMD-tab-,     -->   ⚙️ DEFAULT Settings
 // CMD-.         -->   🎹 KeyMap (this file)
 // CMD-tab-.     -->   🎹 DEFAULT KeyMap
-// cmd-shift-]   -->   ➡️ Next Window
-// cmd-shift-[   -->   ⬅️ Previous Window
+// cmd-alt-right -->   ➡️ Next Window
+// cmd-alt-left  -->   ⬅️ Previous Window
 // cmd--         -->   ➖ Zoom Out
 // cmd-=         -->   ➕ Zoom In
 // ???           -->   ➖ Zoom Out (Scroll)
@@ -51,6 +51,7 @@
     "context": "Editor && mode == full",
     "bindings": {
       "cmd-k": "assistant::InlineAssist", // 🤖 Inline Assist
+      "cmd-3": "assistant::QuoteSelection", // 🤖 Quote Selection
       "cmd-f12": "outline::Toggle",
       "cmd-7": "outline::Toggle",
       "cmd-shift-o": "file_finder::Toggle",
@@ -63,8 +64,8 @@
       "cmd-alt-.": "zed::OpenDefaultKeymap", // 🎹 DEFAULT KeyMap
       "cmd-,": "zed::OpenSettings", // ⚙️ Settings
       "cmd-alt-,": "zed::OpenDefaultSettings", // ⚙️ DEFAULT Settings
-      "cmd-shift-[": "pane::ActivatePrevItem", // ⬅️ Previous Window
-      "cmd-shift-]": "pane::ActivateNextItem" // ➡️ Next Window
+      "cmd-alt-left": "pane::ActivatePrevItem", // ⬅️ Previous Window
+      "cmd-alt-right": "pane::ActivateNextItem" // ➡️ Next Window
     }
   },
   {

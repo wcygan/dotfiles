@@ -1,20 +1,20 @@
 //               Useful Binds
-// 
+//
 // Alt-Tab       -->   💻 Terminal (Mac: Option-Tab)
-// CMD-1         -->   🗃️ Files 
-// CMD-2         -->   🤖 AI Context 
-// CMD-K         -->   🤖 Inline Assist 
-// CMD-Shift-F   -->   🔍 Project Search 
-// Shift-Shift   -->   🪄 Command Pallete 
-// CMD-Shift-P   -->   🪄 Command Pallete 
-// CMD-,         -->   ⚙️ Settings 
-// CMD-tab-,     -->   ⚙️ DEFAULT Settings 
-// CMD-.         -->   🎹 KeyMap (this file) 
+// CMD-1         -->   🗃️ Files
+// CMD-2         -->   🤖 AI Context Panel
+// CMD-K         -->   🤖 Inline Assist
+// CMD-Shift-F   -->   🔍 Project Search
+// Shift-Shift   -->   🪄 Command Pallete
+// CMD-Shift-P   -->   🪄 Command Pallete
+// CMD-,         -->   ⚙️ Settings
+// CMD-tab-,     -->   ⚙️ DEFAULT Settings
+// CMD-.         -->   🎹 KeyMap (this file)
 // CMD-tab-.     -->   🎹 DEFAULT KeyMap
-// ???           -->   ➡️ Next Window
-// ???           -->   ⬅️ Previous Window
-// ???           -->   ➖ Zoom Out 
-// ???           -->   ➕ Zoom In  
+// cmd-shift-]   -->   ➡️ Next Window
+// cmd-shift-[   -->   ⬅️ Previous Window
+// cmd--         -->   ➖ Zoom Out
+// cmd-=         -->   ➕ Zoom In
 // ???           -->   ➖ Zoom Out (Scroll)
 // ???           -->   ➕ Zoom In  (Scroll)
 // ???           -->   ✂︎ Multi-Line Edit
@@ -23,9 +23,9 @@
   {
     "context": "Workspace",
     "bindings": {
-      "alt-tab": "workspace::ToggleBottomDock",                     // 💻 Terminal (Mac: Option-Tab)
-      "cmd-1": "workspace::ToggleLeftSidebar",                      // 🗃️ Files 
-      "cmd-2": "workspace::ToggleRightDock",                        // 🤖 AI Context 
+      "alt-tab": "workspace::ToggleBottomDock", // 💻 Terminal (Mac: Option-Tab)
+      "cmd-1": "workspace::ToggleLeftSidebar", // 🗃️ Files
+      "cmd-2": "workspace::ToggleRightDock", // 🤖 AI Context Panel
       "cmd-shift-a": "command_palette::Toggle",
       "cmd-alt-o": "project_symbols::Toggle",
       "cmd-6": "diagnostics::Deploy",
@@ -35,21 +35,21 @@
   {
     "context": "Editor && mode == full",
     "bindings": {
-      "cmd-k": "assistant::InlineAssist",                            // 🤖 Inline Assist 
+      "cmd-k": "assistant::InlineAssist", // 🤖 Inline Assist
       "cmd-f12": "outline::Toggle",
       "cmd-7": "outline::Toggle",
       "cmd-shift-o": "file_finder::Toggle",
-      "cmd-l": "go_to_line::Toggle",
+      "cmd-l": "go_to_line::Toggle"
     }
   },
   {
     "bindings": {
-      "cmd-.": "zed::OpenKeymap",                                   // 🎹 KeyMap (this file) 
-      "cmd-alt-.": "zed::OpenDefaultKeymap",                        // 🎹 DEFAULT KeyMap
-      "cmd-,": "zed::OpenSettings",                                 // ⚙️ Settings 
-      "cmd-alt-,": "zed::OpenDefaultSettings",                      // ⚙️ DEFAULT Settings 
-      "cmd-shift-[": "pane::ActivatePrevItem",
-      "cmd-shift-]": "pane::ActivateNextItem"
+      "cmd-.": "zed::OpenKeymap", // 🎹 KeyMap (this file)
+      "cmd-alt-.": "zed::OpenDefaultKeymap", // 🎹 DEFAULT KeyMap
+      "cmd-,": "zed::OpenSettings", // ⚙️ Settings
+      "cmd-alt-,": "zed::OpenDefaultSettings", // ⚙️ DEFAULT Settings
+      "cmd-shift-[": "pane::ActivatePrevItem", // ⬅️ Previous Window
+      "cmd-shift-]": "pane::ActivateNextItem" // ➡️ Next Window
     }
   },
   {
@@ -62,8 +62,8 @@
       "cmd-pageup": "editor::MovePageUp",
       "ctrl-alt-shift-b": "editor::SelectToPreviousWordStart",
       "shift-enter": "editor::NewlineBelow",
-      "cmd--": "editor::Fold",
-      "cmd-=": "editor::UnfoldLines",
+      "cmd-=": "zed::IncreaseBufferFontSize", // ➕ Zoom In
+      "cmd--": "zed::DecreaseBufferFontSize", // ➖ Zoom Out
       "alt-shift-g": "editor::SplitSelectionIntoLines",
       "ctrl-g": [
         "editor::SelectNext",

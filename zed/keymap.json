@@ -1,4 +1,15 @@
+//               Notes
+// 
+// Q: Keybinds not working? 
+// 
+// A: You are probably in the wrong context (the current focus doesn't
+//       have the keybinding setup). 
+//       
+//       To fix this, you can duplicate your keybind to the context that
+//       doesn't have it.
+// 
 //               Useful Commands
+// 
 // Theme Selector Toggle  -->  Choose a color theme
 //
 //               Useful Binds
@@ -26,6 +37,7 @@
   {
     "context": "Workspace",
     "bindings": {
+      "shift shift": "file_finder::Toggle",
       "alt-tab": "workspace::ToggleBottomDock", // 💻 Terminal (Mac: Option-Tab)
       "cmd-1": "workspace::ToggleLeftSidebar", // 🗃️ Files
       "cmd-2": "workspace::ToggleRightDock", // 🤖 AI Context Panel
@@ -105,6 +117,11 @@
     "bindings": {
       "alt-f12": "dock::HideDock"
     }
+  },
+  {
+    "context": "FileFinder", // TODO: Figure out the correct name for this to unblock file search -> project search transition
+    "bindings": {
+      "cmd-shift-f": "project_search::ToggleFocus"
+    }
   }
 ]
-w

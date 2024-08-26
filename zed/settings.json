@@ -7,6 +7,7 @@
 // custom settings, run `zed: open default settings` from the
 // command palette
 {
+  "autosave": { "after_delay": { "milliseconds": 500 } },
   "base_keymap": "JetBrains",
   "assistant": {
     "default_model": {
@@ -15,11 +16,17 @@
     },
     "version": "2"
   },
-  "ui_font_size": 16,
-  "buffer_font_size": 16,
+  "ui_font_size": 14,
+  "buffer_font_size": 14,
   "theme": {
     "mode": "system",
     "light": "One Light",
     "dark": "Gruvbox Light Soft"
+  },
+  "tabs": {
+    // Show git status colors in the editor tabs.
+    "git_status": true,
+    // Whether to show the file icon for a tab.
+    "file_icons": true
   }
 }

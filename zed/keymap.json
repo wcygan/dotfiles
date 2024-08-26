@@ -1,6 +1,53 @@
+//               Useful Binds
+// 
+// Alt-Tab       -->   💻 Terminal (Mac: Option-Tab)
+// CMD-1         -->   🗃️ Files 
+// CMD-2         -->   🤖 AI Context 
+// CMD-K         -->   🤖 Inline Assist 
+// CMD-Shift-F   -->   🔍 Project Search 
+// Shift-Shift   -->   🪄 Command Pallete 
+// CMD-Shift-P   -->   🪄 Command Pallete 
+// CMD-,         -->   ⚙️ Settings 
+// CMD-tab-,     -->   ⚙️ DEFAULT Settings 
+// CMD-.         -->   🎹 KeyMap (this file) 
+// CMD-tab-.     -->   🎹 DEFAULT KeyMap
+// ???           -->   ➡️ Next Window
+// ???           -->   ⬅️ Previous Window
+// ???           -->   ➖ Zoom Out 
+// ???           -->   ➕ Zoom In  
+// ???           -->   ➖ Zoom Out (Scroll)
+// ???           -->   ➕ Zoom In  (Scroll)
+// ???           -->   ✂︎ Multi-Line Edit
+// ???           -->   ✂︎ Replace
 [
   {
+    "context": "Workspace",
     "bindings": {
+      "alt-tab": "workspace::ToggleBottomDock",                     // 💻 Terminal (Mac: Option-Tab)
+      "cmd-1": "workspace::ToggleLeftSidebar",                      // 🗃️ Files 
+      "cmd-2": "workspace::ToggleRightDock",                        // 🤖 AI Context 
+      "cmd-shift-a": "command_palette::Toggle",
+      "cmd-alt-o": "project_symbols::Toggle",
+      "cmd-6": "diagnostics::Deploy",
+      "alt-f12": "dock::FocusDock"
+    }
+  },
+  {
+    "context": "Editor && mode == full",
+    "bindings": {
+      "cmd-k": "assistant::InlineAssist",                            // 🤖 Inline Assist 
+      "cmd-f12": "outline::Toggle",
+      "cmd-7": "outline::Toggle",
+      "cmd-shift-o": "file_finder::Toggle",
+      "cmd-l": "go_to_line::Toggle",
+    }
+  },
+  {
+    "bindings": {
+      "cmd-.": "zed::OpenKeymap",                                   // 🎹 KeyMap (this file) 
+      "cmd-alt-.": "zed::OpenDefaultKeymap",                        // 🎹 DEFAULT KeyMap
+      "cmd-,": "zed::OpenSettings",                                 // ⚙️ Settings 
+      "cmd-alt-,": "zed::OpenDefaultSettings",                      // ⚙️ DEFAULT Settings 
       "cmd-shift-[": "pane::ActivatePrevItem",
       "cmd-shift-]": "pane::ActivateNextItem"
     }
@@ -48,28 +95,6 @@
       "cmd-end": "editor::MoveToEnd",
       "cmd-shift-home": "editor::SelectToBeginning",
       "cmd-shift-end": "editor::SelectToEnd"
-    }
-  },
-  {
-    "context": "Editor && mode == full",
-    "bindings": {
-      "cmd-f12": "outline::Toggle",
-      "cmd-7": "outline::Toggle",
-      "cmd-shift-o": "file_finder::Toggle",
-      "cmd-l": "go_to_line::Toggle",
-      "cmd-k": "assistant::InlineAssist"
-    }
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "cmd-shift-a": "command_palette::Toggle",
-      "cmd-alt-o": "project_symbols::Toggle",
-      "cmd-1": "workspace::ToggleLeftSidebar",
-      "alt-tab": "workspace::ToggleBottomDock",
-      "cmd-2": "workspace::ToggleRightDock",
-      "cmd-6": "diagnostics::Deploy",
-      "alt-f12": "dock::FocusDock"
     }
   },
   {

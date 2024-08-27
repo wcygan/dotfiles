@@ -1,0 +1,35 @@
+[
+  {
+    "label": "Skaffold Dev",
+    "command": "skaffold dev",
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "reveal": "always",
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "kubectl: Get Pods",
+    "command": "kubectl get pods",
+    "reveal": "always"
+  },
+  {
+    "label": "kubectl: Get Services",
+    "command": "kubectl get services",
+    "reveal": "always"
+  },
+  {
+    "label": "kubectl: Get Deployments",
+    "command": "kubectl get deployments",
+    "reveal": "always"
+  },
+  {
+    "label": "kubectl: Watch Pods",
+    "command": "kubectl get pods -w",
+    "reveal": "always"
+  },
+  {
+    "label": "Start k9s",
+    "command": "k9s",
+    "reveal": "always",
+    "allow_concurrent_runs": false
+  }
+]

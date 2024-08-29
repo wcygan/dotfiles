@@ -88,4 +88,39 @@ function tre() {
 	tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX;
 }
 
+# exec into a pod
+kx() {
+  kubectl exec -it $1 -- /bin/sh
+}
+
+# yolo commit and push
+send-it() {
+  git add . && git commit -m "x" && git push
+}
+
+# Go to main branch and get latest code
+mm() {
+    local main_branch=$(git rev-parse --abbrev-ref HEAD)
+    if [[ "$main_branch" != "main" && "$main_branch" != "master" ]]; then
+        main_branch=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+    fi
+    git stash && git checkout $main_branch && git pull --rebase origin $main_branch
+}
+
+# Open the listed files or directories in Visual Studio Code
+open_in_vscode() {
+    if [ $# -eq 0 ]; then
+        echo "Usage: open_in_vscode <directory_or_file> [<directory_or_file> ...]"
+        return 1
+    fi
+
+    for item in "$@"; do
+        if [ -e "$item" ]; then
+            code "$item"
+        else
+            echo "Warning: '$item' does not exist. Skipping."
+        fi
+    done
+}
+
 echo "functions loaded"

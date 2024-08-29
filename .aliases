@@ -25,6 +25,12 @@ alias ss='source ~/.zshrc'
 alias d='cd ~/Development'
 alias l='ls -lah'
 
+# List all files in a directory, excluding hidden files and directories, in a sorted manner
+alias listdir='find ${1:-.} -type f -not -path "*/.*/*" -print0 | xargs -0 -I {} bash -c '\''echo "$(dirname "{}")/$(basename "{}")"'\'' | sort -t/ -k2 -k3'
+
+# List the size of all files in a directory, excluding hidden files and directories, in a sorted manner
+alias dt='du -sh * | sort -rh | awk '\''{sum+=$1; print} END {print "Total Size: " sum}'\'
+
 ##############################################################################
 # 02. Git                                                                    #
 ##############################################################################

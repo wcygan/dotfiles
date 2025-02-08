@@ -1,227 +1,226 @@
 // Place your key bindings in this file to override the defaultsauto[]
 [
-    {
-      "key": "cmd+w",
-      "command": "workbench.action.closeActiveEditor",
-      "when": "!terminalFocus"
-    },
-    {
-      "key": "cmd+w",
-      "command": "workbench.action.terminal.kill",
-      "when": "terminalFocus"
-    },
-    {
-      "key": "alt+tab",
-      "command": "-workbench.action.focusNextGroup",
-      "when": "editorFocus"
-    },
-    {
-      "key": "alt+tab",
-      "command": "workbench.action.terminal.toggleTerminal",
-      "when": "terminal.active"
-    },
-    {
-      "key": "ctrl+`",
-      "command": "-workbench.action.terminal.toggleTerminal",
-      "when": "terminal.active"
-    },
-    {
-      "key": "cmd+.",
-      "command": "-editor.toggleFold",
-      "when": "editorFocus && foldingEnabled"
-    },
-    {
-      "key": "cmd+.",
-      "command": "-problems.action.showQuickFixes",
-      "when": "problemFocus"
-    },
-    {
-      "key": "cmd+.",
-      "command": "-editor.changeDropType",
-      "when": "dropWidgetVisible"
-    },
-    {
-      "key": "cmd+.",
-      "command": "-editor.changePasteType",
-      "when": "pasteWidgetVisible"
-    },
-    {
-      "key": "cmd+.",
-      "command": "-acceptSelectedCodeAction",
-      "when": "codeActionMenuVisible"
-    },
-    {
-      "key": "cmd+.",
-      "command": "-workbench.action.terminal.showQuickFixes",
-      "when": "terminalFocus"
-    },
-    {
-      "key": "cmd+.",
-      "command": "-editor.action.quickFix",
-      "when": "editorHasCodeActionsProvider && textInputFocus && !editorReadonly"
-    },
-    {
-      "key": "cmd+.",
-      "command": "-cursor.aichat.toggleChatMode",
-      "when": "(arbitrary function) && (arbitrary function)"
-    },
-    {
-      "key": "cmd+,",
-      "command": "-workbench.action.openGlobalSettings"
-    },
-    {
-      "key": "cmd+,",
-      "command": "-workbench.action.openSettings"
-    },
-    {
-      "key": "cmd+backspace",
-      "command": "-aichat.cancelchat",
-      "when": "activeAIChatEditor || view == 'workbench.panel.aichat.view' && (arbitrary function)"
-    },
-    {
-      "key": "alt+cmd+b",
-      "command": "-workbench.action.toggleAuxiliaryBar"
-    },
-    {
-      "key": "cmd+2",
-      "command": "workbench.action.toggleAuxiliaryBar"
-    },
-    {
-      "key": "cmd+r cmd+2",
-      "command": "-editor.foldLevel2",
-      "when": "editorTextFocus && foldingEnabled"
-    },
-    {
-      "key": "ctrl+l",
-      "command": "-workbench.action.chat.newChat",
-      "when": "chatIsEnabled && inChat"
-    },
-    {
-      "key": "cmd+n",
-      "command": "aichat.newchatbuttonaction",
-      "when": "aichatPosition == 'sidebar' && view == 'workbench.panel.aichat.view'"
-    },
-    {
-      "key": "cmd+t",
-      "command": "-git.sync",
-      "when": "!operationInProgress"
-    },
-    {
-      "key": "cmd+t",
-      "command": "-workbench.action.showAllSymbols"
-    },
-    {
-      "key": "cmd+t",
-      "command": "workbench.action.terminal.new",
-      "when": "terminalProcessSupported || terminalWebExtensionContributedProfile"
-    },
-    {
-      "key": "ctrl+shift+`",
-      "command": "-workbench.action.terminal.new",
-      "when": "terminalProcessSupported || terminalWebExtensionContributedProfile"
-    },
-    {
-      "key": "shift+cmd+]",
-      "command": "-workbench.action.nextEditor"
-    },
-    {
-      "key": "shift+cmd+[",
-      "command": "-workbench.action.previousEditor"
-    },
-    {
-      "key": "alt+cmd+left",
-      "command": "workbench.action.terminal.focusPrevious",
-      "when": "terminalFocus && terminalHasBeenCreated && !terminalEditorFocus || terminalFocus && terminalProcessSupported && !terminalEditorFocus"
-    },
-    {
-      "key": "shift+cmd+[",
-      "command": "-workbench.action.terminal.focusPrevious",
-      "when": "terminalFocus && terminalHasBeenCreated && !terminalEditorFocus || terminalFocus && terminalProcessSupported && !terminalEditorFocus"
-    },
-    {
-      "key": "alt+cmd+left",
-      "command": "workbench.action.terminal.focusPrevious",
-      "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
-    },
-    {
-      "key": "shift+cmd+[",
-      "command": "-workbench.action.terminal.focusPrevious",
-      "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
-    },
-    {
-      "key": "alt+cmd+right",
-      "command": "workbench.action.terminal.focusNext",
-      "when": "terminalFocus && terminalHasBeenCreated && !terminalEditorFocus || terminalFocus && terminalProcessSupported && !terminalEditorFocus"
-    },
-    {
-      "key": "shift+cmd+]",
-      "command": "-workbench.action.terminal.focusNext",
-      "when": "terminalFocus && terminalHasBeenCreated && !terminalEditorFocus || terminalFocus && terminalProcessSupported && !terminalEditorFocus"
-    },
-    {
-      "key": "alt+cmd+right",
-      "command": "workbench.action.terminal.focusNext",
-      "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
-    },
-    {
-      "key": "shift+cmd+]",
-      "command": "-workbench.action.terminal.focusNext",
-      "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
-    },
-    {
-      "key": "alt+cmd+left",
-      "command": "-workbench.action.navigateBack",
-      "when": "canNavigateBack"
-    },
-    {
-      "key": "alt+cmd+right",
-      "command": "-workbench.action.navigateForward",
-      "when": "canNavigateForward"
-    },
-    {
-      "key": "cmd+i",
-      "command": "-markdown.extension.editing.toggleItalic",
-      "when": "editorTextFocus && !editorReadonly && editorLangId =~ /^markdown$|^rmd$|^quarto$/"
-    },
-    {
-      "key": "cmd+k",
-      "command": "inlineChat.start",
-      "when": "editorFocus && inlineChatHasProvider && inlineChatPossible && !editorReadonly"
-    },
-    {
-      "key": "cmd+k i",
-      "command": "-inlineChat.start",
-      "when": "editorFocus && inlineChatHasProvider && inlineChatPossible && !editorReadonly"
-    },
-    {
-      "key": "cmd+e",
-      "command": "workbench.action.terminal.runSelectedText"
-    },
-    {
-      "key": "cmd+e",
-      "command": "-actions.findWithSelection"
-    },
-    {
-      "key": "cmd+e",
-      "command": "-workbench.action.quickOpen",
-      "when": "!inQuickOpen"
-    },
-    {
-      "key": "cmd+e",
-      "command": "-editor.action.toggleScreenReaderAccessibilityMode",
-      "when": "accessibilityHelpIsShown"
-    },
-    {
-      "key": "cmd+j",
-      "command": "-workbench.action.togglePanel"
-    },
-    {
-      "key": "cmd+j",
-      "command": "workbench.action.openQuickChat"
-    },
-    {
-      "key": "cmd+3",
-      "command": "openInIntegratedTerminal"
-    }
-  ]
-  
+  {
+    "key": "cmd+w",
+    "command": "workbench.action.closeActiveEditor",
+    "when": "!terminalFocus"
+  },
+  {
+    "key": "cmd+w",
+    "command": "workbench.action.terminal.kill",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "alt+tab",
+    "command": "-workbench.action.focusNextGroup",
+    "when": "editorFocus"
+  },
+  {
+    "key": "alt+tab",
+    "command": "workbench.action.terminal.toggleTerminal",
+    "when": "terminal.active"
+  },
+  {
+    "key": "ctrl+`",
+    "command": "-workbench.action.terminal.toggleTerminal",
+    "when": "terminal.active"
+  },
+  {
+    "key": "cmd+.",
+    "command": "-editor.toggleFold",
+    "when": "editorFocus && foldingEnabled"
+  },
+  {
+    "key": "cmd+.",
+    "command": "-problems.action.showQuickFixes",
+    "when": "problemFocus"
+  },
+  {
+    "key": "cmd+.",
+    "command": "-editor.changeDropType",
+    "when": "dropWidgetVisible"
+  },
+  {
+    "key": "cmd+.",
+    "command": "-editor.changePasteType",
+    "when": "pasteWidgetVisible"
+  },
+  {
+    "key": "cmd+.",
+    "command": "-acceptSelectedCodeAction",
+    "when": "codeActionMenuVisible"
+  },
+  {
+    "key": "cmd+.",
+    "command": "-workbench.action.terminal.showQuickFixes",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "cmd+.",
+    "command": "-editor.action.quickFix",
+    "when": "editorHasCodeActionsProvider && textInputFocus && !editorReadonly"
+  },
+  {
+    "key": "cmd+.",
+    "command": "-cursor.aichat.toggleChatMode",
+    "when": "(arbitrary function) && (arbitrary function)"
+  },
+  {
+    "key": "cmd+,",
+    "command": "-workbench.action.openGlobalSettings"
+  },
+  {
+    "key": "cmd+,",
+    "command": "-workbench.action.openSettings"
+  },
+  {
+    "key": "cmd+backspace",
+    "command": "-aichat.cancelchat",
+    "when": "activeAIChatEditor || view == 'workbench.panel.aichat.view' && (arbitrary function)"
+  },
+  {
+    "key": "alt+cmd+b",
+    "command": "-workbench.action.toggleAuxiliaryBar"
+  },
+  {
+    "key": "cmd+2",
+    "command": "workbench.action.toggleAuxiliaryBar"
+  },
+  {
+    "key": "cmd+r cmd+2",
+    "command": "-editor.foldLevel2",
+    "when": "editorTextFocus && foldingEnabled"
+  },
+  {
+    "key": "ctrl+l",
+    "command": "-workbench.action.chat.newChat",
+    "when": "chatIsEnabled && inChat"
+  },
+  {
+    "key": "cmd+n",
+    "command": "aichat.newchatbuttonaction",
+    "when": "aichatPosition == 'sidebar' && view == 'workbench.panel.aichat.view'"
+  },
+  {
+    "key": "cmd+t",
+    "command": "-git.sync",
+    "when": "!operationInProgress"
+  },
+  {
+    "key": "cmd+t",
+    "command": "-workbench.action.showAllSymbols"
+  },
+  {
+    "key": "cmd+t",
+    "command": "workbench.action.terminal.new",
+    "when": "terminalProcessSupported || terminalWebExtensionContributedProfile"
+  },
+  {
+    "key": "ctrl+shift+`",
+    "command": "-workbench.action.terminal.new",
+    "when": "terminalProcessSupported || terminalWebExtensionContributedProfile"
+  },
+  {
+    "key": "shift+cmd+]",
+    "command": "-workbench.action.nextEditor"
+  },
+  {
+    "key": "shift+cmd+[",
+    "command": "-workbench.action.previousEditor"
+  },
+  {
+    "key": "alt+cmd+left",
+    "command": "workbench.action.terminal.focusPrevious",
+    "when": "terminalFocus && terminalHasBeenCreated && !terminalEditorFocus || terminalFocus && terminalProcessSupported && !terminalEditorFocus"
+  },
+  {
+    "key": "shift+cmd+[",
+    "command": "-workbench.action.terminal.focusPrevious",
+    "when": "terminalFocus && terminalHasBeenCreated && !terminalEditorFocus || terminalFocus && terminalProcessSupported && !terminalEditorFocus"
+  },
+  {
+    "key": "alt+cmd+left",
+    "command": "workbench.action.terminal.focusPrevious",
+    "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+  },
+  {
+    "key": "shift+cmd+[",
+    "command": "-workbench.action.terminal.focusPrevious",
+    "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+  },
+  {
+    "key": "alt+cmd+right",
+    "command": "workbench.action.terminal.focusNext",
+    "when": "terminalFocus && terminalHasBeenCreated && !terminalEditorFocus || terminalFocus && terminalProcessSupported && !terminalEditorFocus"
+  },
+  {
+    "key": "shift+cmd+]",
+    "command": "-workbench.action.terminal.focusNext",
+    "when": "terminalFocus && terminalHasBeenCreated && !terminalEditorFocus || terminalFocus && terminalProcessSupported && !terminalEditorFocus"
+  },
+  {
+    "key": "alt+cmd+right",
+    "command": "workbench.action.terminal.focusNext",
+    "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+  },
+  {
+    "key": "shift+cmd+]",
+    "command": "-workbench.action.terminal.focusNext",
+    "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+  },
+  {
+    "key": "alt+cmd+left",
+    "command": "-workbench.action.navigateBack",
+    "when": "canNavigateBack"
+  },
+  {
+    "key": "alt+cmd+right",
+    "command": "-workbench.action.navigateForward",
+    "when": "canNavigateForward"
+  },
+  {
+    "key": "cmd+i",
+    "command": "-markdown.extension.editing.toggleItalic",
+    "when": "editorTextFocus && !editorReadonly && editorLangId =~ /^markdown$|^rmd$|^quarto$/"
+  },
+  {
+    "key": "cmd+k",
+    "command": "inlineChat.start",
+    "when": "editorFocus && inlineChatHasProvider && inlineChatPossible && !editorReadonly"
+  },
+  {
+    "key": "cmd+k i",
+    "command": "-inlineChat.start",
+    "when": "editorFocus && inlineChatHasProvider && inlineChatPossible && !editorReadonly"
+  },
+  {
+    "key": "cmd+e",
+    "command": "workbench.action.terminal.runSelectedText"
+  },
+  {
+    "key": "cmd+e",
+    "command": "-actions.findWithSelection"
+  },
+  {
+    "key": "cmd+e",
+    "command": "-workbench.action.quickOpen",
+    "when": "!inQuickOpen"
+  },
+  {
+    "key": "cmd+e",
+    "command": "-editor.action.toggleScreenReaderAccessibilityMode",
+    "when": "accessibilityHelpIsShown"
+  },
+  {
+    "key": "cmd+j",
+    "command": "-workbench.action.togglePanel"
+  },
+  {
+    "key": "cmd+j",
+    "command": "workbench.action.openQuickChat"
+  },
+  {
+    "key": "cmd+3",
+    "command": "openInIntegratedTerminal"
+  }
+]

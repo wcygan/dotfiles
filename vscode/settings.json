@@ -1,0 +1,85 @@
+{
+    "files.autoSave": "afterDelay",
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "eslint.format.enable": true,
+    "[handlebars]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[scss]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "editor.mouseWheelZoom": true,
+    "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "gitlens.advanced.messages": {
+      "suppressGitMissingWarning": true
+    },
+    "files.watcherExclude": {
+      "**/.bloop": true,
+      "**/.metals": true,
+      "**/.ammonite": true
+    },
+    "security.workspace.trust.untrustedFiles": "open",
+    "files.exclude": {
+      "**/.classpath": true,
+      "**/.project": true,
+      "**/.settings": true,
+      "**/.factorypath": true
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "rust-analyzer.checkOnSave.overrideCommand": null,
+    "workbench.iconTheme": "material-icon-theme",
+    "editor.mouseWheelScrollSensitivity": 0.33,
+    "workbench.startupEditor": "none",
+    "editor.inlineSuggest.enabled": true,
+    "[rust]": {
+      "editor.defaultFormatter": "rust-lang.rust-analyzer"
+    },
+    "github.copilot.enable": {
+      "*": false,
+      "plaintext": false,
+      "markdown": true,
+      "scminput": false,
+      "yaml": false
+    },
+    "window.zoomLevel": 2,
+    "[python]": {
+      "editor.formatOnType": true
+    },
+    "remote.SSH.localServerDownload": "auto",
+    "terminal.integrated.enablePersistentSessions": false,
+    "remote.SSH.connectTimeout": 45,
+    "yaml.schemas": {
+      "file:///home/coder/.vscode-server/extensions/atlassian.atlascode-2.4.2/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
+    },
+    "github.copilot.editor.enableAutoCompletions": true,
+    "window.restoreFullscreen": true,
+    "go.toolsManagement.autoUpdate": true,
+    "github.copilot.chat.search.semanticTextResults": true,
+    "workbench.colorTheme": "Pale Fire",
+    "vs-kubernetes": {
+      "vs-kubernetes.minikube-show-information-expiration": "2024-10-25T03:45:25.984Z",
+      "vs-kubernetes.crd-code-completion": "disabled"
+    },
+    "markdown-preview-enhanced.mermaidTheme": "dark",
+    "diffEditor.wordWrap": "off",
+    "prettier.proseWrap": "never",
+    "githubPullRequests.terminalLinksHandler": "github",
+    "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+    "github.copilot.chat.inlineChatCompletionTrigger.enabled": true,
+    "github.copilot.chat.inlineChatHint.enabled": true,
+    "terminal.integrated.enableMultiLinePasteWarning": false,
+    "python.analysis.aiCodeActions": {},
+    "update.showReleaseNotes": false,
+    "[markdown]": {
+      "editor.wordWrap": "off"
+    },
+    "github.copilot.chat.editor.temporalContext.enabled": true
+  }
+  

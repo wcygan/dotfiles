@@ -1,0 +1,370 @@
+#!/usr/bin/env -S deno run --allow-read --allow-write --allow-run --allow-env
+
+/**
+ * Safe Dotfiles Installation Script
+ * This script backs up existing dotfiles before installing new ones
+ */
+
+import { join, dirname, basename } from "@std/path";
+import { exists } from "@std/fs/exists";
+import { copy } from "@std/fs/copy";
+import { ensureDir } from "@std/fs/ensure-dir";
+import { parseArgs } from "@std/cli/parse-args";
+
+// Colors for output
+const colors = {
+  red: '\x1b[0;31m',
+  green: '\x1b[0;32m',
+  yellow: '\x1b[1;33m',
+  blue: '\x1b[0;34m',
+  reset: '\x1b[0m'
+};
+
+interface InstallConfig {
+  backupDir: string;
+  dotfilesDir: string;
+  homeDir: string;
+  shell: string;
+  user: string;
+}
+
+interface InstallResult {
+  success: boolean;
+  backupDir: string;
+  filesBackedUp: string[];
+  error?: string;
+}
+
+// Files to manage
+const DOTFILES = [
+  ".zshrc",
+  ".bashrc", 
+  ".bash_profile",
+  ".path",
+  ".exports",
+  ".aliases",
+  ".functions",
+  ".extra",
+  ".vimrc"
+];
+
+// Optional files that might exist
+const OPTIONAL_FILES = [
+  ".platform",
+  ".fzf.zsh"
+];
+
+// Utility functions
+function printStatus(message: string): void {
+  console.log(`${colors.green}✅${colors.reset} ${message}`);
+}
+
+function printWarning(message: string): void {
+  console.log(`${colors.yellow}⚠️${colors.reset} ${message}`);
+}
+
+function printError(message: string): void {
+  console.log(`${colors.red}❌${colors.reset} ${message}`);
+}
+
+function printBlue(message: string): void {
+  console.log(`${colors.blue}${message}${colors.reset}`);
+}
+
+function printYellow(message: string): void {
+  console.log(`${colors.yellow}${message}${colors.reset}`);
+}
+
+async function runCommand(cmd: string[], cwd?: string): Promise<{success: boolean, output: string}> {
+  try {
+    const command = new Deno.Command(cmd[0], {
+      args: cmd.slice(1),
+      cwd,
+      stdout: "piped",
+      stderr: "piped",
+    });
+
+    const result = await command.output();
+    const output = new TextDecoder().decode(result.stdout) + 
+                   new TextDecoder().decode(result.stderr);
+    
+    return {
+      success: result.success,
+      output: output.trim()
+    };
+  } catch (error) {
+    return {
+      success: false,
+      output: error instanceof Error ? error.message : String(error)
+    };
+  }
+}
+
+async function getInstallConfig(): Promise<InstallConfig> {
+  const now = new Date();
+  const timestamp = now.toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '-');
+  
+  const homeDir = Deno.env.get("HOME") || Deno.env.get("USERPROFILE") || "";
+  const backupDir = join(homeDir, `.dotfiles-backup-${timestamp}`);
+  
+  // Get current script directory
+  const currentFile = new URL(import.meta.url).pathname;
+  const dotfilesDir = dirname(currentFile);
+  
+  const shell = Deno.env.get("SHELL") || "";
+  const user = Deno.env.get("USER") || Deno.env.get("USERNAME") || "";
+
+  return {
+    backupDir,
+    dotfilesDir,
+    homeDir,
+    shell,
+    user
+  };
+}
+
+async function validateDotfilesDirectory(dotfilesDir: string): Promise<boolean> {
+  const zshrcExists = await exists(join(dotfilesDir, ".zshrc"));
+  const aliasesExists = await exists(join(dotfilesDir, ".aliases"));
+  
+  return zshrcExists && aliasesExists;
+}
+
+async function backupFile(file: string, homeDir: string, backupDir: string): Promise<boolean> {
+  const homeFile = join(homeDir, file);
+  const fileExists = await exists(homeFile);
+  
+  if (fileExists) {
+    try {
+      await copy(homeFile, join(backupDir, file), { overwrite: true });
+      printStatus(`Backed up ${file}`);
+      return true;
+    } catch (error) {
+      printWarning(`Could not backup ${file}: ${error instanceof Error ? error.message : String(error)}`);
+      return false;
+    }
+  } else {
+    console.log(`   ${colors.yellow}No existing ${file} found${colors.reset}`);
+    return false;
+  }
+}
+
+function detectShell(shell: string): { type: string; bootstrapScript: string } | null {
+  if (shell.includes("zsh")) {
+    return { type: "zsh", bootstrapScript: "bootstrap-zsh.sh" };
+  } else if (shell.includes("bash")) {
+    return { type: "bash", bootstrapScript: "bootstrap-bash.sh" };
+  }
+  return null;
+}
+
+async function updateRepository(dotfilesDir: string): Promise<void> {
+  printBlue("🔄 Updating dotfiles repository...");
+  
+  const gitDirExists = await exists(join(dotfilesDir, ".git"));
+  
+  if (gitDirExists) {
+    const result = await runCommand(["git", "pull", "origin", "main"], dotfilesDir);
+    if (result.success) {
+      printStatus("Repository updated");
+    } else {
+      printWarning("Could not update repository (continuing anyway)");
+    }
+  } else {
+    printWarning("Not a git repository, skipping update");
+  }
+}
+
+async function installDotfiles(dotfilesDir: string, bootstrapScript: string): Promise<boolean> {
+  printBlue("🚀 Installing dotfiles...");
+  
+  const scriptPath = join(dotfilesDir, bootstrapScript);
+  const scriptExists = await exists(scriptPath);
+  
+  if (!scriptExists) {
+    printError(`Bootstrap script ${bootstrapScript} not found!`);
+    return false;
+  }
+
+  // Run the bootstrap script
+  const result = await runCommand(["bash", scriptPath, "--force"], dotfilesDir);
+  
+  if (result.success) {
+    printStatus("Dotfiles installed successfully!");
+    return true;
+  } else {
+    printError(`Installation failed: ${result.output}`);
+    return false;
+  }
+}
+
+async function reloadShell(shellType: string, homeDir: string): Promise<void> {
+  printBlue("🔃 Reloading shell configuration...");
+  
+  try {
+    if (shellType === "zsh") {
+      const zshrcPath = join(homeDir, ".zshrc");
+      if (await exists(zshrcPath)) {
+        await runCommand(["zsh", "-c", `source ${zshrcPath}`]);
+      }
+    } else {
+      const bashProfilePath = join(homeDir, ".bash_profile");
+      if (await exists(bashProfilePath)) {
+        await runCommand(["bash", "-c", `source ${bashProfilePath}`]);
+      }
+    }
+    printStatus("Shell configuration reloaded");
+  } catch {
+    printWarning("Could not reload shell configuration automatically");
+  }
+}
+
+async function main(): Promise<void> {
+  const args = parseArgs(Deno.args, {
+    boolean: ["help", "force"],
+    alias: { h: "help", f: "force" }
+  });
+
+  if (args.help) {
+    console.log(`
+Safe Dotfiles Installation Script
+
+Usage: deno run --allow-all install-safely.ts [options]
+
+Options:
+  -f, --force    Skip confirmation prompts
+  -h, --help     Show this help message
+
+This script will:
+  • Auto-detect your shell (zsh/bash)
+  • Backup existing dotfiles with timestamp
+  • Install new dotfiles from repository
+  • Reload shell configuration
+  • Provide rollback instructions
+    `);
+    return;
+  }
+
+  try {
+    const config = await getInstallConfig();
+
+    printBlue("🔧 Safe Dotfiles Installation");
+    printBlue("===============================");
+    console.log();
+    console.log(`📁 Dotfiles source: ${colors.yellow}${config.dotfilesDir}${colors.reset}`);
+    console.log(`💾 Backup location: ${colors.yellow}${config.backupDir}${colors.reset}`);
+    console.log();
+
+    // Validate dotfiles directory
+    const isValid = await validateDotfilesDirectory(config.dotfilesDir);
+    if (!isValid) {
+      printError("Not in dotfiles directory or files missing!");
+      console.log("Please run this script from the dotfiles repository directory.");
+      Deno.exit(1);
+    }
+
+    // Create backup directory
+    printBlue("📦 Creating backup directory...");
+    await ensureDir(config.backupDir);
+    printStatus(`Created backup directory: ${config.backupDir}`);
+
+    // Backup existing dotfiles
+    console.log();
+    printBlue("💾 Backing up existing dotfiles...");
+    const backedUpFiles: string[] = [];
+    
+    for (const file of DOTFILES) {
+      const wasBackedUp = await backupFile(file, config.homeDir, config.backupDir);
+      if (wasBackedUp) {
+        backedUpFiles.push(file);
+      }
+    }
+
+    // Backup optional files
+    console.log();
+    printBlue("🔍 Checking for optional files...");
+    for (const file of OPTIONAL_FILES) {
+      const wasBackedUp = await backupFile(file, config.homeDir, config.backupDir);
+      if (wasBackedUp) {
+        backedUpFiles.push(file);
+      }
+    }
+
+    // Show current shell
+    console.log();
+    printBlue("🐚 Current shell information:");
+    console.log(`   Shell: ${colors.yellow}${config.shell}${colors.reset}`);
+    console.log(`   User: ${colors.yellow}${config.user}${colors.reset}`);
+
+    // Detect shell
+    const shellInfo = detectShell(config.shell);
+    if (!shellInfo) {
+      printWarning(`Unknown shell: ${config.shell}`);
+      console.log("Please manually choose bootstrap script:");
+      console.log("  - bootstrap-zsh.sh for zsh");
+      console.log("  - bootstrap-bash.sh for bash");
+      Deno.exit(1);
+    }
+
+    console.log(`   Detected: ${colors.green}${shellInfo.type}${colors.reset}`);
+    console.log(`   Will use: ${colors.green}${shellInfo.bootstrapScript}${colors.reset}`);
+
+    // Confirm installation
+    if (!args.force) {
+      console.log();
+      printYellow("⚠️  This will replace your current dotfiles with the repository versions.");
+      printYellow(`   Your existing files are safely backed up in: ${config.backupDir}`);
+      console.log();
+      
+      const shouldContinue = confirm("Continue with installation?");
+      if (!shouldContinue) {
+        printWarning("Installation cancelled by user");
+        console.log(`Your backups are still available in: ${colors.yellow}${config.backupDir}${colors.reset}`);
+        Deno.exit(0);
+      }
+    }
+
+    // Update repository
+    console.log();
+    await updateRepository(config.dotfilesDir);
+
+    // Install dotfiles
+    console.log();
+    const installSuccess = await installDotfiles(config.dotfilesDir, shellInfo.bootstrapScript);
+    if (!installSuccess) {
+      Deno.exit(1);
+    }
+
+    // Reload shell configuration
+    console.log();
+    await reloadShell(shellInfo.type, config.homeDir);
+
+    // Installation complete
+    console.log();
+    console.log(`${colors.green}🎉 Installation completed successfully!${colors.reset}`);
+    console.log();
+    printBlue("📋 What was done:");
+    console.log(`   ✅ Backed up existing dotfiles to: ${colors.yellow}${config.backupDir}${colors.reset}`);
+    console.log("   ✅ Installed new dotfiles from repository");
+    console.log("   ✅ Reloaded shell configuration");
+    console.log();
+    printBlue("🧪 Test your installation:");
+    console.log(`   • Try: ${colors.yellow}d${colors.reset} (should open development workspace in Cursor)`);
+    console.log(`   • Try: ${colors.yellow}k get nodes${colors.reset} (kubectl shortcut)`);
+    console.log(`   • Try: ${colors.yellow}cgr${colors.reset} (cargo run)`);
+    console.log(`   • Try: ${colors.yellow}mm${colors.reset} (git main branch helper)`);
+    console.log();
+    printBlue("🔄 If you need to rollback:");
+    console.log(`   ${colors.yellow}deno run --allow-all rollback.ts ${config.backupDir}${colors.reset}`);
+    console.log();
+    console.log(`${colors.green}Enjoy your new dotfiles setup! 🎊${colors.reset}`);
+
+  } catch (error) {
+    printError(`Installation failed: ${error instanceof Error ? error.message : String(error)}`);
+    Deno.exit(1);
+  }
+}
+
+if (import.meta.main) {
+  main();
+} 

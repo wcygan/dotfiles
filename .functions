@@ -23,7 +23,7 @@ function fs() {
 	fi;
 }
 
-# Use Git’s colored diff when available
+# Use Git's colored diff when available
 hash git &>/dev/null;
 if [ $? -eq 0 ]; then
 	function diff() {
@@ -121,6 +121,116 @@ open_in_vscode() {
             echo "Warning: '$item' does not exist. Skipping."
         fi
     done
+}
+
+# Copy the contents of every file in a directory to the clipboard, filtering by file type
+copydirf() {
+    local filetype="$1"
+    local rg_args=()
+
+    if [[ -n "$filetype" ]]; then
+        if [[ "$filetype" == *.* ]]; then
+            # Regular file extension
+            rg_args+=(-g "*$filetype")
+        else
+            # File without extension (e.g., Dockerfile)
+            rg_args+=(--type-add "$filetype:$filetype*" --type "$filetype")
+        fi
+    fi
+
+    rg "${rg_args[@]}" --no-ignore --no-heading --with-filename --line-number --text --max-columns 500 --binary "" | nl -ba | tee >(pbcopy) | cat
+}
+
+# Docker compose rebuild and restart specific service
+dcr() {
+  docker-compose down && docker-compose build $1 && docker-compose up -d
+}
+
+# Docker compose swap service (stop, remove, rebuild, start)
+dswap() {
+  docker-compose stop $1 && docker-compose rm -f $1 && docker-compose build $1 && docker-compose up -d $1
+}
+
+# Initialize a Go module with github.com/wcygan prefix
+gom() {
+  go mod init github.com/wcygan/$1
+}
+
+# Initialize a protobuf project structure
+proto() {
+  local structure_exists=false
+
+  # Check and create directories
+  if [ ! -d "proto/hello/v1" ]; then
+    mkdir -p proto/hello/v1
+    echo "Created directory: proto/hello/v1"
+  else
+    echo "Directory already exists: proto/hello/v1"
+    structure_exists=true
+  fi
+
+  # Check and create proto/buf.yaml
+  if [ ! -f "proto/buf.yaml" ]; then
+    cat << EOF > proto/buf.yaml
+version: v2
+modules:
+  - path: .
+    name: buf.build/wcygan/hello
+EOF
+    echo "Created file: proto/buf.yaml"
+  else
+    echo "File already exists: proto/buf.yaml"
+    structure_exists=true
+  fi
+
+  # Check and create buf.gen.yaml
+  if [ ! -f "buf.gen.yaml" ]; then
+    cat << EOF > buf.gen.yaml
+version: v2
+managed:
+  enabled: true
+inputs:
+  - directory: proto
+EOF
+    echo "Created file: buf.gen.yaml"
+  else
+    echo "File already exists: buf.gen.yaml"
+    structure_exists=true
+  fi
+
+  # Check and create proto/hello/v1/hello.proto
+  if [ ! -f "proto/hello/v1/hello.proto" ]; then
+    cat << EOF > proto/hello/v1/hello.proto
+syntax = "proto3";
+
+package hello.v1;
+
+service GreeterService {
+  rpc SayHello (SayHelloRequest) returns (SayHelloResponse) {}
+}
+
+message SayHelloRequest {
+  string name = 1;
+}
+
+message SayHelloResponse {
+  string message = 1;
+}
+EOF
+    echo "Created file: proto/hello/v1/hello.proto"
+  else
+    echo "File already exists: proto/hello/v1/hello.proto"
+    structure_exists=true
+  fi
+
+  if [ "$structure_exists" = true ]; then
+    echo "Buf structure already exists or partially exists. No changes made where files/directories were present."
+  else
+    echo "Buf structure created successfully."
+  fi
+
+  # Hint for the next step
+  echo "Run 'buf push proto' to push your schemas."
 }
 
 echo "functions loaded"

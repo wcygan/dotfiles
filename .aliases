@@ -8,6 +8,8 @@
 #   02. Git ..................... Git aliases                                #
 #   03. Programming ............. Aliases  for programming                   #
 #   04. Networking .............. Networking aliases                         #
+#   05. Kubernetes .............. Kubernetes aliases                         #
+#   06. Development Tools ....... Modern development tools                   #
 #   XX. Misc .................... Miscellaneous aliases                      #
 ##############################################################################
 
@@ -20,16 +22,54 @@ alias .='open .'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
-alias vv='vim ~/.zshrc'
-alias ss='source ~/.zshrc'
-alias d='cd ~/Development'
-alias l='ls -lah'
 
-# List all files in a directory, excluding hidden files and directories, in a sorted manner
+# Editor and shell configuration
+alias edit='cursor'
+alias vv='vzsh'
+alias ss='szsh'
+alias vzsh='edit ~/.zshrc'
+alias szsh='source ~/.zshrc'
+
+# Directory navigation
+alias d='edit ~/Development/development-workspace'
+alias dev='cd ~/Development'
+alias will='cd ~'
+alias n='edit /Users/wcygan/Development/notes'
+alias cs='edit /Users/wcygan/Development/csgo-config'
+alias mn='cd /Users/wcygan/Development/manning'
+alias oss='cd /Users/wcygan/Development/oss'
+alias lab='edit ~/Development/lab'
+
+# Modern CLI tool replacements
+alias cat='bat --paging=never'
+alias find='fd'
+alias ls='exa'
+alias l='exa -l'
+
+# File operations
 alias listdir='find ${1:-.} -type f -not -path "*/.*/*" -print0 | xargs -0 -I {} bash -c '\''echo "$(dirname "{}")/$(basename "{}")"'\'' | sort -t/ -k2 -k3'
-
-# List the size of all files in a directory, excluding hidden files and directories, in a sorted manner
 alias dt='du -sh * | sort -rh | awk '\''{sum+=$1; print} END {print "Total Size: " sum}'\'
+alias copydir='rg --no-ignore --no-heading --with-filename --line-number --text --max-columns 500 --binary "" | nl -ba | tee >(pbcopy) | cat'
+
+# System utilities
+alias ff='fastfetch'
+alias caf='caffeinate'
+alias binary='xxd'
+alias py='/usr/bin/python3'
+
+# SSH and remote connections
+alias m0='ssh -i ~/.ssh/trudy_key.pem wcygan@20.51.124.200'
+alias trudy='ssh -i ~/.ssh/trudy_key.pem wcygan@20.51.124.200'
+alias m1='ssh wcygan@betty'
+alias m2='ssh wcygan@barbara'
+alias m3='ssh wcygan@shirley'
+alias m4='ssh wcygan@raspberrypi'
+alias k0='ssh wcygan@k8s-0'
+alias k1='ssh wcygan@k8s-1'
+alias k2='ssh wcygan@k8s-2'
+
+# Tailscale
+alias ts='tailscale status'
 
 ##############################################################################
 # 02. Git                                                                    #
@@ -42,6 +82,7 @@ git config --global core.editor "vim"
 
 # Dotfile management
 alias cfg='/usr/bin/git --git-dir=/Users/wcygan/.cfg/ --work-tree=/Users/wcygan'
+alias config='/usr/bin/git --git-dir=/Users/wcygan/.cfg/ --work-tree=/Users/wcygan'
 
 # Git aliases
 alias gaa='git add .'
@@ -52,6 +93,8 @@ alias gcl='git clone'
 alias gco='git checkout'
 alias gcb='git checkout'
 alias gd='git diff'
+alias gds='gd --stat'
+alias gfd='git clean -fd'
 alias gl='git log --decorate --graph --pretty=format:"%Cgreen%h%Creset [%ar - %Cred%an%Creset], %s %C(auto)%d%Creset"'
 alias gll='git log --graph --decorate --pretty=medium'
 alias glog='git log'
@@ -59,10 +102,14 @@ alias gp='git push'
 alias gpu='eval git push -u origin $(git rev-parse --abbrev-ref HEAD)'
 alias gpr='git pull --rebase'
 alias gpro='git pull --rebase origin master'
+alias gpo='git pull --rebase origin master'
+alias gpw='git pull --rebase origin will'
+alias gr='git revert'
 alias gri='git rebase -i origin/master'
 alias grco='git rebase --continue'
 alias gs='git status'
 alias gsw='git switch -c'
+alias gbddd='git branch | grep -v "main" | xargs git branch -d'
 
 ##############################################################################
 # 03. Programming                                                            #
@@ -72,6 +119,7 @@ alias gsw='git switch -c'
 alias gw='./gradlew'
 alias gwr='gw run'
 alias gwi='gw idea'
+alias gwb='gw build'
 
 # Rust
 alias cgr='cargo run'
@@ -79,6 +127,40 @@ alias cdo='cargo doc --open'
 alias cgt='cargo test'
 alias cgb='cargo build'
 alias cgc='cargo check'
+alias cgwt='cargo watch -x check -x test'
+alias cgw='cargo watch -x check -x test -x run'
+alias cf='cargo fmt && cargo clippy'
+alias cgcm='cgc && cgt && cf'
+alias cb='cargo bench'
+
+# Go
+alias gob='go build'
+alias got='go test'
+alias gotb='go test -bench=.'
+alias gotc='go test -cover'
+alias gor='go run'
+alias goc='go clean'
+alias gof='go format'
+alias goi='go install'
+alias gofix='go fix'
+alias god='go doc'
+alias gcu='/Users/wcygan/go/bin/go-coreutils'
+
+# Java
+alias java11='JAVA_HOME=/opt/homebrew/opt/openjdk@11/bin/java'
+alias j!=jbang
+
+# NPM/Node
+alias p='pnpm'
+alias es='ember serve'
+alias nps='npm start'
+alias npi='npm install'
+
+# AI/Development tools
+alias aider='py -m aider --cache-prompts'
+alias a='aider'
+alias ad='aider'
+alias o='ollama'
 
 ##############################################################################
 # 04. Networking                                                             #
@@ -99,6 +181,80 @@ for method in GET HEAD POST PUT DELETE TRACE OPTIONS; do
 	alias "${method}"="lwp-request -m '${method}'"
 done
 
+##############################################################################
+# 05. Kubernetes                                                             #
+##############################################################################
+
+# kubectl shortcuts
+alias k='kubectl'
+alias ka='kubectl get all --all-namespaces'
+alias kp='kubectl get pods'
+alias kdp='kubectl describe pod'
+alias ki='kubectl get ing'
+alias kd='kubectl get deployments'
+alias ks='kubectl get svc'
+alias kn='kubectl get nodes'
+alias kl='kubectl logs'
+alias ksysgpo='kubectl --namespace=kube-system get pod'
+
+# kubectl delete operations
+alias krm='kubectl delete'
+alias krmf='kubectl delete -f'
+alias krming='kubectl delete ingress'
+alias krmingl='kubectl delete ingress -l'
+alias krmingall='kubectl delete ingress --all-namespaces'
+
+# kubectl service operations
+alias kgsvcoyaml='kubectl get service -o=yaml'
+alias kgsvcwn='kubectl get service --watch --namespace'
+alias kgsvcslwn='kubectl get service --show-labels --watch --namespace'
+alias kgwf='kubectl get --watch -f'
+
+# Configuration and tools
+alias kc='edit ~/.kube/config'
+alias cap='kube-capacity'
+alias internal-rpk="kubectl --namespace redpanda exec -i -t redpanda-0 -c redpanda -- rpk"
+
+# Telepresence
+alias tp='telepresence'
+alias tl='tp list'
+alias tc='tp connect'
+
+# Talos
+alias td='talosctl dashboard'
+
+##############################################################################
+# 06. Development Tools                                                      #
+##############################################################################
+
+# Docker and Docker Compose
+alias dcd='docker-compose down'
+alias dcs='docker-compose stop'
+alias dcu='docker-compose up -d'
+alias dcb='docker-compose build'
+alias dps='docker ps'
+
+# Minikube
+alias m='minikube'
+alias ms='minikube start'
+
+# Skaffold
+alias s='skaffold'
+alias sr='s run'
+alias sdl='s delete'
+alias sd='s dev'
+
+# Editors and IDEs
+alias z='zed'
+alias nv='nvim'
+
+# File and content operations
+alias t='tree'
+alias rr='repomix && cat repomix-output.xml | pbcopy && rm repomix-output.xml'
+alias mcp='edit ~/.cursor/mcp.json'
+
+# Fleet (JetBrains)
+alias fl='fleet'
 
 ##############################################################################
 # XX. Misc                                                                   #
@@ -117,7 +273,7 @@ command -v sha1sum > /dev/null || alias sha1sum="shasum"
 alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
 
 # Empty the Trash on all mounted volumes and the main HDD.
-# Also, clear Apple’s System Logs to improve shell startup speed.
+# Also, clear Apple's System Logs to improve shell startup speed.
 # Finally, clear download history from quarantine. https://mths.be/bum
 alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl; sqlite3 ~/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV* 'delete from LSQuarantineEvent'"
 

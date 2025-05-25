@@ -1,0 +1,34 @@
+{
+    "version": "1.0.0",
+    "description": "Modern dotfiles with Deno TypeScript installation scripts",
+    "imports": {
+        "@std/path": "jsr:@std/path@^1.0.9",
+        "@std/fs": "jsr:@std/fs@^1.0.17",
+        "@std/fs/exists": "jsr:@std/fs@^1.0.17/exists",
+        "@std/fs/copy": "jsr:@std/fs@^1.0.17/copy",
+        "@std/fs/ensure-dir": "jsr:@std/fs@^1.0.17/ensure-dir",
+        "@std/cli/parse-args": "jsr:@std/cli@^1.0.9/parse-args"
+    },
+    "tasks": {
+        "install": "deno run --allow-all install-safely.ts",
+        "install:force": "deno run --allow-all install-safely.ts --force",
+        "rollback": "deno run --allow-all rollback.ts",
+        "check": "deno check install-safely.ts rollback.ts",
+        "help": "deno run --allow-all install-safely.ts --help"
+    },
+    "lint": {
+        "rules": {
+            "tags": [
+                "recommended"
+            ]
+        }
+    },
+    "fmt": {
+        "useTabs": false,
+        "lineWidth": 100,
+        "indentWidth": 2,
+        "semiColons": true,
+        "singleQuote": false,
+        "proseWrap": "preserve"
+    }
+}

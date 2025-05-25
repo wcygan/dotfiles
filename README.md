@@ -1,10 +1,29 @@
 # Will's Dotfiles
 
-A comprehensive shell configuration setup with modular organization, supporting both bash and zsh across macOS, Linux, and Windows (PowerShell).
+A comprehensive shell configuration setup with modular organization, supporting both bash and zsh across macOS, Linux, and Windows. Built with modern Deno TypeScript for type safety and cross-platform reliability.
 
-## 🚀 Quick Installation (Recommended)
+## 🚀 Quick Installation
 
-### Option 1: Deno TypeScript Scripts (Modern)
+### Prerequisites
+
+First, install Deno if you haven't already:
+
+**macOS/Linux:**
+```bash
+curl -fsSL https://deno.land/install.sh | sh
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://deno.land/install.ps1 | iex
+```
+
+**Alternative methods:**
+- **Homebrew**: `brew install deno`
+- **Cargo**: `cargo install deno --locked`
+- **npm**: `npm install -g @deno/cli`
+
+### Installation
 
 The safest and most modern way to install these dotfiles using type-safe Deno scripts:
 
@@ -13,40 +32,38 @@ git clone https://github.com/wcygan/dotfiles.git && cd dotfiles
 deno run --allow-all install-safely.ts
 ```
 
-**Benefits:**
+**Or use the convenient Deno task:**
+```bash
+git clone https://github.com/wcygan/dotfiles.git && cd dotfiles
+deno task install
+```
+
+**What this does:**
+- ✅ Auto-detects your shell (zsh/bash)
+- ✅ Backs up existing dotfiles with timestamp
+- ✅ Installs new dotfiles from repository
+- ✅ Reloads shell configuration
+- ✅ Provides rollback instructions
+
+**Benefits of Deno approach:**
 - ✅ Type-safe with comprehensive error handling
 - ✅ Cross-platform compatibility (macOS, Linux, Windows)
 - ✅ Modern async/await patterns
 - ✅ Better user feedback and validation
 - ✅ No shell script dependencies
-
-### Option 2: Shell Scripts (Traditional)
-
-If you prefer traditional shell scripts or don't have Deno installed:
-
-```bash
-git clone https://github.com/wcygan/dotfiles.git && cd dotfiles
-./install-safely.sh
-```
-
-Both installation methods will:
-- ✅ Auto-detect your shell (zsh/bash)
-- ✅ Backup existing dotfiles with timestamp
-- ✅ Install new dotfiles from repository
-- ✅ Reload shell configuration
-- ✅ Provide rollback instructions
+- ✅ Consistent behavior across all platforms
 
 ## 🔄 Rollback Support
 
-### Deno TypeScript Rollback
+If you need to restore your original configuration:
+
 ```bash
 deno run --allow-all rollback.ts ~/.dotfiles-backup-20240525-102500
+# Or use the task:
+deno task rollback ~/.dotfiles-backup-20240525-102500
 ```
 
-### Shell Script Rollback
-```bash
-./rollback.sh ~/.dotfiles-backup-20240525-102500
-```
+The installation script will tell you the exact backup directory path.
 
 ## 📋 What Gets Installed
 
@@ -68,38 +85,6 @@ deno run --allow-all rollback.ts ~/.dotfiles-backup-20240525-102500
 ### Cross-Platform Support
 - `profile.ps1` - PowerShell configuration for Windows
 - Platform-specific adaptations in `.platform`
-
-## ⚙️ Manual Installation
-
-If you prefer manual control or need to troubleshoot:
-
-### Clone the repo
-
-```bash
-git clone https://github.com/wcygan/dotfiles.git
-cd dotfiles
-```
-
-### For Zsh (Recommended)
-
-```bash
-chmod +x bootstrap-zsh.sh
-./bootstrap-zsh.sh
-```
-
-### For Bash
-
-```bash
-chmod +x bootstrap-bash.sh  
-./bootstrap-bash.sh
-```
-
-### For Windows PowerShell
-
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-.\bootstrap.ps1
-```
 
 ## 🔧 Customization
 
@@ -172,24 +157,19 @@ k1          # SSH to k8s-1 host
 ## 🔄 Staying Updated
 
 ### Automatic Updates
-The installation scripts automatically update the repository during installation.
+The installation script automatically updates the repository during installation.
 
 ### Manual Updates
 ```bash
 cd ~/dotfiles  # or wherever you cloned
 git pull origin main
-./install-safely.sh --force  # or use Deno version
+deno task install:force
 ```
 
 ## 🛠️ Prerequisites
 
-### For Shell Scripts
-- Bash or Zsh shell
-- Git
-- Basic Unix tools (cp, mkdir, etc.)
-
-### For Deno Scripts
-- [Deno](https://deno.land) runtime installed
+### Required
+- [Deno](https://deno.land) runtime
 - Git
 - Compatible with any shell (zsh, bash, fish, etc.)
 
@@ -206,18 +186,68 @@ git pull origin main
 If something goes wrong:
 
 1. **Find your backup**: `ls ~/.dotfiles-backup-*`
-2. **Restore with Deno**: `deno run --allow-all rollback.ts <backup-dir>`
-3. **Or restore with shell**: `./rollback.sh <backup-dir>`
-4. **Manual restore**: `cp ~/.dotfiles-backup-*/.[a-z]* ~/`
+2. **Restore**: `deno task rollback <backup-dir>`
+3. **Manual restore**: `cp ~/.dotfiles-backup-*/.[a-z]* ~/`
+
+## ⚙️ Advanced Usage
+
+### Available Deno Tasks
+```bash
+deno task install        # Install dotfiles (with prompts)
+deno task install:force  # Install dotfiles (skip prompts)
+deno task rollback       # Rollback to backup
+deno task check          # Type check scripts
+deno task help           # Show help
+```
+
+### Direct Script Usage
+```bash
+# Force Installation (Skip Prompts)
+deno run --allow-all install-safely.ts --force
+
+# Help and Options
+deno run --allow-all install-safely.ts --help
+deno run --allow-all rollback.ts --help
+```
+
+### Development and Testing
+```bash
+# Check TypeScript types
+deno task check
+
+# Run with specific permissions
+deno run --allow-read --allow-write --allow-run install-safely.ts
+```
 
 ## 🎯 Project Goals
 
-- **Modular**: Each configuration aspect in separate files
-- **Cross-Platform**: Works on macOS, Linux, and Windows
+- **Type-Safe**: Deno TypeScript scripts for reliability and maintainability
+- **Cross-Platform**: Works identically on macOS, Linux, and Windows
 - **Modern**: Embraces new tools while maintaining compatibility
-- **Safe**: Always backup before changes
-- **Maintainable**: Clear organization and documentation
-- **Type-Safe**: Deno TypeScript scripts for reliability
+- **Safe**: Always backup before changes with rollback support
+- **Modular**: Each configuration aspect in separate files
+- **Zero Dependencies**: No shell script dependencies or external tools required
+
+## 🔍 File Structure
+
+```
+dotfiles/
+├── install-safely.ts    # Main installation script
+├── rollback.ts          # Rollback script
+├── deno.json           # Deno configuration and tasks
+├── .zshrc              # Zsh configuration
+├── .bash_profile       # Bash configuration
+├── .aliases            # Command shortcuts
+├── .functions          # Shell functions
+├── .exports            # Environment variables
+├── .path               # PATH modifications
+├── .extra              # Tool integrations
+├── .vimrc              # Vim configuration
+├── cursor/             # Cursor IDE settings
+├── zed/                # Zed editor settings
+├── vscode/             # VS Code settings
+└── profile.ps1         # PowerShell configuration
+```
 
 ## 📄 License
 
@@ -228,9 +258,9 @@ MIT License - feel free to fork and customize for your own use!
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test on multiple platforms
+4. Test on multiple platforms with `deno task check`
 5. Submit a pull request
 
 ---
 
-*These dotfiles represent years of shell customization and modern development tool integration. They're designed to provide a powerful, consistent development environment across all platforms.*
+*These dotfiles represent years of shell customization and modern development tool integration. Built with Deno TypeScript for type safety, cross-platform compatibility, and modern development practices.*

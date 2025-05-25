@@ -10,6 +10,7 @@ import { exists } from "@std/fs/exists";
 import { copy } from "@std/fs/copy";
 import { ensureDir } from "@std/fs/ensure-dir";
 import { parseArgs } from "@std/cli/parse-args";
+import { walk } from "@std/fs";
 
 // Colors for output
 const colors = {
@@ -52,6 +53,20 @@ const DOTFILES = [
 const OPTIONAL_FILES = [
   ".platform",
   ".fzf.zsh"
+];
+
+// Files to exclude when copying dotfiles
+const EXCLUDE_FILES = [
+  ".git",
+  ".DS_Store",
+  ".gitignore",
+  "README.md",
+  "LICENSE",
+  "LICENSE-MIT.txt", 
+  "install-safely.ts",
+  "rollback.ts",
+  "deno.json",
+  "deno.lock"
 ];
 
 // Utility functions
@@ -149,11 +164,11 @@ async function backupFile(file: string, homeDir: string, backupDir: string): Pro
   }
 }
 
-function detectShell(shell: string): { type: string; bootstrapScript: string } | null {
+function detectShell(shell: string): { type: string; configFile: string } | null {
   if (shell.includes("zsh")) {
-    return { type: "zsh", bootstrapScript: "bootstrap-zsh.sh" };
+    return { type: "zsh", configFile: ".zshrc" };
   } else if (shell.includes("bash")) {
-    return { type: "bash", bootstrapScript: "bootstrap-bash.sh" };
+    return { type: "bash", configFile: ".bash_profile" };
   }
   return null;
 }
@@ -175,25 +190,54 @@ async function updateRepository(dotfilesDir: string): Promise<void> {
   }
 }
 
-async function installDotfiles(dotfilesDir: string, bootstrapScript: string): Promise<boolean> {
-  printBlue("🚀 Installing dotfiles...");
-  
-  const scriptPath = join(dotfilesDir, bootstrapScript);
-  const scriptExists = await exists(scriptPath);
-  
-  if (!scriptExists) {
-    printError(`Bootstrap script ${bootstrapScript} not found!`);
-    return false;
-  }
+async function copyDotfiles(dotfilesDir: string, homeDir: string): Promise<boolean> {
+  printBlue("📂 Copying dotfiles...");
+  let copiedCount = 0;
 
-  // Run the bootstrap script
-  const result = await runCommand(["bash", scriptPath, "--force"], dotfilesDir);
-  
-  if (result.success) {
-    printStatus("Dotfiles installed successfully!");
-    return true;
-  } else {
-    printError(`Installation failed: ${result.output}`);
+  try {
+    for await (const entry of walk(dotfilesDir, { 
+      includeFiles: true, 
+      includeDirs: false,
+      skip: [/\.git/, /node_modules/, /\.deno/]
+    })) {
+      const relativePath = entry.path.replace(dotfilesDir + "/", "");
+      const filename = basename(entry.path);
+      
+      // Skip excluded files
+      if (EXCLUDE_FILES.includes(filename) || 
+          EXCLUDE_FILES.includes(relativePath) ||
+          entry.path.includes("/.git/") ||
+          filename.endsWith(".ts") ||
+          filename.endsWith(".md") ||
+          filename.startsWith("deno.")) {
+        continue;
+      }
+
+      // Skip files in subdirectories (we only want root-level dotfiles)
+      if (relativePath.includes("/")) {
+        continue;
+      }
+
+      const destPath = join(homeDir, filename);
+      
+      try {
+        await copy(entry.path, destPath, { overwrite: true });
+        printStatus(`Copied ${filename}`);
+        copiedCount++;
+      } catch (error) {
+        printWarning(`Could not copy ${filename}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+
+    if (copiedCount > 0) {
+      printStatus(`Successfully copied ${copiedCount} dotfiles`);
+      return true;
+    } else {
+      printError("No files were copied");
+      return false;
+    }
+  } catch (error) {
+    printError(`Failed to copy dotfiles: ${error instanceof Error ? error.message : String(error)}`);
     return false;
   }
 }
@@ -300,14 +344,10 @@ This script will:
     const shellInfo = detectShell(config.shell);
     if (!shellInfo) {
       printWarning(`Unknown shell: ${config.shell}`);
-      console.log("Please manually choose bootstrap script:");
-      console.log("  - bootstrap-zsh.sh for zsh");
-      console.log("  - bootstrap-bash.sh for bash");
-      Deno.exit(1);
+      console.log("Continuing with installation anyway...");
+    } else {
+      console.log(`   Detected: ${colors.green}${shellInfo.type}${colors.reset}`);
     }
-
-    console.log(`   Detected: ${colors.green}${shellInfo.type}${colors.reset}`);
-    console.log(`   Will use: ${colors.green}${shellInfo.bootstrapScript}${colors.reset}`);
 
     // Confirm installation
     if (!args.force) {
@@ -328,16 +368,18 @@ This script will:
     console.log();
     await updateRepository(config.dotfilesDir);
 
-    // Install dotfiles
+    // Copy dotfiles
     console.log();
-    const installSuccess = await installDotfiles(config.dotfilesDir, shellInfo.bootstrapScript);
+    const installSuccess = await copyDotfiles(config.dotfilesDir, config.homeDir);
     if (!installSuccess) {
       Deno.exit(1);
     }
 
     // Reload shell configuration
     console.log();
-    await reloadShell(shellInfo.type, config.homeDir);
+    if (shellInfo) {
+      await reloadShell(shellInfo.type, config.homeDir);
+    }
 
     // Installation complete
     console.log();

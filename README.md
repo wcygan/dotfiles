@@ -53,6 +53,44 @@ deno task install
 - ✅ No shell script dependencies
 - ✅ Consistent behavior across all platforms
 
+## 🧪 Testing
+
+This project includes comprehensive integration tests that verify installation and rollback functionality across platforms.
+
+### Run All Tests
+```bash
+deno task test
+# Or directly:
+deno test --allow-all integration-test.ts
+```
+
+### Run Specific Tests
+```bash
+# Test installation with existing dotfiles
+deno test --allow-all integration-test.ts --filter "Backup Creation"
+
+# Test rollback functionality
+deno test --allow-all integration-test.ts --filter "Rollback"
+
+# Test cross-platform compatibility
+deno test --allow-all integration-test.ts --filter "Cross-Platform"
+
+# Test error handling
+deno test --allow-all integration-test.ts --filter "Error Handling"
+```
+
+### Test Coverage
+The integration tests cover:
+- ✅ Fresh installation (no existing dotfiles)
+- ✅ Installation with existing files (backup creation)
+- ✅ Rollback functionality and verification
+- ✅ Cross-platform path handling (Linux/macOS)
+- ✅ Error handling for invalid operations
+- ✅ Help command functionality
+- ✅ Platform-specific shell detection
+
+Tests run in isolated temporary environments and automatically clean up after completion.
+
 ## 🔄 Rollback Support
 
 If you need to restore your original configuration:
@@ -61,6 +99,11 @@ If you need to restore your original configuration:
 deno run --allow-all rollback.ts ~/.dotfiles-backup-20240525-102500
 # Or use the task:
 deno task rollback ~/.dotfiles-backup-20240525-102500
+
+# For automated rollback (skip confirmations):
+deno run --allow-all rollback.ts ~/.dotfiles-backup-20240525-102500 --force
+# Or:
+deno task rollback:force ~/.dotfiles-backup-20240525-102500
 ```
 
 The installation script will tell you the exact backup directory path.
@@ -195,9 +238,11 @@ If something goes wrong:
 ```bash
 deno task install        # Install dotfiles (with prompts)
 deno task install:force  # Install dotfiles (skip prompts)
-deno task rollback       # Rollback to backup
+deno task rollback       # Rollback to backup (with prompts)
+deno task rollback:force # Rollback to backup (skip prompts)
 deno task check          # Type check scripts
 deno task help           # Show help
+deno task test           # Run integration tests
 ```
 
 ### Direct Script Usage
@@ -205,9 +250,15 @@ deno task help           # Show help
 # Force Installation (Skip Prompts)
 deno run --allow-all install-safely.ts --force
 
+# Force Rollback (Skip Prompts)
+deno run --allow-all rollback.ts ~/.dotfiles-backup-20240525-102500 --force
+
 # Help and Options
 deno run --allow-all install-safely.ts --help
 deno run --allow-all rollback.ts --help
+
+# Run specific tests
+deno test --allow-all integration-test.ts --filter "Backup"
 ```
 
 ### Development and Testing
@@ -217,6 +268,9 @@ deno task check
 
 # Run with specific permissions
 deno run --allow-read --allow-write --allow-run install-safely.ts
+
+# Run integration tests with verbose output
+deno test --allow-all integration-test.ts --reporter=tap
 ```
 
 ## 🎯 Project Goals
@@ -227,26 +281,28 @@ deno run --allow-read --allow-write --allow-run install-safely.ts
 - **Safe**: Always backup before changes with rollback support
 - **Modular**: Each configuration aspect in separate files
 - **Zero Dependencies**: No shell script dependencies or external tools required
+- **Well-Tested**: Comprehensive integration tests for all functionality
 
 ## 🔍 File Structure
 
 ```
 dotfiles/
-├── install-safely.ts    # Main installation script
-├── rollback.ts          # Rollback script
-├── deno.json           # Deno configuration and tasks
-├── .zshrc              # Zsh configuration
-├── .bash_profile       # Bash configuration
-├── .aliases            # Command shortcuts
-├── .functions          # Shell functions
-├── .exports            # Environment variables
-├── .path               # PATH modifications
-├── .extra              # Tool integrations
-├── .vimrc              # Vim configuration
-├── cursor/             # Cursor IDE settings
-├── zed/                # Zed editor settings
-├── vscode/             # VS Code settings
-└── profile.ps1         # PowerShell configuration
+├── install-safely.ts       # Main installation script
+├── rollback.ts             # Rollback script
+├── integration-test.ts     # Integration tests
+├── deno.json              # Deno configuration and tasks
+├── .zshrc                 # Zsh configuration
+├── .bash_profile          # Bash configuration
+├── .aliases               # Command shortcuts
+├── .functions             # Shell functions
+├── .exports               # Environment variables
+├── .path                  # PATH modifications
+├── .extra                 # Tool integrations
+├── .vimrc                 # Vim configuration
+├── cursor/                # Cursor IDE settings
+├── zed/                   # Zed editor settings
+├── vscode/                # VS Code settings
+└── profile.ps1            # PowerShell configuration
 ```
 
 ## 📄 License
@@ -258,8 +314,11 @@ MIT License - feel free to fork and customize for your own use!
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test on multiple platforms with `deno task check`
-5. Submit a pull request
+4. Test on multiple platforms with `deno task test`
+5. Ensure type checking passes with `deno task check`
+6. Submit a pull request
+
+All contributions should include appropriate integration tests for new functionality.
 
 ---
 

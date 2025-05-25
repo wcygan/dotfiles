@@ -169,13 +169,15 @@ async function showHelp(homeDir: string): Promise<void> {
   console.log(`
 Dotfiles Rollback Script
 
-Usage: deno run --allow-all rollback.ts <backup_directory>
+Usage: deno run --allow-all rollback.ts <backup_directory> [options]
 
 Options:
+  -f, --force    Skip confirmation prompts
   -h, --help     Show this help message
 
 Examples:
   deno run --allow-all rollback.ts ~/.dotfiles-backup-20240525-102500
+  deno run --allow-all rollback.ts ~/.dotfiles-backup-20240525-102500 --force
   deno run --allow-all rollback.ts --help
   `);
 
@@ -192,8 +194,8 @@ Examples:
 
 async function main(): Promise<void> {
   const args = parseArgs(Deno.args, {
-    boolean: ["help"],
-    alias: { h: "help" },
+    boolean: ["help", "force"],
+    alias: { h: "help", f: "force" },
     string: ["_"]
   });
 
@@ -249,14 +251,16 @@ async function main(): Promise<void> {
     console.log();
 
     // Confirm rollback
-    printYellow("⚠️  This will restore your dotfiles from the backup directory.");
-    printYellow("   Current dotfiles will be overwritten!");
-    console.log();
-    
-    const shouldContinue = confirm("Continue with rollback?");
-    if (!shouldContinue) {
-      printWarning("Rollback cancelled by user");
-      Deno.exit(0);
+    if (!args.force) {
+      printYellow("⚠️  This will restore your dotfiles from the backup directory.");
+      printYellow("   Current dotfiles will be overwritten!");
+      console.log();
+      
+      const shouldContinue = confirm("Continue with rollback?");
+      if (!shouldContinue) {
+        printWarning("Rollback cancelled by user");
+        Deno.exit(0);
+      }
     }
 
     // Perform rollback

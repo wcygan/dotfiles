@@ -18,7 +18,8 @@
         "check": "deno check install-safely.ts rollback.ts",
         "help": "deno run --allow-all install-safely.ts --help",
         "test": "deno test --allow-all integration-test.ts",
-        "test:bash": "deno run --allow-all test-bash-enhancement.ts"
+        "test:bash": "deno run --allow-all test-bash-enhancement.ts",
+        "test:actions": "deno run --allow-all scripts/test-actions-locally.ts"
     },
     "lint": {
         "rules": {

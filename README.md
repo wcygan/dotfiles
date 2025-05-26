@@ -1,6 +1,31 @@
 # Will's Dotfiles
 
-A comprehensive shell configuration setup with modular organization, supporting both bash and zsh across macOS, Linux, and Windows. Built with modern Deno TypeScript for type safety and cross-platform reliability.
+A comprehensive shell configuration setup with modular organization, providing **identical high-quality experience for both Bash and Zsh** across macOS, Linux, and Windows. Built with modern Deno TypeScript for type safety and cross-platform reliability.
+
+## 🐚 Multi-Shell Excellence
+
+This dotfiles setup treats **Bash and Zsh as first-class citizens** with feature parity:
+
+### Shell-Agnostic Features
+- ✅ **Status reporting** - See which dotfiles loaded successfully in both shells
+- ✅ **Enhanced prompts** - Git branch, virtual environment, and color support
+- ✅ **Smart aliases** - Automatically adapt to your current shell (`vv`/`ss` work everywhere)
+- ✅ **Tab completion** - Git branches, commands, and SSH hosts
+- ✅ **Modern features** - History control, globbing, and navigation improvements
+- ✅ **Environment detection** - Auto-detect shell, OS, and project types
+
+### Bash Enhancements
+- **Enhanced `.bashrc`** with status reporting like zsh
+- **Modern prompt** with git branch and virtual environment display
+- **Smart completion** for git commands and development tools
+- **History improvements** with deduplication and timestamps
+- **Modern bash features** enabled (autocd, globstar, etc.)
+
+### Shell Detection & Adaptation
+- Automatically detects current shell and adapts behavior
+- Shell-specific aliases: `vbash`/`sbash` for Bash, `vzsh`/`szsh` for Zsh
+- Universal aliases: `vrc`/`src` work with any shell
+- Platform detection with environment variables for scripting
 
 ## 🚀 Quick Installation
 
@@ -180,6 +205,14 @@ export API_KEY="your-secret-key"
 After installation, test these common shortcuts:
 
 ```bash
+# Shell-agnostic utilities
+current_shell     # Shows which shell you're using
+dotfiles_info     # Complete environment information
+vv               # Edit shell config (works in bash/zsh)
+ss               # Reload shell config (works in bash/zsh)
+vrc              # Edit current shell's config file
+src              # Source current shell's config file
+
 # Modern CLI tools
 ll          # Better ls with exa
 cat file    # Syntax highlighted with bat  
@@ -195,6 +228,10 @@ dcr web     # docker-compose restart web
 # SSH shortcuts (customize in .aliases)
 m0          # SSH to main-0 host
 k1          # SSH to k8s-1 host
+
+# Shell-specific features (Bash only)
+hg pattern   # Enhanced history search
+gco <tab>    # Git branch completion
 ```
 
 ## 🔄 Staying Updated

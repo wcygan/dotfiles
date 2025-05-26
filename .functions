@@ -233,4 +233,87 @@ EOF
   echo "Run 'buf push proto' to push your schemas."
 }
 
-echo "functions loaded"
+# Shell-specific enhancements
+if [ -n "$BASH_VERSION" ]; then
+    # Bash-specific functions for better development experience
+    
+    # Enhanced bash completion for common commands
+    _dev_complete() {
+        local cur=${COMP_WORDS[COMP_CWORD]}
+        local commands="build test lint format check deploy status log"
+        COMPREPLY=($(compgen -W "$commands" -- "$cur"))
+    }
+    complete -F _dev_complete dev
+    
+    # Quick git branch completion for common commands
+    _git_branch_complete() {
+        local cur=${COMP_WORDS[COMP_CWORD]}
+        local branches=$(git branch 2>/dev/null | sed 's/^[* ] //' | tr '\n' ' ')
+        COMPREPLY=($(compgen -W "$branches" -- "$cur"))
+    }
+    complete -F _git_branch_complete gco gcb
+    
+    # Enhanced history search for bash
+    hg() {
+        if [ $# -eq 0 ]; then
+            history | tail -20
+        else
+            history | grep -i "$1"
+        fi
+    }
+    
+    # Bash-specific prompt enhancements
+    update_bash_prompt() {
+        local git_branch=$(parse_git_branch)
+        local python_venv=""
+        if [ -n "$VIRTUAL_ENV" ]; then
+            python_venv=" ($(basename $VIRTUAL_ENV))"
+        fi
+        
+        if [ -t 1 ]; then
+            PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[33m\]${git_branch}\[\033[35m\]${python_venv}\[\033[00m\]\$ "
+        else
+            PS1="\u@\h:\w${git_branch}${python_venv}\$ "
+        fi
+    }
+    
+    # Auto-update prompt with git and virtual env info
+    PROMPT_COMMAND="update_bash_prompt"
+fi
+
+if [ -n "$ZSH_VERSION" ]; then
+    # ZSH-specific enhancements can go here if needed
+    :
+fi
+
+# Universal shell detection function
+current_shell() {
+    if [ -n "$ZSH_VERSION" ]; then
+        echo "zsh"
+    elif [ -n "$BASH_VERSION" ]; then
+        echo "bash"
+    else
+        echo "unknown"
+    fi
+}
+
+# Shell feature detection
+has_feature() {
+    local feature="$1"
+    case "$feature" in
+        "arrays")
+            [ -n "$BASH_VERSION" ] || [ -n "$ZSH_VERSION" ] && return 0
+            ;;
+        "completion")
+            [ -n "$BASH_VERSION" ] && command -v complete >/dev/null && return 0
+            [ -n "$ZSH_VERSION" ] && return 0
+            ;;
+        "globstar")
+            [ -n "$BASH_VERSION" ] && shopt -q globstar 2>/dev/null && return 0
+            [ -n "$ZSH_VERSION" ] && return 0
+            ;;
+    esac
+    return 1
+}
+
+echo "functions loaded ($(current_shell))"

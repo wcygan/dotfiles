@@ -25,10 +25,25 @@ alias ....='cd ../../..'
 
 # Editor and shell configuration
 alias edit='cursor'
-alias vv='vzsh'
-alias ss='szsh'
-alias vzsh='edit ~/.zshrc'
-alias szsh='source ~/.zshrc'
+
+# Shell-agnostic aliases - detect current shell and use appropriate config
+if [ -n "$ZSH_VERSION" ]; then
+    # ZSH-specific aliases
+    alias vv='vzsh'
+    alias ss='szsh'
+    alias vzsh='edit ~/.zshrc'
+    alias szsh='source ~/.zshrc'
+elif [ -n "$BASH_VERSION" ]; then
+    # Bash-specific aliases
+    alias vv='vbash'
+    alias ss='sbash'
+    alias vbash='edit ~/.bashrc'
+    alias sbash='source ~/.bashrc'
+fi
+
+# Universal shell config aliases (work for both shells)
+alias vrc='edit ~/.$(basename $SHELL)rc'
+alias src='source ~/.$(basename $SHELL)rc'
 
 # Directory navigation
 alias d='edit ~/Development/development-workspace'

@@ -17,7 +17,8 @@
         "rollback:force": "deno run --allow-all rollback.ts --force",
         "check": "deno check install-safely.ts rollback.ts",
         "help": "deno run --allow-all install-safely.ts --help",
-        "test": "deno test --allow-all integration-test.ts"
+        "test": "deno test --allow-all integration-test.ts",
+        "test:bash": "deno run --allow-all test-bash-enhancement.ts"
     },
     "lint": {
         "rules": {

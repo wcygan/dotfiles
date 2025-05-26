@@ -164,11 +164,11 @@ async function backupFile(file: string, homeDir: string, backupDir: string): Pro
   }
 }
 
-function detectShell(shell: string): { type: string; configFile: string } | null {
+function detectShell(shell: string): { type: string; configFile: string; rcFile: string } | null {
   if (shell.includes("zsh")) {
-    return { type: "zsh", configFile: ".zshrc" };
+    return { type: "zsh", configFile: ".zshrc", rcFile: ".zshrc" };
   } else if (shell.includes("bash")) {
-    return { type: "bash", configFile: ".bash_profile" };
+    return { type: "bash", configFile: ".bashrc", rcFile: ".bashrc" };
   }
   return null;
 }
@@ -251,10 +251,10 @@ async function reloadShell(shellType: string, homeDir: string): Promise<void> {
       if (await exists(zshrcPath)) {
         await runCommand(["zsh", "-c", `source ${zshrcPath}`]);
       }
-    } else {
-      const bashProfilePath = join(homeDir, ".bash_profile");
-      if (await exists(bashProfilePath)) {
-        await runCommand(["bash", "-c", `source ${bashProfilePath}`]);
+    } else if (shellType === "bash") {
+      const bashrcPath = join(homeDir, ".bashrc");
+      if (await exists(bashrcPath)) {
+        await runCommand(["bash", "-c", `source ${bashrcPath}`]);
       }
     }
     printStatus("Shell configuration reloaded");
@@ -395,6 +395,8 @@ This script will:
     console.log(`   • Try: ${colors.yellow}k get nodes${colors.reset} (kubectl shortcut)`);
     console.log(`   • Try: ${colors.yellow}cgr${colors.reset} (cargo run)`);
     console.log(`   • Try: ${colors.yellow}mm${colors.reset} (git main branch helper)`);
+    console.log(`   • Try: ${colors.yellow}vv${colors.reset} (edit shell config) or ${colors.yellow}ss${colors.reset} (reload shell)`);
+    console.log(`   • Try: ${colors.yellow}current_shell${colors.reset} (see which shell you're using)`);
     console.log();
     printBlue("🔄 If you need to rollback:");
     console.log(`   ${colors.yellow}deno run --allow-all rollback.ts ${config.backupDir}${colors.reset}`);

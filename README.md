@@ -29,6 +29,7 @@ deno run --allow-all install-safely.ts
 ```
 
 This will:
+
 - Backup your existing dotfiles
 - Install new configuration
 - Reload your shell

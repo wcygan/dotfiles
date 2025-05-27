@@ -1,3 +1,4 @@
 .idea
 .platform
 **/.DS_Store
+.cache

@@ -129,6 +129,31 @@ The integration tests cover:
 
 Tests run in isolated temporary environments and automatically clean up after completion.
 
+## 🔄 Continuous Integration
+
+The project uses GitHub Actions for automated testing across multiple platforms:
+
+- **Cross-platform testing**: Ubuntu, macOS, and Windows
+- **Type checking**: Ensures all TypeScript is valid
+- **Linting**: Code quality checks
+- **Formatting**: Consistent code style
+- **Integration tests**: Full installation and rollback testing
+- **Bash enhancements**: Shell compatibility verification
+
+### Running Tests Locally
+
+```bash
+# Run all checks locally before pushing
+deno task check      # Type checking
+deno lint           # Linting
+deno fmt --check    # Format checking
+deno task test      # Integration tests
+deno task test:bash # Bash enhancement tests
+
+# Or test GitHub Actions locally with act
+deno task test:actions -w ci.yml
+```
+
 ## 🔄 Rollback Support
 
 If you need to restore your original configuration:

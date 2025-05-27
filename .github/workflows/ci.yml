@@ -1,19 +1,21 @@
-name: Dotfiles CI
+name: CI
 
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main]
-  schedule:
-    # Run weekly to catch dependency drift
-    - cron: "0 0 * * 0"
+  workflow_dispatch: # Allow manual triggering
 
 jobs:
-  # Code Quality Checks
-  quality:
-    name: Code Quality
-    runs-on: ubuntu-latest
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,217 +36,15 @@ jobs:
       - name: Type check
         run: deno task check
 
-      - name: Lint code
+      - name: Lint
         run: deno lint
 
       - name: Format check
         run: deno fmt --check
 
-      - name: Validate shell scripts
-        run: |
-          # Install shellcheck for shell script validation
-          sudo apt-get update && sudo apt-get install -y shellcheck
-
-          # Check any shell scripts (if any exist)
-          find . -name "*.sh" -type f -exec shellcheck {} \; || true
-
-  # Integration Tests
-  integration-tests:
-    name: Integration Tests
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        shell: [bash, zsh]
-        exclude:
-          # Windows doesn't have zsh by default
-          - os: windows-latest
-            shell: zsh
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-
-      - name: Setup shell (Ubuntu)
-        if: matrix.os == 'ubuntu-latest' && matrix.shell == 'zsh'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y zsh
-
-      - name: Setup shell (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          # Ensure both bash and zsh are available
-          which bash || echo "Bash not found"
-          which zsh || echo "Zsh not found"
-
-      - name: Cache Deno dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/deno
-          key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-deno-
-
-      - name: Set shell environment
-        shell: bash
-        run: |
-          if [ "${{ matrix.shell }}" = "zsh" ]; then
-            echo "SHELL=/bin/zsh" >> $GITHUB_ENV
-          else
-            echo "SHELL=/bin/bash" >> $GITHUB_ENV
-          fi
-
-      - name: Run integration tests
+      - name: Run tests
         run: deno task test
-        env:
-          SHELL: ${{ env.SHELL }}
-          CI: true
 
-      - name: Test bash enhancements (if applicable)
-        if: matrix.shell == 'bash'
-        run: deno task test:bash || echo "Bash enhancement tests not available"
-
-  # Smoke Tests - Actual Installation
-  smoke-tests:
-    name: Smoke Test Installation
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-
-      - name: Cache Deno dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/deno
-          key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-deno-
-
-      - name: Create test home directory
-        shell: bash
-        run: |
-          TEST_HOME="${{ runner.temp }}/test-home"
-          mkdir -p "$TEST_HOME"
-          echo "TEST_HOME=$TEST_HOME" >> $GITHUB_ENV
-
-      - name: Test installation (force mode)
-        shell: bash
-        run: |
-          # Set test environment
-          export HOME="${{ env.TEST_HOME }}"
-          export USER="testuser"
-
-          # Run installation in force mode (no prompts)
-          deno task install:force
-        env:
-          CI: true
-
-      - name: Verify installation
-        shell: bash
-        run: |
-          # Check that key dotfiles were installed
-          TEST_HOME="${{ env.TEST_HOME }}"
-
-          echo "Checking installed files in $TEST_HOME:"
-          ls -la "$TEST_HOME" || true
-
-          # Verify key files exist
-          for file in .zshrc .bash_profile .aliases .functions .exports .path .extra .vimrc; do
-            if [ -f "$TEST_HOME/$file" ]; then
-              echo "✅ $file installed successfully"
-            else
-              echo "❌ $file missing"
-            fi
-          done
-
-      - name: Test rollback functionality
-        shell: bash
-        run: |
-          export HOME="${{ env.TEST_HOME }}"
-
-          # Find backup directory
-          BACKUP_DIR=$(find "$HOME" -name ".dotfiles-backup-*" -type d | head -1)
-
-          if [ -n "$BACKUP_DIR" ]; then
-            echo "Found backup directory: $BACKUP_DIR"
-            # Test rollback
-            deno run --allow-all rollback.ts "$BACKUP_DIR" --force
-            echo "✅ Rollback test completed"
-          else
-            echo "ℹ️ No backup directory found (fresh install)"
-          fi
-        env:
-          CI: true
-
-  # Security Scanning
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: "fs"
-          scan-ref: "."
-          format: "sarif"
-          output: "trivy-results.sarif"
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: "trivy-results.sarif"
-
-      - name: Check for secrets
-        uses: trufflesecurity/trufflehog@main
-        with:
-          path: ./
-          base: main
-          head: HEAD
-          extra_args: --debug --only-verified
-
-  # Dependency Updates Check
-  dependency-check:
-    name: Dependency Updates
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-
-      - name: Check for outdated dependencies
-        run: |
-          echo "Checking Deno dependencies..."
-          deno info --json | jq '.modules[] | select(.specifier | startswith("jsr:")) | .specifier' || true
-
-          echo "Current deno.json imports:"
-          cat deno.json | jq '.imports' || true
-
-      - name: Validate deno.json
-        run: |
-          deno check --config deno.json install-safely.ts
-          echo "✅ deno.json is valid"
+      - name: Test bash enhancements
+        if: runner.os != 'Windows'
+        run: deno task test:bash

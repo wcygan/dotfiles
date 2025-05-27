@@ -71,23 +71,6 @@ async function checkPrerequisites(): Promise<boolean> {
   return true;
 }
 
-function listWorkflows(): void {
-  console.log("\n📋 Available workflows:");
-
-  const workflows = [
-    { name: "ci.yml", description: "Main CI workflow (quality, integration tests, smoke tests)" },
-    {
-      name: "maintenance.yml",
-      description: "Maintenance workflow (dependency checks, health checks)",
-    },
-    { name: "docs.yml", description: "Documentation workflow (markdown validation, stats)" },
-  ];
-
-  workflows.forEach((workflow) => {
-    console.log(`   ${workflow.name.padEnd(20)} - ${workflow.description}`);
-  });
-}
-
 async function listJobs(workflow: string): Promise<void> {
   console.log(`\n🔍 Listing jobs for ${workflow}...`);
 
@@ -106,12 +89,7 @@ async function listJobs(workflow: string): Promise<void> {
 }
 
 async function runWorkflow(options: ActOptions): Promise<void> {
-  const { workflow, job, event = "push", platform, verbose, dryRun } = options;
-
-  if (!workflow) {
-    console.error("❌ Workflow is required");
-    return;
-  }
+  const { workflow = "ci.yml", job, event = "push", platform, verbose, dryRun } = options;
 
   console.log(`\n🚀 Running workflow: ${workflow}`);
   if (job) console.log(`   Job: ${job}`);
@@ -173,39 +151,36 @@ function showHelp(): void {
 Usage: deno run --allow-all scripts/test-actions-locally.ts [options]
 
 Options:
-  -w, --workflow <name>    Workflow file to run (ci.yml, maintenance.yml, docs.yml)
+  -w, --workflow <name>    Workflow file to run (default: ci.yml)
   -j, --job <name>         Specific job to run (optional)
   -e, --event <name>       Event to trigger (default: push)
   -p, --platform <name>    Platform to use (ubuntu-latest, macos-latest, windows-latest)
   -v, --verbose            Enable verbose output
   -d, --dry-run            Show what would be executed without running
-  -l, --list-jobs          List jobs in the specified workflow
-  --list-workflows         List available workflows
+  -l, --list-jobs          List jobs in the workflow
   -h, --help               Show this help
 
 Examples:
-  # List available workflows
-  deno run --allow-all scripts/test-actions-locally.ts --list-workflows
+  # Run the CI workflow (default)
+  deno run --allow-all scripts/test-actions-locally.ts
 
-  # Run the entire CI workflow
+  # Run with specific workflow
   deno run --allow-all scripts/test-actions-locally.ts -w ci.yml
 
-  # Run only the quality job from CI workflow
-  deno run --allow-all scripts/test-actions-locally.ts -w ci.yml -j quality
+  # Run only the test job
+  deno run --allow-all scripts/test-actions-locally.ts -j test
 
-  # Run maintenance workflow with verbose output
-  deno run --allow-all scripts/test-actions-locally.ts -w maintenance.yml -v
+  # Run with verbose output
+  deno run --allow-all scripts/test-actions-locally.ts -v
 
   # List jobs in the CI workflow
-  deno run --allow-all scripts/test-actions-locally.ts -w ci.yml -l
+  deno run --allow-all scripts/test-actions-locally.ts -l
 
   # Dry run to see what would execute
-  deno run --allow-all scripts/test-actions-locally.ts -w docs.yml -d
+  deno run --allow-all scripts/test-actions-locally.ts -d
 
-Common Workflows:
-  ci.yml           - Full CI pipeline (code quality, tests, security)
-  maintenance.yml  - Dependency and health checks
-  docs.yml         - Documentation validation
+  # Test specific platform
+  deno run --allow-all scripts/test-actions-locally.ts -p ubuntu-latest
 
 Tips:
   - First run will be slow (downloading Docker images)
@@ -218,7 +193,7 @@ Tips:
 async function main(): Promise<void> {
   const args = parseArgs(Deno.args, {
     string: ["workflow", "job", "event", "platform"],
-    boolean: ["verbose", "dry-run", "list-jobs", "list-workflows", "help"],
+    boolean: ["verbose", "dry-run", "list-jobs", "help"],
     alias: {
       w: "workflow",
       j: "job",
@@ -236,11 +211,6 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (args["list-workflows"]) {
-    listWorkflows();
-    return;
-  }
-
   // Check prerequisites
   const prereqsOk = await checkPrerequisites();
   if (!prereqsOk) {
@@ -248,17 +218,7 @@ async function main(): Promise<void> {
   }
 
   if (args["list-jobs"]) {
-    if (!args.workflow) {
-      console.error("❌ --workflow is required when using --list-jobs");
-      Deno.exit(1);
-    }
-    await listJobs(args.workflow);
-    return;
-  }
-
-  if (!args.workflow) {
-    console.log("No workflow specified. Use --help for usage information.\n");
-    listWorkflows();
+    await listJobs(args.workflow || "ci.yml");
     return;
   }
 

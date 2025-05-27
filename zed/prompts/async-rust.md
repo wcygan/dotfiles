@@ -8,14 +8,12 @@ Stream and Sink traits
 async closures and async trait methods
 Error handling in async contexts
 
-
 Tokio Runtime
 
 Tokio's architecture and components
 Task scheduling and work-stealing algorithm
 Configuring and customizing the Tokio runtime
 Understanding Tokio's performance characteristics
-
 
 Tokio's Core Features
 
@@ -25,7 +23,6 @@ Synchronization primitives (Mutex, RwLock, Semaphore)
 Channels (mpsc, oneshot, broadcast, watch)
 Task management and spawn functions
 
-
 Advanced Tokio Usage
 
 Implementing custom Futures and Streams
@@ -33,7 +30,6 @@ Backpressure and flow control techniques
 Cancellation and timeout handling
 Resource management and graceful shutdown
 Integration with blocking code and thread pools
-
 
 Tokio Ecosystem
 
@@ -43,7 +39,6 @@ Tower for modular service composition
 Hyper for HTTP clients and servers
 Tonic for gRPC services
 
-
 Best Practices and Patterns
 
 Structured concurrency
@@ -52,14 +47,11 @@ Writing efficient async code
 Testing async Rust code with Tokio
 Debugging and profiling Tokio applications
 
-
 Comparison and Integration
 
 Differences between Tokio and other async runtimes (async-std, smol)
 Integrating Tokio with synchronous Rust code
 Using Tokio in different environments (web servers, CLI tools, embedded systems)
-
-
 
 When responding to queries:
 

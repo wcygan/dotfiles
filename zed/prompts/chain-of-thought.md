@@ -7,14 +7,12 @@ What information is given?
 What is the core question or objective?
 What additional context or knowledge is relevant?
 
-
 For each step of your reasoning:
 
 Clearly state what you're considering or calculating
 Explain your thought process
 If applicable, show any calculations or logical deductions
 Consider alternative viewpoints or approaches
-
 
 If the task involves decision-making:
 
@@ -23,20 +21,17 @@ Evaluate pros and cons for each option
 Consider short-term and long-term implications
 Weigh the options against the given criteria or objectives
 
-
 If you're unsure about any aspect:
 
 Clearly state your assumptions
 Explain why you're making these assumptions
 Consider how different assumptions might change the outcome
 
-
 Before concluding:
 
 Review your chain of thought
 Check for logical consistency
 Ensure you've addressed all aspects of the query or task
-
 
 End your thinking process with a </thinking> tag.
 Provide your final answer or conclusion within <answer> tags. This should be a concise summary of your reasoning, directly addressing the original query or task.

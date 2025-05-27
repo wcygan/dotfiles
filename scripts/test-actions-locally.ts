@@ -17,7 +17,10 @@ interface ActOptions {
   listJobs?: boolean;
 }
 
-async function runCommand(cmd: string[], cwd?: string): Promise<{ success: boolean; output: string }> {
+async function runCommand(
+  cmd: string[],
+  cwd?: string,
+): Promise<{ success: boolean; output: string }> {
   try {
     const command = new Deno.Command(cmd[0], {
       args: cmd.slice(1),
@@ -27,33 +30,35 @@ async function runCommand(cmd: string[], cwd?: string): Promise<{ success: boole
     });
 
     const result = await command.output();
-    const output = new TextDecoder().decode(result.stdout) + 
-                   new TextDecoder().decode(result.stderr);
+    const output = new TextDecoder().decode(result.stdout) +
+      new TextDecoder().decode(result.stderr);
 
     return {
       success: result.success,
-      output: output.trim()
+      output: output.trim(),
     };
   } catch (error) {
     return {
       success: false,
-      output: error instanceof Error ? error.message : String(error)
+      output: error instanceof Error ? error.message : String(error),
     };
   }
 }
 
 async function checkPrerequisites(): Promise<boolean> {
   console.log("🔍 Checking prerequisites...");
-  
+
   // Check if act is installed
   const actCheck = await runCommand(["act", "--version"]);
   if (!actCheck.success) {
     console.error("❌ Act is not installed. Please install it first:");
     console.error("   macOS: brew install act");
-    console.error("   Linux: curl -s https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash");
+    console.error(
+      "   Linux: curl -s https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash",
+    );
     return false;
   }
-  console.log("✅ Act is installed:", actCheck.output.split('\n')[0]);
+  console.log("✅ Act is installed:", actCheck.output.split("\n")[0]);
 
   // Check if Docker is running
   const dockerCheck = await runCommand(["docker", "info"]);
@@ -66,25 +71,33 @@ async function checkPrerequisites(): Promise<boolean> {
   return true;
 }
 
-async function listWorkflows(): Promise<void> {
+function listWorkflows(): void {
   console.log("\n📋 Available workflows:");
-  
+
   const workflows = [
     { name: "ci.yml", description: "Main CI workflow (quality, integration tests, smoke tests)" },
-    { name: "maintenance.yml", description: "Maintenance workflow (dependency checks, health checks)" },
-    { name: "docs.yml", description: "Documentation workflow (markdown validation, stats)" }
+    {
+      name: "maintenance.yml",
+      description: "Maintenance workflow (dependency checks, health checks)",
+    },
+    { name: "docs.yml", description: "Documentation workflow (markdown validation, stats)" },
   ];
 
-  workflows.forEach(workflow => {
+  workflows.forEach((workflow) => {
     console.log(`   ${workflow.name.padEnd(20)} - ${workflow.description}`);
   });
 }
 
 async function listJobs(workflow: string): Promise<void> {
   console.log(`\n🔍 Listing jobs for ${workflow}...`);
-  
-  const result = await runCommand(["act", "--list", "--workflows", `.github/workflows/${workflow}`]);
-  
+
+  const result = await runCommand([
+    "act",
+    "--list",
+    "--workflows",
+    `.github/workflows/${workflow}`,
+  ]);
+
   if (result.success) {
     console.log(result.output);
   } else {
@@ -94,7 +107,7 @@ async function listJobs(workflow: string): Promise<void> {
 
 async function runWorkflow(options: ActOptions): Promise<void> {
   const { workflow, job, event = "push", platform, verbose, dryRun } = options;
-  
+
   if (!workflow) {
     console.error("❌ Workflow is required");
     return;
@@ -106,25 +119,25 @@ async function runWorkflow(options: ActOptions): Promise<void> {
   if (platform) console.log(`   Platform: ${platform}`);
 
   const actArgs = ["act", event];
-  
+
   // Add workflow file
   actArgs.push("--workflows", `.github/workflows/${workflow}`);
-  
+
   // Add job filter if specified
   if (job) {
     actArgs.push("--job", job);
   }
-  
+
   // Add platform if specified
   if (platform) {
     actArgs.push("--platform", platform);
   }
-  
+
   // Add verbose flag
   if (verbose) {
     actArgs.push("--verbose");
   }
-  
+
   // Add dry run flag
   if (dryRun) {
     actArgs.push("--dryrun");
@@ -133,7 +146,7 @@ async function runWorkflow(options: ActOptions): Promise<void> {
   // Add environment variables for local testing
   actArgs.push("--env", "CI=true");
   actArgs.push("--env", "GITHUB_ACTIONS=true");
-  
+
   console.log(`\n🔧 Running command: ${actArgs.join(" ")}`);
   console.log("⏳ This may take a while on first run (downloading Docker images)...\n");
 
@@ -145,7 +158,7 @@ async function runWorkflow(options: ActOptions): Promise<void> {
   });
 
   const result = await command.output();
-  
+
   if (result.success) {
     console.log("\n✅ Workflow completed successfully!");
   } else {
@@ -208,14 +221,14 @@ async function main(): Promise<void> {
     boolean: ["verbose", "dry-run", "list-jobs", "list-workflows", "help"],
     alias: {
       w: "workflow",
-      j: "job", 
+      j: "job",
       e: "event",
       p: "platform",
       v: "verbose",
       d: "dry-run",
       l: "list-jobs",
-      h: "help"
-    }
+      h: "help",
+    },
   });
 
   if (args.help) {
@@ -224,7 +237,7 @@ async function main(): Promise<void> {
   }
 
   if (args["list-workflows"]) {
-    await listWorkflows();
+    listWorkflows();
     return;
   }
 
@@ -245,7 +258,7 @@ async function main(): Promise<void> {
 
   if (!args.workflow) {
     console.log("No workflow specified. Use --help for usage information.\n");
-    await listWorkflows();
+    listWorkflows();
     return;
   }
 
@@ -256,10 +269,10 @@ async function main(): Promise<void> {
     platform: args.platform,
     verbose: args.verbose,
     dryRun: args["dry-run"],
-    listJobs: args["list-jobs"]
+    listJobs: args["list-jobs"],
   });
 }
 
 if (import.meta.main) {
   main();
-} 
+}

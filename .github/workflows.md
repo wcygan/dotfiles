@@ -5,9 +5,11 @@ This directory contains GitHub Actions workflows that provide comprehensive CI/C
 ## Workflows
 
 ### 🔧 CI Workflow (`ci.yml`)
+
 **Triggers:** Push to main/develop, Pull Requests, Weekly schedule
 
 **What it does:**
+
 - **Code Quality**: TypeScript type checking, linting, formatting validation
 - **Integration Tests**: Runs comprehensive test suite across platforms
 - **Smoke Tests**: Actual installation testing on clean VMs
@@ -16,23 +18,28 @@ This directory contains GitHub Actions workflows that provide comprehensive CI/C
 - **Multi-Shell Testing**: bash and zsh configurations
 
 **Matrix Testing:**
+
 - **Platforms**: `ubuntu-latest`, `macos-latest`, `windows-latest`
 - **Shells**: `bash`, `zsh` (where available)
 - **Test Types**: Integration tests, smoke tests, rollback tests
 
 ### 🔄 Maintenance Workflow (`maintenance.yml`)
+
 **Triggers:** Daily at 2 AM UTC, Manual dispatch
 
 **What it does:**
+
 - **Dependency Monitoring**: Checks for Deno and dependency updates
 - **Health Checks**: Validates repository structure and file integrity
 - **Clean Environment Testing**: Daily smoke tests in fresh environments
 - **Automated Issue Creation**: Creates GitHub issues when maintenance fails
 
 ### 📚 Documentation Workflow (`docs.yml`)
+
 **Triggers:** Changes to markdown files or core scripts
 
 **What it does:**
+
 - **Markdown Validation**: Linting and link checking
 - **README Structure Validation**: Ensures required sections exist
 - **Code Example Validation**: Verifies README examples are current
@@ -41,22 +48,26 @@ This directory contains GitHub Actions workflows that provide comprehensive CI/C
 ## Benefits
 
 ### 🛡️ Reliability
+
 - **Catch Breaking Changes**: Detect issues before they affect users
 - **Cross-Platform Validation**: Ensure dotfiles work on all supported platforms
 - **Dependency Drift Detection**: Weekly runs catch external dependency changes
 
 ### 🚀 Quality Assurance
+
 - **Type Safety**: Full TypeScript checking with Deno
 - **Code Standards**: Automated linting and formatting validation
 - **Security**: Vulnerability scanning and secret detection
 - **Documentation**: Keep README and docs current
 
 ### 🔍 Early Detection
+
 - **Installation Issues**: Test actual installation process regularly
 - **Shell Compatibility**: Verify bash and zsh configurations work
 - **Rollback Functionality**: Ensure recovery mechanisms function
 
 ### 📊 Monitoring
+
 - **Automated Health Checks**: Daily validation of repository health
 - **Issue Creation**: Automatic GitHub issues for maintenance failures
 - **Statistics Tracking**: Monitor repository metrics over time
@@ -129,4 +140,4 @@ deno task install:force
 - **Permissions**: Workflows use minimal required permissions
 - **Isolation**: Each test runs in a clean, isolated environment
 
-This comprehensive CI/CD setup ensures your dotfiles remain reliable, secure, and functional across all supported platforms and configurations. 
+This comprehensive CI/CD setup ensures your dotfiles remain reliable, secure, and functional across all supported platforms and configurations.

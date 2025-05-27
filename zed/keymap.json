@@ -1,15 +1,15 @@
 //               Notes
-// 
-// Q: Keybinds not working? 
-// 
+//
+// Q: Keybinds not working?
+//
 // A: You are probably in the wrong context (the current focus doesn't
-//       have the keybinding setup). 
-//       
+//       have the keybinding setup).
+//
 //       To fix this, you can duplicate your keybind to the context that
 //       doesn't have it.
-// 
+//
 //               Useful Commands
-// 
+//
 // Theme Selector Toggle  -->  Choose a color theme
 //
 //               Useful Binds

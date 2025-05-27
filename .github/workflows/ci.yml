@@ -2,12 +2,12 @@ name: Dotfiles CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   schedule:
     # Run weekly to catch dependency drift
-    - cron: '0 0 * * 0'
+    - cron: "0 0 * * 0"
 
 jobs:
   # Code Quality Checks
@@ -44,7 +44,7 @@ jobs:
         run: |
           # Install shellcheck for shell script validation
           sudo apt-get update && sudo apt-get install -y shellcheck
-          
+
           # Check any shell scripts (if any exist)
           find . -name "*.sh" -type f -exec shellcheck {} \; || true
 
@@ -76,7 +76,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y zsh
-          
+
       - name: Setup shell (macOS)
         if: matrix.os == 'macos-latest'
         run: |
@@ -150,7 +150,7 @@ jobs:
           # Set test environment
           export HOME="${{ env.TEST_HOME }}"
           export USER="testuser"
-          
+
           # Run installation in force mode (no prompts)
           deno task install:force
         env:
@@ -161,10 +161,10 @@ jobs:
         run: |
           # Check that key dotfiles were installed
           TEST_HOME="${{ env.TEST_HOME }}"
-          
+
           echo "Checking installed files in $TEST_HOME:"
           ls -la "$TEST_HOME" || true
-          
+
           # Verify key files exist
           for file in .zshrc .bash_profile .aliases .functions .exports .path .extra .vimrc; do
             if [ -f "$TEST_HOME/$file" ]; then
@@ -178,10 +178,10 @@ jobs:
         shell: bash
         run: |
           export HOME="${{ env.TEST_HOME }}"
-          
+
           # Find backup directory
           BACKUP_DIR=$(find "$HOME" -name ".dotfiles-backup-*" -type d | head -1)
-          
+
           if [ -n "$BACKUP_DIR" ]; then
             echo "Found backup directory: $BACKUP_DIR"
             # Test rollback
@@ -204,16 +204,16 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: "trivy-results.sarif"
 
       - name: Check for secrets
         uses: trufflesecurity/trufflehog@main
@@ -240,11 +240,11 @@ jobs:
         run: |
           echo "Checking Deno dependencies..."
           deno info --json | jq '.modules[] | select(.specifier | startswith("jsr:")) | .specifier' || true
-          
+
           echo "Current deno.json imports:"
           cat deno.json | jq '.imports' || true
 
       - name: Validate deno.json
         run: |
           deno check --config deno.json install-safely.ts
-          echo "✅ deno.json is valid" 
+          echo "✅ deno.json is valid"

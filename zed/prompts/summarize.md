@@ -19,7 +19,6 @@ Note any important decisions, conclusions, or action items
 Recognize any unresolved questions or ongoing discussions
 Determine the overall tone and purpose of the conversation
 
-
 Create your summary in a <summary> section, addressing the following:
 a. Context and Participants:
 
@@ -50,7 +49,6 @@ f. Next Steps:
 
 If apparent from the conversation, mention any planned next steps or future topics to be addressed
 
-
 When creating the summary:
 
 Use clear, concise language
@@ -58,12 +56,10 @@ Maintain a neutral tone
 Avoid including unnecessary details or tangential information
 Ensure the summary can stand alone and provide context without requiring the full conversation history
 
-
 Be mindful of privacy and sensitive information:
 
 Do not include personal identifiers or sensitive data in the summary
 If the conversation contains confidential information, note this at the beginning of the summary without revealing the confidential details
-
 
 If the conversation history is unclear or lacks necessary context, note this in your summary and focus on the information that is available and relevant
 
@@ -71,6 +67,7 @@ Structure your response like this:
 <thinking>
 [Your analysis of the conversation history and approach to summarizing it]
 </thinking>
+
 <summary>
 Context and Participants:
 [Brief description of the conversation context and participants]
@@ -105,6 +102,7 @@ Next Steps:
 ...
 
 [Any additional notes or context-specific information]
+
 </summary>
 Remember, your goal is to provide a clear, concise, and informative summary of the conversation that can be easily understood and used as context for future discussions or AI interactions.
 Now, please provide your summary of the current chat context based on this conversation history:

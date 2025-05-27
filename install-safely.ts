@@ -5,7 +5,7 @@
  * This script backs up existing dotfiles before installing new ones
  */
 
-import { join, dirname, basename } from "@std/path";
+import { basename, dirname, join } from "@std/path";
 import { exists } from "@std/fs/exists";
 import { copy } from "@std/fs/copy";
 import { ensureDir } from "@std/fs/ensure-dir";
@@ -14,11 +14,11 @@ import { walk } from "@std/fs";
 
 // Colors for output
 const colors = {
-  red: '\x1b[0;31m',
-  green: '\x1b[0;32m',
-  yellow: '\x1b[1;33m',
-  blue: '\x1b[0;34m',
-  reset: '\x1b[0m'
+  red: "\x1b[0;31m",
+  green: "\x1b[0;32m",
+  yellow: "\x1b[1;33m",
+  blue: "\x1b[0;34m",
+  reset: "\x1b[0m",
 };
 
 interface InstallConfig {
@@ -39,20 +39,20 @@ interface InstallResult {
 // Files to manage
 const DOTFILES = [
   ".zshrc",
-  ".bashrc", 
+  ".bashrc",
   ".bash_profile",
   ".path",
   ".exports",
   ".aliases",
   ".functions",
   ".extra",
-  ".vimrc"
+  ".vimrc",
 ];
 
 // Optional files that might exist
 const OPTIONAL_FILES = [
   ".platform",
-  ".fzf.zsh"
+  ".fzf.zsh",
 ];
 
 // Files to exclude when copying dotfiles
@@ -62,11 +62,11 @@ const EXCLUDE_FILES = [
   ".gitignore",
   "README.md",
   "LICENSE",
-  "LICENSE-MIT.txt", 
+  "LICENSE-MIT.txt",
   "install-safely.ts",
   "rollback.ts",
   "deno.json",
-  "deno.lock"
+  "deno.lock",
 ];
 
 // Utility functions
@@ -90,7 +90,10 @@ function printYellow(message: string): void {
   console.log(`${colors.yellow}${message}${colors.reset}`);
 }
 
-async function runCommand(cmd: string[], cwd?: string): Promise<{success: boolean, output: string}> {
+async function runCommand(
+  cmd: string[],
+  cwd?: string,
+): Promise<{ success: boolean; output: string }> {
   try {
     const command = new Deno.Command(cmd[0], {
       args: cmd.slice(1),
@@ -100,32 +103,32 @@ async function runCommand(cmd: string[], cwd?: string): Promise<{success: boolea
     });
 
     const result = await command.output();
-    const output = new TextDecoder().decode(result.stdout) + 
-                   new TextDecoder().decode(result.stderr);
-    
+    const output = new TextDecoder().decode(result.stdout) +
+      new TextDecoder().decode(result.stderr);
+
     return {
       success: result.success,
-      output: output.trim()
+      output: output.trim(),
     };
   } catch (error) {
     return {
       success: false,
-      output: error instanceof Error ? error.message : String(error)
+      output: error instanceof Error ? error.message : String(error),
     };
   }
 }
 
-async function getInstallConfig(): Promise<InstallConfig> {
+function getInstallConfig(): InstallConfig {
   const now = new Date();
-  const timestamp = now.toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '-');
-  
+  const timestamp = now.toISOString().slice(0, 19).replace(/[:-]/g, "").replace("T", "-");
+
   const homeDir = Deno.env.get("HOME") || Deno.env.get("USERPROFILE") || "";
   const backupDir = join(homeDir, `.dotfiles-backup-${timestamp}`);
-  
+
   // Get current script directory
   const currentFile = new URL(import.meta.url).pathname;
   const dotfilesDir = dirname(currentFile);
-  
+
   const shell = Deno.env.get("SHELL") || "";
   const user = Deno.env.get("USER") || Deno.env.get("USERNAME") || "";
 
@@ -134,28 +137,30 @@ async function getInstallConfig(): Promise<InstallConfig> {
     dotfilesDir,
     homeDir,
     shell,
-    user
+    user,
   };
 }
 
 async function validateDotfilesDirectory(dotfilesDir: string): Promise<boolean> {
   const zshrcExists = await exists(join(dotfilesDir, ".zshrc"));
   const aliasesExists = await exists(join(dotfilesDir, ".aliases"));
-  
+
   return zshrcExists && aliasesExists;
 }
 
 async function backupFile(file: string, homeDir: string, backupDir: string): Promise<boolean> {
   const homeFile = join(homeDir, file);
   const fileExists = await exists(homeFile);
-  
+
   if (fileExists) {
     try {
       await copy(homeFile, join(backupDir, file), { overwrite: true });
       printStatus(`Backed up ${file}`);
       return true;
     } catch (error) {
-      printWarning(`Could not backup ${file}: ${error instanceof Error ? error.message : String(error)}`);
+      printWarning(
+        `Could not backup ${file}: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return false;
     }
   } else {
@@ -175,9 +180,9 @@ function detectShell(shell: string): { type: string; configFile: string; rcFile:
 
 async function updateRepository(dotfilesDir: string): Promise<void> {
   printBlue("🔄 Updating dotfiles repository...");
-  
+
   const gitDirExists = await exists(join(dotfilesDir, ".git"));
-  
+
   if (gitDirExists) {
     const result = await runCommand(["git", "pull", "origin", "main"], dotfilesDir);
     if (result.success) {
@@ -195,21 +200,25 @@ async function copyDotfiles(dotfilesDir: string, homeDir: string): Promise<boole
   let copiedCount = 0;
 
   try {
-    for await (const entry of walk(dotfilesDir, { 
-      includeFiles: true, 
-      includeDirs: false,
-      skip: [/\.git/, /node_modules/, /\.deno/]
-    })) {
+    for await (
+      const entry of walk(dotfilesDir, {
+        includeFiles: true,
+        includeDirs: false,
+        skip: [/\.git/, /node_modules/, /\.deno/],
+      })
+    ) {
       const relativePath = entry.path.replace(dotfilesDir + "/", "");
       const filename = basename(entry.path);
-      
+
       // Skip excluded files
-      if (EXCLUDE_FILES.includes(filename) || 
-          EXCLUDE_FILES.includes(relativePath) ||
-          entry.path.includes("/.git/") ||
-          filename.endsWith(".ts") ||
-          filename.endsWith(".md") ||
-          filename.startsWith("deno.")) {
+      if (
+        EXCLUDE_FILES.includes(filename) ||
+        EXCLUDE_FILES.includes(relativePath) ||
+        entry.path.includes("/.git/") ||
+        filename.endsWith(".ts") ||
+        filename.endsWith(".md") ||
+        filename.startsWith("deno.")
+      ) {
         continue;
       }
 
@@ -219,13 +228,15 @@ async function copyDotfiles(dotfilesDir: string, homeDir: string): Promise<boole
       }
 
       const destPath = join(homeDir, filename);
-      
+
       try {
         await copy(entry.path, destPath, { overwrite: true });
         printStatus(`Copied ${filename}`);
         copiedCount++;
       } catch (error) {
-        printWarning(`Could not copy ${filename}: ${error instanceof Error ? error.message : String(error)}`);
+        printWarning(
+          `Could not copy ${filename}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
@@ -237,14 +248,16 @@ async function copyDotfiles(dotfilesDir: string, homeDir: string): Promise<boole
       return false;
     }
   } catch (error) {
-    printError(`Failed to copy dotfiles: ${error instanceof Error ? error.message : String(error)}`);
+    printError(
+      `Failed to copy dotfiles: ${error instanceof Error ? error.message : String(error)}`,
+    );
     return false;
   }
 }
 
 async function reloadShell(shellType: string, homeDir: string): Promise<void> {
   printBlue("🔃 Reloading shell configuration...");
-  
+
   try {
     if (shellType === "zsh") {
       const zshrcPath = join(homeDir, ".zshrc");
@@ -266,7 +279,7 @@ async function reloadShell(shellType: string, homeDir: string): Promise<void> {
 async function main(): Promise<void> {
   const args = parseArgs(Deno.args, {
     boolean: ["help", "force"],
-    alias: { h: "help", f: "force" }
+    alias: { h: "help", f: "force" },
   });
 
   if (args.help) {
@@ -290,7 +303,7 @@ This script will:
   }
 
   try {
-    const config = await getInstallConfig();
+    const config = getInstallConfig();
 
     printBlue("🔧 Safe Dotfiles Installation");
     printBlue("===============================");
@@ -316,7 +329,7 @@ This script will:
     console.log();
     printBlue("💾 Backing up existing dotfiles...");
     const backedUpFiles: string[] = [];
-    
+
     for (const file of DOTFILES) {
       const wasBackedUp = await backupFile(file, config.homeDir, config.backupDir);
       if (wasBackedUp) {
@@ -355,11 +368,13 @@ This script will:
       printYellow("⚠️  This will replace your current dotfiles with the repository versions.");
       printYellow(`   Your existing files are safely backed up in: ${config.backupDir}`);
       console.log();
-      
+
       const shouldContinue = confirm("Continue with installation?");
       if (!shouldContinue) {
         printWarning("Installation cancelled by user");
-        console.log(`Your backups are still available in: ${colors.yellow}${config.backupDir}${colors.reset}`);
+        console.log(
+          `Your backups are still available in: ${colors.yellow}${config.backupDir}${colors.reset}`,
+        );
         Deno.exit(0);
       }
     }
@@ -386,23 +401,32 @@ This script will:
     console.log(`${colors.green}🎉 Installation completed successfully!${colors.reset}`);
     console.log();
     printBlue("📋 What was done:");
-    console.log(`   ✅ Backed up existing dotfiles to: ${colors.yellow}${config.backupDir}${colors.reset}`);
+    console.log(
+      `   ✅ Backed up existing dotfiles to: ${colors.yellow}${config.backupDir}${colors.reset}`,
+    );
     console.log("   ✅ Installed new dotfiles from repository");
     console.log("   ✅ Reloaded shell configuration");
     console.log();
     printBlue("🧪 Test your installation:");
-    console.log(`   • Try: ${colors.yellow}d${colors.reset} (should open development workspace in Cursor)`);
+    console.log(
+      `   • Try: ${colors.yellow}d${colors.reset} (should open development workspace in Cursor)`,
+    );
     console.log(`   • Try: ${colors.yellow}k get nodes${colors.reset} (kubectl shortcut)`);
     console.log(`   • Try: ${colors.yellow}cgr${colors.reset} (cargo run)`);
     console.log(`   • Try: ${colors.yellow}mm${colors.reset} (git main branch helper)`);
-    console.log(`   • Try: ${colors.yellow}vv${colors.reset} (edit shell config) or ${colors.yellow}ss${colors.reset} (reload shell)`);
-    console.log(`   • Try: ${colors.yellow}current_shell${colors.reset} (see which shell you're using)`);
+    console.log(
+      `   • Try: ${colors.yellow}vv${colors.reset} (edit shell config) or ${colors.yellow}ss${colors.reset} (reload shell)`,
+    );
+    console.log(
+      `   • Try: ${colors.yellow}current_shell${colors.reset} (see which shell you're using)`,
+    );
     console.log();
     printBlue("🔄 If you need to rollback:");
-    console.log(`   ${colors.yellow}deno run --allow-all rollback.ts ${config.backupDir}${colors.reset}`);
+    console.log(
+      `   ${colors.yellow}deno run --allow-all rollback.ts ${config.backupDir}${colors.reset}`,
+    );
     console.log();
     console.log(`${colors.green}Enjoy your new dotfiles setup! 🎊${colors.reset}`);
-
   } catch (error) {
     printError(`Installation failed: ${error instanceof Error ? error.message : String(error)}`);
     Deno.exit(1);
@@ -411,4 +435,4 @@ This script will:
 
 if (import.meta.main) {
   main();
-} 
+}

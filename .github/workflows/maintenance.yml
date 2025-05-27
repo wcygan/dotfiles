@@ -3,7 +3,7 @@ name: Maintenance
 on:
   schedule:
     # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
   workflow_dispatch: # Allow manual triggering
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
         run: |
           echo "Current Deno version:"
           deno --version
-          
+
           echo "Checking for latest Deno version..."
           LATEST=$(curl -s https://api.github.com/repos/denoland/deno/releases/latest | jq -r .tag_name)
           echo "Latest Deno version: $LATEST"
@@ -39,11 +39,11 @@ jobs:
           TEST_HOME=$(mktemp -d)
           export HOME="$TEST_HOME"
           export USER="maintenance-test"
-          
+
           deno task install:force
-          
+
           echo "✅ Installation completed successfully in clean environment"
-          
+
           # Cleanup
           rm -rf "$TEST_HOME"
 
@@ -57,10 +57,10 @@ jobs:
       - name: Check repository structure
         run: |
           echo "Checking essential files..."
-          
+
           ESSENTIAL_FILES=(
             "install-safely.ts"
-            "rollback.ts" 
+            "rollback.ts"
             "integration-test.ts"
             "deno.json"
             ".zshrc"
@@ -73,7 +73,7 @@ jobs:
             ".vimrc"
             "README.md"
           )
-          
+
           for file in "${ESSENTIAL_FILES[@]}"; do
             if [ -f "$file" ]; then
               echo "✅ $file exists"
@@ -96,10 +96,10 @@ jobs:
       - name: Validate shell configurations
         run: |
           echo "Checking shell configuration syntax..."
-          
+
           # Basic syntax check for shell files
           bash -n .bash_profile && echo "✅ .bash_profile syntax OK"
-          
+
           # Check for common issues
           if grep -q "export.*=" .exports; then
             echo "✅ .exports has export statements"
@@ -120,29 +120,29 @@ jobs:
             const title = `Maintenance Check Failed - ${new Date().toISOString().split('T')[0]}`;
             const body = `
             ## Maintenance Check Failure
-            
+
             The automated maintenance check failed on ${new Date().toISOString()}.
-            
+
             **Failed Jobs:**
             - Dependency Updates: ${{ needs.dependency-updates.result }}
             - Health Check: ${{ needs.health-check.result }}
-            
+
             **Action Required:**
             Please review the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for details.
-            
+
             **Common Issues:**
             - Deno version compatibility
             - Missing or corrupted dotfiles
             - Dependency updates needed
             - Shell configuration syntax errors
-            
+
             This issue was automatically created by the maintenance workflow.
             `;
-            
+
             github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: title,
               body: body,
               labels: ['maintenance', 'automated']
-            }); 
+            });

@@ -6,7 +6,7 @@
  * Compatible with Linux and macOS
  */
 
-import { assertEquals, assertExists, assert } from "@std/assert";
+import { assert, assertExists } from "@std/assert";
 import { join } from "@std/path";
 import { exists } from "@std/fs/exists";
 import { ensureDir } from "@std/fs/ensure-dir";
@@ -59,7 +59,7 @@ class DotfilesTestRunner {
     // Copy essential dotfiles for testing
     const filesToCopy = [
       ".zshrc",
-      ".bash_profile", 
+      ".bash_profile",
       ".aliases",
       ".functions",
       ".exports",
@@ -68,7 +68,7 @@ class DotfilesTestRunner {
       ".vimrc",
       "install-safely.ts",
       "rollback.ts",
-      "deno.json"
+      "deno.json",
     ];
 
     for (const file of filesToCopy) {
@@ -84,7 +84,7 @@ class DotfilesTestRunner {
       ".zshrc": "# Existing zshrc\nexport EXISTING=true\n",
       ".bash_profile": "# Existing bash profile\nexport OLD_CONFIG=true\n",
       ".aliases": "# Old aliases\nalias old_command='echo old'\n",
-      ".vimrc": "\" Old vimrc\nset number\n"
+      ".vimrc": '" Old vimrc\nset number\n',
     };
 
     for (const [file, content] of Object.entries(existingFiles)) {
@@ -122,17 +122,17 @@ class DotfilesTestRunner {
       }
 
       const result = await process.output();
-      const output = new TextDecoder().decode(result.stdout) + 
-                     new TextDecoder().decode(result.stderr);
+      const output = new TextDecoder().decode(result.stdout) +
+        new TextDecoder().decode(result.stderr);
 
       return {
         success: result.success,
-        output: output.trim()
+        output: output.trim(),
       };
     } catch (error) {
       return {
         success: false,
-        output: error instanceof Error ? error.message : String(error)
+        output: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -143,11 +143,11 @@ class DotfilesTestRunner {
     try {
       const command = new Deno.Command("deno", {
         args: [
-          "run", 
-          "--allow-all", 
+          "run",
+          "--allow-all",
           join(this.testEnv.dotfilesDir, "rollback.ts"),
           backupDir,
-          "--force"
+          "--force",
         ],
         cwd: this.testEnv.dotfilesDir,
         stdout: "piped",
@@ -155,17 +155,17 @@ class DotfilesTestRunner {
       });
 
       const result = await command.output();
-      const output = new TextDecoder().decode(result.stdout) + 
-                     new TextDecoder().decode(result.stderr);
+      const output = new TextDecoder().decode(result.stdout) +
+        new TextDecoder().decode(result.stderr);
 
       return {
         success: result.success,
-        output: output.trim()
+        output: output.trim(),
       };
     } catch (error) {
       return {
         success: false,
-        output: error instanceof Error ? error.message : String(error)
+        output: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -182,7 +182,7 @@ class DotfilesTestRunner {
     } catch {
       // Directory might not exist or be readable
     }
-    
+
     return null;
   }
 
@@ -221,10 +221,10 @@ class DotfilesTestRunner {
 
 Deno.test("Fresh Installation - No Existing Dotfiles", async () => {
   const runner = new DotfilesTestRunner();
-  
+
   try {
     const testEnv = await runner.setupTestEnvironment();
-    
+
     // Remove existing files to simulate fresh install
     const filesToRemove = [".zshrc", ".bash_profile", ".aliases", ".vimrc"];
     for (const file of filesToRemove) {
@@ -237,9 +237,12 @@ Deno.test("Fresh Installation - No Existing Dotfiles", async () => {
 
     // Run installation with force flag
     const result = await runner.runInstallation(true);
-    
+
     assert(result.success, `Installation failed: ${result.output}`);
-    assert(result.output.includes("Installation completed successfully"), "Success message not found");
+    assert(
+      result.output.includes("Installation completed successfully"),
+      "Success message not found",
+    );
 
     // Verify dotfiles were copied
     const installedFiles = [".zshrc", ".bash_profile", ".aliases", ".vimrc"];
@@ -247,7 +250,6 @@ Deno.test("Fresh Installation - No Existing Dotfiles", async () => {
       const filePath = join(testEnv.homeDir, file);
       assertExists(await runner.readFile(filePath), `${file} was not installed`);
     }
-
   } finally {
     await runner.cleanup();
   }
@@ -255,15 +257,18 @@ Deno.test("Fresh Installation - No Existing Dotfiles", async () => {
 
 Deno.test("Installation with Existing Dotfiles - Backup Creation", async () => {
   const runner = new DotfilesTestRunner();
-  
+
   try {
     const testEnv = await runner.setupTestEnvironment();
 
     // Run installation with force flag
     const result = await runner.runInstallation(true);
-    
+
     assert(result.success, `Installation failed: ${result.output}`);
-    assert(result.output.includes("Installation completed successfully"), "Success message not found");
+    assert(
+      result.output.includes("Installation completed successfully"),
+      "Success message not found",
+    );
 
     // Verify backup was created
     const backupDir = await runner.findBackupDirectory();
@@ -277,7 +282,6 @@ Deno.test("Installation with Existing Dotfiles - Backup Creation", async () => {
     // Verify new files were installed
     const newZshrc = await runner.readFile(join(testEnv.homeDir, ".zshrc"));
     assertExists(newZshrc, "New .zshrc not installed");
-
   } finally {
     await runner.cleanup();
   }
@@ -285,7 +289,7 @@ Deno.test("Installation with Existing Dotfiles - Backup Creation", async () => {
 
 Deno.test("Rollback Functionality", async () => {
   const runner = new DotfilesTestRunner();
-  
+
   try {
     const testEnv = await runner.setupTestEnvironment();
 
@@ -304,14 +308,16 @@ Deno.test("Rollback Functionality", async () => {
     // Run rollback
     const rollbackResult = await runner.runRollback(backupDir!);
     assert(rollbackResult.success, `Rollback failed: ${rollbackResult.output}`);
-    assert(rollbackResult.output.includes("Rollback completed successfully"), "Rollback success message not found");
+    assert(
+      rollbackResult.output.includes("Rollback completed successfully"),
+      "Rollback success message not found",
+    );
 
     // Verify original content was restored
     const restoredZshrc = await runner.readFile(join(testEnv.homeDir, ".zshrc"));
     assertExists(restoredZshrc, "Restored .zshrc not found");
     assert(restoredZshrc!.includes("EXISTING=true"), "Original content not restored");
     assert(!restoredZshrc!.includes("MODIFIED=true"), "Modified content still present");
-
   } finally {
     await runner.cleanup();
   }
@@ -319,9 +325,9 @@ Deno.test("Rollback Functionality", async () => {
 
 Deno.test("Cross-Platform Path Handling", async () => {
   const runner = new DotfilesTestRunner();
-  
+
   try {
-    const testEnv = await runner.setupTestEnvironment();
+    const _testEnv = await runner.setupTestEnvironment();
 
     // Test with different path formats
     const result = await runner.runInstallation(true);
@@ -334,11 +340,10 @@ Deno.test("Cross-Platform Path Handling", async () => {
     // Verify backup directory path format
     const backupDir = await runner.findBackupDirectory();
     assertExists(backupDir, "Backup directory not found");
-    
+
     // Verify backup directory follows expected naming pattern
     const backupName = backupDir!.split(/[/\\]/).pop();
     assert(backupName?.startsWith(".dotfiles-backup-"), "Backup directory naming incorrect");
-
   } finally {
     await runner.cleanup();
   }
@@ -346,17 +351,19 @@ Deno.test("Cross-Platform Path Handling", async () => {
 
 Deno.test("Error Handling - Invalid Rollback Directory", async () => {
   const runner = new DotfilesTestRunner();
-  
+
   try {
     const testEnv = await runner.setupTestEnvironment();
 
     // Try to rollback from non-existent directory
     const invalidDir = join(testEnv.homeDir, ".invalid-backup");
     const result = await runner.runRollback(invalidDir);
-    
-    assert(!result.success, "Rollback should fail with invalid directory");
-    assert(result.output.includes("does not exist"), "Error message should mention non-existent directory");
 
+    assert(!result.success, "Rollback should fail with invalid directory");
+    assert(
+      result.output.includes("does not exist"),
+      "Error message should mention non-existent directory",
+    );
   } finally {
     await runner.cleanup();
   }
@@ -364,30 +371,29 @@ Deno.test("Error Handling - Invalid Rollback Directory", async () => {
 
 Deno.test("Help Command Functionality", async () => {
   const runner = new DotfilesTestRunner();
-  
+
   try {
-    const testEnv = await runner.setupTestEnvironment();
+    const _testEnv = await runner.setupTestEnvironment();
 
     // Test help command
     const command = new Deno.Command("deno", {
       args: [
-        "run", 
-        "--allow-all", 
-        join(testEnv.dotfilesDir, "install-safely.ts"),
-        "--help"
+        "run",
+        "--allow-all",
+        join(_testEnv.dotfilesDir, "install-safely.ts"),
+        "--help",
       ],
-      cwd: testEnv.dotfilesDir,
+      cwd: _testEnv.dotfilesDir,
       stdout: "piped",
       stderr: "piped",
     });
 
     const result = await command.output();
     const output = new TextDecoder().decode(result.stdout);
-    
+
     assert(result.success, "Help command should succeed");
     assert(output.includes("Safe Dotfiles Installation Script"), "Help text should be displayed");
     assert(output.includes("--force"), "Help should mention force option");
-
   } finally {
     await runner.cleanup();
   }
@@ -398,17 +404,16 @@ Deno.test("Help Command Functionality", async () => {
 if (Deno.build.os === "darwin") {
   Deno.test("macOS Specific - Shell Detection", async () => {
     const runner = new DotfilesTestRunner();
-    
+
     try {
-      const testEnv = await runner.setupTestEnvironment();
-      
+      const _testEnv = await runner.setupTestEnvironment();
+
       // Set macOS typical shell
       Deno.env.set("SHELL", "/bin/zsh");
-      
+
       const result = await runner.runInstallation(true);
       assert(result.success, `Installation failed: ${result.output}`);
       assert(result.output.includes("zsh"), "Should detect zsh shell on macOS");
-
     } finally {
       await runner.cleanup();
     }
@@ -418,21 +423,20 @@ if (Deno.build.os === "darwin") {
 if (Deno.build.os === "linux") {
   Deno.test("Linux Specific - Shell Detection", async () => {
     const runner = new DotfilesTestRunner();
-    
+
     try {
-      const testEnv = await runner.setupTestEnvironment();
-      
+      const _testEnv = await runner.setupTestEnvironment();
+
       // Set Linux typical shell
       Deno.env.set("SHELL", "/bin/bash");
-      
+
       const result = await runner.runInstallation(true);
       assert(result.success, `Installation failed: ${result.output}`);
       assert(result.output.includes("bash"), "Should detect bash shell on Linux");
-
     } finally {
       await runner.cleanup();
     }
   });
 }
 
-console.log(`Running integration tests on ${Deno.build.os}...`); 
+console.log(`Running integration tests on ${Deno.build.os}...`);

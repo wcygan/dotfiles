@@ -1,4 +1,3 @@
-
 <Inputs>
 {$CODE}
 {$PROGRAMMING_LANGUAGE}
@@ -19,7 +18,6 @@ Identify complex algorithms, tricky logic, or non-obvious implementations
 Note any unusual patterns or workarounds
 Recognize parts that might be difficult for other developers to understand quickly
 
-
 Add comments to the code, focusing on:
 
 Complex logic or algorithms
@@ -28,7 +26,6 @@ Potential pitfalls or edge cases
 Performance considerations
 Important assumptions or prerequisites
 
-
 When writing comments:
 
 Be concise and clear
@@ -36,13 +33,11 @@ Explain the "why" behind the code, not just the "what"
 Use proper grammar and punctuation
 Follow the commenting conventions of the given programming language
 
-
 Avoid commenting on:
 
 Obvious operations or self-explanatory code
 Simple variable assignments or function calls
 Standard language features or well-known patterns
-
 
 If the code or its purpose is unclear, add a comment noting this and suggesting clarification
 

@@ -5,18 +5,18 @@
  * Restores dotfiles from a backup directory
  */
 
-import { join, basename } from "@std/path";
+import { join } from "@std/path";
 import { exists } from "@std/fs/exists";
 import { copy } from "@std/fs/copy";
 import { parseArgs } from "@std/cli/parse-args";
 
 // Colors for output
 const colors = {
-  red: '\x1b[0;31m',
-  green: '\x1b[0;32m',
-  yellow: '\x1b[1;33m',
-  blue: '\x1b[0;34m',
-  reset: '\x1b[0m'
+  red: "\x1b[0;31m",
+  green: "\x1b[0;32m",
+  yellow: "\x1b[1;33m",
+  blue: "\x1b[0;34m",
+  reset: "\x1b[0m",
 };
 
 interface RollbackConfig {
@@ -52,7 +52,10 @@ function printYellow(message: string): void {
   console.log(`${colors.yellow}${message}${colors.reset}`);
 }
 
-async function runCommand(cmd: string[], cwd?: string): Promise<{success: boolean, output: string}> {
+async function runCommand(
+  cmd: string[],
+  cwd?: string,
+): Promise<{ success: boolean; output: string }> {
   try {
     const command = new Deno.Command(cmd[0], {
       args: cmd.slice(1),
@@ -62,35 +65,35 @@ async function runCommand(cmd: string[], cwd?: string): Promise<{success: boolea
     });
 
     const result = await command.output();
-    const output = new TextDecoder().decode(result.stdout) + 
-                   new TextDecoder().decode(result.stderr);
-    
+    const output = new TextDecoder().decode(result.stdout) +
+      new TextDecoder().decode(result.stderr);
+
     return {
       success: result.success,
-      output: output.trim()
+      output: output.trim(),
     };
   } catch (error) {
     return {
       success: false,
-      output: error instanceof Error ? error.message : String(error)
+      output: error instanceof Error ? error.message : String(error),
     };
   }
 }
 
-async function getRollbackConfig(backupDir: string): Promise<RollbackConfig> {
+function getRollbackConfig(backupDir: string): RollbackConfig {
   const homeDir = Deno.env.get("HOME") || Deno.env.get("USERPROFILE") || "";
   const shell = Deno.env.get("SHELL") || "";
 
   return {
     backupDir,
     homeDir,
-    shell
+    shell,
   };
 }
 
 async function listAvailableBackups(homeDir: string): Promise<string[]> {
   const backups: string[] = [];
-  
+
   try {
     for await (const dirEntry of Deno.readDir(homeDir)) {
       if (dirEntry.isDirectory && dirEntry.name.startsWith(".dotfiles-backup-")) {
@@ -100,7 +103,7 @@ async function listAvailableBackups(homeDir: string): Promise<string[]> {
   } catch {
     // Directory might not exist or be readable
   }
-  
+
   return backups.sort().reverse(); // Most recent first
 }
 
@@ -115,7 +118,7 @@ async function validateBackupDirectory(backupDir: string): Promise<boolean> {
 
 async function listBackupContents(backupDir: string): Promise<string[]> {
   const files: string[] = [];
-  
+
   try {
     for await (const dirEntry of Deno.readDir(backupDir)) {
       if (dirEntry.isFile) {
@@ -125,27 +128,29 @@ async function listBackupContents(backupDir: string): Promise<string[]> {
   } catch {
     // Directory might not be readable
   }
-  
+
   return files.sort();
 }
 
 async function restoreFile(file: string, backupDir: string, homeDir: string): Promise<boolean> {
   const backupFile = join(backupDir, file);
   const homeFile = join(homeDir, file);
-  
+
   try {
     await copy(backupFile, homeFile, { overwrite: true });
     printStatus(`Restored ${file}`);
     return true;
   } catch (error) {
-    printWarning(`Could not restore ${file}: ${error instanceof Error ? error.message : String(error)}`);
+    printWarning(
+      `Could not restore ${file}: ${error instanceof Error ? error.message : String(error)}`,
+    );
     return false;
   }
 }
 
 async function reloadShell(shell: string, homeDir: string): Promise<void> {
   printBlue("🔃 Reloading shell configuration...");
-  
+
   try {
     if (shell.includes("zsh")) {
       const zshrcPath = join(homeDir, ".zshrc");
@@ -196,7 +201,7 @@ async function main(): Promise<void> {
   const args = parseArgs(Deno.args, {
     boolean: ["help", "force"],
     alias: { h: "help", f: "force" },
-    string: ["_"]
+    string: ["_"],
   });
 
   const homeDir = Deno.env.get("HOME") || Deno.env.get("USERPROFILE") || "";
@@ -221,7 +226,7 @@ async function main(): Promise<void> {
   const backupDir = String(args._[0]);
 
   try {
-    const config = await getRollbackConfig(backupDir);
+    const config = getRollbackConfig(backupDir);
 
     // Check if backup directory exists
     const isValid = await validateBackupDirectory(backupDir);
@@ -239,7 +244,7 @@ async function main(): Promise<void> {
     // List files in backup
     printBlue("📋 Files in backup:");
     const backupFiles = await listBackupContents(backupDir);
-    
+
     if (backupFiles.length === 0) {
       printWarning("No files found in backup directory");
       Deno.exit(1);
@@ -255,7 +260,7 @@ async function main(): Promise<void> {
       printYellow("⚠️  This will restore your dotfiles from the backup directory.");
       printYellow("   Current dotfiles will be overwritten!");
       console.log();
-      
+
       const shouldContinue = confirm("Continue with rollback?");
       if (!shouldContinue) {
         printWarning("Rollback cancelled by user");
@@ -265,10 +270,10 @@ async function main(): Promise<void> {
 
     // Perform rollback
     printBlue("🔄 Restoring files...");
-    
+
     let restoredCount = 0;
     const restoredFiles: string[] = [];
-    
+
     for (const file of backupFiles) {
       const restored = await restoreFile(file, backupDir, config.homeDir);
       if (restored) {
@@ -293,7 +298,6 @@ async function main(): Promise<void> {
     console.log(`   ${colors.yellow}${backupDir}${colors.reset}`);
     console.log();
     console.log(`${colors.green}Your original dotfiles have been restored! 🔄${colors.reset}`);
-
   } catch (error) {
     printError(`Rollback failed: ${error instanceof Error ? error.message : String(error)}`);
     Deno.exit(1);
@@ -302,4 +306,4 @@ async function main(): Promise<void> {
 
 if (import.meta.main) {
   main();
-} 
+}

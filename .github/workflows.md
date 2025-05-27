@@ -43,6 +43,7 @@ This directory contains a streamlined GitHub Actions workflow that provides comp
 ## Configuration
 
 The workflow uses:
+
 - **Deno v2.x** for TypeScript execution
 - **Dependency caching** for faster builds
 - **Cross-platform matrix** for comprehensive testing

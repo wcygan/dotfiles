@@ -19,7 +19,12 @@
     "help": "deno run --allow-all install-safely.ts --help",
     "test": "deno test --allow-all integration-test.ts",
     "test:bash": "deno run --allow-all test-bash-enhancement.ts",
-    "test:actions": "deno run --allow-all scripts/test-actions-locally.ts"
+    "test:actions": "deno run --allow-all scripts/test-actions-locally.ts",
+    "ci:check": "deno run --allow-all scripts/ci-environment-check.ts",
+    "ci:check:critical": "deno run --allow-all scripts/ci-environment-check.ts --critical-only",
+    "ci:fix": "deno run --allow-all scripts/ci-environment-check.ts --fix",
+    "pre-commit": "deno run --allow-all scripts/pre-commit-check.ts",
+    "pre-commit:fix": "deno run --allow-all scripts/pre-commit-check.ts --fix"
   },
   "lint": {
     "rules": {

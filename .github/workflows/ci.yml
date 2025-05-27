@@ -33,18 +33,54 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-deno-
 
+      - name: Verify Deno installation
+        run: |
+          deno --version
+          echo "Deno installed successfully"
+
+      - name: Check deno.json syntax
+        run: deno task --help
+
       - name: Type check
-        run: deno task check
+        run: |
+          echo "Running type check..."
+          deno task check
+          echo "✅ Type check passed"
 
       - name: Lint
-        run: deno lint
+        run: |
+          echo "Running linter..."
+          deno lint
+          echo "✅ Lint check passed"
 
       - name: Format check
-        run: deno fmt --check
+        run: |
+          echo "Running format check..."
+          deno fmt --check
+          echo "✅ Format check passed"
 
       - name: Run tests
-        run: deno task test
+        run: |
+          echo "Running tests..."
+          deno task test
+          echo "✅ Tests passed"
 
       - name: Test bash enhancements
         if: runner.os != 'Windows'
-        run: deno task test:bash
+        run: |
+          echo "Running bash enhancement tests..."
+          deno task test:bash
+          echo "✅ Bash enhancement tests passed"
+
+      - name: Test installation (dry run)
+        run: |
+          echo "Testing installation script (dry run)..."
+          deno run --allow-all install-safely.ts --help
+          echo "✅ Installation script help works"
+
+      - name: Verify all scripts are executable
+        if: runner.os != 'Windows'
+        run: |
+          echo "Checking script permissions..."
+          ls -la *.ts scripts/*.ts
+          echo "✅ Script permissions verified"

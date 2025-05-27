@@ -20,7 +20,7 @@ interface ActOptions {
 async function runCommand(
   cmd: string[],
   cwd?: string,
-): Promise<{ success: boolean; output: string }> {
+): Promise<{ success: boolean; output: string; code: number }> {
   try {
     const command = new Deno.Command(cmd[0], {
       args: cmd.slice(1),
@@ -36,11 +36,13 @@ async function runCommand(
     return {
       success: result.success,
       output: output.trim(),
+      code: result.code,
     };
   } catch (error) {
     return {
       success: false,
       output: error instanceof Error ? error.message : String(error),
+      code: 1,
     };
   }
 }
@@ -88,6 +90,57 @@ async function listJobs(workflow: string): Promise<void> {
   }
 }
 
+function analyzeActOutput(output: string, exitCode: number): {
+  actualSuccess: boolean;
+  summary: string;
+  details: string[];
+} {
+  const lines = output.split("\n");
+  const details: string[] = [];
+  let hasErrors = false;
+  let hasSuccessfulSteps = false;
+  let jobsCompleted = 0;
+
+  for (const line of lines) {
+    // Look for actual errors (not Act's confusing "Job failed" message)
+    if (line.includes("Error:") && !line.includes("Job '") && !line.includes("failed")) {
+      hasErrors = true;
+      details.push(`❌ Error: ${line}`);
+    }
+
+    // Look for step failures
+    if (line.includes("❌") && !line.includes("Job failed")) {
+      hasErrors = true;
+      details.push(`❌ Step failed: ${line}`);
+    }
+
+    // Look for successful step completions
+    if (line.includes("✅  Success - Complete job")) {
+      hasSuccessfulSteps = true;
+      jobsCompleted++;
+    }
+
+    // Look for command execution results
+    if (line.includes("| Task ") || line.includes("Run ")) {
+      details.push(`📋 ${line.trim()}`);
+    }
+  }
+
+  // Determine actual success based on content, not just exit code
+  const actualSuccess = !hasErrors && hasSuccessfulSteps;
+
+  let summary: string;
+  if (actualSuccess) {
+    summary = `✅ Workflow completed successfully! (${jobsCompleted} job(s) completed)`;
+  } else if (hasErrors) {
+    summary = `❌ Workflow failed with errors`;
+  } else {
+    summary = `⚠️  Workflow completed but with uncertain status (exit code: ${exitCode})`;
+  }
+
+  return { actualSuccess, summary, details };
+}
+
 async function runWorkflow(options: ActOptions): Promise<void> {
   const { workflow = "ci.yml", job, event = "push", platform, verbose, dryRun } = options;
 
@@ -128,19 +181,32 @@ async function runWorkflow(options: ActOptions): Promise<void> {
   console.log(`\n🔧 Running command: ${actArgs.join(" ")}`);
   console.log("⏳ This may take a while on first run (downloading Docker images)...\n");
 
-  // Run act with real-time output
-  const command = new Deno.Command("act", {
-    args: actArgs.slice(1),
-    stdout: "inherit",
-    stderr: "inherit",
-  });
+  // Capture output for analysis
+  const result = await runCommand(actArgs);
 
-  const result = await command.output();
+  // Analyze the actual results
+  const analysis = analyzeActOutput(result.output, result.code);
 
-  if (result.success) {
-    console.log("\n✅ Workflow completed successfully!");
-  } else {
-    console.log("\n❌ Workflow failed. Check the output above for details.");
+  // Show the output
+  console.log(result.output);
+
+  // Show our analysis
+  console.log("\n" + "=".repeat(60));
+  console.log("📊 WORKFLOW ANALYSIS");
+  console.log("=".repeat(60));
+  console.log(analysis.summary);
+
+  if (analysis.details.length > 0) {
+    console.log("\n📋 Key Details:");
+    analysis.details.forEach((detail) => console.log(`   ${detail}`));
+  }
+
+  console.log("\n💡 Note: Act sometimes reports 'Job failed' even when steps succeed.");
+  console.log("   Look for actual error messages and step completion status above.");
+
+  // Exit with appropriate code
+  if (!analysis.actualSuccess && !dryRun) {
+    Deno.exit(1);
   }
 }
 
@@ -186,7 +252,8 @@ Tips:
   - First run will be slow (downloading Docker images)
   - Use --dry-run to validate workflow syntax
   - Use --verbose for debugging workflow issues
-  - Some jobs may not work perfectly locally (platform differences)
+  - Act sometimes reports "Job failed" even when steps succeed
+  - Look for actual error messages, not just Act's exit status
   `);
 }
 

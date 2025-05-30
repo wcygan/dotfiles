@@ -34,6 +34,55 @@ This will:
 - Install new configuration
 - Reload your shell
 
+## Updating Existing Installation
+
+If you already have the dotfiles installed and want to apply new changes:
+
+### Quick Update
+
+```bash
+cd ~/dotfiles
+git pull origin main
+deno run --allow-all install-safely.ts --force
+```
+
+### Manual Update Steps
+
+1. **Navigate to dotfiles directory:**
+   ```bash
+   cd ~/dotfiles
+   ```
+
+2. **Pull latest changes:**
+   ```bash
+   git pull origin main
+   ```
+
+3. **Apply changes (with backup):**
+   ```bash
+   deno run --allow-all install-safely.ts
+   ```
+   
+   Or force update without prompts:
+   ```bash
+   deno run --allow-all install-safely.ts --force
+   ```
+
+4. **Reload your shell:**
+   ```bash
+   ss  # Or restart your terminal
+   ```
+
+### What Gets Updated
+
+- Shell configuration files (`.bashrc`, `.zshrc`, etc.)
+- Aliases and functions
+- Editor configurations
+- Platform-specific settings
+- New features and improvements
+
+**Note:** Your existing backup will be preserved, and a new backup will be created if needed.
+
 ## Usage
 
 ### Essential Commands

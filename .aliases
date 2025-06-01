@@ -103,6 +103,7 @@ alias config='/usr/bin/git --git-dir=/Users/wcygan/.cfg/ --work-tree=/Users/wcyg
 alias gaa='git add .'
 alias gb='git branch'
 alias gc='git commit'
+alias gm='git merge'
 alias gca='git commit --amend --no-edit'
 alias gcl='git clone'
 alias gco='git checkout'

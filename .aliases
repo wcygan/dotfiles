@@ -49,11 +49,11 @@ alias src='source ~/.$(basename $SHELL)rc'
 alias d='edit ~/Development/development-workspace'
 alias dev='cd ~/Development'
 alias will='cd ~'
-alias n='edit /Users/wcygan/Development/notes'
+alias n='edit /Users/wcygan/Development/development-workspace/notes'
 alias cs='edit /Users/wcygan/Development/csgo-config'
 alias mn='cd /Users/wcygan/Development/manning'
 alias oss='cd /Users/wcygan/Development/oss'
-alias lab='edit ~/Development/lab'
+alias lab='edit /Users/wcygan/Development/development-workspace/anton'
 
 # Modern CLI tool replacements
 alias cat='bat --paging=never'

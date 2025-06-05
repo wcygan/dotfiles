@@ -17,7 +17,10 @@
       "cmd-alt-,": "zed::OpenDefaultSettings",
       // ⬅️ Window ➡️
       "cmd-alt-left": "pane::ActivatePreviousItem",
-      "cmd-alt-right": "pane::ActivateNextItem"
+      "cmd-alt-right": "pane::ActivateNextItem",
+      // 🤖 AI Assistant
+      "cmd-k": "assistant::InlineAssist",
+      "cmd-3": "assistant::QuoteSelection"
     }
   }
 ]

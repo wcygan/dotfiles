@@ -121,7 +121,7 @@ The installation script will show you the exact backup directory path.
 
 ## Customization
 
-Add personal settings to `~/.extra`:
+Add personal settings to `~/.extra.sh`:
 
 ```bash
 # Git credentials

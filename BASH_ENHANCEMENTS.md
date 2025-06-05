@@ -42,7 +42,7 @@ Your dotfiles have been successfully enhanced to provide **identical high-qualit
 - ✅ Advanced prompt with git branch and virtual env info
 - ✅ Shell detection utilities (`current_shell`, `has_feature`)
 
-### 5. Shell-Aware `.extra` File
+### 5. Shell-Aware `.extra.sh` File
 
 **Before:** zsh-only configurations causing bash errors
 **After:** Smart shell detection:
@@ -51,7 +51,7 @@ Your dotfiles have been successfully enhanced to provide **identical high-qualit
 - **Bash section**: bash completions, fzf for bash, git completion
 - **Universal section**: direnv, fzf configuration, tool integrations
 
-### 6. New `.platform` File
+### 6. New `.platform.sh` File
 
 **Added comprehensive platform and shell detection:**
 
@@ -83,7 +83,7 @@ aliases loaded
 functions loaded (bash)
 extras loaded (bash)
 platform loaded (macos/bash)
-✓ Loaded dotfiles: .path .exports .aliases .functions .extra .platform
+✓ Loaded dotfiles: .path.sh .exports.sh .aliases.sh .functions.sh .extra.sh .platform.sh
 🎉 All dotfiles loaded successfully!
 Bash shell ready! 🐚
 ```

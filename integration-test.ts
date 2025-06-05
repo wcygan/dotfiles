@@ -60,11 +60,11 @@ class DotfilesTestRunner {
     const filesToCopy = [
       ".zshrc",
       ".bash_profile",
-      ".aliases",
-      ".functions",
-      ".exports",
-      ".path",
-      ".extra",
+      ".aliases.sh",
+      ".functions.sh",
+      ".exports.sh",
+      ".path.sh",
+      ".extra.sh",
       ".vimrc",
       "install-safely.ts",
       "rollback.ts",
@@ -83,7 +83,7 @@ class DotfilesTestRunner {
     const existingFiles = {
       ".zshrc": "# Existing zshrc\nexport EXISTING=true\n",
       ".bash_profile": "# Existing bash profile\nexport OLD_CONFIG=true\n",
-      ".aliases": "# Old aliases\nalias old_command='echo old'\n",
+      ".aliases.sh": "# Old aliases\nalias old_command='echo old'\n",
       ".vimrc": '" Old vimrc\nset number\n',
     };
 
@@ -226,7 +226,7 @@ Deno.test("Fresh Installation - No Existing Dotfiles", async () => {
     const testEnv = await runner.setupTestEnvironment();
 
     // Remove existing files to simulate fresh install
-    const filesToRemove = [".zshrc", ".bash_profile", ".aliases", ".vimrc"];
+    const filesToRemove = [".zshrc", ".bash_profile", ".aliases.sh", ".vimrc"];
     for (const file of filesToRemove) {
       try {
         await Deno.remove(join(testEnv.homeDir, file));
@@ -245,7 +245,7 @@ Deno.test("Fresh Installation - No Existing Dotfiles", async () => {
     );
 
     // Verify dotfiles were copied
-    const installedFiles = [".zshrc", ".bash_profile", ".aliases", ".vimrc"];
+    const installedFiles = [".zshrc", ".bash_profile", ".aliases.sh", ".vimrc"];
     for (const file of installedFiles) {
       const filePath = join(testEnv.homeDir, file);
       assertExists(await runner.readFile(filePath), `${file} was not installed`);

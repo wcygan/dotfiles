@@ -41,17 +41,17 @@ const DOTFILES = [
   ".zshrc",
   ".bashrc",
   ".bash_profile",
-  ".path",
-  ".exports",
-  ".aliases",
-  ".functions",
-  ".extra",
+  ".path.sh",
+  ".exports.sh",
+  ".aliases.sh",
+  ".functions.sh",
+  ".extra.sh",
   ".vimrc",
 ];
 
 // Optional files that might exist
 const OPTIONAL_FILES = [
-  ".platform",
+  ".platform.sh",
   ".fzf.zsh",
 ];
 
@@ -143,7 +143,7 @@ function getInstallConfig(): InstallConfig {
 
 async function validateDotfilesDirectory(dotfilesDir: string): Promise<boolean> {
   const zshrcExists = await exists(join(dotfilesDir, ".zshrc"));
-  const aliasesExists = await exists(join(dotfilesDir, ".aliases"));
+  const aliasesExists = await exists(join(dotfilesDir, ".aliases.sh"));
 
   return zshrcExists && aliasesExists;
 }

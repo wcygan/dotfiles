@@ -2,7 +2,7 @@
 loaded_files=()
 failed_files=()
 
-for file in ~/.{path,exports,aliases,functions,extra,platform}; do
+for file in ~/.{path.sh,exports.sh,aliases.sh,functions.sh,extra.sh,platform.sh}; do
 	if [ -r "$file" ] && [ -f "$file" ]; then
 		if source "$file" 2>/dev/null; then
 			loaded_files+=("$(basename "$file")")

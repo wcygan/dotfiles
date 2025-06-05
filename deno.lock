@@ -32,6 +32,9 @@
       "integrity": "260a49f11edd3db93dd38350bf9cd1b4d1366afa98e81b86167b4e3dd750129e"
     }
   },
+  "remote": {
+    "https://deno.land/std@0.208.0/fs/exists.ts": "cb59a853d84871d87acab0e7936a4dac11282957f8e195102c5a7acb42546bb8"
+  },
   "workspace": {
     "dependencies": [
       "jsr:@std/assert@^1.0.9",

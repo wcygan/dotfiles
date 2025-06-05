@@ -123,11 +123,11 @@ async function setupTestEnvironment(): Promise<{ cleanup: () => Promise<void>; s
   const testFiles = [
     ".bashrc",
     ".bash_profile",
-    ".aliases",
-    ".functions",
-    ".exports",
-    ".path",
-    ".platform",
+    ".aliases.sh",
+    ".functions.sh",
+    ".exports.sh",
+    ".path.sh",
+    ".platform.sh",
   ];
 
   const backupFiles: string[] = [];
@@ -227,9 +227,9 @@ async function main(): Promise<void> {
     printTest("Checking enhanced dotfiles exist");
     const bashrcExists = await checkFileExists(".bashrc");
     const bashProfileExists = await checkFileExists(".bash_profile");
-    const _platformExists = await checkFileExists(".platform");
-    const _aliasesExists = await checkFileExists(".aliases");
-    const _functionsExists = await checkFileExists(".functions");
+    const _platformExists = await checkFileExists(".platform.sh");
+    const _aliasesExists = await checkFileExists(".aliases.sh");
+    const _functionsExists = await checkFileExists(".functions.sh");
 
     if (!bashrcExists || !bashProfileExists) {
       printFailure("Enhanced dotfiles not found! Installation may have failed.");

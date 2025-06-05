@@ -1,5 +1,5 @@
 ##############################################################################
-#   Filename: .aliases                                                       #
+#   Filename: .aliases.sh                                                    #
 # Maintainer: Will Cygan <wcygan.io@gmail.com>                               #
 #        URL: http://github.com/wcygan/dotfiles                              #
 #                                                                            #

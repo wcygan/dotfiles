@@ -1,1 +1,0 @@
-https://cursor.directory/

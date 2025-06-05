@@ -7,21 +7,34 @@
 // custom settings, run `zed: open default settings` from the
 // command palette
 {
+  "icon_theme": "Catppuccin Frappé",
+  "features": {
+    "edit_prediction_provider": "zed"
+  },
   "autosave": { "after_delay": { "milliseconds": 500 } },
   "base_keymap": "JetBrains",
-  "assistant": {
+  "agent": {
+    "default_profile": "write",
+    "profiles": {
+      "agent": {
+        "name": "Agent",
+        "tools": {},
+        "enable_all_context_servers": false,
+        "context_servers": {}
+      }
+    },
     "default_model": {
-      "provider": "zed.dev",
-      "model": "claude-3-5-sonnet-20240620"
+      "provider": "google",
+      "model": "gemini-2.5-pro-exp-03-25"
     },
     "version": "2"
   },
-  "ui_font_size": 17,
-  "buffer_font_size": 15,
+  "ui_font_size": 20,
+  "buffer_font_size": 20,
   "theme": {
     "mode": "system",
     "light": "One Light",
-    "dark": "Catppuccin Frappé - No Italics"
+    "dark": "Catppuccin Frappé"
   },
   "tabs": {
     // Show git status colors in the editor tabs.

@@ -50,10 +50,7 @@ const DOTFILES = [
 ];
 
 // Optional files that might exist
-const OPTIONAL_FILES = [
-  ".platform.sh",
-  ".fzf.zsh",
-];
+const OPTIONAL_FILES = [".platform.sh", ".fzf.zsh"];
 
 // Files to exclude when copying dotfiles
 const EXCLUDE_FILES = [
@@ -68,6 +65,9 @@ const EXCLUDE_FILES = [
   "deno.json",
   "deno.lock",
 ];
+
+// Zed configuration files to manage
+const ZED_CONFIG_FILES = ["keymap.json", "settings.json"];
 
 // Utility functions
 function printStatus(message: string): void {
@@ -103,7 +103,8 @@ async function runCommand(
     });
 
     const result = await command.output();
-    const output = new TextDecoder().decode(result.stdout) +
+    const output =
+      new TextDecoder().decode(result.stdout) +
       new TextDecoder().decode(result.stderr);
 
     return {
@@ -120,7 +121,11 @@ async function runCommand(
 
 function getInstallConfig(): InstallConfig {
   const now = new Date();
-  const timestamp = now.toISOString().slice(0, 19).replace(/[:-]/g, "").replace("T", "-");
+  const timestamp = now
+    .toISOString()
+    .slice(0, 19)
+    .replace(/[:-]/g, "")
+    .replace("T", "-");
 
   const homeDir = Deno.env.get("HOME") || Deno.env.get("USERPROFILE") || "";
   const backupDir = join(homeDir, `.dotfiles-backup-${timestamp}`);
@@ -141,14 +146,20 @@ function getInstallConfig(): InstallConfig {
   };
 }
 
-async function validateDotfilesDirectory(dotfilesDir: string): Promise<boolean> {
+async function validateDotfilesDirectory(
+  dotfilesDir: string,
+): Promise<boolean> {
   const zshrcExists = await exists(join(dotfilesDir, ".zshrc"));
   const aliasesExists = await exists(join(dotfilesDir, ".aliases.sh"));
 
   return zshrcExists && aliasesExists;
 }
 
-async function backupFile(file: string, homeDir: string, backupDir: string): Promise<boolean> {
+async function backupFile(
+  file: string,
+  homeDir: string,
+  backupDir: string,
+): Promise<boolean> {
   const homeFile = join(homeDir, file);
   const fileExists = await exists(homeFile);
 
@@ -169,7 +180,53 @@ async function backupFile(file: string, homeDir: string, backupDir: string): Pro
   }
 }
 
-function detectShell(shell: string): { type: string; configFile: string; rcFile: string } | null {
+async function backupZedConfig(
+  homeDir: string,
+  backupDir: string,
+): Promise<string[]> {
+  const zedConfigDir = join(homeDir, ".config", "zed");
+  const zedBackupDir = join(backupDir, ".config", "zed");
+  const backedUpFiles: string[] = [];
+
+  const zedDirExists = await exists(zedConfigDir);
+  if (!zedDirExists) {
+    console.log(
+      `   ${colors.yellow}No existing Zed configuration found${colors.reset}`,
+    );
+    return backedUpFiles;
+  }
+
+  try {
+    await ensureDir(zedBackupDir);
+
+    for (const configFile of ZED_CONFIG_FILES) {
+      const sourcePath = join(zedConfigDir, configFile);
+      const backupPath = join(zedBackupDir, configFile);
+
+      if (await exists(sourcePath)) {
+        try {
+          await copy(sourcePath, backupPath, { overwrite: true });
+          printStatus(`Backed up Zed ${configFile}`);
+          backedUpFiles.push(`zed/${configFile}`);
+        } catch (error) {
+          printWarning(
+            `Could not backup Zed ${configFile}: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      }
+    }
+  } catch (error) {
+    printWarning(
+      `Could not backup Zed configuration: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+
+  return backedUpFiles;
+}
+
+function detectShell(
+  shell: string,
+): { type: string; configFile: string; rcFile: string } | null {
   if (shell.includes("zsh")) {
     return { type: "zsh", configFile: ".zshrc", rcFile: ".zshrc" };
   } else if (shell.includes("bash")) {
@@ -184,7 +241,10 @@ async function updateRepository(dotfilesDir: string): Promise<void> {
   const gitDirExists = await exists(join(dotfilesDir, ".git"));
 
   if (gitDirExists) {
-    const result = await runCommand(["git", "pull", "origin", "main"], dotfilesDir);
+    const result = await runCommand(
+      ["git", "pull", "origin", "main"],
+      dotfilesDir,
+    );
     if (result.success) {
       printStatus("Repository updated");
     } else {
@@ -195,18 +255,19 @@ async function updateRepository(dotfilesDir: string): Promise<void> {
   }
 }
 
-async function copyDotfiles(dotfilesDir: string, homeDir: string): Promise<boolean> {
+async function copyDotfiles(
+  dotfilesDir: string,
+  homeDir: string,
+): Promise<boolean> {
   printBlue("📂 Copying dotfiles...");
   let copiedCount = 0;
 
   try {
-    for await (
-      const entry of walk(dotfilesDir, {
-        includeFiles: true,
-        includeDirs: false,
-        skip: [/\.git/, /node_modules/, /\.deno/],
-      })
-    ) {
+    for await (const entry of walk(dotfilesDir, {
+      includeFiles: true,
+      includeDirs: false,
+      skip: [/\.git/, /node_modules/, /\.deno/],
+    })) {
       const relativePath = entry.path.replace(dotfilesDir + "/", "");
       const filename = basename(entry.path);
 
@@ -250,6 +311,62 @@ async function copyDotfiles(dotfilesDir: string, homeDir: string): Promise<boole
   } catch (error) {
     printError(
       `Failed to copy dotfiles: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return false;
+  }
+}
+
+async function copyZedConfig(
+  dotfilesDir: string,
+  homeDir: string,
+): Promise<boolean> {
+  printBlue("🎯 Copying Zed configuration files...");
+  const zedSourceDir = join(dotfilesDir, "zed");
+  const zedConfigDir = join(homeDir, ".config", "zed");
+
+  // Check if zed directory exists in dotfiles
+  const zedDirExists = await exists(zedSourceDir);
+  if (!zedDirExists) {
+    printWarning(
+      "No zed directory found in dotfiles, skipping Zed configuration",
+    );
+    return true;
+  }
+
+  try {
+    // Ensure Zed config directory exists
+    await ensureDir(zedConfigDir);
+    printStatus(`Created Zed config directory: ${zedConfigDir}`);
+
+    let copiedCount = 0;
+    for (const configFile of ZED_CONFIG_FILES) {
+      const sourcePath = join(zedSourceDir, configFile);
+      const destPath = join(zedConfigDir, configFile);
+
+      if (await exists(sourcePath)) {
+        try {
+          await copy(sourcePath, destPath, { overwrite: true });
+          printStatus(`Copied ${configFile} to Zed config`);
+          copiedCount++;
+        } catch (error) {
+          printWarning(
+            `Could not copy ${configFile}: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      } else {
+        console.log(
+          `   ${colors.yellow}No ${configFile} found in zed directory${colors.reset}`,
+        );
+      }
+    }
+
+    if (copiedCount > 0) {
+      printStatus(`Successfully copied ${copiedCount} Zed configuration files`);
+    }
+    return true;
+  } catch (error) {
+    printError(
+      `Failed to copy Zed configuration: ${error instanceof Error ? error.message : String(error)}`,
     );
     return false;
   }
@@ -308,15 +425,21 @@ This script will:
     printBlue("🔧 Safe Dotfiles Installation");
     printBlue("===============================");
     console.log();
-    console.log(`📁 Dotfiles source: ${colors.yellow}${config.dotfilesDir}${colors.reset}`);
-    console.log(`💾 Backup location: ${colors.yellow}${config.backupDir}${colors.reset}`);
+    console.log(
+      `📁 Dotfiles source: ${colors.yellow}${config.dotfilesDir}${colors.reset}`,
+    );
+    console.log(
+      `💾 Backup location: ${colors.yellow}${config.backupDir}${colors.reset}`,
+    );
     console.log();
 
     // Validate dotfiles directory
     const isValid = await validateDotfilesDirectory(config.dotfilesDir);
     if (!isValid) {
       printError("Not in dotfiles directory or files missing!");
-      console.log("Please run this script from the dotfiles repository directory.");
+      console.log(
+        "Please run this script from the dotfiles repository directory.",
+      );
       Deno.exit(1);
     }
 
@@ -331,7 +454,11 @@ This script will:
     const backedUpFiles: string[] = [];
 
     for (const file of DOTFILES) {
-      const wasBackedUp = await backupFile(file, config.homeDir, config.backupDir);
+      const wasBackedUp = await backupFile(
+        file,
+        config.homeDir,
+        config.backupDir,
+      );
       if (wasBackedUp) {
         backedUpFiles.push(file);
       }
@@ -341,11 +468,24 @@ This script will:
     console.log();
     printBlue("🔍 Checking for optional files...");
     for (const file of OPTIONAL_FILES) {
-      const wasBackedUp = await backupFile(file, config.homeDir, config.backupDir);
+      const wasBackedUp = await backupFile(
+        file,
+        config.homeDir,
+        config.backupDir,
+      );
       if (wasBackedUp) {
         backedUpFiles.push(file);
       }
     }
+
+    // Backup Zed configuration
+    console.log();
+    printBlue("🎯 Backing up Zed configuration...");
+    const zedBackedUpFiles = await backupZedConfig(
+      config.homeDir,
+      config.backupDir,
+    );
+    backedUpFiles.push(...zedBackedUpFiles);
 
     // Show current shell
     console.log();
@@ -359,14 +499,20 @@ This script will:
       printWarning(`Unknown shell: ${config.shell}`);
       console.log("Continuing with installation anyway...");
     } else {
-      console.log(`   Detected: ${colors.green}${shellInfo.type}${colors.reset}`);
+      console.log(
+        `   Detected: ${colors.green}${shellInfo.type}${colors.reset}`,
+      );
     }
 
     // Confirm installation
     if (!args.force) {
       console.log();
-      printYellow("⚠️  This will replace your current dotfiles with the repository versions.");
-      printYellow(`   Your existing files are safely backed up in: ${config.backupDir}`);
+      printYellow(
+        "⚠️  This will replace your current dotfiles with the repository versions.",
+      );
+      printYellow(
+        `   Your existing files are safely backed up in: ${config.backupDir}`,
+      );
       console.log();
 
       const shouldContinue = confirm("Continue with installation?");
@@ -385,9 +531,22 @@ This script will:
 
     // Copy dotfiles
     console.log();
-    const installSuccess = await copyDotfiles(config.dotfilesDir, config.homeDir);
+    const installSuccess = await copyDotfiles(
+      config.dotfilesDir,
+      config.homeDir,
+    );
     if (!installSuccess) {
       Deno.exit(1);
+    }
+
+    // Copy Zed configuration
+    console.log();
+    const zedInstallSuccess = await copyZedConfig(
+      config.dotfilesDir,
+      config.homeDir,
+    );
+    if (!zedInstallSuccess) {
+      printWarning("Zed configuration installation failed, but continuing...");
     }
 
     // Reload shell configuration
@@ -398,22 +557,29 @@ This script will:
 
     // Installation complete
     console.log();
-    console.log(`${colors.green}🎉 Installation completed successfully!${colors.reset}`);
+    console.log(
+      `${colors.green}🎉 Installation completed successfully!${colors.reset}`,
+    );
     console.log();
     printBlue("📋 What was done:");
     console.log(
       `   ✅ Backed up existing dotfiles to: ${colors.yellow}${config.backupDir}${colors.reset}`,
     );
     console.log("   ✅ Installed new dotfiles from repository");
+    console.log("   ✅ Installed Zed configuration files");
     console.log("   ✅ Reloaded shell configuration");
     console.log();
     printBlue("🧪 Test your installation:");
     console.log(
-      `   • Try: ${colors.yellow}d${colors.reset} (should open development workspace in Cursor)`,
+      `   • Try: ${colors.yellow}d${colors.reset} (should open development workspace in an editor)`,
     );
-    console.log(`   • Try: ${colors.yellow}k get nodes${colors.reset} (kubectl shortcut)`);
+    console.log(
+      `   • Try: ${colors.yellow}k get nodes${colors.reset} (kubectl shortcut)`,
+    );
     console.log(`   • Try: ${colors.yellow}cgr${colors.reset} (cargo run)`);
-    console.log(`   • Try: ${colors.yellow}mm${colors.reset} (git main branch helper)`);
+    console.log(
+      `   • Try: ${colors.yellow}mm${colors.reset} (git main branch helper)`,
+    );
     console.log(
       `   • Try: ${colors.yellow}vv${colors.reset} (edit shell config) or ${colors.yellow}ss${colors.reset} (reload shell)`,
     );
@@ -426,9 +592,13 @@ This script will:
       `   ${colors.yellow}deno run --allow-all rollback.ts ${config.backupDir}${colors.reset}`,
     );
     console.log();
-    console.log(`${colors.green}Enjoy your new dotfiles setup! 🎊${colors.reset}`);
+    console.log(
+      `${colors.green}Enjoy your new dotfiles setup! 🎊${colors.reset}`,
+    );
   } catch (error) {
-    printError(`Installation failed: ${error instanceof Error ? error.message : String(error)}`);
+    printError(
+      `Installation failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
     Deno.exit(1);
   }
 }

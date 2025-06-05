@@ -315,5 +315,3 @@ has_feature() {
     esac
     return 1
 }
-
-echo "functions loaded ($(current_shell))"

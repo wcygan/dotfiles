@@ -1,7 +1,6 @@
 #!/bin/bash
 
-settings=~/.config/zed/settings.json
-keymap=~/.config/zed/keymap.json
+echo "Copying keymap and settings files to ~/.config/zed/"
 
-# TODO: copy /zed/keymap.json to ~/.config/zed/keymap.json if it exists
-# TODO: copy /zed/settings.json to ~/.config/zed/settings.json if it exists
+cp zed/keymap.json ~/.config/zed/keymap.json
+cp zed/settings.json ~/.config/zed/settings.json

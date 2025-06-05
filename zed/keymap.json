@@ -9,6 +9,7 @@
       // 🗂 Docks (Files, AI Chat)
       "cmd-1": "workspace::ToggleLeftDock",
       "cmd-2": "workspace::ToggleRightDock",
+      "shift shift": "file_finder::Toggle",
       // ⚙️ Settings
       "cmd-.": "zed::OpenKeymap",
       "cmd-alt-.": "zed::OpenDefaultKeymap",

@@ -311,5 +311,3 @@ alias map="xargs -n1"
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
-
-echo "aliases loaded"

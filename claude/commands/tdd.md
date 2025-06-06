@@ -1,21 +1,71 @@
-I'll help you implement the feature using Test-Driven Development (TDD). We'll follow these steps:
+Set up test-driven development workflow for $ARGUMENTS:
 
-1. First, I'll analyze the requirements for $ARGUMENTS
-2. I'll create comprehensive tests that define the expected behavior
-3. I'll verify the tests fail (red)
-4. I'll implement the minimum code needed to pass the tests (green)
-5. I'll refactor the code while keeping tests passing (refactor)
+1. Analyze requirements and determine the project language/framework
+2. Create appropriate test file based on the language:
+   - **Java**: Test class with JUnit/TestNG annotations
+   - **Go**: `*_test.go` file with testing package
+   - **Rust**: Test module with `#[cfg(test)]`
+   - **TypeScript/Deno**: `.test.ts` with Deno.test()
 
-Let's start by understanding what we're building and creating a test plan. What specifically should $ARGUMENTS do, and what edge cases should we consider?
+3. Write comprehensive tests following language conventions:
+   - **Java**: `@Test` methods with descriptive names
+   - **Go**: `Test*` functions with table-driven tests
+   - **Rust**: `#[test]` functions with assertions
+   - **TypeScript**: Deno.test() with clear descriptions
 
-Remember our TDD principles:
-- Tests must be written before implementation code
-- Tests must fail initially to prove they're testing something real
-- Implementation should be the minimum necessary to pass tests
-- Refactoring should maintain passing tests
-- Follow the Three-Stage Component Testing approach:
-  1. Storybook isolation
-  2. Test harness integration
-  3. System integration
+4. Verify tests fail meaningfully (Red phase)
+5. Create skeleton implementation that compiles but fails tests
+6. Implement minimum code to pass tests (Green phase)
+7. Refactor while keeping tests passing (Refactor phase)
 
-I'll help you through each phase of this TDD process for $ARGUMENTS.
+## Language-Specific Test Commands:
+
+**Java (Maven/Gradle):**
+```bash
+# Maven
+mvn test -Dtest=SpecificTest#methodName
+mvn test -Dtest=SpecificTest
+
+# Gradle
+./gradlew test --tests "SpecificTest.methodName"
+./gradlew test --continuous  # Watch mode
+```
+
+**Go:**
+```bash
+go test -run TestSpecificFunction
+go test -v ./...
+# Watch mode with external tool
+reflex -r '\.go$' go test -v ./...
+```
+
+**Rust:**
+```bash
+cargo test test_name
+cargo test --lib
+cargo watch -x test  # With cargo-watch
+```
+
+**TypeScript/Deno:**
+```bash
+deno test --filter "test name"
+deno test --watch
+```
+
+## Complex Feature Setup:
+```bash
+# Create parallel worktrees for test/implementation
+git worktree add ../$PROJECT-tests-$FEATURE tests-$FEATURE
+git worktree add ../$PROJECT-impl-$FEATURE impl-$FEATURE
+```
+
+## TDD Best Practices:
+- Write tests before implementation
+- One assertion per test when possible
+- Use descriptive test names that document behavior
+- Test edge cases and error conditions
+- Mock external dependencies appropriately
+- Keep tests fast and independent
+- Follow AAA pattern: Arrange, Act, Assert
+
+What language/framework are we using for $ARGUMENTS, and what specific behavior should we test?

@@ -2,26 +2,33 @@ Manage dependencies intelligently for the current project.
 
 Steps:
 1. Detect package manager and read dependencies:
-   - Check for package.json (npm/yarn/pnpm)
-   - Check for Cargo.toml (Rust)
-   - Check for go.mod (Go)
-   - Check for requirements.txt/Pipfile (Python)
-   - Check for pom.xml/build.gradle (Java)
-   - Check for deno.json (Deno)
+   - **Java**: pom.xml (Maven), build.gradle (Gradle)
+   - **Go**: go.mod, go.sum
+   - **Rust**: Cargo.toml, Cargo.lock
+   - **Node.js**: package.json (npm/yarn/pnpm)
+   - **Python**: requirements.txt, Pipfile, pyproject.toml
+   - **Deno**: deno.json, import_map.json
+   - **Kubernetes**: Chart.yaml (Helm), kustomization.yaml
 
 2. Security audit:
-   - Run security audit command for the package manager
-   - Identify packages with known vulnerabilities
-   - Check CVE databases for critical issues
+   - **Java**: `mvn dependency-check:check` or `gradle dependencyCheckAnalyze`
+   - **Go**: `go list -m all | nancy sleuth` or `gosec ./...`
+   - **Rust**: `cargo audit`
+   - **Node.js**: `npm audit`, `yarn audit`
+   - **Kubernetes**: `trivy image` for container scanning
+   - Check CVE databases and security advisories
    - Prioritize by severity (Critical > High > Medium > Low)
-   - Suggest safe version upgrades
+   - Generate SBOM (Software Bill of Materials)
 
 3. Outdated packages analysis:
-   - List all outdated dependencies
+   - **Java**: `mvn versions:display-dependency-updates`
+   - **Go**: `go list -u -m all`
+   - **Rust**: `cargo outdated`
+   - **Node.js**: `npm outdated`, `yarn outdated`
    - Categorize by update type (patch/minor/major)
-   - Check breaking changes in changelogs
+   - Check breaking changes in changelogs/release notes
    - Identify packages that haven't been updated in >1 year
-   - Flag unmaintained packages
+   - Flag unmaintained or archived packages
 
 4. Unused dependencies:
    - Scan codebase for actual usage
@@ -39,10 +46,14 @@ Steps:
 
 6. Update strategy:
    - Create staged update plan (security > patch > minor > major)
-   - Generate update commands with specific versions
-   - Include rollback commands
+   - Generate update commands:
+     - **Java**: `mvn versions:set -DnewVersion=X.Y.Z`
+     - **Go**: `go get -u package@version`
+     - **Rust**: `cargo update -p package --precise version`
+   - Include rollback commands and git tags
    - Document testing requirements for each update
    - Create PR-ready update batches
+   - Consider using Dependabot or Renovate for automation
 
 7. License compliance:
    - Check all dependency licenses

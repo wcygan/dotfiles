@@ -2,11 +2,14 @@ Generate API endpoint for $ARGUMENTS.
 
 Steps:
 1. Analyze project structure and frameworks:
-   - Detect web framework (Express, FastAPI, Spring, Gin, etc.)
-   - Identify existing API patterns and conventions
-   - Check authentication/authorization methods
+   - **Java**: Spring Boot, Quarkus, JAX-RS
+   - **Go**: ConnectRPC, Gin, Echo, Fiber
+   - **Rust**: Axum, Actix-web, Rocket
+   - **Node.js**: Express, Fastify, Hapi
+   - Identify existing API patterns (REST, gRPC, GraphQL)
+   - Check authentication methods (JWT, OAuth2, API keys)
    - Review API versioning strategy
-   - Understand request/response formats (JSON, protobuf, etc.)
+   - Understand formats (JSON, protobuf, MessagePack)
 
 2. Design endpoint:
    - Determine HTTP method (GET, POST, PUT, DELETE, PATCH)
@@ -16,11 +19,41 @@ Steps:
    - Plan error responses and edge cases
 
 3. Implement endpoint:
-   - Create route/controller following project structure
+
+   **Spring Boot (Java):**
+   ```java
+   @RestController
+   @RequestMapping("/api/v1")
+   public class Controller {
+       @PostMapping("/resource")
+       public ResponseEntity<Response> create(@Valid @RequestBody Request req) {
+           // Implementation
+       }
+   }
+   ```
+   
+   **ConnectRPC (Go):**
+   ```go
+   func (s *Server) Method(ctx context.Context,
+       req *connect.Request[pb.Request]) (*connect.Response[pb.Response], error) {
+       // Implementation
+   }
+   ```
+   
+   **Axum (Rust):**
+   ```rust
+   async fn handler(
+       State(state): State<AppState>,
+       Json(payload): Json<Request>,
+   ) -> Result<Json<Response>, StatusCode> {
+       // Implementation
+   }
+   ```
+   
    - Add input validation and sanitization
    - Implement business logic with proper separation
    - Add comprehensive error handling
-   - Include appropriate logging
+   - Include structured logging
    - Implement rate limiting if needed
 
 4. Security implementation:
@@ -32,12 +65,42 @@ Steps:
    - Implement request signing if required
 
 5. Generate tests:
-   - Unit tests for business logic
-   - Integration tests for the endpoint
+
+   **Java (JUnit/MockMvc):**
+   ```java
+   @Test
+   void testEndpoint() throws Exception {
+       mockMvc.perform(post("/api/v1/resource")
+           .contentType(MediaType.APPLICATION_JSON)
+           .content(jsonRequest))
+           .andExpect(status().isOk());
+   }
+   ```
+   
+   **Go (testing package):**
+   ```go
+   func TestEndpoint(t *testing.T) {
+       req := httptest.NewRequest("POST", "/api/v1/resource", body)
+       w := httptest.NewRecorder()
+       handler(w, req)
+       assert.Equal(t, http.StatusOK, w.Code)
+   }
+   ```
+   
+   **Rust (axum-test):**
+   ```rust
+   #[tokio::test]
+   async fn test_endpoint() {
+       let app = create_app();
+       let response = app.oneshot(request).await.unwrap();
+       assert_eq!(response.status(), StatusCode::OK);
+   }
+   ```
+   
    - Test all response codes (200, 400, 401, 403, 404, 500)
    - Test edge cases and invalid inputs
-   - Performance tests for heavy operations
-   - Security tests (auth bypass attempts)
+   - Load testing with k6 or Gatling
+   - Security tests (auth bypass, injection)
 
 6. Create documentation:
    - OpenAPI/Swagger specification
@@ -48,11 +111,14 @@ Steps:
    - Curl/HTTPie examples
 
 7. Database/Service integration:
-   - Create necessary database queries
-   - Implement repository pattern if used
-   - Add database migrations if needed
+   - **Java**: JPA/Hibernate, JOOQ, MyBatis
+   - **Go**: sqlx, GORM, Ent
+   - **Rust**: sqlx, Diesel, SeaORM
+   - Implement repository pattern
+   - Add database migrations (Flyway, migrate, sqlx)
    - Configure connection pooling
-   - Add caching layer if appropriate
+   - Add caching (Redis/DragonflyDB)
+   - Consider event sourcing with Kafka/RedPanda
 
 Output:
 - Complete endpoint implementation

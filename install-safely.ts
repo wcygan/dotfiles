@@ -72,6 +72,9 @@ const ZED_CONFIG_FILES = ["keymap.json", "settings.json"];
 // Claude configuration files to manage
 const CLAUDE_CONFIG_FILES = ["CLAUDE.md"];
 
+// Claude commands directory to manage
+const CLAUDE_COMMANDS_DIR = "commands";
+
 // Utility functions
 function printStatus(message: string): void {
   console.log(`${colors.green}✅${colors.reset} ${message}`);
@@ -246,6 +249,7 @@ async function backupClaudeConfig(
   try {
     await ensureDir(claudeBackupDir);
 
+    // Backup individual config files
     for (const configFile of CLAUDE_CONFIG_FILES) {
       const sourcePath = join(claudeConfigDir, configFile);
       const backupPath = join(claudeBackupDir, configFile);
@@ -260,6 +264,22 @@ async function backupClaudeConfig(
             `Could not backup Claude ${configFile}: ${error instanceof Error ? error.message : String(error)}`,
           );
         }
+      }
+    }
+
+    // Backup commands directory if it exists
+    const commandsSourceDir = join(claudeConfigDir, CLAUDE_COMMANDS_DIR);
+    const commandsBackupDir = join(claudeBackupDir, CLAUDE_COMMANDS_DIR);
+    
+    if (await exists(commandsSourceDir)) {
+      try {
+        await copy(commandsSourceDir, commandsBackupDir, { overwrite: true });
+        printStatus(`Backed up Claude commands directory`);
+        backedUpFiles.push(`claude/${CLAUDE_COMMANDS_DIR}`);
+      } catch (error) {
+        printWarning(
+          `Could not backup Claude commands directory: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
   } catch (error) {
@@ -442,6 +462,8 @@ async function copyClaudeConfig(
     printStatus(`Created Claude config directory: ${claudeConfigDir}`);
 
     let copiedCount = 0;
+    
+    // Copy individual config files
     for (const configFile of CLAUDE_CONFIG_FILES) {
       const sourcePath = join(claudeSourceDir, configFile);
       const destPath = join(claudeConfigDir, configFile);
@@ -463,8 +485,28 @@ async function copyClaudeConfig(
       }
     }
 
+    // Copy commands directory if it exists
+    const commandsSourceDir = join(claudeSourceDir, CLAUDE_COMMANDS_DIR);
+    const commandsDestDir = join(claudeConfigDir, CLAUDE_COMMANDS_DIR);
+    
+    if (await exists(commandsSourceDir)) {
+      try {
+        await copy(commandsSourceDir, commandsDestDir, { overwrite: true });
+        printStatus(`Copied Claude commands directory`);
+        copiedCount++;
+      } catch (error) {
+        printWarning(
+          `Could not copy Claude commands directory: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    } else {
+      console.log(
+        `   ${colors.yellow}No commands directory found in claude directory${colors.reset}`,
+      );
+    }
+
     if (copiedCount > 0) {
-      printStatus(`Successfully copied ${copiedCount} Claude configuration files`);
+      printStatus(`Successfully copied ${copiedCount} Claude configuration items`);
     }
     return true;
   } catch (error) {
@@ -689,7 +731,7 @@ This script will:
     );
     console.log("   ✅ Installed new dotfiles from repository");
     console.log("   ✅ Installed Zed configuration files");
-    console.log("   ✅ Installed Claude configuration files");
+    console.log("   ✅ Installed Claude configuration files and custom commands");
     console.log("   ✅ Reloaded shell configuration");
     console.log();
     printBlue("🧪 Test your installation:");

@@ -64,6 +64,25 @@ deno task deps        # Update dependencies
 4. **NEVER** commit without running pre-commit checks
 5. **ALWAYS** use semantic commit messages (feat:, fix:, docs:, refactor:, test:, chore:)
 
+## Project Planning & Coordination
+
+### PLAN.md Adherence
+When a `PLAN.md` file exists in the project root, **YOU MUST**:
+1. **READ** the PLAN.md file at the start of each session to understand current tasks and priorities
+2. **FOLLOW** the task breakdown and execution strategy defined in the plan
+3. **RESPECT** task dependencies and join points for multi-agent coordination
+4. **UPDATE** task status in the plan as work progresses
+5. **COORDINATE** with other agents at defined synchronization points
+6. **USE** the TodoWrite tool to track individual tasks from the plan
+
+### Multi-Agent Workflow
+When working as part of a multi-agent team:
+- **CHECK** `/tmp/project-status.md` or coordination files for shared state
+- **WORK** only on assigned tasks to avoid conflicts
+- **COMMUNICATE** progress through PR comments or status files
+- **WAIT** at join points until all parallel work is complete
+- **MERGE** work carefully following the plan's integration strategy
+
 ## File Organization
 
 - `/src/` - Source code

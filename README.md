@@ -62,7 +62,7 @@ deno run --allow-all install-safely.ts --force
    ```bash
    deno run --allow-all install-safely.ts
    ```
-   
+
    Or force update without prompts:
    ```bash
    deno run --allow-all install-safely.ts --force

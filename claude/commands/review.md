@@ -1,6 +1,7 @@
 Review the most recent changes in this repository. Analyze the last commit or uncommitted changes for:
 
 Steps:
+
 1. Analyze current changes:
    - Run `git status` to see modified files
    - Run `git diff --staged` for staged changes

@@ -3,6 +3,7 @@ Convert existing shell scripts to Deno TypeScript scripts.
 Search the repository for shell scripts (.sh, .bash files) and convert them to modern Deno TypeScript scripts. Place the converted scripts in a /scripts directory and properly configure them in deno.json.
 
 ## Steps:
+
 1. Find all shell scripts in the repository (*.sh, *.bash files)
 2. Analyze each script to understand its purpose and functionality
 3. Convert shell commands to Deno TypeScript equivalents using Dax and Deno APIs
@@ -13,11 +14,13 @@ Search the repository for shell scripts (.sh, .bash files) and convert them to m
 ## Translation Guide
 
 ### Basic Command Execution
+
 ```bash
 # Shell
 echo "Hello World"
 ls -la
 ```
+
 ```typescript
 // Deno with Dax
 import $ from "jsr:@david/dax@0.42.0";
@@ -26,12 +29,14 @@ await $`ls -la`;
 ```
 
 ### Environment Variables
+
 ```bash
 # Shell
 export VAR1=value1
 export VAR2=value2
 echo $VAR1 $VAR2
 ```
+
 ```typescript
 // Deno
 await $`echo $VAR1 $VAR2`
@@ -43,12 +48,14 @@ await $`export MY_VALUE=5`.exportEnv();
 ```
 
 ### File Operations
+
 ```bash
 # Shell
 mkdir -p src/components
 cp config.json config.backup.json
 rm -rf temp/
 ```
+
 ```typescript
 // Deno
 await $`mkdir -p src/components`;
@@ -63,11 +70,13 @@ await Deno.remove("temp/", { recursive: true });
 ```
 
 ### Piping and Redirects
+
 ```bash
 # Shell
 cat file.txt | grep "pattern" > output.txt
 ps aux | grep node
 ```
+
 ```typescript
 // Deno
 await $`cat file.txt | grep "pattern" > output.txt`;
@@ -75,11 +84,13 @@ const nodeProcesses = await $`ps aux | grep node`.text();
 ```
 
 ### Error Handling
+
 ```bash
 # Shell
 command1 || echo "Command failed"
 set -e  # Exit on error
 ```
+
 ```typescript
 // Deno - Default throws on error
 try {
@@ -99,12 +110,14 @@ await $`command1 || echo "Command failed"`;
 ```
 
 ### Conditional Logic
+
 ```bash
 # Shell
 if [ -f "config.json" ]; then
   echo "Config exists"
 fi
 ```
+
 ```typescript
 // Deno
 import { exists } from "jsr:@std/fs";
@@ -114,6 +127,7 @@ if (await exists("config.json")) {
 ```
 
 ### Working with Arguments
+
 ```bash
 # Shell
 #!/bin/bash
@@ -121,6 +135,7 @@ FILE=$1
 OPTION=$2
 ./process.sh "$FILE" --option "$OPTION"
 ```
+
 ```typescript
 // Deno
 import { parseArgs } from "jsr:@std/cli/parse-args";
@@ -134,35 +149,41 @@ await $`./process.sh ${file} --option ${option}`;
 ### Common Patterns
 
 #### Multiple Commands
+
 ```bash
 # Shell
 cd src && npm install && npm test
 ```
+
 ```typescript
 // Deno
 await $`cd src && npm install && npm test`;
 ```
 
 #### Parallel Execution
+
 ```bash
 # Shell (complex with wait)
 command1 &
 command2 &
 wait
 ```
+
 ```typescript
 // Deno
 await Promise.all([
   $`command1`,
-  $`command2`
+  $`command2`,
 ]);
 ```
 
 #### Getting Command Output
+
 ```bash
 # Shell
 RESULT=$(echo "hello" | tr '[:lower:]' '[:upper:]')
 ```
+
 ```typescript
 // Deno
 const result = await $`echo "hello" | tr '[:lower:]' '[:upper:]'`.text();

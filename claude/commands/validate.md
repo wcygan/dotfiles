@@ -7,19 +7,19 @@ Run comprehensive validation across the codebase:
    - `mvn verify` for full validation
    - SpotBugs/PMD static analysis
    - Checkstyle for code conventions
-   
+
    **Go:**
    - `go build ./...` for compilation
    - `go vet ./...` for suspicious constructs
    - `golangci-lint run` for comprehensive linting
    - `go mod verify` for dependencies
-   
+
    **Rust:**
    - `cargo check` for fast validation
    - `cargo clippy` for linting
    - `cargo fmt --check` for formatting
    - `cargo audit` for security vulnerabilities
-   
+
    **TypeScript/JavaScript:**
    - `deno check **/*.ts` or `tsc --noEmit`
    - ESLint/Prettier validation
@@ -64,25 +64,32 @@ Run comprehensive validation across the codebase:
 8. **Generate Validation Report:**
    ```markdown
    # Validation Report
+
    Generated: [timestamp]
    Project Type: [Java/Go/Rust/K8s/Mixed]
-   
+
    ## Build Status
+
    - Compilation: ✓/✗
    - Tests: ✓/✗
    - Linting: ✓/✗
-   
+
    ## Issues by Severity
+
    ### Critical (Must Fix)
+
    - [Issue with file:line]
-   
+
    ### Warnings (Should Fix)
+
    - [Issue with file:line]
-   
+
    ### Info (Consider Fixing)
+
    - [Issue with file:line]
-   
+
    ## Recommendations
+
    - [Specific actions to take]
    ```
 

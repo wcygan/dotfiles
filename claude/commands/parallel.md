@@ -22,20 +22,23 @@ Set up parallel development workflow:
    ```bash
    # Terminal 1: Authentication feature
    cd ../$PROJECT-feature-auth && claude
-   
+
    # Terminal 2: API endpoints
    cd ../$PROJECT-feature-api && claude
-   
+
    # Terminal 3: Database migrations
    cd ../$PROJECT-feature-db && claude
    ```
 
 5. Set up coordination:
-   - Create coordination file at `/tmp/claude-tasks.md` with:
+   - Get project name: `PROJECT=$(basename $(git rev-parse --show-toplevel 2>/dev/null) || basename $PWD)`
+   - Create project-specific coordination directory: `mkdir -p /tmp/$PROJECT`
+   - Create coordination file at `/tmp/$PROJECT/claude-tasks.md` with:
      - Task assignments for each worktree
      - Dependencies between tasks
      - Progress tracking template
      - Communication guidelines
+   - Display the coordination path clearly: "Coordination file: /tmp/$PROJECT/claude-tasks.md"
 
 6. Best practices for parallel work:
    - Keep worktrees focused on single features

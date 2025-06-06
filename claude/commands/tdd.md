@@ -21,6 +21,7 @@ Set up test-driven development workflow for $ARGUMENTS:
 ## Language-Specific Test Commands:
 
 **Java (Maven/Gradle):**
+
 ```bash
 # Maven
 mvn test -Dtest=SpecificTest#methodName
@@ -32,6 +33,7 @@ mvn test -Dtest=SpecificTest
 ```
 
 **Go:**
+
 ```bash
 go test -run TestSpecificFunction
 go test -v ./...
@@ -40,6 +42,7 @@ reflex -r '\.go$' go test -v ./...
 ```
 
 **Rust:**
+
 ```bash
 cargo test test_name
 cargo test --lib
@@ -47,12 +50,14 @@ cargo watch -x test  # With cargo-watch
 ```
 
 **TypeScript/Deno:**
+
 ```bash
 deno test --filter "test name"
 deno test --watch
 ```
 
 ## Complex Feature Setup:
+
 ```bash
 # Create parallel worktrees for test/implementation
 git worktree add ../$PROJECT-tests-$FEATURE tests-$FEATURE
@@ -60,6 +65,7 @@ git worktree add ../$PROJECT-impl-$FEATURE impl-$FEATURE
 ```
 
 ## TDD Best Practices:
+
 - Write tests before implementation
 - One assertion per test when possible
 - Use descriptive test names that document behavior

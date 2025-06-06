@@ -5,10 +5,10 @@ Add a reusable project-level slash command so anyone who clones your repo can in
 
 ## 1 Decide what the command should do
 
-* **Name** → becomes the slash-command (`<file>.md` → `/project:<file-name>`).
-* **Prompt text** → the body of the `.md` file; that text is sent to Claude when the command runs.
-* **Parameters** (optional) → use the special token `$ARGUMENTS` to splice user-supplied arguments into the prompt.
-* **Scope** → anything in `./.claude/commands/**` is project-scoped; nested folders add extra path segments (`frontend/build.md` → `/project:frontend:build`). ([docs.anthropic.com][1])
+- **Name** → becomes the slash-command (`<file>.md` → `/project:<file-name>`).
+- **Prompt text** → the body of the `.md` file; that text is sent to Claude when the command runs.
+- **Parameters** (optional) → use the special token `$ARGUMENTS` to splice user-supplied arguments into the prompt.
+- **Scope** → anything in `./.claude/commands/**` is project-scoped; nested folders add extra path segments (`frontend/build.md` → `/project:frontend:build`). ([docs.anthropic.com][1])
 
 > **Clarify**: What action do you want this command to automate? (e.g., “spin up a dev container”, “generate a PR template”, “audit code for security issues”).
 
@@ -30,6 +30,7 @@ mkdir -p .claude/commands
 
 ```md
 Audit this repository for security vulnerabilities:
+
 1. Identify common CWE patterns in the code.
 2. Flag third-party dependencies with known CVEs.
 3. Output findings as a Markdown checklist.
@@ -46,11 +47,12 @@ claude > /project:audit-security
 `./.claude/commands/fix-issue.md`
 
 ```md
-Fix issue #$ARGUMENTS.  
-Steps:  
-1. Read the ticket description.  
-2. Locate the relevant code.  
-3. Implement a minimal fix with tests.  
+Fix issue #$ARGUMENTS.\
+Steps:
+
+1. Read the ticket description.
+2. Locate the relevant code.
+3. Implement a minimal fix with tests.
 4. Output a concise PR body with changelog notes.
 ```
 
@@ -74,6 +76,7 @@ name: audit-security
 owner: dev-infra
 tags: security, ci
 -->
+
 ...prompt text...
 ```
 

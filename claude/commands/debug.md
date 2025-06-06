@@ -1,6 +1,7 @@
 Help debug issue: $ARGUMENTS
 
 Steps:
+
 1. Understand the problem:
    - Parse error messages and stack traces
    - **Java**: Analyze full stack trace, check caused-by chains
@@ -22,33 +23,33 @@ Steps:
    - Conditional breakpoints in IDE
    - JVM flags: -XX:+PrintGCDetails, -XX:+HeapDumpOnOutOfMemoryError
    - Thread dumps and heap analysis
-   
+
    **Go:**
    - Delve debugger usage
    - pprof for runtime analysis
    - race detector: go run -race
    - Structured logging with context
-   
+
    **Rust:**
    - RUST_BACKTRACE=full for detailed traces
    - gdb/lldb integration
    - println! debugging with dbg! macro
    - cargo-expand for macro debugging
-   
+
    **Deno/TypeScript:**
    - Chrome DevTools debugging: deno run --inspect-brk
    - Console debugging with Deno.inspect()
    - Stack traces with Error().stack
    - Permission debugging: --allow-read=. --allow-write=.
    - Module graph inspection: deno info script.ts
-   
+
    **Deno Fresh:**
    - Island hydration issues: check client/server boundaries
    - Route debugging: _middleware.ts for request logging
    - SSR errors: check ctx.renderNotFound() and error boundaries
    - Dev tools: deno task start --inspect
    - Fresh error page: routes/_500.tsx for custom error handling
-   
+
    **General:**
    - Distributed tracing for microservices
    - tcpdump/Wireshark for network issues
@@ -61,35 +62,35 @@ Steps:
    - Memory leaks and GC pressure
    - ClassLoader problems
    - Resource leaks (connections, files)
-   
+
    **Go:**
    - Nil pointer dereferences
    - Goroutine leaks
    - Channel deadlocks
    - Interface{} type assertions
    - Slice capacity vs length issues
-   
+
    **Rust:**
    - Borrow checker violations
    - Lifetime issues
    - Move semantics confusion
    - Unsafe code problems
    - Panic in production code
-   
+
    **Deno/TypeScript:**
    - Permission errors (file, network, env access)
    - Module resolution failures
    - Import map configuration issues
    - Top-level await deadlocks
    - Memory leaks in long-running processes
-   
+
    **Deno Fresh:**
    - Island component hydration mismatches
    - Server/client code mixing
    - Incorrect ctx usage in routes
    - Middleware ordering issues
    - Static file serving problems
-   
+
    **Common:**
    - Race conditions in concurrent code
    - Resource exhaustion
@@ -118,6 +119,7 @@ Steps:
    - Consider integration tests for complex issues
 
 Output format:
+
 - Root cause analysis
 - Step-by-step debugging plan
 - Specific code changes needed

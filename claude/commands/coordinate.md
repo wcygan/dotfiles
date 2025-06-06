@@ -7,14 +7,18 @@ Coordinate multiple Claude instances:
    - Suggest optimal parallelization strategy
 
 2. Create coordination file:
-   `/tmp/claude-coordination.md` with structure:
+   - Get project name: `PROJECT=$(basename $(git rev-parse --show-toplevel 2>/dev/null) || basename $PWD)`
+   - Create project-specific directory: `mkdir -p /tmp/$PROJECT/claude-scratch`
+   - Create `/tmp/$PROJECT/claude-coordination.md` with structure:
    ```markdown
    # Claude Multi-Instance Coordination Plan
+
    Generated: [timestamp]
-   
+
    ## Work Streams
-   
+
    ### Stream A: [Description]
+
    - Instance: claude-feature-a
    - Worktree: ../dotfiles-feature-a
    - Tasks:
@@ -22,21 +26,24 @@ Coordinate multiple Claude instances:
      2. [ ] Follow-up task
    - Dependencies: None
    - Priority: High
-   
+
    ### Stream B: [Description]
+
    - Instance: claude-feature-b
    - Worktree: ../dotfiles-feature-b
    - Tasks:
      1. [ ] Task with specific scope
    - Dependencies: Stream A task 1
    - Priority: Medium
-   
+
    ## Communication Channels
-   - Tasks: /tmp/claude-scratch/tasks.md
-   - Reviews: /tmp/claude-scratch/reviews.md
-   - Status: /tmp/claude-scratch/status.json
-   
+
+   - Tasks: /tmp/$PROJECT/claude-scratch/tasks.md
+   - Reviews: /tmp/$PROJECT/claude-scratch/reviews.md
+   - Status: /tmp/$PROJECT/claude-scratch/status.json
+
    ## Synchronization Points
+
    - [ ] After Stream A task 1: Sync with Stream B
    - [ ] Before final integration: All streams sync
    ```
@@ -46,16 +53,16 @@ Coordinate multiple Claude instances:
    # Create worktrees
    git worktree add ../dotfiles-feature-a feature-a
    git worktree add ../dotfiles-feature-b feature-b
-   
+
    # Launch Claude instances
    # Terminal 1:
-   cd ../dotfiles-feature-a && claude
-   # > Read coordination plan at /tmp/claude-coordination.md
+   cd ../$PROJECT-feature-a && claude
+   # > Read coordination plan at /tmp/$PROJECT/claude-coordination.md
    # > Focus on Stream A tasks
-   
+
    # Terminal 2:
-   cd ../dotfiles-feature-b && claude
-   # > Read coordination plan at /tmp/claude-coordination.md
+   cd ../$PROJECT-feature-b && claude
+   # > Read coordination plan at /tmp/$PROJECT/claude-coordination.md
    # > Focus on Stream B tasks
    ```
 
@@ -63,15 +70,18 @@ Coordinate multiple Claude instances:
    ```typescript
    // scripts/check-coordination-progress.ts
    import { parse } from "@std/yaml";
-   
+
+   // Get project name from current directory
+   const projectName = Deno.cwd().split("/").pop();
+
    // Read coordination plan
-   const plan = await Deno.readTextFile("/tmp/claude-coordination.md");
-   
+   const plan = await Deno.readTextFile(`/tmp/${projectName}/claude-coordination.md`);
+
    // Read current status
    const status = JSON.parse(
-     await Deno.readTextFile("/tmp/claude-scratch/status.json")
+     await Deno.readTextFile(`/tmp/${projectName}/claude-scratch/status.json`),
    );
-   
+
    // Display progress
    console.log("=== Coordination Progress ===");
    for (const [instance, data] of Object.entries(status.instances)) {
@@ -80,7 +90,7 @@ Coordinate multiple Claude instances:
      console.log(`  Current: ${data.currentTask}`);
      console.log(`  Updated: ${data.lastUpdate}`);
    }
-   
+
    // Check dependencies
    console.log("\n=== Dependency Status ===");
    // Parse and check dependency completion
@@ -101,13 +111,14 @@ Coordinate multiple Claude instances:
    ```bash
    # Check overall progress
    deno run --allow-read scripts/check-coordination-progress.ts
-   
+
    # View specific instance status
-   cat /tmp/claude-scratch/status.json | jq '.instances["claude-feature-a"]'
-   
+   PROJECT=$(basename $(git rev-parse --show-toplevel 2>/dev/null) || basename $PWD)
+   cat /tmp/$PROJECT/claude-scratch/status.json | jq '.instances["claude-feature-a"]'
+
    # Clean up completed work
-   git worktree remove ../dotfiles-feature-a
-   rm -rf /tmp/claude-scratch  # After session complete
+   git worktree remove ../$PROJECT-feature-a
+   rm -rf /tmp/$PROJECT  # After session complete
    ```
 
 Use this for complex features requiring multiple parallel work streams.

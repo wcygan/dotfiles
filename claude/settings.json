@@ -44,6 +44,8 @@
     "EDITOR": "zed",
     "GIT_EDITOR": "zed --wait"
   },
+  "preferredNotifChannel": "terminal_bell",
+  "verbose": true,
   "cleanupPeriodDays": 90,
   "includeCoAuthoredBy": true
 }

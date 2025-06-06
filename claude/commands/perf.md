@@ -1,22 +1,23 @@
 Analyze and optimize performance for $ARGUMENTS.
 
 Steps:
+
 1. Profile current performance:
    **Java:**
    - JProfiler, YourKit, or async-profiler
    - JMX metrics and heap dumps
    - GC logs analysis
-   
+
    **Go:**
    - pprof for CPU and memory profiling
    - trace tool for execution tracing
    - benchstat for benchmark comparison
-   
+
    **Rust:**
    - cargo flamegraph
    - perf profiling
    - valgrind for memory analysis
-   
+
    **General:**
    - APM tools (DataDog, New Relic)
    - Distributed tracing (Jaeger, Zipkin)
@@ -51,18 +52,18 @@ Steps:
    - Parallel streams and ForkJoinPool
    - Virtual threads (Java 21+)
    - Reactive frameworks (Project Reactor, RxJava)
-   
+
    **Go:**
    - Goroutines and channels
    - sync.WaitGroup for coordination
    - Worker pool patterns
    - Context for cancellation
-   
+
    **Rust:**
    - Tokio/async-std for async runtime
    - Rayon for data parallelism
    - Crossbeam for concurrent data structures
-   
+
    - Implement proper batching and backpressure
 
 6. Caching strategies:
@@ -82,6 +83,7 @@ Steps:
    - Proper resource cleanup
 
 Output:
+
 - Performance bottlenecks ranked by impact
 - Specific optimization recommendations with code examples
 - Before/after performance metrics:

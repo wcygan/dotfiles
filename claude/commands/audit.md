@@ -11,25 +11,25 @@ Perform a security and best practices audit:
      - Configuration files (application.yml, config.toml)
      - Docker/container images
      - Git history
-   
+
 2. Code-level security:
    **Java:**
    - SQL injection (PreparedStatement usage)
    - XXE attacks in XML parsing
    - Deserialization vulnerabilities
    - Spring Security misconfigurations
-   
+
    **Go:**
    - SQL injection (parameterized queries)
    - Command injection in os/exec
    - Path traversal vulnerabilities
    - Improper error handling exposing internals
-   
+
    **Rust:**
    - Unsafe block usage review
    - Memory safety violations
    - Panic handling in production
-   
+
    **Shell scripts:**
    - Proper quoting and escaping
    - Command injection vulnerabilities
@@ -65,18 +65,18 @@ Perform a security and best practices audit:
    - Outdated Spring Boot version
    - Insecure defaults
    - JVM security flags
-   
+
    **Go:**
    - Module vulnerabilities (nancy, gosec)
    - Goroutine leaks
    - Race conditions
    - Proper context cancellation
-   
+
    **Rust:**
    - Cargo audit results
    - Unsafe code justification
    - Proper error handling
-   
+
    **Kubernetes:**
    - Pod security policies
    - RBAC misconfigurations
@@ -93,31 +93,38 @@ Perform a security and best practices audit:
 9. Generate audit report:
    ```markdown
    # Security Audit Report
+
    Generated: [timestamp]
    Project Type: [Java/Go/Rust/K8s/Mixed]
-   
+
    ## Critical Issues (Immediate Action Required)
+
    - [CVE-2023-XXXXX] Vulnerable dependency: package@version
    - [SEC001] Hardcoded database password in config.properties:45
-   
+
    ## High Priority (Fix Soon)
+
    - [SEC002] SQL injection risk in UserRepository.java:78
    - [SEC003] Missing RBAC for admin endpoints
-   
+
    ## Medium Priority (Plan to Fix)
+
    - [SEC004] Outdated TLS version in use
    - [SEC005] Missing rate limiting on API
-   
+
    ## Low Priority (Best Practice)
+
    - [BP001] Consider using structured logging
    - [BP002] Add security headers
-   
+
    ## Compliance Status
+
    - OWASP Top 10: [Status]
    - CIS Benchmarks: [Status]
    - PCI DSS: [Status if applicable]
-   
+
    ## Summary
+
    - Total issues found: X
    - Critical: X, High: X, Medium: X, Low: X
    - Estimated remediation time: X hours

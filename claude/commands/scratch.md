@@ -2,29 +2,38 @@ Set up inter-Claude communication:
 
 1. Create structured scratchpad directories:
    ```bash
-   mkdir -p /tmp/claude-scratch/{tasks,reviews,notes,status}
+   # Get project name from repository
+   PROJECT_NAME=$(basename $(git rev-parse --show-toplevel))
+   mkdir -p /tmp/$PROJECT_NAME/claude-scratch/{tasks,reviews,notes,status}
    ```
 
 2. Initialize communication files:
-   - `/tmp/claude-scratch/tasks.md` - Task assignments
-   - `/tmp/claude-scratch/reviews.md` - Code review feedback
-   - `/tmp/claude-scratch/notes.md` - General communication
-   - `/tmp/claude-scratch/status.json` - Progress tracking
+   - `/tmp/$PROJECT_NAME/claude-scratch/tasks.md` - Task assignments
+   - `/tmp/$PROJECT_NAME/claude-scratch/reviews.md` - Code review feedback
+   - `/tmp/$PROJECT_NAME/claude-scratch/notes.md` - General communication
+   - `/tmp/$PROJECT_NAME/claude-scratch/status.json` - Progress tracking
 
 3. Set up file templates:
-   
+   ```bash
+   # Initialize templates
+   echo "# Claude Instance Tasks" > /tmp/$PROJECT_NAME/claude-scratch/tasks.md
+   echo '{}' | jq '.instances = {} | .sharedData = {}' > /tmp/$PROJECT_NAME/claude-scratch/status.json
+   ```
+
    **tasks.md template:**
    ```markdown
    # Claude Instance Tasks
-   
+
    ## Instance: main
+
    - [ ] Task 1: Description
    - [ ] Task 2: Description
-   
+
    ## Instance: feature-a
+
    - [ ] Task 1: Description
    ```
-   
+
    **status.json template:**
    ```json
    {
@@ -43,15 +52,19 @@ Set up inter-Claude communication:
    ```typescript
    // scripts/monitor-claude-scratch.ts
    import { watch } from "@std/fs";
-   
-   const watcher = watch("/tmp/claude-scratch");
-   
-   console.log("Monitoring Claude scratchpad...");
-   
+
+   // Get project name from current directory or command line
+   const projectName = Deno.args[0] || Deno.cwd().split("/").pop();
+   const scratchPath = `/tmp/${projectName}/claude-scratch`;
+
+   const watcher = watch(scratchPath);
+
+   console.log(`Monitoring Claude scratchpad for ${projectName}...`);
+
    for await (const event of watcher) {
      if (event.kind === "modify") {
        console.log(`[${new Date().toISOString()}] ${event.paths[0]} updated`);
-       
+
        // Read and display relevant changes
        if (event.paths[0].includes("status.json")) {
          const status = JSON.parse(await Deno.readTextFile(event.paths[0]));
@@ -69,17 +82,22 @@ Set up inter-Claude communication:
 
 6. Usage instructions:
    ```bash
+   # Get project name
+   PROJECT_NAME=$(basename $(git rev-parse --show-toplevel))
+
    # Instance 1: Write task
-   echo "## Instance: main\n- [ ] Implement new feature" >> /tmp/claude-scratch/tasks.md
-   
+   echo "## Instance: main\n- [ ] Implement new feature" >> /tmp/$PROJECT_NAME/claude-scratch/tasks.md
+
    # Instance 2: Read tasks
-   cat /tmp/claude-scratch/tasks.md | grep "Instance: feature"
-   
+   cat /tmp/$PROJECT_NAME/claude-scratch/tasks.md | grep "Instance: feature"
+
    # Update status
    deno eval "
-     const status = JSON.parse(await Deno.readTextFile('/tmp/claude-scratch/status.json'));
+     const projectName = '$PROJECT_NAME';
+     const statusPath = '/tmp/' + projectName + '/claude-scratch/status.json';
+     const status = JSON.parse(await Deno.readTextFile(statusPath));
      status.instances.main.currentTask = 'Task 2';
-     await Deno.writeTextFile('/tmp/claude-scratch/status.json', JSON.stringify(status, null, 2));
+     await Deno.writeTextFile(statusPath, JSON.stringify(status, null, 2));
    "
    ```
 

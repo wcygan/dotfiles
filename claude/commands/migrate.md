@@ -9,19 +9,19 @@ Create a migration strategy for $ARGUMENTS:
    - Configuration format changes
 
 2. **Database Migrations:**
-   
+
    **Java (Flyway/Liquibase):**
    ```java
    // Flyway: V1__Description.sql
    // Liquibase: changelog-1.0.xml
    ```
-   
+
    **Go (golang-migrate):**
    ```bash
    migrate create -ext sql -dir migrations description
    migrate -path migrations -database "postgres://..." up
    ```
-   
+
    **General SQL:**
    ```sql
    -- Forward migration
@@ -42,7 +42,7 @@ Create a migration strategy for $ARGUMENTS:
    # Find candidates for migration
    grep -r "old_pattern" --include="*.java" .
    rg "deprecated_method" -t go
-   
+
    # Batch processing with headless Claude
    for file in $(find . -name "*.go" -type f); do
      claude -p "Migrate $file from old_pattern to new_pattern" \
@@ -55,14 +55,14 @@ Create a migration strategy for $ARGUMENTS:
    # Migrate from apps/v1beta1 to apps/v1
    # Update apiVersion and any changed fields
    ```
-   
+
    Tools:
    - `kubectl convert` for API version updates
    - Helm chart version migrations
    - Custom controller updates
 
 6. **Dependency Migrations:**
-   
+
    **Java:**
    ```xml
    <!-- Maven: Update versions in pom.xml -->
@@ -71,13 +71,13 @@ Create a migration strategy for $ARGUMENTS:
      <version>NEW_VERSION</version>
    </dependency>
    ```
-   
+
    **Go:**
    ```bash
    go get -u package@version
    go mod tidy
    ```
-   
+
    **Rust:**
    ```toml
    # Cargo.toml
@@ -88,20 +88,24 @@ Create a migration strategy for $ARGUMENTS:
 7. **Migration Plan Template:**
    ```markdown
    # Migration Plan: $DESCRIPTION
-   
+
    ## Pre-Migration Checklist
+
    - [ ] Backup current state
    - [ ] Test rollback procedure
    - [ ] Notify stakeholders
-   
+
    ## Migration Steps
+
    1. Step with specific commands
    2. Validation after each step
-   
+
    ## Rollback Plan
+
    - Specific rollback commands
-   
+
    ## Post-Migration Validation
+
    - [ ] Run test suite
    - [ ] Check application health
    - [ ] Verify data integrity

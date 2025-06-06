@@ -32,7 +32,7 @@ Record progress updates with automatic timestamp generation and organization by 
 
 The agent will:
 
-1. **For recording progress**: 
+1. **For recording progress**:
    - Run `date` to get current timestamp
    - Create directory structure: `./progress/YYYY-MM-DD/` (in project root)
    - Create file: `YYYY-MM-DD-HH:MM:SS-TIMEZONE.md`

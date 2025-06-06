@@ -1,9 +1,10 @@
 Analyze code in $ARGUMENTS for refactoring opportunities.
 
 Steps:
+
 1. Read and understand the code structure in the specified file/directory
 2. Identify code smells and anti-patterns:
-   
+
    **Common smells:**
    - Long methods/functions (>20 lines)
    - Duplicate code blocks
@@ -11,21 +12,21 @@ Steps:
    - Large classes/modules
    - Feature envy
    - Data clumps
-   
+
    **Java-specific:**
    - Anemic domain models
    - God objects/classes
    - Excessive use of static methods
    - Overuse of inheritance
    - Primitive obsession
-   
+
    **Go-specific:**
    - Empty interfaces (interface{})
    - Large structs with many methods
    - Missing error handling
    - Goroutine leaks
    - Package dependency cycles
-   
+
    **Rust-specific:**
    - Overuse of Rc/RefCell
    - Unnecessary cloning
@@ -34,12 +35,12 @@ Steps:
    - Excessive unwrap() usage
 
 3. Suggest specific refactoring techniques:
-   
+
    **Universal patterns:**
    - Extract Method/Function
    - Rename for clarity
    - Replace Magic Numbers with Constants
-   
+
    **Java patterns:**
    - Replace Conditional with Polymorphism/Strategy
    - Extract Interface
@@ -47,14 +48,14 @@ Steps:
    - Replace inheritance with composition
    - Introduce Parameter Object
    - Use Optional instead of null
-   
+
    **Go patterns:**
    - Interface segregation
    - Table-driven tests
    - Functional options pattern
    - Embed interfaces for composition
    - Error wrapping with context
-   
+
    **Rust patterns:**
    - Replace Option/Result chains with ? operator
    - Use iterators instead of loops
@@ -81,6 +82,7 @@ Steps:
 6. Document the refactoring rationale in commit messages
 
 Prioritize refactorings by:
+
 - Impact on readability and maintainability
 - Risk assessment (use static analysis tools):
   - **Java**: SpotBugs, PMD, SonarQube
@@ -91,6 +93,7 @@ Prioritize refactorings by:
 - Team expertise and codebase conventions
 
 Deliverables:
+
 - Refactored code with improved structure
 - Updated tests maintaining coverage
 - Performance benchmarks (if applicable)

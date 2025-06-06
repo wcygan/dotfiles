@@ -32,69 +32,79 @@ Analyze the codebase and create a comprehensive PLAN.md for $ARGUMENTS:
      - Code review and merge
 
 4. **PLAN.md Template**:
-   ```markdown
+   ````markdown
    # Project Plan: [Project Name]
-   
+
    ## Overview
+
    Brief description of project goals and current state
-   
+
    ## Task Breakdown
-   
+
    ### Phase 1: Parallel Tasks
+
    Tasks that can be executed simultaneously by multiple agents
-   
+
    #### Task 1.1: [Task Name]
+
    - **Description**: What needs to be done
    - **Files**: Specific files/directories to modify
    - **Dependencies**: None (can run in parallel)
    - **Estimated Time**: X hours
    - **Agent Assignment**: Agent A
-   
+
    #### Task 1.2: [Task Name]
+
    - **Description**: What needs to be done
    - **Files**: Specific files/directories to modify
    - **Dependencies**: None (can run in parallel)
    - **Estimated Time**: X hours
    - **Agent Assignment**: Agent B
-   
+
    ### Phase 2: Join Point
+
    - Merge parallel work from Phase 1
    - Run integration tests
    - Resolve any conflicts
-   
+
    ### Phase 3: Sequential Tasks
+
    Tasks that must be completed in order
-   
+
    #### Task 3.1: [Task Name]
+
    - **Description**: What needs to be done
    - **Dependencies**: Phase 2 completion
    - **Estimated Time**: X hours
-   
+
    ## Execution Strategy
-   
+
    ### Multi-Agent Setup
+
    ```bash
    # Terminal 1 - Agent A
    git worktree add /tmp/agent-a-work feature/agent-a
    cd /tmp/agent-a-work
    # Work on Task 1.1
-   
+
    # Terminal 2 - Agent B  
    git worktree add /tmp/agent-b-work feature/agent-b
    cd /tmp/agent-b-work
    # Work on Task 1.2
    ```
-   
+   ````
+
    ### Coordination Points
    1. Daily sync at specific times
    2. Shared status file: `/tmp/project-status.md`
    3. Communication through PR comments
-   
+
    ## Success Criteria
    - [ ] All tests passing
    - [ ] Documentation updated
    - [ ] Code review completed
    - [ ] Performance benchmarks met
+   ```
    ```
 
 5. **Advanced Planning Features**:
@@ -107,13 +117,13 @@ Analyze the codebase and create a comprehensive PLAN.md for $ARGUMENTS:
 6. **Integration with Todo System**:
    ```typescript
    // Auto-generate todos from PLAN.md
-   const tasks = parsePlanFile('./PLAN.md');
-   tasks.forEach(task => {
+   const tasks = parsePlanFile("./PLAN.md");
+   tasks.forEach((task) => {
      createTodo({
        content: task.description,
-       status: 'pending',
+       status: "pending",
        priority: task.priority,
-       assignee: task.agent
+       assignee: task.agent,
      });
    });
    ```

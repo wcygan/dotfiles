@@ -1,6 +1,7 @@
 Generate API endpoint for $ARGUMENTS.
 
 Steps:
+
 1. Analyze project structure and frameworks:
    - **Java**: Spring Boot, Quarkus, JAX-RS
    - **Go**: ConnectRPC, Gin, Echo, Fiber
@@ -31,7 +32,7 @@ Steps:
        }
    }
    ```
-   
+
    **ConnectRPC (Go):**
    ```go
    func (s *Server) Method(ctx context.Context,
@@ -39,7 +40,7 @@ Steps:
        // Implementation
    }
    ```
-   
+
    **Axum (Rust):**
    ```rust
    async fn handler(
@@ -49,7 +50,7 @@ Steps:
        // Implementation
    }
    ```
-   
+
    - Add input validation and sanitization
    - Implement business logic with proper separation
    - Add comprehensive error handling
@@ -76,7 +77,7 @@ Steps:
            .andExpect(status().isOk());
    }
    ```
-   
+
    **Go (testing package):**
    ```go
    func TestEndpoint(t *testing.T) {
@@ -86,7 +87,7 @@ Steps:
        assert.Equal(t, http.StatusOK, w.Code)
    }
    ```
-   
+
    **Rust (axum-test):**
    ```rust
    #[tokio::test]
@@ -96,7 +97,7 @@ Steps:
        assert_eq!(response.status(), StatusCode::OK);
    }
    ```
-   
+
    - Test all response codes (200, 400, 401, 403, 404, 500)
    - Test edge cases and invalid inputs
    - Load testing with k6 or Gatling
@@ -121,6 +122,7 @@ Steps:
    - Consider event sourcing with Kafka/RedPanda
 
 Output:
+
 - Complete endpoint implementation
 - Comprehensive test suite
 - API documentation

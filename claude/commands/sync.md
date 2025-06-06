@@ -17,11 +17,11 @@ Synchronize configurations across editors:
    Common Keybindings:
    - cmd+k cmd+t: Run tests (all editors)
    - cmd+shift+p: Command palette (all editors)
-   
+
    Inconsistencies:
    - Toggle terminal: cmd+` (vscode) vs ctrl+` (cursor)
    - Format document: different across editors
-   
+
    Missing in specific editors:
    - Zed: Missing test runner keybinding
    ```
@@ -36,7 +36,7 @@ Synchronize configurations across editors:
    ```typescript
    // scripts/sync-editor-configs.ts
    import { parse, stringify } from "@std/json";
-   
+
    // Read all config files
    // Extract common patterns
    // Apply consistent mappings

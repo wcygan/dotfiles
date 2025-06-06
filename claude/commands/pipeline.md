@@ -21,7 +21,7 @@ Generate a batch processing pipeline for $ARGUMENTS:
            .build();
    }
    ```
-   
+
    **Go Concurrent Pipeline:**
    ```go
    // Worker pool pattern
@@ -41,11 +41,11 @@ Generate a batch processing pipeline for $ARGUMENTS:
        close(jobs)
    }
    ```
-   
+
    **Rust Parallel Processing:**
    ```rust
    use rayon::prelude::*;
-   
+
    files.par_iter()
        .map(|file| process_file(file))
        .collect::<Vec<_>>()
@@ -62,9 +62,9 @@ Generate a batch processing pipeline for $ARGUMENTS:
      template:
        spec:
          containers:
-         - name: processor
-           image: pipeline:latest
-           command: ["process.sh"]
+           - name: processor
+             image: pipeline:latest
+             command: ["process.sh"]
    ```
 
 4. **CI/CD Pipeline (GitHub Actions/Jenkins):**
@@ -83,16 +83,16 @@ Generate a batch processing pipeline for $ARGUMENTS:
    ```bash
    # Shell script for any language
    #!/bin/bash
-   
+
    # Find files to process
    files=$(find . -name "*.java" -type f)
-   
+
    # Process in parallel
    parallel -j 4 \
      'claude -p "Analyze {} for security issues" \
       --allowedTools Read --json > {}.analysis.json' \
      ::: $files
-   
+
    # Aggregate results
    jq -s '.' *.analysis.json > pipeline-report.json
    ```
@@ -104,22 +104,22 @@ Generate a batch processing pipeline for $ARGUMENTS:
    - **Kafka** for streaming
 
 7. **Pipeline Script Template:**
-   
+
    If using Deno for orchestration:
    ```typescript
    // scripts/pipeline-$DESCRIPTION.ts
    import { $ } from "@david/dax";
-   
+
    const config = {
-     command: "mvn test",  // or "go test", "cargo test"
+     command: "mvn test", // or "go test", "cargo test"
      parallel: 4,
      timeout: 300000,
    };
-   
+
    // Execute pipeline stages
    await $`${config.command}`.timeout(config.timeout);
    ```
-   
+
    Or create language-native scripts:
    - `pipeline-$DESCRIPTION.java`
    - `pipeline-$DESCRIPTION.go`

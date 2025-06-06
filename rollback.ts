@@ -5,7 +5,7 @@
  * This script restores dotfiles from a backup directory
  */
 
-import { basename, join } from "@std/path";
+import { join } from "@std/path";
 import { exists } from "@std/fs/exists";
 import { copy } from "@std/fs/copy";
 import { parseArgs } from "@std/cli/parse-args";
@@ -63,11 +63,11 @@ Examples:
 async function promptUser(message: string): Promise<boolean> {
   console.log(`${colors.yellow}${message}${colors.reset}`);
   console.log("Type 'yes' to continue or 'no' to cancel:");
-  
+
   const buf = new Uint8Array(1024);
   const n = await Deno.stdin.read(buf) ?? 0;
   const input = new TextDecoder().decode(buf.subarray(0, n)).trim().toLowerCase();
-  
+
   return input === "yes" || input === "y";
 }
 
@@ -104,7 +104,7 @@ async function rollbackDotfiles(config: RollbackConfig): Promise<void> {
   // Confirm rollback
   if (!force) {
     const confirmed = await promptUser(
-      "\n⚠️  This will overwrite your current dotfiles with the backup versions. Continue?"
+      "\n⚠️  This will overwrite your current dotfiles with the backup versions. Continue?",
     );
     if (!confirmed) {
       printYellow("Rollback cancelled");
@@ -124,7 +124,9 @@ async function rollbackDotfiles(config: RollbackConfig): Promise<void> {
       printGreen(`✓ Restored ${file}`);
       restoredCount++;
     } catch (error) {
-      printRed(`✗ Failed to restore ${file}: ${error.message}`);
+      printRed(
+        `✗ Failed to restore ${file}: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -132,7 +134,9 @@ async function rollbackDotfiles(config: RollbackConfig): Promise<void> {
     printGreen("\n🎉 Rollback completed successfully!");
     printBlue(`Restored ${restoredCount} dotfiles from backup`);
   } else {
-    printYellow(`\n⚠️  Partial rollback completed: ${restoredCount}/${filesToRestore.length} files restored`);
+    printYellow(
+      `\n⚠️  Partial rollback completed: ${restoredCount}/${filesToRestore.length} files restored`,
+    );
   }
 }
 
@@ -168,9 +172,8 @@ async function main() {
     };
 
     await rollbackDotfiles(config);
-
   } catch (error) {
-    printRed(`Error: ${error.message}`);
+    printRed(`Error: ${error instanceof Error ? error.message : String(error)}`);
     Deno.exit(1);
   }
 }

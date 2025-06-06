@@ -32,24 +32,29 @@ deno run --allow-all scripts/pre-commit-check.ts # Pre-commit validation
 ## Architecture
 
 ### Core Scripts
+
 - `install-safely.ts` - Main installation script with backup/restore logic
 - `integration-test.ts` - Comprehensive test suite for installation/rollback
 - `profile.ps1` - PowerShell profile configuration
 
 ### Script Utilities (`scripts/`)
+
 - `ci-environment-check.ts` - CI environment validation and setup
 - `pre-commit-check.ts` - Pre-commit hook validation
 - `test-actions-locally.ts` - Local GitHub Actions testing
 
 ### Configuration Directories
+
 - `claude/` - Claude AI assistant configuration and scripts
   - `claude/commands/` - Custom slash commands for Claude Code CLI
 - `cursor/`, `vscode/`, `zed/` - Editor-specific configurations with keybindings
 - Shell dotfiles are dynamically generated during installation
 
 ### Installation Process
+
 The installation script (`install-safely.ts`) manages these dotfiles:
-- `.zshrc`, `.bashrc`, `.bash_profile` 
+
+- `.zshrc`, `.bashrc`, `.bash_profile`
 - `.path.sh`, `.exports.sh`, `.aliases.sh`, `.functions.sh`, `.extra.sh`
 - `.vimrc`
 - Claude configuration files (`CLAUDE.md`) to `~/.claude/`

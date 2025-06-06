@@ -109,8 +109,7 @@ async function runCommand(
     });
 
     const result = await command.output();
-    const output =
-      new TextDecoder().decode(result.stdout) +
+    const output = new TextDecoder().decode(result.stdout) +
       new TextDecoder().decode(result.stderr);
 
     return {
@@ -216,14 +215,18 @@ async function backupZedConfig(
           backedUpFiles.push(`zed/${configFile}`);
         } catch (error) {
           printWarning(
-            `Could not backup Zed ${configFile}: ${error instanceof Error ? error.message : String(error)}`,
+            `Could not backup Zed ${configFile}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
           );
         }
       }
     }
   } catch (error) {
     printWarning(
-      `Could not backup Zed configuration: ${error instanceof Error ? error.message : String(error)}`,
+      `Could not backup Zed configuration: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     );
   }
 
@@ -261,7 +264,9 @@ async function backupClaudeConfig(
           backedUpFiles.push(`claude/${configFile}`);
         } catch (error) {
           printWarning(
-            `Could not backup Claude ${configFile}: ${error instanceof Error ? error.message : String(error)}`,
+            `Could not backup Claude ${configFile}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
           );
         }
       }
@@ -270,7 +275,7 @@ async function backupClaudeConfig(
     // Backup commands directory if it exists
     const commandsSourceDir = join(claudeConfigDir, CLAUDE_COMMANDS_DIR);
     const commandsBackupDir = join(claudeBackupDir, CLAUDE_COMMANDS_DIR);
-    
+
     if (await exists(commandsSourceDir)) {
       try {
         await copy(commandsSourceDir, commandsBackupDir, { overwrite: true });
@@ -278,13 +283,17 @@ async function backupClaudeConfig(
         backedUpFiles.push(`claude/${CLAUDE_COMMANDS_DIR}`);
       } catch (error) {
         printWarning(
-          `Could not backup Claude commands directory: ${error instanceof Error ? error.message : String(error)}`,
+          `Could not backup Claude commands directory: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
         );
       }
     }
   } catch (error) {
     printWarning(
-      `Could not backup Claude configuration: ${error instanceof Error ? error.message : String(error)}`,
+      `Could not backup Claude configuration: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     );
   }
 
@@ -330,11 +339,13 @@ async function copyDotfiles(
   let copiedCount = 0;
 
   try {
-    for await (const entry of walk(dotfilesDir, {
-      includeFiles: true,
-      includeDirs: false,
-      skip: [/\.git/, /node_modules/, /\.deno/],
-    })) {
+    for await (
+      const entry of walk(dotfilesDir, {
+        includeFiles: true,
+        includeDirs: false,
+        skip: [/\.git/, /node_modules/, /\.deno/],
+      })
+    ) {
       const relativePath = entry.path.replace(dotfilesDir + "/", "");
       const filename = basename(entry.path);
 
@@ -417,7 +428,9 @@ async function copyZedConfig(
           copiedCount++;
         } catch (error) {
           printWarning(
-            `Could not copy ${configFile}: ${error instanceof Error ? error.message : String(error)}`,
+            `Could not copy ${configFile}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
           );
         }
       } else {
@@ -462,7 +475,7 @@ async function copyClaudeConfig(
     printStatus(`Created Claude config directory: ${claudeConfigDir}`);
 
     let copiedCount = 0;
-    
+
     // Copy individual config files
     for (const configFile of CLAUDE_CONFIG_FILES) {
       const sourcePath = join(claudeSourceDir, configFile);
@@ -475,7 +488,9 @@ async function copyClaudeConfig(
           copiedCount++;
         } catch (error) {
           printWarning(
-            `Could not copy ${configFile}: ${error instanceof Error ? error.message : String(error)}`,
+            `Could not copy ${configFile}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
           );
         }
       } else {
@@ -488,7 +503,7 @@ async function copyClaudeConfig(
     // Copy commands directory if it exists
     const commandsSourceDir = join(claudeSourceDir, CLAUDE_COMMANDS_DIR);
     const commandsDestDir = join(claudeConfigDir, CLAUDE_COMMANDS_DIR);
-    
+
     if (await exists(commandsSourceDir)) {
       try {
         await copy(commandsSourceDir, commandsDestDir, { overwrite: true });
@@ -496,7 +511,9 @@ async function copyClaudeConfig(
         copiedCount++;
       } catch (error) {
         printWarning(
-          `Could not copy Claude commands directory: ${error instanceof Error ? error.message : String(error)}`,
+          `Could not copy Claude commands directory: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
         );
       }
     } else {
@@ -511,7 +528,9 @@ async function copyClaudeConfig(
     return true;
   } catch (error) {
     printError(
-      `Failed to copy Claude configuration: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to copy Claude configuration: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     );
     return false;
   }

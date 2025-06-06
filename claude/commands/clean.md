@@ -1,6 +1,7 @@
 Clean up technical debt in $ARGUMENTS.
 
 Steps:
+
 1. Identify cleanup targets:
    - Scan for TODO, FIXME, HACK, XXX comments
    - Find commented-out code blocks
@@ -54,6 +55,7 @@ Steps:
    - Update example code
 
 Safety measures:
+
 - Create git commit before each cleanup type
 - Run tests after each change
 - Keep refactoring commits separate
@@ -61,6 +63,7 @@ Safety measures:
 - Preserve git history for deleted files
 
 Output:
+
 - Summary of cleaned items by category
 - Lines of code removed
 - Performance impact (if any)

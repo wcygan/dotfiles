@@ -1,6 +1,7 @@
 Manage dependencies intelligently for the current project.
 
 Steps:
+
 1. Detect package manager and read dependencies:
    - **Java**: pom.xml (Maven), build.gradle (Gradle)
    - **Go**: go.mod, go.sum
@@ -61,6 +62,7 @@ Steps:
    - Identify copyleft licenses requiring attention
 
 Output format:
+
 - Executive summary with risk score
 - Categorized list of issues
 - Specific remediation commands

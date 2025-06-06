@@ -10,6 +10,7 @@
       "cmd-1": "workspace::ToggleLeftDock",
       "cmd-2": "workspace::ToggleRightDock",
       "shift shift": "file_finder::Toggle",
+      "cmd-s": "task::Spawn",
       // ⚙️ Settings
       "cmd-.": "zed::OpenKeymap",
       "cmd-alt-.": "zed::OpenDefaultKeymap",

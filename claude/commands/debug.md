@@ -35,6 +35,20 @@ Steps:
    - println! debugging with dbg! macro
    - cargo-expand for macro debugging
    
+   **Deno/TypeScript:**
+   - Chrome DevTools debugging: deno run --inspect-brk
+   - Console debugging with Deno.inspect()
+   - Stack traces with Error().stack
+   - Permission debugging: --allow-read=. --allow-write=.
+   - Module graph inspection: deno info script.ts
+   
+   **Deno Fresh:**
+   - Island hydration issues: check client/server boundaries
+   - Route debugging: _middleware.ts for request logging
+   - SSR errors: check ctx.renderNotFound() and error boundaries
+   - Dev tools: deno task start --inspect
+   - Fresh error page: routes/_500.tsx for custom error handling
+   
    **General:**
    - Distributed tracing for microservices
    - tcpdump/Wireshark for network issues
@@ -62,6 +76,20 @@ Steps:
    - Unsafe code problems
    - Panic in production code
    
+   **Deno/TypeScript:**
+   - Permission errors (file, network, env access)
+   - Module resolution failures
+   - Import map configuration issues
+   - Top-level await deadlocks
+   - Memory leaks in long-running processes
+   
+   **Deno Fresh:**
+   - Island component hydration mismatches
+   - Server/client code mixing
+   - Incorrect ctx usage in routes
+   - Middleware ordering issues
+   - Static file serving problems
+   
    **Common:**
    - Race conditions in concurrent code
    - Resource exhaustion
@@ -80,6 +108,8 @@ Steps:
      - **Java**: Optional usage, try-with-resources
      - **Go**: Error wrapping, defer cleanup
      - **Rust**: Result<T,E> handling, match exhaustiveness
+     - **Deno**: try/catch with proper error types, using Deno.errors
+     - **Fresh**: Error boundaries, proper async handling in routes
    - Add comprehensive error handling
    - Circuit breakers for external services
    - Implement proper timeout handling

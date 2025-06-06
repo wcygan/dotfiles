@@ -1,26 +1,80 @@
-Guidlines:
+# CLAUDE.md
 
-Your preferences are described below as `{ <Theme> } <Preference>`. This format allows you to understand what themes our preferences are related to.
+IMPORTANT: These are my development preferences and guidelines. YOU MUST follow them when working on my projects.
 
-- { Workflow } Follow best practices for the frameworks and languages you use.
-  - { Testing } Write clear, descriptive test names for better readability.
-  - { Testing } Prefer running single tests, and not the whole test suite, for performance
-- { Backend Programming } Prefer Java, Go, and Rust as languages for building servers. Use the best tool for the job.
-  - { Go } When using Go, prefer [ConnectRPC](https://github.com/connectrpc/connect-go)
-  - { Rust } When using Rust, prefer [axum](https://github.com/tokio-rs/axum)
-  - { Java } When using Java, prefer [Spring Boot](https://spring.io/projects/spring-boot) with [Quarkus](https://quarkus.io/)
-- { Data Infrastructure} Use modern choices for data infrastructure. I run a Talos Linux Kuberneter Cluster.
-  - Prefer Postgres over MySQL
-  - Prefer DragonflyDB over Redis
-  - Prefer RedPanda over Kafka
-  - Prefer ScyllaDB over Cassandra
-- { Scripting } Prefer using [Deno](https://github.com/denoland/deno/) for scripting over Bash and Python. Frequently Leverage Deno Scripting for automation and task management.
-  - { Deno } In the project's root, create a `deno.json` file. It should contain tasks for common operations for the project
-  - { Deno } Prefer JSR imports like `import { walk } from "@std/fs";` instead of `import { walk } from "https://deno.land/std@0.224.0/fs/walk.ts";`. In `deno.json`, this will appear as a JSR Import like `"@std/fs": "jsr:@std/fs@^1.0.17",`.
-  - { Deno } Use [Dax](https://github.com/dsherret/dax) to provide Cross-platform shell tools for Deno
-- { Web Framework } Prefer [Deno Fresh](https://fresh.deno.dev/) for web development
-  - { Deno Fresh} Use Deno’s built-in test runner (Deno.test) for unit tests (either in Deno Scripts or in Deno Fresh).
-  - { Deno Fresh}  Organize tests by type: unit, component, and E2E.
-  - { Deno Fresh}  Mock external dependencies to keep tests fast and reliable.
-  - { Deno Fresh}  Use fresh-testing-library for component and handler testing.
+## Code Style & Workflow
 
+### Testing
+- **ALWAYS** write clear, descriptive test names for better readability
+- **ALWAYS** prefer running single tests over the whole test suite for performance
+- Use `deno test --filter="test name"` or framework-specific single test runners
+
+### Language & Framework Preferences
+
+#### Backend Programming
+IMPORTANT: I am primarily a backend developer and prefer these languages and frameworks:
+- **Go**: Use [ConnectRPC](https://github.com/connectrpc/connect-go) for RPC services
+- **Rust**: Use [axum](https://github.com/tokio-rs/axum) for web services  
+- **Java**: Use [Spring Boot](https://spring.io/projects/spring-boot) with [Quarkus](https://quarkus.io/)
+
+#### Scripting & Automation
+**YOU MUST** use Deno for all scripting tasks instead of Bash or Python:
+- Create `deno.json` in project root with tasks for common operations
+- Use JSR imports: `import { walk } from "@std/fs";` NOT `https://deno.land/...`
+- Use [Dax](https://github.com/dsherret/dax) for cross-platform shell operations
+- Example deno.json imports: `"@std/fs": "jsr:@std/fs@^1.0.17"`
+
+#### Web Development
+Use [Deno Fresh](https://fresh.deno.dev/) with these practices:
+- Built-in test runner: `Deno.test()`
+- Organize tests: `/tests/unit/`, `/tests/component/`, `/tests/e2e/`
+- Mock external dependencies for fast, reliable tests
+- Use fresh-testing-library for component/handler testing
+
+## Infrastructure Choices
+
+IMPORTANT: I run a Talos Linux Kubernetes Cluster. Use these modern alternatives:
+- **Database**: Postgres (NOT MySQL)
+- **Cache**: DragonflyDB (NOT Redis)
+- **Streaming**: RedPanda (NOT Kafka)
+- **NoSQL**: ScyllaDB (NOT Cassandra)
+
+## Common Commands
+
+```bash
+# Deno development
+deno task dev          # Start development server
+deno task test         # Run all tests
+deno test --filter="specific test"  # Run single test
+deno task build        # Build project
+deno check            # Type check
+deno fmt              # Format code
+deno lint             # Lint code
+
+# Project setup
+deno task init        # Initialize / configure the project for a new environment
+deno task deps        # Update dependencies
+```
+
+## Development Workflow
+
+1. **ALWAYS** run type checking/linting after code changes (e.g., `deno check`, `go vet`, `cargo check`)
+2. **ALWAYS** format code before committing using project's formatter
+3. **ALWAYS** run relevant tests before pushing changes
+4. **NEVER** commit without running pre-commit checks
+5. **ALWAYS** use semantic commit messages (feat:, fix:, docs:, refactor:, test:, chore:)
+
+## File Organization
+
+- `/src/` - Source code
+- `/tests/` - Test files organized by type
+- `/scripts/` - Deno automation scripts
+- `deno.json` - Project configuration and tasks
+- `import_map.json` - Import mappings (if needed)
+
+## IMPORTANT Notes
+
+- **YOU MUST** follow these guidelines exactly as written
+- **ALWAYS** ask for clarification if requirements conflict
+- **NEVER** use deprecated patterns or old import styles
+- **ALWAYS** prioritize performance and type safety

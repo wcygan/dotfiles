@@ -39,9 +39,30 @@ IMPORTANT: I run a Talos Linux Kubernetes Cluster. Use these modern alternatives
 - **Streaming**: RedPanda (NOT Kafka)
 - **NoSQL**: ScyllaDB (NOT Cassandra)
 
-## Common Commands
+## Modern Development Tools
+
+### Preferred Command-Line Tools
+**ALWAYS** prefer these modern, fast alternatives:
+- **ripgrep (rg)**: Use instead of grep for searching code
+- **fd**: Use instead of find for finding files
+- **fzf**: Use for interactive fuzzy finding
+- **bat**: Use instead of cat for syntax-highlighted file viewing
+- **exa/eza**: Use instead of ls for better file listings
+- **delta**: Use for better git diffs
+- **zoxide**: Use instead of cd for smarter directory navigation
+- **duf**: Use instead of df for disk usage
+- **htop/btop**: Use instead of top for process monitoring
+
+### Common Commands
 
 ```bash
+# Modern tool usage
+rg "pattern" --type rust        # Search Rust files
+fd ".rs$" src/                   # Find all Rust files
+bat src/main.rs                  # View file with syntax highlighting
+eza -la --git                    # List files with git status
+delta                            # Better git diff viewer
+
 # Deno development
 deno task dev          # Start development server
 deno task test         # Run all tests
@@ -54,6 +75,11 @@ deno lint             # Lint code
 # Project setup
 deno task init        # Initialize / configure the project for a new environment
 deno task deps        # Update dependencies
+
+# Git worktree (for multi-agent workflows)
+git worktree add ../project-feature feature-branch
+git worktree list
+git worktree remove ../project-feature
 ```
 
 ## Development Workflow
@@ -82,6 +108,9 @@ When working as part of a multi-agent team:
 - **COMMUNICATE** progress through PR comments or status files
 - **WAIT** at join points until all parallel work is complete
 - **MERGE** work carefully following the plan's integration strategy
+- **USE** git worktrees to work on separate branches without conflicts
+- **CREATE** status files in `/tmp/claude-scratch/` for inter-agent communication
+- **COORDINATE** using shared JSON status files for structured updates
 
 ## File Organization
 

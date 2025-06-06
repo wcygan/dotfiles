@@ -34,7 +34,7 @@ The agent will:
 
 1. **For recording progress**: 
    - Run `date` to get current timestamp
-   - Create directory structure: `~/.progress/YYYY-MM-DD/`
+   - Create directory structure: `./progress/YYYY-MM-DD/` (in project root)
    - Create file: `YYYY-MM-DD-HH:MM:SS-TIMEZONE.md`
    - Write progress entry with markdown formatting
 
@@ -45,7 +45,7 @@ The agent will:
 ## Directory Structure
 
 ```
-~/.progress/
+./progress/
 ├── 2025-06-06/
 │   ├── 2025-06-06-10:30:45-CDT.md
 │   ├── 2025-06-06-14:22:10-CDT.md

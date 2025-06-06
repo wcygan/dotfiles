@@ -69,6 +69,9 @@ const EXCLUDE_FILES = [
 // Zed configuration files to manage
 const ZED_CONFIG_FILES = ["keymap.json", "settings.json"];
 
+// Claude configuration files to manage
+const CLAUDE_CONFIG_FILES = ["CLAUDE.md"];
+
 // Utility functions
 function printStatus(message: string): void {
   console.log(`${colors.green}✅${colors.reset} ${message}`);
@@ -224,6 +227,50 @@ async function backupZedConfig(
   return backedUpFiles;
 }
 
+async function backupClaudeConfig(
+  homeDir: string,
+  backupDir: string,
+): Promise<string[]> {
+  const claudeConfigDir = join(homeDir, ".claude");
+  const claudeBackupDir = join(backupDir, ".claude");
+  const backedUpFiles: string[] = [];
+
+  const claudeDirExists = await exists(claudeConfigDir);
+  if (!claudeDirExists) {
+    console.log(
+      `   ${colors.yellow}No existing Claude configuration found${colors.reset}`,
+    );
+    return backedUpFiles;
+  }
+
+  try {
+    await ensureDir(claudeBackupDir);
+
+    for (const configFile of CLAUDE_CONFIG_FILES) {
+      const sourcePath = join(claudeConfigDir, configFile);
+      const backupPath = join(claudeBackupDir, configFile);
+
+      if (await exists(sourcePath)) {
+        try {
+          await copy(sourcePath, backupPath, { overwrite: true });
+          printStatus(`Backed up Claude ${configFile}`);
+          backedUpFiles.push(`claude/${configFile}`);
+        } catch (error) {
+          printWarning(
+            `Could not backup Claude ${configFile}: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      }
+    }
+  } catch (error) {
+    printWarning(
+      `Could not backup Claude configuration: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+
+  return backedUpFiles;
+}
+
 function detectShell(
   shell: string,
 ): { type: string; configFile: string; rcFile: string } | null {
@@ -372,6 +419,62 @@ async function copyZedConfig(
   }
 }
 
+async function copyClaudeConfig(
+  dotfilesDir: string,
+  homeDir: string,
+): Promise<boolean> {
+  printBlue("🤖 Copying Claude configuration files...");
+  const claudeSourceDir = join(dotfilesDir, "claude");
+  const claudeConfigDir = join(homeDir, ".claude");
+
+  // Check if claude directory exists in dotfiles
+  const claudeDirExists = await exists(claudeSourceDir);
+  if (!claudeDirExists) {
+    printWarning(
+      "No claude directory found in dotfiles, skipping Claude configuration",
+    );
+    return true;
+  }
+
+  try {
+    // Ensure Claude config directory exists
+    await ensureDir(claudeConfigDir);
+    printStatus(`Created Claude config directory: ${claudeConfigDir}`);
+
+    let copiedCount = 0;
+    for (const configFile of CLAUDE_CONFIG_FILES) {
+      const sourcePath = join(claudeSourceDir, configFile);
+      const destPath = join(claudeConfigDir, configFile);
+
+      if (await exists(sourcePath)) {
+        try {
+          await copy(sourcePath, destPath, { overwrite: true });
+          printStatus(`Copied ${configFile} to Claude config`);
+          copiedCount++;
+        } catch (error) {
+          printWarning(
+            `Could not copy ${configFile}: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      } else {
+        console.log(
+          `   ${colors.yellow}No ${configFile} found in claude directory${colors.reset}`,
+        );
+      }
+    }
+
+    if (copiedCount > 0) {
+      printStatus(`Successfully copied ${copiedCount} Claude configuration files`);
+    }
+    return true;
+  } catch (error) {
+    printError(
+      `Failed to copy Claude configuration: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return false;
+  }
+}
+
 async function reloadShell(shellType: string, homeDir: string): Promise<void> {
   printBlue("🔃 Reloading shell configuration...");
 
@@ -487,6 +590,15 @@ This script will:
     );
     backedUpFiles.push(...zedBackedUpFiles);
 
+    // Backup Claude configuration
+    console.log();
+    printBlue("🤖 Backing up Claude configuration...");
+    const claudeBackedUpFiles = await backupClaudeConfig(
+      config.homeDir,
+      config.backupDir,
+    );
+    backedUpFiles.push(...claudeBackedUpFiles);
+
     // Show current shell
     console.log();
     printBlue("🐚 Current shell information:");
@@ -549,6 +661,16 @@ This script will:
       printWarning("Zed configuration installation failed, but continuing...");
     }
 
+    // Copy Claude configuration
+    console.log();
+    const claudeInstallSuccess = await copyClaudeConfig(
+      config.dotfilesDir,
+      config.homeDir,
+    );
+    if (!claudeInstallSuccess) {
+      printWarning("Claude configuration installation failed, but continuing...");
+    }
+
     // Reload shell configuration
     console.log();
     if (shellInfo) {
@@ -567,6 +689,7 @@ This script will:
     );
     console.log("   ✅ Installed new dotfiles from repository");
     console.log("   ✅ Installed Zed configuration files");
+    console.log("   ✅ Installed Claude configuration files");
     console.log("   ✅ Reloaded shell configuration");
     console.log();
     printBlue("🧪 Test your installation:");

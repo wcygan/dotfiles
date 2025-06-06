@@ -52,6 +52,9 @@ IMPORTANT: I run a Talos Linux Kubernetes Cluster. Use these modern alternatives
 - **zoxide**: Use instead of cd for smarter directory navigation
 - **duf**: Use instead of df for disk usage
 - **htop/btop**: Use instead of top for process monitoring
+- **jq**: Use for JSON processing and manipulation
+- **yq**: Use for YAML processing and manipulation
+- **hexyl**: Use for hex viewing of binary files
 
 ### Common Commands
 

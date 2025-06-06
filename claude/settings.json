@@ -24,6 +24,8 @@
       "Bash(htop *)",
       "Bash(btop *)",
       "Bash(jq *)",
+      "Bash(yq *)",
+      "Bash(hexyl *)",
       "Bash(mkdir -p /tmp/claude-scratch*)",
       "Bash(touch /tmp/claude-*)",
       "Bash(echo * > /tmp/claude-*)",

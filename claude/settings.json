@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(deno task *)",
+      "Bash(npm run *)",
+      "Bash(cargo *)",
+      "Bash(go *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Bash(docker *)",
+      "Bash(kubectl *)",
+      "Bash(terraform *)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(:(){ :|:& };:)",
+      "Bash(dd if=/dev/zero of=/dev/*)",
+      "Bash(mkfs.*)",
+      "Bash(> /dev/sda*)"
+    ]
+  },
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
+    "EDITOR": "zed",
+    "GIT_EDITOR": "zed --wait"
+  },
+  "cleanupPeriodDays": 90,
+  "includeCoAuthoredBy": true
+}

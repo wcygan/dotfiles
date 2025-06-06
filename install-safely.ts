@@ -70,7 +70,7 @@ const EXCLUDE_FILES = [
 const ZED_CONFIG_FILES = ["keymap.json", "settings.json"];
 
 // Claude configuration files to manage
-const CLAUDE_CONFIG_FILES = ["CLAUDE.md"];
+const CLAUDE_CONFIG_FILES = ["CLAUDE.md", "settings.json", "mcp.json"];
 
 // Claude commands directory to manage
 const CLAUDE_COMMANDS_DIR = "commands";

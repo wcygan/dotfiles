@@ -56,22 +56,25 @@ class DotfilesTestRunner {
   }
 
   private async copyDotfilesToTest(dotfilesDir: string): Promise<void> {
-    // Copy essential dotfiles for testing
-    const filesToCopy = [
-      ".zshrc",
-      ".bash_profile",
-      ".aliases.sh",
-      ".functions.sh",
-      ".exports.sh",
-      ".path.sh",
-      ".extra.sh",
-      ".vimrc",
-      "install-safely.ts",
-      "rollback.ts",
+    // Copy the entire shell directory structure
+    const shellDir = "shell";
+    if (await exists(shellDir)) {
+      await copy(shellDir, join(dotfilesDir, shellDir));
+    }
+
+    // Copy the scripts directory
+    const scriptsDir = "scripts";
+    if (await exists(scriptsDir)) {
+      await copy(scriptsDir, join(dotfilesDir, scriptsDir));
+    }
+
+    // Copy other essential files
+    const rootFiles = [
       "deno.json",
+      "deno.lock",
     ];
 
-    for (const file of filesToCopy) {
+    for (const file of rootFiles) {
       if (await exists(file)) {
         await copy(file, join(dotfilesDir, file));
       }
@@ -101,7 +104,7 @@ class DotfilesTestRunner {
     Deno.env.set("SHELL", "/bin/zsh");
 
     try {
-      const args = ["run", "--allow-all", join(this.testEnv.dotfilesDir, "install-safely.ts")];
+      const args = ["run", "--allow-all", join(this.testEnv.dotfilesDir, "scripts", "install-safely.ts")];
       if (force) args.push("--force");
 
       const command = new Deno.Command("deno", {
@@ -145,7 +148,7 @@ class DotfilesTestRunner {
         args: [
           "run",
           "--allow-all",
-          join(this.testEnv.dotfilesDir, "rollback.ts"),
+          join(this.testEnv.dotfilesDir, "scripts", "rollback.ts"),
           backupDir,
           "--force",
         ],

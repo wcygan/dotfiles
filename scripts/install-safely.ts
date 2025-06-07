@@ -36,21 +36,25 @@ interface InstallResult {
   error?: string;
 }
 
-// Files to manage
-const DOTFILES = [
-  ".zshrc",
-  ".bashrc",
-  ".bash_profile",
-  ".path.sh",
-  ".exports.sh",
-  ".aliases.sh",
-  ".functions.sh",
-  ".extra.sh",
-  ".vimrc",
-];
+// File mappings from source to destination
+const FILE_MAPPINGS: Record<string, string> = {
+  "shell/bash/bashrc": ".bashrc",
+  "shell/bash/bash_profile": ".bash_profile",
+  "shell/zsh/zshrc": ".zshrc",
+  "shell/common/aliases.sh": ".aliases.sh",
+  "shell/common/exports.sh": ".exports.sh",
+  "shell/common/functions.sh": ".functions.sh",
+  "shell/common/path.sh": ".path.sh",
+  "shell/common/extra.sh": ".extra.sh",
+  "shell/common/platform.sh": ".platform.sh",
+  "shell/vim/vimrc": ".vimrc",
+};
+
+// Files to manage (for backward compatibility)
+const DOTFILES = Object.values(FILE_MAPPINGS);
 
 // Optional files that might exist
-const OPTIONAL_FILES = [".platform.sh", ".fzf.zsh"];
+const OPTIONAL_FILES = [".fzf.zsh"];
 
 // Files to exclude when copying dotfiles
 const EXCLUDE_FILES = [
@@ -135,9 +139,10 @@ function getInstallConfig(): InstallConfig {
   const homeDir = Deno.env.get("HOME") || Deno.env.get("USERPROFILE") || "";
   const backupDir = join(homeDir, `.dotfiles-backup-${timestamp}`);
 
-  // Get current script directory
+  // Get current script directory and go up one level to get dotfiles root
   const currentFile = new URL(import.meta.url).pathname;
-  const dotfilesDir = dirname(currentFile);
+  const scriptsDir = dirname(currentFile);
+  const dotfilesDir = dirname(scriptsDir);
 
   const shell = Deno.env.get("SHELL") || "";
   const user = Deno.env.get("USER") || Deno.env.get("USERNAME") || "";
@@ -154,10 +159,12 @@ function getInstallConfig(): InstallConfig {
 async function validateDotfilesDirectory(
   dotfilesDir: string,
 ): Promise<boolean> {
-  const zshrcExists = await exists(join(dotfilesDir, ".zshrc"));
-  const aliasesExists = await exists(join(dotfilesDir, ".aliases.sh"));
+  // Check if the shell directory structure exists
+  const shellDirExists = await exists(join(dotfilesDir, "shell"));
+  const zshrcExists = await exists(join(dotfilesDir, "shell", "zsh", "zshrc"));
+  const aliasesExists = await exists(join(dotfilesDir, "shell", "common", "aliases.sh"));
 
-  return zshrcExists && aliasesExists;
+  return shellDirExists && (zshrcExists || aliasesExists);
 }
 
 async function backupFile(
@@ -339,43 +346,46 @@ async function copyDotfiles(
   let copiedCount = 0;
 
   try {
-    for await (
-      const entry of walk(dotfilesDir, {
-        includeFiles: true,
-        includeDirs: false,
-        skip: [/\.git/, /node_modules/, /\.deno/],
-      })
-    ) {
-      const relativePath = entry.path.replace(dotfilesDir + "/", "");
-      const filename = basename(entry.path);
+    // Copy files based on the file mappings
+    for (const [sourcePath, destFile] of Object.entries(FILE_MAPPINGS)) {
+      const sourceFullPath = join(dotfilesDir, sourcePath);
+      const destFullPath = join(homeDir, destFile);
 
-      // Skip excluded files
-      if (
-        EXCLUDE_FILES.includes(filename) ||
-        EXCLUDE_FILES.includes(relativePath) ||
-        entry.path.includes("/.git/") ||
-        filename.endsWith(".ts") ||
-        filename.endsWith(".md") ||
-        filename.startsWith("deno.")
-      ) {
-        continue;
+      if (await exists(sourceFullPath)) {
+        try {
+          await copy(sourceFullPath, destFullPath, { overwrite: true });
+          printStatus(`Copied ${destFile}`);
+          copiedCount++;
+        } catch (error) {
+          printWarning(
+            `Could not copy ${destFile}: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      } else {
+        printWarning(`Source file not found: ${sourcePath}`);
       }
+    }
 
-      // Skip files in subdirectories (we only want root-level dotfiles)
-      if (relativePath.includes("/")) {
-        continue;
+    // Also check for optional files in the shell directory structure
+    for (const optFile of OPTIONAL_FILES) {
+      // Check in common directory first
+      let sourcePath = join(dotfilesDir, "shell", "common", optFile.substring(1));
+      if (!await exists(sourcePath)) {
+        // Try root directory for backward compatibility
+        sourcePath = join(dotfilesDir, optFile);
       }
-
-      const destPath = join(homeDir, filename);
-
-      try {
-        await copy(entry.path, destPath, { overwrite: true });
-        printStatus(`Copied ${filename}`);
-        copiedCount++;
-      } catch (error) {
-        printWarning(
-          `Could not copy ${filename}: ${error instanceof Error ? error.message : String(error)}`,
-        );
+      
+      if (await exists(sourcePath)) {
+        const destPath = join(homeDir, optFile);
+        try {
+          await copy(sourcePath, destPath, { overwrite: true });
+          printStatus(`Copied optional file: ${optFile}`);
+          copiedCount++;
+        } catch (error) {
+          printWarning(
+            `Could not copy ${optFile}: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
       }
     }
 
@@ -529,6 +539,48 @@ async function copyClaudeConfig(
   } catch (error) {
     printError(
       `Failed to copy Claude configuration: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    return false;
+  }
+}
+
+async function copyPowerShellProfile(
+  dotfilesDir: string,
+  homeDir: string,
+): Promise<boolean> {
+  // Only run on Windows
+  if (Deno.build.os !== "windows") {
+    return true;
+  }
+
+  printBlue("💻 Copying PowerShell profile...");
+  const psSourcePath = join(dotfilesDir, "shell", "powershell", "profile.ps1");
+  
+  // Check if PowerShell profile exists in dotfiles
+  if (!await exists(psSourcePath)) {
+    printWarning("No PowerShell profile found in dotfiles, skipping");
+    return true;
+  }
+
+  try {
+    // Get PowerShell profile directory
+    const documentsDir = join(homeDir, "Documents");
+    const psProfileDir = join(documentsDir, "WindowsPowerShell");
+    const psProfilePath = join(psProfileDir, "Microsoft.PowerShell_profile.ps1");
+
+    // Ensure PowerShell profile directory exists
+    await ensureDir(psProfileDir);
+
+    // Copy the profile
+    await copy(psSourcePath, psProfilePath, { overwrite: true });
+    printStatus(`Copied PowerShell profile to ${psProfilePath}`);
+    
+    return true;
+  } catch (error) {
+    printWarning(
+      `Could not copy PowerShell profile: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
@@ -732,6 +784,16 @@ This script will:
       printWarning("Claude configuration installation failed, but continuing...");
     }
 
+    // Copy PowerShell profile (Windows only)
+    console.log();
+    const psInstallSuccess = await copyPowerShellProfile(
+      config.dotfilesDir,
+      config.homeDir,
+    );
+    if (!psInstallSuccess) {
+      printWarning("PowerShell profile installation failed, but continuing...");
+    }
+
     // Reload shell configuration
     console.log();
     if (shellInfo) {
@@ -751,6 +813,9 @@ This script will:
     console.log("   ✅ Installed new dotfiles from repository");
     console.log("   ✅ Installed Zed configuration files");
     console.log("   ✅ Installed Claude configuration files and custom commands");
+    if (Deno.build.os === "windows") {
+      console.log("   ✅ Installed PowerShell profile");
+    }
     console.log("   ✅ Reloaded shell configuration");
     console.log();
     printBlue("🧪 Test your installation:");

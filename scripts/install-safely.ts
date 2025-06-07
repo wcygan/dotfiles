@@ -56,7 +56,7 @@ const DOTFILES = Object.values(FILE_MAPPINGS);
 const OPTIONAL_FILES = [".fzf.zsh"];
 
 // Zed configuration files to manage
-const ZED_CONFIG_FILES = ["keymap.json", "settings.json"];
+const ZED_CONFIG_FILES = ["keymap.json", "settings.json", "tasks.json"];
 
 // Claude configuration files to manage
 const CLAUDE_CONFIG_FILES = ["CLAUDE.md", "settings.json", "mcp.json"];

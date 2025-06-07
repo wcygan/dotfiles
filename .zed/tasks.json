@@ -1,0 +1,10 @@
+[
+  {
+    "label": "Install Dotfiles",
+    "command": "deno task install",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  }
+]

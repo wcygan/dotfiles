@@ -4,6 +4,7 @@ Create a task definition for .zed/tasks.json following Zed's task specification:
 https://zed.dev/docs/tasks
 
 Requirements:
+
 1. Parse the user's task description to determine:
    - Task label (descriptive name)
    - Command to execute
@@ -31,6 +32,7 @@ Requirements:
    - Script runners
 
 Example output format:
+
 ```json
 {
   "label": "Run tests",

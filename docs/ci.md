@@ -7,6 +7,7 @@ The dotfiles project uses GitHub Actions for continuous integration to ensure co
 ## CI Workflow
 
 The CI runs on:
+
 - **Push events** to `main` and `develop` branches
 - **Pull requests** targeting `main` branch
 - **Manual triggers** via workflow dispatch
@@ -14,26 +15,31 @@ The CI runs on:
 ## Test Matrix
 
 Tests run on multiple operating systems:
+
 - `ubuntu-latest`
 - `macos-latest`
 
 ## CI Steps
 
 ### 1. Setup
+
 - Checkout code
 - Install Deno v2.x
 - Cache Deno dependencies
 
 ### 2. Code Quality Checks
+
 - **Type Check**: `deno task check` - Validates TypeScript types
 - **Lint**: `deno lint` - Enforces code style rules
 - **Format**: `deno fmt --check` - Ensures consistent code formatting
 
 ### 3. Testing
+
 - **Integration Tests**: `deno task test` - Runs full installation/rollback tests
 - **Installation Test**: Verifies the install script help works
 
 ### 4. Verification
+
 - Checks that all scripts in `scripts/` directory maintain proper permissions
 
 ## Running CI Locally

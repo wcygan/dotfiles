@@ -47,5 +47,5 @@
   "preferredNotifChannel": "terminal_bell",
   "verbose": true,
   "cleanupPeriodDays": 90,
-  "includeCoAuthoredBy": true
+  "includeCoAuthoredBy": false
 }

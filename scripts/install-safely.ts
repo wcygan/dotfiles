@@ -594,6 +594,30 @@ async function reloadShell(shellType: string, homeDir: string): Promise<void> {
   }
 }
 
+async function checkFormatting(): Promise<boolean> {
+  printBlue("🔍 Checking code formatting...");
+
+  try {
+    const result = await runCommand(["deno", "fmt", "--check"]);
+    if (result.success) {
+      printStatus("Code formatting check passed");
+      return true;
+    } else {
+      printError("Code formatting check failed!");
+      console.log();
+      console.log("Please run the following command to fix formatting:");
+      console.log(`   ${colors.yellow}deno fmt${colors.reset}`);
+      console.log();
+      return false;
+    }
+  } catch (error) {
+    printWarning(
+      `Could not check formatting: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return true; // Continue if check fails
+  }
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(Deno.args, {
     boolean: ["help", "force"],
@@ -611,6 +635,7 @@ Options:
   -h, --help     Show this help message
 
 This script will:
+  • Check code formatting before installation
   • Auto-detect your shell (zsh/bash)
   • Backup existing dotfiles with timestamp
   • Install new dotfiles from repository
@@ -621,6 +646,14 @@ This script will:
   }
 
   try {
+    // Check formatting first
+    const isFormatted = await checkFormatting();
+    if (!isFormatted) {
+      printError("Installation aborted due to formatting issues");
+      Deno.exit(1);
+    }
+    console.log();
+
     const config = getInstallConfig();
 
     printBlue("🔧 Safe Dotfiles Installation");
@@ -792,6 +825,7 @@ This script will:
     );
     console.log();
     printBlue("📋 What was done:");
+    console.log("   ✅ Verified code formatting before installation");
     console.log(
       `   ✅ Backed up existing dotfiles to: ${colors.yellow}${config.backupDir}${colors.reset}`,
     );

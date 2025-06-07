@@ -1,104 +1,84 @@
-List plans, tasks, and subtasks with hierarchical filtering and sorting options.
+List projects and subtasks using the simplified task structure.
 
 Usage:
 
-- `/task-list [--type=plans|tasks|subtasks|all] [--status=active|completed|all] [--priority=high|medium|low] [--tag=tagname] [--plan=plan-name] [--task=task-name] [--sort=updated|created|priority]`
-- `/task-list --plan=plan-name` (show all tasks/subtasks in a plan)
-- `/task-list --task=plan-name/task-name` (show all subtasks in a task)
+- `/task-list` (show all projects and their subtasks)
+- `/task-list --project=project-name` (show subtasks for a specific project)
+- `/task-list --status=pending|in-progress|completed|all` (filter by status)
+- `/task-list --priority=high|medium|low` (filter by priority)
 
 Arguments: $ARGUMENTS
 
 ## Instructions
 
 1. **Parse filter arguments**:
-   - Type filter (default: "all" = plans, tasks, subtasks)
-   - Status filter (default: "active" = planning, in-progress, blocked)
+   - Project filter (optional, shows subtasks within project)
+   - Status filter (default: "active" = pending, in-progress)
    - Priority filter (optional)
-   - Tag filter (optional)
-   - Plan filter (optional, shows tasks/subtasks within plan)
-   - Task filter (optional, shows subtasks within task)
-   - Sort order (default: "updated" descending)
+   - Sort order (default: by index number)
 
-2. **Load hierarchical data**:
-   - Read global `/tasks/status.json` for plans overview
-   - If plan filter specified, read `/tasks/[plan-name]/status.json`
-   - If no plans exist, show message: "No plans found. Create one with /task-create plan"
+2. **Load data from new structure**:
+   - Read `/tasks/plan.md` for overall plan view
+   - List directories in `/tasks/` to find projects
+   - For each project, read `/tasks/{project}/README.md` for overview
+   - List `/tasks/{project}/*.md` files (excluding README.md) for subtasks
 
-3. **Apply hierarchical filters**:
-   - Type filtering:
-     - "plans": show only plans
-     - "tasks": show only tasks (optionally filtered by plan)
-     - "subtasks": show only subtasks (optionally filtered by plan/task)
-     - "all": show all levels with indentation
+3. **Apply filters**:
    - Status filtering:
-     - "active": planning, in-progress, blocked
+     - "active": pending, in-progress
      - "completed": completed only
      - "all": all statuses
    - Priority: exact match if specified
-   - Tag: items containing the specified tag
-   - Plan/Task: hierarchical scoping
+   - Project: show only specified project and its subtasks
 
-4. **Sort results hierarchically**:
-   - Maintain parent-child relationships in display
-   - Within each level:
-     - By updated date (most recent first)
-     - By created date
-     - By priority (high → medium → low)
-     - Then alphabetically by name
+4. **Display formatted output**:
 
-5. **Display hierarchical formatted table**:
-
-   **All Types View**:
+   **All Projects View** (default):
    ```
-   Plans, Tasks & Subtasks (showing X of Y total)
+   Projects and Subtasks
 
-   Name                          Type      Status        Priority   Progress   Updated      Tags
-   ─────────────────────────────────────────────────────────────────────────────────────────────────
-   📋 voice-assistant-migration   plan      in-progress   high       45%        2025-01-07   migration, voice
-   ├── 🔧 setup-infrastructure    task      completed     high       100%       2025-01-06   infrastructure
-   │   ├── setup-monorepo         subtask   completed     high       100%       2025-01-05   monorepo
-   │   └── setup-deployment       subtask   completed     medium     100%       2025-01-06   deployment
-   ├── 🎨 build-features          task      in-progress   medium     25%        2025-01-07   features
-   │   ├── voice-ui-components    subtask   completed     medium     100%       2025-01-06   ui, voice
-   │   ├── audio-streaming        subtask   in-progress   high       50%        2025-01-07   audio, streaming
-   │   └── state-management       subtask   planning      medium     0%         2025-01-05   state
+   📋 agentic-workflow-cli                                      Status: planning
+   ├── 001-core-cli-development.md                            pending     high
+   ├── 002-build-and-distribution.md                          pending     medium
+   ├── 003-documentation-updates.md                           pending     medium
+   └── 004-integration-testing.md                             pending     low
+
+   📋 another-project                                          Status: in-progress
+   ├── 001-initial-setup.md                                   completed   high
+   ├── 002-feature-implementation.md                          in-progress medium
+   └── 003-testing.md                                         pending     low
    ```
 
-   **Plan-Specific View** (`--plan=voice-assistant-migration`):
+   **Project-Specific View** (`--project=agentic-workflow-cli`):
    ```
-   Tasks in plan: voice-assistant-migration (showing X of Y total)
+   Project: agentic-workflow-cli
+   Status: planning
+   Progress: 0/4 subtasks completed
 
-   Task                     Status        Priority   Progress   Subtasks   Updated      Tags
-   ─────────────────────────────────────────────────────────────────────────────────────────
-   🔧 setup-infrastructure  completed     high       100%       2/2        2025-01-06   infrastructure
-   🎨 build-features        in-progress   medium     25%        1/3        2025-01-07   features
-   🚀 optimize-production   planning      low        0%         0/2        2025-01-05   production
+   Subtasks:
+   ─────────────────────────────────────────────────────────────────────────
+   Index  Title                          Status        Priority   Created
+   ─────────────────────────────────────────────────────────────────────────
+   001    core-cli-development          pending       high       2025-01-07
+   002    build-and-distribution        pending       medium     2025-01-07
+   003    documentation-updates         pending       medium     2025-01-07
+   004    integration-testing           pending       low        2025-01-07
    ```
 
-6. **Show hierarchical summary statistics**:
+5. **Show summary statistics**:
    ```
    Summary:
-   Plans:
-   - Active: 2 (planning: 1, in-progress: 1)
-   - Completed: 1
-
-   Tasks (across all plans):
-   - Active: 5 (planning: 2, in-progress: 2, blocked: 1)
-   - Completed: 3
-
-   Subtasks (across all tasks):
-   - Active: 8 (planning: 3, in-progress: 4, blocked: 1)
-   - Completed: 12
-
-   By Priority: high: 6, medium: 8, low: 4
+   - Total projects: 2
+   - Active projects: 2 (planning: 1, in-progress: 1)
+   - Total subtasks: 7
+   - Completed subtasks: 1
+   - Overall progress: 14%
    ```
 
-7. **Provide helpful next actions**:
-   - If no plans: "Create your first plan with /task-create plan \"plan-name\""
-   - If filtered results empty: "No items match your filters. Try /task-list --status=all --type=all"
-   - If many completed: "Archive completed items with /task-archive"
-   - If viewing plan with no tasks: "Add tasks with /task-create task \"plan-name/task-name\""
-   - If viewing task with no subtasks: "Add subtasks with /task-create subtask \"plan-name/task-name/subtask-name\""
+6. **Provide helpful next actions**:
+   - If no projects: "Create your first project with /task-create project \"project-name\""
+   - If viewing project with no subtasks: "Add subtasks with /task-create subtask \"project-name\" \"subtask-title\""
+   - Suggest viewing specific project: "View project details: /task-list --project=project-name"
 
 ## Display Formatting
 

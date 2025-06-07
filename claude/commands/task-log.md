@@ -1,26 +1,26 @@
-Add a progress log entry to an existing task.
+Add a progress log entry to a subtask.
 
-Usage: `/task-log "task-name" "progress update message"`
+Usage: `/task-log "project-name/001-subtask" "progress update message"`
 
 Arguments: $ARGUMENTS
 
 ## Instructions
 
 1. **Parse arguments**:
-   - Task name (required, first argument)
+   - Path to subtask (required, first argument in format "project/index-subtask")
    - Log message (required, remaining arguments)
-   - If only task name provided, prompt for message
+   - If only path provided, prompt for message
 
-2. **Validate task exists**:
-   - Check `/tasks/[task-name].md` exists
-   - If not found, suggest similar tasks or /task-create
+2. **Validate subtask exists**:
+   - Check `/tasks/{project-name}/{index}-{subtask}.md` exists
+   - If not found, suggest similar subtasks or /task-create
 
-3. **Read current task file**:
+3. **Read current subtask file**:
    - Load the markdown file
-   - Locate the "Progress Log" section
+   - Locate the "Notes" section
 
 4. **Add new log entry**:
-   - Insert after the "## Progress Log" header
+   - Append to the "## Notes" section
    - Format:
    ```markdown
    ### [ISO datetime with timezone]
@@ -30,16 +30,15 @@ Arguments: $ARGUMENTS
    - Preserve existing entries (prepend new ones)
 
 5. **Update metadata**:
-   - In the markdown header, update the "Updated" date
-   - In `/tasks/status.json`, update the "updated" timestamp
+   - In the markdown header, update the "Updated" date to current timestamp
 
 6. **Smart suggestions based on content**:
    - If message contains "completed", "done", "finished":
-     - Suggest: "Update status to completed? /task-update '[task-name]' --status=completed"
+     - Suggest: "Update status to completed? /task-update '{project}/{subtask}' --status=completed"
    - If message contains "blocked", "waiting", "stuck":
-     - Suggest: "Mark as blocked? /task-update '[task-name]' --status=blocked"
-   - If message indicates progress:
-     - Suggest: "Update progress? /task-update '[task-name]' --progress=X"
+     - Suggest: "Note: Consider updating priority if this blocks other work"
+   - If message indicates significant progress:
+     - Suggest: "Great progress! Update status with /task-update if needed"
 
 7. **Special log entry types** (auto-detect from message):
    - **Milestone**: If message starts with "Milestone:" or contains percentage
@@ -73,31 +72,31 @@ Arguments: $ARGUMENTS
 
 9. **Provide confirmation**:
    ```
-   ✓ Added progress log to: [task-name]
+   ✓ Added progress log to: {project}/{subtask}
 
    Latest entry:
    "[First 100 chars of message]..."
 
-   Task last updated: [relative time]
-   View full task: /task-show "[task-name]"
+   Subtask last updated: [relative time]
+   View full subtask: /task-show "{project}/{subtask}"
    ```
 
 ## Examples
 
 ```bash
 # Simple progress update
-/task-log "upgrade-storage" "Ordered new SSD, arriving Thursday"
+/task-log "agentic-cli/001-core-development" "Set up basic CLI structure with Cliffy"
 
 # Milestone with suggestion
-/task-log "implement-auth" "Milestone: Completed user registration flow (50% done)"
-> Suggestion: Update progress with /task-update "implement-auth" --progress=50
+/task-log "agentic-cli/002-build-system" "Milestone: Completed build script for all platforms"
+> Suggestion: Update status to completed? /task-update "agentic-cli/002-build-system" --status=completed
 
 # Blocker notification
-/task-log "deploy-prod" "Blocked by: Waiting for security review approval"
-> Suggestion: Mark as blocked with /task-update "deploy-prod" --status=blocked
+/task-log "auth-system/003-oauth-integration" "Blocked by: Waiting for OAuth provider credentials"
+> Note: Consider updating priority if this blocks other work
 
 # Multiple updates
-/task-log "refactor-api" "Completed endpoint refactoring
-Improved response time by 40%
-Ready for code review"
+/task-log "api-refactor/001-endpoint-design" "Designed new REST endpoints
+Created OpenAPI spec
+Ready for implementation"
 ```

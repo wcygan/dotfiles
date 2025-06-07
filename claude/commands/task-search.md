@@ -1,6 +1,6 @@
-Search through tasks by name, content, tags, or status.
+Search through projects and subtasks by name or content.
 
-Usage: `/task-search "search-term" [--in=title|content|tags|all] [--status=active|completed|all]`
+Usage: `/task-search "search-term" [--in=name|content|all] [--status=active|completed|all]`
 
 Arguments: $ARGUMENTS
 
@@ -9,16 +9,15 @@ Arguments: $ARGUMENTS
 1. **Parse search arguments**:
    - Search term (required)
    - Search scope (default: "all")
-     - title: Task names only
-     - content: Task file contents
-     - tags: Tag matches only
+     - name: Project/subtask names only
+     - content: File contents
      - all: Everything
    - Status filter (default: "all")
 
 2. **Perform the search**:
-   - **Title search**: Check task names in status.json
-   - **Tag search**: Match against tags array in status.json
-   - **Content search**: Read each .md file and search within
+   - **Name search**: Check project directories and subtask filenames
+   - **Content search**: Read README.md and subtask .md files
+   - Search in `/tasks/` directory structure
    - Use case-insensitive matching
    - Support partial matches
 
@@ -34,22 +33,20 @@ Arguments: $ARGUMENTS
 
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   1. upgrade-storage (high priority, in-progress)
-      📁 /tasks/upgrade-storage.md
+   1. agentic-workflow-cli/001-core-cli-development (pending, high)
+      📁 /tasks/agentic-workflow-cli/001-core-cli-development.md
       📅 Updated: 2 days ago
-      🏷️ Tags: hardware, infrastructure
       
       Context match:
-      "...need to upgrade from 512GB to 2TB NVMe SSD..."
+      "...develop the core CLI structure and commands..."
 
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   2. backup-automation (medium priority, planning)
-      📁 /tasks/backup-automation.md
-      📅 Updated: 5 days ago
-      🏷️ Tags: infrastructure, automation
+   2. agentic-workflow-cli (project, planning)
+      📁 /tasks/agentic-workflow-cli/README.md
+      📅 Updated: 2 days ago
       
-      Title match: Contains "backup"
+      Project match: Contains "cli" in name
    ```
 
 5. **Search highlighting**:
@@ -77,28 +74,26 @@ Arguments: $ARGUMENTS
 8. **Quick actions for results**:
    ```
    Actions:
-   - View task: /task-show "[task-name]"
-   - Update: /task-update "[task-name]" --status=...
-   - Add log: /task-log "[task-name]" "message"
+   - View project: /task-show "project-name"
+   - View subtask: /task-show "project/001-subtask"
+   - Update: /task-update "project/001-subtask" --status=...
+   - Add log: /task-log "project/001-subtask" "message"
    ```
 
 ## Search Examples
 
 ```bash
-# Search everywhere for "auth"
-/task-search "auth"
+# Search everywhere for "cli"
+/task-search "cli"
 
-# Search only in task titles
-/task-search "storage" --in=title
+# Search only in names
+/task-search "core" --in=name
 
-# Search for a specific tag
-/task-search "backend" --in=tags
-
-# Search only active tasks
+# Search only active items
 /task-search "implement" --status=active
 
 # Complex search
-/task-search "database migration" --in=content --status=active
+/task-search "build system" --in=content --status=active
 ```
 
 ## Performance Optimization

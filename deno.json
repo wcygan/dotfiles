@@ -23,7 +23,9 @@
     "ci:check:critical": "deno run --allow-all scripts/ci-environment-check.ts --critical-only",
     "ci:fix": "deno run --allow-all scripts/ci-environment-check.ts --fix",
     "pre-commit": "deno run --allow-all scripts/pre-commit-check.ts",
-    "pre-commit:fix": "deno run --allow-all scripts/pre-commit-check.ts --fix"
+    "pre-commit:fix": "deno run --allow-all scripts/pre-commit-check.ts --fix",
+    "agent": "deno run --allow-all scripts/launch-agent.ts",
+    "claim-task": "deno run --allow-all scripts/claim-next-task.ts"
   },
   "lint": {
     "rules": {

@@ -1,71 +1,95 @@
-Display detailed information about a specific task.
+Display detailed information about a project or subtask.
 
-Usage: `/task-show "task-name"`
+Usage:
+
+- `/task-show "project-name"` (show project overview with all subtasks)
+- `/task-show "project-name/001-subtask"` (show specific subtask details)
 
 Arguments: $ARGUMENTS
 
 ## Instructions
 
-1. **Parse the task name** from arguments
-   - Extract and validate the task name
+1. **Parse the path** from arguments:
+   - Extract and validate the path
+   - Determine if showing project or subtask
    - Convert to lowercase, hyphenated format if needed
 
-2. **Check task existence**:
-   - Look for `/tasks/[task-name].md`
-   - If not found, check `/tasks/status.json` for similar names
-   - Suggest alternatives if exact match not found
+2. **Check existence**:
+   - For projects: Look for `/tasks/{project-name}/README.md`
+   - For subtasks: Look for `/tasks/{project-name}/{index}-{subtask}.md`
+   - If not found, suggest alternatives
 
-3. **Read and display the task file**:
-   - Load the complete markdown file
-   - Display with syntax highlighting if available
-   - Show the full content including:
-     - Header metadata
-     - Context section
-     - Plan with checkboxes
-     - Complete progress log
-     - Resources
-
-4. **Enhance with additional metadata** from status.json:
-   - Show calculated metrics:
-     - Days since creation
-     - Days since last update
-     - Estimated completion (based on progress rate)
-   - Related tasks (by shared tags)
-   - Task dependencies if any
-
-5. **Display format**:
+3. **Display Project Overview** (if showing project):
    ```
    ════════════════════════════════════════════════════════════════
-   TASK: Upgrade Storage
+   PROJECT: {Project Name}
    ════════════════════════════════════════════════════════════════
 
-   Status: in-progress (25%)
-   Priority: high
-   Created: 5 days ago (2025-01-06)
-   Updated: 2 days ago (2025-01-07)
-   Tags: hardware, infrastructure
+   Status: {status}
+   Created: {date}
+   Updated: {date}
+   Progress: X/Y subtasks completed (Z%)
 
    ─────────────────────────────────────────────────────────────────
-   [Full markdown content]
+   [Project README.md content]
    ─────────────────────────────────────────────────────────────────
 
-   Related Tasks:
-   - setup-monitoring (infrastructure)
-   - backup-automation (infrastructure)
+   Subtasks:
+   ┌─────┬──────────────────────────┬────────────┬──────────┬─────────┐
+   │ #   │ Title                    │ Status     │ Priority │ Updated │
+   ├─────┼──────────────────────────┼────────────┼──────────┼─────────┤
+   │ 001 │ core-development        │ pending    │ high     │ 1d ago  │
+   │ 002 │ build-distribution      │ pending    │ medium   │ 1d ago  │
+   │ 003 │ documentation           │ pending    │ medium   │ 1d ago  │
+   └─────┴──────────────────────────┴────────────┴──────────┴─────────┘
 
    Next Actions:
-   - Add progress: /task-log "upgrade-storage" "your update"
-   - Update status: /task-update "upgrade-storage" --status=completed
+   - Start a subtask: /task-update "{project}/001-core-development" --status=in-progress
+   - Add subtask: /task-create subtask "{project}" "new task"
+   - View subtask: /task-show "{project}/001-core-development"
    ```
 
+4. **Display Subtask Details** (if showing subtask):
+   ```
+   ════════════════════════════════════════════════════════════════
+   SUBTASK: 001 - {Subtask Title}
+   Project: {project-name}
+   ════════════════════════════════════════════════════════════════
+
+   Status: {status}
+   Priority: {priority}
+   Created: {date}
+   Updated: {date}
+
+   ─────────────────────────────────────────────────────────────────
+   [Full subtask markdown content]
+   ─────────────────────────────────────────────────────────────────
+
+   Other subtasks in this project:
+   - 001-current-task.md (← you are here)
+   - 002-next-task.md (pending)
+   - 003-other-task.md (pending)
+
+   Next Actions:
+   - Update status: /task-update "{project}/001-subtask" --status=in-progress
+   - View project: /task-show "{project}"
+   - Next subtask: /task-show "{project}/002-next-task"
+   ```
+
+5. **Show related information**:
+   - For projects: List all subtasks with status summary
+   - For subtasks: Show sibling subtasks and project context
+   - Calculate days since creation/update
+   - Show progress visualization
+
 6. **Provide contextual suggestions**:
-   - If planning: "Ready to start? Use /task-update --status=in-progress"
-   - If blocked: "Add details about the blocker with /task-log"
-   - If high progress: "Nearly done! Remember to update status when complete"
-   - If old task: "This task hasn't been updated in X days"
+   - If all pending: "Ready to start? Pick a high-priority subtask"
+   - If some in-progress: "Continue work on in-progress tasks"
+   - If mostly complete: "Nearly done! {X} subtasks remaining"
+   - If stale: "This hasn't been updated in {X} days"
 
 ## Error Handling
 
-- If task not found, show list of all available tasks
-- Suggest using /task-list to browse tasks
-- Handle archived tasks by checking archive directories
+- If not found, show available projects: "Project not found. Available projects:"
+- For subtasks, show available subtasks in the project
+- Suggest using /task-list to browse all projects

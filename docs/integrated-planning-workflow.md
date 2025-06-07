@@ -1,5 +1,42 @@
 # Integrated Planning and Multi-Agent Workflow
 
+## TL;DR - Quick Start
+
+Want to parallelize development work across multiple Claude agents? Here's how:
+
+```bash
+# 1. Create a plan with tasks
+/plan-multi-agent "Build my awesome feature"
+
+# 2. Set up parallel environment
+/parallel-enhanced
+
+# 3. Launch agents in separate terminals
+deno task agent  # Terminal 1
+deno task agent  # Terminal 2  
+deno task agent  # Terminal 3
+
+# That's it! Each agent will:
+# - Automatically claim tasks
+# - Complete them independently
+# - Claim more until done
+# - Exit when no work remains
+```
+
+**Key Commands for Agents:**
+
+- `deno task claim-task` - Claim next available task
+- `/agent-complete [agent-id]` - Clean up when done
+
+**Monitor Progress:**
+
+- `cat .claude-agents/task-registry.json | jq '.agents'` - See active agents
+- `/task-list --status=all` - View all tasks and their status
+
+---
+
+## Full Guide
+
 This guide demonstrates how the Planning Framework and Multi-Agent Workflows work together as a unified system for managing complex development projects.
 
 ## Overview
@@ -369,6 +406,40 @@ git worktree list
 git worktree prune
 ```
 
+## Deno-Based Work-Stealing Implementation
+
+The system uses a Deno TypeScript launch script for cross-platform compatibility and robust task management:
+
+### Key Features
+
+1. **Atomic Task Claims**: Agents use file locking on `/tasks/[project]/status.json` to prevent conflicts
+2. **Fresh Reads**: Always reads latest status before claiming to ensure consistency
+3. **Main Registry Updates**: Updates both local tracking and main status.json
+4. **Detailed Diagnostics**: Shows why tasks are unavailable (claimed, blocked, etc.)
+
+### Usage
+
+```bash
+# After setting up with /parallel-enhanced
+deno task agent  # Launches an intelligent work-stealing agent
+```
+
+Each agent:
+
+- Generates a unique ID automatically
+- Claims one task at a time from the pool
+- Updates status.json atomically
+- Continues until no work remains
+- Shows detailed reasons if blocked
+
+### Task Recovery
+
+If an agent crashes, its claimed tasks can be recovered by:
+
+1. Running `/task-list --status=all` to see claimed tasks
+2. Manually unclaiming with `/task-update [task] --unclaim`
+3. Or waiting for timeout-based recovery (future feature)
+
 ## Summary
 
 The integrated Planning and Multi-Agent system provides a powerful, unified approach to managing complex development projects. By combining hierarchical task management with intelligent agent coordination, teams can work more efficiently with better visibility and automatic dependency management.
@@ -376,7 +447,7 @@ The integrated Planning and Multi-Agent system provides a powerful, unified appr
 Key takeaways:
 
 - Use `/plan-multi-agent` to create agent-aware plans
-- Use `/parallel-enhanced` for automatic worktree setup
-- Initialize each agent with `/agent-init`
+- Use `/parallel-enhanced` for automatic worktree setup and Deno script
+- Launch agents with `deno task agent` for work-stealing behavior
 - Let the system handle coordination through the task hierarchy
 - Monitor progress with `/agent-status`

@@ -1,84 +1,82 @@
-Archive completed or cancelled tasks to keep the active list manageable.
+Archive completed projects or subtasks to keep the active list manageable.
 
-Usage: `/task-archive "task-name" | --all-completed | --older-than=30d`
+Usage: `/task-archive "project-name" | "project/subtask" | --all-completed`
 
 Arguments: $ARGUMENTS
 
 ## Instructions
 
 1. **Parse archive arguments**:
-   - Single task name, OR
-   - `--all-completed` flag to archive all completed tasks, OR
-   - `--older-than=Xd` to archive tasks not updated in X days
+   - Project name to archive entire project, OR
+   - Project/subtask path to archive single subtask, OR
+   - `--all-completed` flag to archive all completed items
 
 2. **Validate before archiving**:
-   - For single task: verify it exists and is completed/cancelled
+   - For projects: verify all subtasks are completed
+   - For subtasks: verify subtask is completed
    - For bulk operations: show preview and ask for confirmation
-   - Warn if trying to archive active tasks
+   - Warn if trying to archive active items
 
 3. **Create archive structure**:
    ```
-   /tasks/archive/YYYY-MM/[task-name].md
+   /tasks/archive/YYYY-MM/{project-name}/
+   /tasks/archive/YYYY-MM/{project-name}/README.md
+   /tasks/archive/YYYY-MM/{project-name}/001-subtask.md
    ```
-   - Use task's completion date for YYYY-MM
-   - If not completed, use last updated date
+   - Use completion date for YYYY-MM
+   - Preserve project structure in archive
 
-4. **Archive process for each task**:
-   - Move the .md file to archive directory
-   - Update status.json:
-     - Add "archived": true flag
-     - Add "archivedDate": "[ISO date]"
-     - Keep entry for searchability
-   - Update statistics in status.json
+4. **Archive process**:
+   - For projects: Move entire project directory to archive
+   - For subtasks: Move individual .md file to archive project dir
+   - Update global /tasks/plan.md to mark project as archived
    - Remove from TodoWrite if present
 
 5. **Create archive summary** in `/tasks/archive/YYYY-MM/summary.md`:
    ```markdown
    # Archive Summary - YYYY-MM
 
-   ## Archived Tasks (X total)
+   ## Archived Projects (X total)
 
-   ### [Task Name]
+   ### {Project Name}
 
    - Status: completed
    - Archived: YYYY-MM-DD
+   - Subtasks: X completed
    - Duration: X days (created → completed)
-   - Tags: [tags]
 
-   [Repeat for each archived task]
+   [Repeat for each archived project]
 
    ## Statistics
 
-   - Tasks completed: X
-   - Average completion time: X days
-   - Most used tags: [top 3 tags]
+   - Projects completed: X
+   - Total subtasks: Y
+   - Average project duration: X days
    ```
 
 6. **Display confirmation**:
    ```
    ✓ Archived successfully:
 
-   Task: [task-name]
-   Moved to: /tasks/archive/YYYY-MM/[task-name].md
+   Project: {project-name}
+   Moved to: /tasks/archive/YYYY-MM/{project-name}/
 
    Archive summary:
-   - Total archived this session: X
-   - Total in archive: Y
-   - Active tasks remaining: Z
+   - Total archived this session: X projects
+   - Active projects remaining: Y
 
-   To view archived task: cat /tasks/archive/YYYY-MM/[task-name].md
-   To restore: mv /tasks/archive/YYYY-MM/[task-name].md /tasks/
+   To view archived project: ls /tasks/archive/YYYY-MM/{project-name}/
+   To restore: mv /tasks/archive/YYYY-MM/{project-name} /tasks/
    ```
 
 7. **Bulk archive preview**:
    ```
-   Tasks to be archived:
+   Projects to be archived:
 
-   ✓ implement-auth     (completed 5 days ago)
-   ✓ fix-bug-123        (completed 10 days ago)
-   ✓ update-deps        (completed 15 days ago)
+   ✓ auth-system        (completed 5 days ago, 4/4 subtasks)
+   ✓ api-refactor       (completed 10 days ago, 6/6 subtasks)
 
-   Total: 3 tasks
+   Total: 2 projects (10 subtasks)
    Continue? (yes/no)
    ```
 
@@ -88,35 +86,36 @@ Arguments: $ARGUMENTS
 
 ## Archive Strategies
 
-1. **Monthly cleanup**:
+1. **Archive completed project**:
    ```bash
-   # Archive all completed tasks
+   # Archive entire project when all subtasks complete
+   /task-archive "auth-system"
+   ```
+
+2. **Archive single subtask**:
+   ```bash
+   # Archive individual completed subtask
+   /task-archive "auth-system/003-oauth-integration"
+   ```
+
+3. **Bulk archive**:
+   ```bash
+   # Archive all completed projects
    /task-archive --all-completed
-   ```
-
-2. **Stale task cleanup**:
-   ```bash
-   # Archive tasks not touched in 60 days
-   /task-archive --older-than=60d
-   ```
-
-3. **Single task**:
-   ```bash
-   # Archive specific completed task
-   /task-archive "implement-auth"
    ```
 
 ## Error Handling
 
-- Prevent archiving active tasks (planning, in-progress, blocked)
+- Prevent archiving projects with incomplete subtasks
+- Prevent archiving active subtasks (pending, in-progress)
 - Create archive directories as needed
 - Handle file move failures gracefully
-- Maintain status.json integrity
+- Update global plan.md appropriately
 - Provide rollback instructions if needed
 
 ## Archive Search
 
-After archiving, tasks can still be found with:
+After archiving, projects can still be found with:
 
-- `/task-search "term"` (searches archived tasks too)
-- `/task-list --status=all` (shows archived count)
+- `/task-search "term"` (searches archived items too)
+- Browse archive: `ls /tasks/archive/`

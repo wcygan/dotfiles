@@ -5,12 +5,11 @@
  * This script backs up existing dotfiles before installing new ones
  */
 
-import { basename, dirname, join } from "@std/path";
+import { dirname, join } from "@std/path";
 import { exists } from "@std/fs/exists";
 import { copy } from "@std/fs/copy";
 import { ensureDir } from "@std/fs/ensure-dir";
 import { parseArgs } from "@std/cli/parse-args";
-import { walk } from "@std/fs";
 
 // Colors for output
 const colors = {
@@ -55,20 +54,6 @@ const DOTFILES = Object.values(FILE_MAPPINGS);
 
 // Optional files that might exist
 const OPTIONAL_FILES = [".fzf.zsh"];
-
-// Files to exclude when copying dotfiles
-const EXCLUDE_FILES = [
-  ".git",
-  ".DS_Store",
-  ".gitignore",
-  "README.md",
-  "LICENSE",
-  "LICENSE-MIT.txt",
-  "install-safely.ts",
-  "rollback.ts",
-  "deno.json",
-  "deno.lock",
-];
 
 // Zed configuration files to manage
 const ZED_CONFIG_FILES = ["keymap.json", "settings.json"];
@@ -374,7 +359,7 @@ async function copyDotfiles(
         // Try root directory for backward compatibility
         sourcePath = join(dotfilesDir, optFile);
       }
-      
+
       if (await exists(sourcePath)) {
         const destPath = join(homeDir, optFile);
         try {
@@ -557,7 +542,7 @@ async function copyPowerShellProfile(
 
   printBlue("💻 Copying PowerShell profile...");
   const psSourcePath = join(dotfilesDir, "shell", "powershell", "profile.ps1");
-  
+
   // Check if PowerShell profile exists in dotfiles
   if (!await exists(psSourcePath)) {
     printWarning("No PowerShell profile found in dotfiles, skipping");
@@ -576,7 +561,7 @@ async function copyPowerShellProfile(
     // Copy the profile
     await copy(psSourcePath, psProfilePath, { overwrite: true });
     printStatus(`Copied PowerShell profile to ${psProfilePath}`);
-    
+
     return true;
   } catch (error) {
     printWarning(

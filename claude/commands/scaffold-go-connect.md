@@ -1,14 +1,17 @@
 # Scaffold Go ConnectRPC Server
 
 ## Description
+
 Creates a new Go RPC server project using ConnectRPC with Protocol Buffers, Buf schema management, and type-safe service definitions.
 
 ## Usage
+
 ```
 /scaffold-go-connect [project-name]
 ```
 
 ## What it does
+
 1. Creates a new directory with the specified project name
 2. Sets up Protocol Buffer schema with buf.yaml configuration
 3. Creates a simple Greet service with request/response messages
@@ -17,11 +20,13 @@ Creates a new Go RPC server project using ConnectRPC with Protocol Buffers, Buf 
 6. Runs `go mod tidy` to ensure dependencies are resolved
 
 ## Example
+
 ```
 /scaffold-go-connect greet-api
 ```
 
 This creates a production-ready ConnectRPC server with:
+
 - Protocol Buffer schema in `proto/greet/v1/greet.proto`
 - Buf configuration for schema management and code generation
 - Go server implementation with ConnectRPC handlers
@@ -32,6 +37,7 @@ This creates a production-ready ConnectRPC server with:
 ## ConnectRPC Features (TLDR)
 
 ### Core Benefits
+
 - **Simple HTTP**: Works with any HTTP client, curl, browsers
 - **Three protocols**: gRPC, gRPC-Web, and Connect's own protocol
 - **Streaming**: Bidirectional, client, and server streaming support
@@ -40,6 +46,7 @@ This creates a production-ready ConnectRPC server with:
 - **Production ready**: Load balancers, proxies, CDNs work out of the box
 
 ### Key Capabilities
+
 - **Routing**: Standard HTTP mux compatibility, custom routing
 - **Streaming**: `stream` keyword in proto for real-time communication
 - **Interceptors**: Chain-able middleware with `connect.UnaryInterceptorFunc`
@@ -47,6 +54,7 @@ This creates a production-ready ConnectRPC server with:
 - **Deployment**: Works behind any HTTP proxy, no gRPC infrastructure needed
 
 ### Development Workflow
+
 1. Define services in `.proto` files
 2. Generate code with `buf generate`
 3. Implement service handlers

@@ -3,6 +3,7 @@
 Instruments applications for production-grade observability.
 
 ## Usage
+
 ```
 /observe <service>
 /observe <service> --metrics-only
@@ -11,20 +12,24 @@ Instruments applications for production-grade observability.
 ```
 
 ## Description
+
 This command transforms "black box" services into fully observable systems by automatically adding metrics, structured logging, distributed tracing, and monitoring dashboards. It makes production systems transparent and debuggable.
 
 ### What it adds:
 
 #### 1. Metrics Instrumentation
+
 Injects comprehensive Prometheus metrics for key operations:
 
 **HTTP/API Metrics:**
+
 - Request duration histograms with percentiles (p50, p95, p99)
 - Request rate counters by endpoint and method
 - Error rate counters by status code and error type
 - Active connections and concurrent requests
 
 **Application Metrics:**
+
 - Business logic counters (user registrations, orders, etc.)
 - Resource utilization (memory, CPU, database connections)
 - Queue depths and processing times
@@ -33,6 +38,7 @@ Injects comprehensive Prometheus metrics for key operations:
 **Framework-Specific Implementation:**
 
 **Go (with Prometheus client):**
+
 ```go
 var (
     httpDuration = prometheus.NewHistogramVec(
@@ -61,6 +67,7 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 ```
 
 **Rust (with metrics crate):**
+
 ```rust
 use metrics::{counter, histogram, gauge};
 
@@ -88,9 +95,11 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, Error> {
 ```
 
 #### 2. Structured Logging
+
 Refactors logging to use structured, machine-readable formats:
 
 **Log Structure Enhancement:**
+
 - JSON format for log aggregation systems
 - Consistent field naming and data types
 - Request correlation IDs for tracing
@@ -99,6 +108,7 @@ Refactors logging to use structured, machine-readable formats:
 **Framework Integration:**
 
 **Go (with slog):**
+
 ```go
 logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
     Level: slog.LevelInfo,
@@ -117,6 +127,7 @@ func handleUser(w http.ResponseWriter, r *http.Request) {
 ```
 
 **Rust (with tracing):**
+
 ```rust
 use tracing::{info, error, instrument};
 
@@ -138,9 +149,11 @@ async fn process_user_order(user: &User, order: Order, req_id: String) -> Result
 ```
 
 #### 3. Distributed Tracing
+
 Implements OpenTelemetry for request flow visibility:
 
 **Trace Context Propagation:**
+
 - Automatic span creation for HTTP requests
 - Database query tracing with SQL statements
 - External service call instrumentation
@@ -149,6 +162,7 @@ Implements OpenTelemetry for request flow visibility:
 **Integration Examples:**
 
 **Java (with OpenTelemetry):**
+
 ```java
 @RestController
 public class UserController {
@@ -171,9 +185,11 @@ public class UserController {
 ```
 
 #### 4. Health Checks and Readiness Probes
+
 Creates comprehensive health monitoring endpoints:
 
 **Health Check Implementation:**
+
 ```go
 type HealthCheck struct {
     database    DatabaseChecker
@@ -207,15 +223,18 @@ func (h *HealthCheck) CheckHealth(ctx context.Context) HealthStatus {
 ```
 
 ### 5. Monitoring Dashboards
+
 Generates Grafana dashboard configurations:
 
 **Dashboard Features:**
+
 - Service overview with golden signals (latency, traffic, errors, saturation)
 - Detailed breakdowns by endpoint and error type
 - Resource utilization and capacity planning
 - SLA/SLO tracking with burn rate alerts
 
 **Generated Dashboard JSON:**
+
 ```json
 {
   "dashboard": {
@@ -232,7 +251,7 @@ Generates Grafana dashboard configurations:
         ]
       },
       {
-        "title": "Response Time Percentiles", 
+        "title": "Response Time Percentiles",
         "type": "graph",
         "targets": [
           {
@@ -251,9 +270,11 @@ Generates Grafana dashboard configurations:
 ```
 
 ### 6. Alerting Rules
+
 Creates Prometheus alerting rules for common failure modes:
 
 **Generated Alert Rules:**
+
 ```yaml
 groups:
   - name: user-service-alerts
@@ -271,10 +292,10 @@ groups:
         annotations:
           summary: "High error rate detected"
           description: "Service {{ $labels.service }} has error rate above 5% for 2 minutes"
-          
+
       - alert: HighLatency
         expr: |
-          histogram_quantile(0.95, 
+          histogram_quantile(0.95,
             sum(rate(http_request_duration_seconds_bucket{service="user-service"}[5m])) by (le)
           ) > 0.5
         for: 3m
@@ -289,21 +310,25 @@ groups:
 ## Examples
 
 ### Add full observability to a service:
+
 ```
 /observe user-service
 ```
 
 ### Add only metrics instrumentation:
+
 ```
 /observe api-gateway --metrics-only
 ```
 
 ### Add distributed tracing:
+
 ```
 /observe payment-service --tracing
 ```
 
 ## Generated File Structure
+
 ```
 observability/
 ├── metrics/
@@ -321,23 +346,27 @@ observability/
 ## Technology Support
 
 **Metrics Libraries:**
+
 - **Go**: Prometheus client, expvar
 - **Rust**: metrics, prometheus crate
 - **Java**: Micrometer, Prometheus JVM client
 - **Node/Deno**: prom-client, @opentelemetry/metrics
 
 **Logging Frameworks:**
+
 - **Go**: slog, logrus, zap
 - **Rust**: tracing, log + env_logger
 - **Java**: Logback, Log4j2 with JSON encoders
 - **Node/Deno**: winston, pino
 
 **Tracing Systems:**
+
 - OpenTelemetry (all languages)
 - Jaeger and Zipkin compatible
 - Cloud provider tracing (AWS X-Ray, Google Cloud Trace)
 
 ## Integration with Other Commands
+
 - Use with `/deploy` to add monitoring to Kubernetes deployments
 - Combine with `/harden` for security-aware logging (no sensitive data)
 - Use after `/containerize` to add observability to Docker images

@@ -1,14 +1,17 @@
 # Scaffold Deno Fresh Web App
 
 ## Description
+
 Creates a new server-side rendered web application using Deno Fresh 2 framework with islands architecture and zero build step development.
 
 ## Usage
+
 ```
 /scaffold-deno-fresh [project-name]
 ```
 
 ## What it does
+
 1. Creates a new directory with the specified project name
 2. Uses Fresh 2's official initializer to generate the project structure
 3. Sets up routes with server-side rendering capabilities
@@ -17,11 +20,13 @@ Creates a new server-side rendered web application using Deno Fresh 2 framework 
 6. Runs the development server to verify setup
 
 ## Example
+
 ```
 /scaffold-deno-fresh my-fresh-app
 ```
 
 This creates a production-ready Fresh 2 web application with:
+
 - Server-side rendering with Preact
 - Islands architecture for selective hydration
 - File-based routing system with improved performance
@@ -32,6 +37,7 @@ This creates a production-ready Fresh 2 web application with:
 - Fresh 2's enhanced developer experience and performance improvements
 
 ## Important Notes
+
 - Uses Fresh 2 which provides significant performance improvements and better developer experience
 - Fresh 2 maintains backward compatibility while offering enhanced features
 - Automatically includes the latest Fresh 2 patterns and best practices

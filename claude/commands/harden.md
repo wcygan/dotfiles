@@ -3,6 +3,7 @@
 Proactively applies security best practices to applications and infrastructure.
 
 ## Usage
+
 ```
 /harden <target>
 /harden <target> --level <basic|strict|paranoid>
@@ -10,14 +11,17 @@ Proactively applies security best practices to applications and infrastructure.
 ```
 
 ## Description
+
 This command systematically reduces your application's attack surface by implementing security hardening across multiple layers. Unlike audit-focused tools, `/harden` makes actual security improvements to your code and infrastructure.
 
 ### Security Layers
 
 #### 1. Container Security (Dockerfile)
+
 Transforms Docker images to follow security best practices:
 
 **Before:**
+
 ```dockerfile
 FROM node:18
 COPY . /app
@@ -28,6 +32,7 @@ CMD ["npm", "start"]
 ```
 
 **After:**
+
 ```dockerfile
 # Multi-stage build with distroless final image
 FROM node:18-alpine AS builder
@@ -56,6 +61,7 @@ CMD ["node", "src/index.js"]
 ```
 
 **Applied Hardening:**
+
 - Distroless or minimal base images (Alpine, scratch)
 - Non-root user execution with proper UID/GID
 - Read-only root filesystem where possible
@@ -64,9 +70,11 @@ CMD ["node", "src/index.js"]
 - Dependency vulnerability scanning integration
 
 #### 2. Kubernetes Security
+
 Implements Pod Security Standards and network policies:
 
 **Generated Pod Security Context:**
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -83,35 +91,36 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-      - name: app
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities:
-            drop:
-            - ALL
-            add:
-            - NET_BIND_SERVICE  # Only if needed for port 80/443
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "250m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-        - name: var-cache
-          mountPath: /var/cache
+        - name: app
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE # Only if needed for port 80/443
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: var-cache
+              mountPath: /var/cache
       volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: var-cache
-        emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: var-cache
+          emptyDir: {}
 ```
 
 **Network Policy Generation:**
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -122,34 +131,36 @@ spec:
     matchLabels:
       app: secure-app
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
   ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: ingress-nginx
-    ports:
-    - protocol: TCP
-      port: 8080
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
   egress:
-  - to:
-    - namespaceSelector:
-        matchLabels:
-          name: database
-    ports:
-    - protocol: TCP
-      port: 5432
-  - to: []  # DNS resolution
-    ports:
-    - protocol: UDP
-      port: 53
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to: [] # DNS resolution
+      ports:
+        - protocol: UDP
+          port: 53
 ```
 
 #### 3. Application-Level Security
+
 Injects security controls directly into application code:
 
 **Web Framework Hardening (Go with Gin):**
+
 ```go
 func SecurityMiddleware() gin.HandlerFunc {
     return gin.HandlerFunc(func(c *gin.Context) {
@@ -181,6 +192,7 @@ func CORSMiddleware() gin.HandlerFunc {
 ```
 
 **Rust Axum Security Implementation:**
+
 ```rust
 use axum::{
     http::{HeaderMap, HeaderName, HeaderValue, StatusCode},
@@ -220,6 +232,7 @@ pub fn create_secure_router() -> Router {
 ```
 
 **Java Spring Security Configuration:**
+
 ```java
 @Configuration
 @EnableWebSecurity
@@ -250,9 +263,11 @@ public class SecurityConfig {
 ```
 
 #### 4. Dependency Security
+
 Automatically secures dependencies and supply chain:
 
 **Go Module Security:**
+
 ```go
 // go.mod - Pin dependencies to specific secure versions
 module secure-app
@@ -270,6 +285,7 @@ replace github.com/old-vulnerable-dep => github.com/secure-alternative v1.0.0
 ```
 
 **Rust Cargo.toml Hardening:**
+
 ```toml
 [dependencies]
 # Pin to exact versions for reproducible builds
@@ -293,9 +309,11 @@ codegen-units = 1
 ```
 
 #### 5. Secrets and Configuration Security
+
 Implements secure secret management patterns:
 
 **Environment Variable Security:**
+
 ```bash
 #!/bin/bash
 # secure-env.sh - Generated secure environment setup
@@ -327,6 +345,7 @@ export SESSION_TIMEOUT=3600
 ```
 
 **Kubernetes Secret Management:**
+
 ```yaml
 # External Secrets Operator configuration
 apiVersion: external-secrets.io/v1beta1
@@ -358,21 +377,23 @@ spec:
     name: app-secrets
     creationPolicy: Owner
   data:
-  - secretKey: database-url
-    remoteRef:
-      key: secure-app/config
-      property: database_url
+    - secretKey: database-url
+      remoteRef:
+        key: secure-app/config
+        property: database_url
 ```
 
 ### Security Levels
 
 #### Basic Level
+
 - Essential security headers
 - Non-root container execution
 - Basic input validation
 - HTTPS enforcement
 
 #### Strict Level
+
 - Comprehensive security headers with CSP
 - Read-only filesystems
 - Network segmentation policies
@@ -380,6 +401,7 @@ spec:
 - Security scanning in CI/CD
 
 #### Paranoid Level
+
 - Zero-trust network architecture
 - Mandatory access controls (SELinux/AppArmor)
 - Runtime security monitoring
@@ -389,18 +411,21 @@ spec:
 ### Compliance Templates
 
 #### SOC 2 Compliance
+
 - Audit logging for all data access
 - Encryption at rest and in transit
 - Access control documentation
 - Incident response procedures
 
 #### PCI DSS Compliance
+
 - Payment data isolation
 - Strong cryptography implementation
 - Regular security testing
 - Network segmentation
 
 #### HIPAA Compliance
+
 - PHI data encryption
 - Access controls and audit trails
 - Risk assessment documentation
@@ -409,26 +434,31 @@ spec:
 ## Examples
 
 ### Harden a Dockerfile:
+
 ```
 /harden ./Dockerfile
 ```
 
 ### Apply strict security to Kubernetes manifests:
+
 ```
 /harden ./k8s --level strict
 ```
 
 ### SOC 2 compliance hardening:
+
 ```
 /harden ./src --compliance soc2
 ```
 
 ### Harden entire application:
+
 ```
 /harden . --level paranoid
 ```
 
 ## Generated Security Documentation
+
 Creates comprehensive security documentation:
 
 ```
@@ -443,6 +473,7 @@ security/
 ```
 
 ## Integration with Other Commands
+
 - Use with `/containerize` to create secure container images
 - Combine with `/deploy` for secure Kubernetes deployments
 - Use with `/observe` for security monitoring and alerting

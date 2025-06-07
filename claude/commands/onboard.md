@@ -9,7 +9,7 @@ Steps:
    - Scan for configuration files (.env.example, .tool-versions, etc.)
 
 2. **System Prerequisites:**
-   
+
    **Modern CLI Tools (per CLAUDE.md preferences):**
    ```bash
    # Check and install modern alternatives
@@ -52,7 +52,7 @@ Steps:
    ```
 
 3. **Project Dependencies:**
-   
+
    **Package Management:**
    ```bash
    # Rust
@@ -85,15 +85,15 @@ Steps:
    ```
 
 4. **Infrastructure Setup:**
-   
+
    **Database Setup (using modern alternatives):**
    ```bash
    # PostgreSQL (preferred over MySQL)
    createdb development_db || echo "Create PostgreSQL database manually"
-   
+
    # DragonflyDB (preferred over Redis)
    # Start with: dragonflydb --bind 127.0.0.1 --port 6379
-   
+
    # Run migrations if available
    find . -name "*migrate*" -type f
    find . -name "migrations" -type d
@@ -113,7 +113,7 @@ Steps:
    ```
 
 5. **Development Tools Configuration:**
-   
+
    **Editor Setup:**
    ```bash
    # VSCode settings
@@ -160,7 +160,7 @@ Steps:
    ```
 
 7. **Validation & Health Checks:**
-   
+
    **Build Verification:**
    ```bash
    # Run project-specific build
@@ -211,6 +211,7 @@ Steps:
     ```
 
 **Output Checklist:**
+
 - [ ] All required tools installed and accessible
 - [ ] Project dependencies resolved and cached
 - [ ] Development database/services running
@@ -223,6 +224,7 @@ Steps:
 - [ ] Access to team resources and documentation
 
 **Next Steps:**
+
 - Review project README and contributing guidelines
 - Explore codebase starting with main entry points
 - Run `/project:knowledge-extract` to understand domain concepts

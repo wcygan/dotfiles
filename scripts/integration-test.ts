@@ -104,7 +104,11 @@ class DotfilesTestRunner {
     Deno.env.set("SHELL", "/bin/zsh");
 
     try {
-      const args = ["run", "--allow-all", join(this.testEnv.dotfilesDir, "scripts", "install-safely.ts")];
+      const args = [
+        "run",
+        "--allow-all",
+        join(this.testEnv.dotfilesDir, "scripts", "install-safely.ts"),
+      ];
       if (force) args.push("--force");
 
       const command = new Deno.Command("deno", {
@@ -383,7 +387,7 @@ Deno.test("Help Command Functionality", async () => {
       args: [
         "run",
         "--allow-all",
-        join(_testEnv.dotfilesDir, "install-safely.ts"),
+        join(_testEnv.dotfilesDir, "scripts", "install-safely.ts"),
         "--help",
       ],
       cwd: _testEnv.dotfilesDir,

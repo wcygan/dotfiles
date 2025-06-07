@@ -3,6 +3,7 @@
 Analyzes code and architecture to generate explanatory diagrams.
 
 ## Usage
+
 ```
 /visualize <target>
 /visualize <target> --type <flowchart|sequence|erd|architecture>
@@ -13,14 +14,17 @@ Analyzes code and architecture to generate explanatory diagrams.
 **Default Output Location**: `/docs/diagrams/` directory
 
 ## Description
+
 This command transforms complex code, logic, and system architectures into clear, visual diagrams. A picture is worth a thousand lines of code - this command makes systems easier to understand, debug, and communicate about.
 
 ### What it generates:
 
 #### 1. Code Flow Visualization
+
 Analyzes function and method logic to create flowcharts:
 
 **Function Analysis:**
+
 ```go
 // Example Go function
 func ProcessPayment(userID string, amount float64, paymentMethod string) (*Payment, error) {
@@ -64,6 +68,7 @@ func ProcessPayment(userID string, amount float64, paymentMethod string) (*Payme
 ```
 
 **Generated Flowchart:**
+
 ```mermaid
 flowchart TD
     A[Start: ProcessPayment] --> B[Get User by ID]
@@ -99,9 +104,11 @@ flowchart TD
 ```
 
 #### 2. Database Schema Visualization
+
 Analyzes database schemas and models to create Entity Relationship Diagrams:
 
 **Go Struct Analysis:**
+
 ```go
 type User struct {
     ID        int64     `db:"id" json:"id"`
@@ -137,6 +144,7 @@ type Item struct {
 ```
 
 **Generated ERD:**
+
 ```mermaid
 erDiagram
     USER {
@@ -175,9 +183,11 @@ erDiagram
 ```
 
 #### 3. System Architecture Diagrams
+
 Analyzes microservices and system interactions:
 
 **Service Discovery:**
+
 ```yaml
 # docker-compose.yml analysis
 services:
@@ -185,17 +195,17 @@ services:
     image: auth:latest
     ports: ["8080:8080"]
     depends_on: [postgres, redis]
-    
+
   user-service:
     image: user:latest
     ports: ["8081:8081"]
     depends_on: [postgres, auth-service]
-    
+
   payment-service:
     image: payment:latest
     ports: ["8082:8082"]
     depends_on: [postgres, user-service]
-    
+
   api-gateway:
     image: nginx:latest
     ports: ["80:80"]
@@ -203,6 +213,7 @@ services:
 ```
 
 **Generated Architecture Diagram:**
+
 ```mermaid
 graph TB
     subgraph "External"
@@ -248,9 +259,11 @@ graph TB
 ```
 
 #### 4. API Interaction Sequences
+
 Analyzes API calls and interactions to create sequence diagrams:
 
 **REST API Flow Analysis:**
+
 ```go
 // Analyzed from HTTP handlers and client code
 func HandleUserRegistration(w http.ResponseWriter, r *http.Request) {
@@ -272,6 +285,7 @@ func HandleUserRegistration(w http.ResponseWriter, r *http.Request) {
 ```
 
 **Generated Sequence Diagram:**
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -309,9 +323,11 @@ sequenceDiagram
 ```
 
 #### 5. Class and Module Relationships
+
 Analyzes object-oriented code to show inheritance and composition:
 
 **Rust Trait Analysis:**
+
 ```rust
 trait Drawable {
     fn draw(&self);
@@ -357,6 +373,7 @@ impl Drawable for Panel {
 ```
 
 **Generated Class Diagram:**
+
 ```mermaid
 classDiagram
     class Drawable {
@@ -403,9 +420,11 @@ classDiagram
 ```
 
 ### 6. Network and Infrastructure Diagrams
+
 Analyzes Kubernetes manifests and infrastructure code:
 
 **Kubernetes Deployment Analysis:**
+
 ```yaml
 # k8s/deployment.yaml
 apiVersion: apps/v1
@@ -417,10 +436,10 @@ spec:
   template:
     spec:
       containers:
-      - name: web
-        image: nginx:latest
-        ports:
-        - containerPort: 80
+        - name: web
+          image: nginx:latest
+          ports:
+            - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
@@ -430,8 +449,8 @@ spec:
   selector:
     app: web-app
   ports:
-  - port: 80
-    targetPort: 80
+    - port: 80
+      targetPort: 80
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -439,18 +458,19 @@ metadata:
   name: web-ingress
 spec:
   rules:
-  - host: app.example.com
-    http:
-      paths:
-      - path: /
-        backend:
-          service:
-            name: web-service
-            port:
-              number: 80
+    - host: app.example.com
+      http:
+        paths:
+          - path: /
+            backend:
+              service:
+                name: web-service
+                port:
+                  number: 80
 ```
 
 **Generated Infrastructure Diagram:**
+
 ```mermaid
 graph TB
     subgraph "Internet"
@@ -490,8 +510,10 @@ graph TB
 ## Output Formats
 
 ### Mermaid (Default)
+
 Generates Mermaid.js diagrams that render in GitHub, GitLab, and VS Code:
-```markdown
+
+````markdown
 # Function Flow Analysis
 
 ```mermaid
@@ -499,8 +521,9 @@ flowchart TD
     A[Start] --> B[Process]
     B --> C[End]
 ```
-```
+````
 
+````
 ### PlantUML
 Generates PlantUML diagrams for complex enterprise architectures:
 ```plantuml
@@ -520,10 +543,12 @@ Payment --> App: Payment Success
 App --> User: Display Confirmation
 
 @enduml
-```
+````
 
 ### Graphviz DOT
+
 Generates DOT files for complex dependency graphs:
+
 ```dot
 digraph Dependencies {
     rankdir=TB;
@@ -542,31 +567,37 @@ digraph Dependencies {
 ## Examples
 
 ### Visualize a function:
+
 ```
 /visualize ./src/payment.go:ProcessPayment
 ```
 
 ### Create database ERD:
+
 ```
 /visualize ./models --type erd
 ```
 
 ### Generate system architecture:
+
 ```
 /visualize ./docker-compose.yml --type architecture
 ```
 
 ### Create API sequence diagram:
+
 ```
 /visualize ./api/handlers --type sequence
 ```
 
 ### Output to specific file:
+
 ```
 /visualize ./src/auth.rs --output docs/diagrams/auth-flow.md
 ```
 
 ### Default outputs (created automatically):
+
 ```
 /visualize ./src/payment.go          # Creates docs/diagrams/payment-flow.md
 /visualize ./models --type erd       # Creates docs/diagrams/database-schema.md
@@ -574,6 +605,7 @@ digraph Dependencies {
 ```
 
 ## File Structure Created
+
 ```
 project-root/
 └── docs/
@@ -589,7 +621,9 @@ project-root/
 ## Advanced Features
 
 ### Interactive Diagrams
+
 Generates interactive diagrams with clickable elements:
+
 ```mermaid
 flowchart TD
     A["Start"] --> B["Process"]
@@ -601,7 +635,9 @@ flowchart TD
 ```
 
 ### Complexity Analysis
+
 Annotates diagrams with complexity metrics:
+
 ```mermaid
 flowchart TD
     A["Login Function<br/>Complexity: 3"] --> B{"Valid User?"}
@@ -613,7 +649,9 @@ flowchart TD
 ```
 
 ### Dependency Analysis
+
 Shows dependency relationships and potential circular dependencies:
+
 ```mermaid
 graph TD
     A[auth] --> B[database]
@@ -634,6 +672,7 @@ graph TD
 ```
 
 ## Integration with Other Commands
+
 - Use with `/document` to include diagrams in generated documentation
 - Combine with `/refactor` to visualize before/after architecture changes
 - Use with `/review` to create visual explanations for code reviews

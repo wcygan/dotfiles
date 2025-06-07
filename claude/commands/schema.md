@@ -3,6 +3,7 @@
 Comprehensive database schema and data management command.
 
 ## Usage
+
 ```
 /schema <action> [options]
 ```
@@ -10,36 +11,43 @@ Comprehensive database schema and data management command.
 ## Actions
 
 ### Migration Management
+
 ```
 /schema migrate <description>
 /schema migrate --rollback <migration_id>
 ```
 
 ### CRUD Generation
+
 ```
 /schema crud --for <model>
 /schema crud --for <model> --lang <go|rust|java>
 ```
 
 ### Data Seeding
+
 ```
 /schema seed --for <model> --count <number>
 /schema seed --all --env <development|test>
 ```
 
 ## Description
+
 This command automates database schema management, CRUD boilerplate generation, and test data creation. It supports multiple database migration tools and programming languages.
 
 ### Migration Management
+
 Creates versioned database migration files with proper UP/DOWN scripts:
 
 **Supported Migration Tools:**
+
 - **golang-migrate**: Creates `.sql` files with timestamp prefixes
 - **Flyway**: Creates `V{version}__{description}.sql` files
 - **Diesel (Rust)**: Creates migration files in `migrations/` directory
 - **Liquibase**: Creates XML/YAML changelog files
 
 **Generated Migration Structure:**
+
 ```sql
 -- migrations/000001_add_user_email_verification.up.sql
 ALTER TABLE users 
@@ -57,9 +65,11 @@ DROP COLUMN email_verified_at;
 ```
 
 ### CRUD Generation
+
 Analyzes model structures and generates complete data access layers:
 
 **Go Example (with sqlx):**
+
 ```go
 type UserRepository struct {
     db *sqlx.DB
@@ -76,6 +86,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*User, error) {
 ```
 
 **Rust Example (with sqlx):**
+
 ```rust
 impl UserRepository {
     pub async fn create(&self, user: &User) -> Result<User, sqlx::Error> {
@@ -93,6 +104,7 @@ impl UserRepository {
 ```
 
 **Java Example (with Spring Data JPA):**
+
 ```java
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -105,15 +117,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
 ```
 
 ### Data Seeding
+
 Generates realistic test data for development and testing:
 
 **Features:**
+
 - **Realistic Data**: Uses libraries like Faker to generate believable data
 - **Relationship Handling**: Maintains foreign key constraints
 - **Configurable Volume**: Specify exact counts or ranges
 - **Environment Safety**: Prevents accidental production seeding
 
 **Generated Seed Script Example:**
+
 ```sql
 -- seeds/users_seed.sql
 INSERT INTO users (name, email, created_at) VALUES
@@ -131,13 +146,16 @@ INSERT INTO posts (user_id, title, content) VALUES
 ## Framework Integration
 
 ### Database Tools Detected:
+
 - **Go**: `golang-migrate`, `goose`, `atlas`, `ent`
 - **Rust**: `diesel`, `sqlx`, `sea-orm`
 - **Java**: `Flyway`, `Liquibase`, `JPA/Hibernate`
 - **Node/Deno**: `Prisma`, `TypeORM`, `Drizzle`
 
 ### ORM Pattern Recognition:
+
 Automatically detects and follows existing patterns:
+
 - Repository pattern (Go, Java)
 - Active Record pattern (Ruby, some JS ORMs)
 - Query Builder pattern (Rust sqlx)
@@ -146,40 +164,48 @@ Automatically detects and follows existing patterns:
 ## Examples
 
 ### Create a migration:
+
 ```
 /schema migrate "add-user-email-verification-token"
 ```
 
 ### Generate CRUD for Go model:
+
 ```
 /schema crud --for User --lang go
 ```
 
 ### Seed development data:
+
 ```
 /schema seed --for User --count 50
 /schema seed --all --env development
 ```
 
 ### Rollback migration:
+
 ```
 /schema migrate --rollback 20240315143022
 ```
 
 ## Configuration
+
 Respects existing database configuration files:
+
 - `database.yml` (Rails-style)
 - `dbconfig.yml` (golang-migrate)
 - `application.properties` (Spring)
 - `diesel.toml` (Diesel)
 
 ## Safety Features
+
 - **Environment Checks**: Prevents destructive operations in production
 - **Backup Recommendations**: Suggests backup commands before migrations
 - **Dry Run Mode**: Preview changes without executing
 - **Transaction Wrapping**: Wraps migrations in transactions when supported
 
 ## Integration with Other Commands
+
 - Use with `/containerize` to include migration steps in Docker builds
 - Combine with `/ci-gen` to add database testing to CI pipelines
 - Use with `/deploy` to automate migrations during deployments

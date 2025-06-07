@@ -69,3 +69,41 @@ Each installation creates timestamped backups and provides rollback capability.
 - The project follows safe installation patterns with automatic backup/restore
 - Integration tests run in isolated temporary environments
 - Pre-commit hooks validate code quality before commits
+
+## Zed Editor Tasks
+
+Zed tasks are commands that run in the integrated terminal. Tasks can be defined in:
+
+- Global: `~/.config/zed/tasks.json`
+- Project: `.zed/tasks.json`
+- Temporary: Oneshot tasks via command palette
+
+### Task Configuration
+
+```json
+{
+  "label": "Task name",
+  "command": "deno task test",
+  "env": {
+    "KEY": "value"
+  },
+  "cwd": "$ZED_WORKTREE_ROOT",
+  "use_new_terminal": false,
+  "allow_concurrent_runs": false,
+  "reveal": "always",
+  "shell": "zsh"
+}
+```
+
+### Available Variables
+
+- `$ZED_FILE` - Current file path
+- `$ZED_WORKTREE_ROOT` - Project root directory
+- `$ZED_COLUMN` - Cursor column
+- `$ZED_ROW` - Cursor row
+
+### Running Tasks
+
+- `cmd-shift-p` → `task: spawn` - Run a task
+- `task: rerun` - Rerun last task
+- Custom keybindings can trigger specific tasks

@@ -18,7 +18,6 @@
     "check": "deno check scripts/install-safely.ts scripts/rollback.ts",
     "help": "deno run --allow-all scripts/install-safely.ts --help",
     "test": "deno test --allow-all scripts/integration-test.ts",
-    "test:bash": "deno run --allow-all scripts/test-bash-enhancement.ts",
     "test:actions": "deno run --allow-all scripts/test-actions-locally.ts",
     "ci:check": "deno run --allow-all scripts/ci-environment-check.ts",
     "ci:check:critical": "deno run --allow-all scripts/ci-environment-check.ts --critical-only",

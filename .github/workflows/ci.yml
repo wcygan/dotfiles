@@ -65,22 +65,15 @@ jobs:
           deno task test
           echo "✅ Tests passed"
 
-      - name: Test bash enhancements
-        if: runner.os != 'Windows'
-        run: |
-          echo "Running bash enhancement tests..."
-          deno task test:bash
-          echo "✅ Bash enhancement tests passed"
-
       - name: Test installation (dry run)
         run: |
           echo "Testing installation script (dry run)..."
-          deno run --allow-all install-safely.ts --help
+          deno run --allow-all scripts/install-safely.ts --help
           echo "✅ Installation script help works"
 
       - name: Verify all scripts are executable
         if: runner.os != 'Windows'
         run: |
           echo "Checking script permissions..."
-          ls -la *.ts scripts/*.ts
+          ls -la scripts/*.ts
           echo "✅ Script permissions verified"

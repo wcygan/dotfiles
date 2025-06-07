@@ -11,7 +11,7 @@
   "features": {
     "edit_prediction_provider": "zed"
   },
-  "autosave": { "after_delay": { "milliseconds": 500 } },
+  "autosave": { "after_delay": { "milliseconds": 250 } },
   "base_keymap": "JetBrains",
   "agent": {
     "default_profile": "write",
@@ -41,5 +41,35 @@
     "git_status": true,
     // Whether to show the file icon for a tab.
     "file_icons": true
+  },
+  "lsp": {
+    "deno": {
+      "settings": {
+        // I like using Deno for scripting, so I enabkle it everywhere as the LSP for TypeScript.
+        "deno": {
+          "enable": true
+        }
+      }
+    }
+  },
+  "languages": {
+    "TypeScript": {
+      "language_servers": [
+        "deno",
+        "!typescript-language-server",
+        "!vtsls",
+        "!eslint"
+      ],
+      "formatter": "language_server"
+    },
+    "TSX": {
+      "language_servers": [
+        "deno",
+        "!typescript-language-server",
+        "!vtsls",
+        "!eslint"
+      ],
+      "formatter": "language_server"
+    }
   }
 }

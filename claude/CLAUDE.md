@@ -129,11 +129,21 @@ When working as part of a multi-agent team:
 - **CREATE** status files in `/tmp/{project-name}/claude-scratch/` for inter-agent communication
 - **COORDINATE** using shared JSON status files for structured updates in project-specific directories
 
+## Task Management
+
+Use the task management system for tracking work items:
+
+- **Location**: Tasks are stored in `/tasks/` directory with `status.json` index
+- **Commands**: Use `/task-create`, `/task-update`, `/task-list`, `/task-show`, `/task-log`, `/task-search`, `/task-archive`
+- **Format**: Tasks are markdown files with structured metadata
+- **Integration**: Active tasks sync with TodoWrite for session tracking
+
 ## File Organization
 
 - `/src/` - Source code
 - `/tests/` - Test files organized by type
 - `/scripts/` - Deno automation scripts
+- `/tasks/` - Task management files (markdown + status.json)
 - `deno.json` - Project configuration and tasks
 - `import_map.json` - Import mappings (if needed)
 

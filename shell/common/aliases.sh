@@ -48,7 +48,7 @@ alias vrc='edit ~/.$(basename $SHELL)rc'
 alias src='source ~/.$(basename $SHELL)rc'
 
 # Directory navigation
-alias d='edit ~/Development/development-workspace'
+alias ddd='edit ~/Development/development-workspace'
 alias dev='cd ~/Development'
 alias will='cd ~'
 alias n='edit /Users/wcygan/Development/development-workspace/notes'
@@ -65,7 +65,8 @@ alias l='exa -l'
 
 # File operations
 alias listdir='find ${1:-.} -type f -not -path "*/.*/*" -print0 | xargs -0 -I {} bash -c '\''echo "$(dirname "{}")/$(basename "{}")"'\'' | sort -t/ -k2 -k3'
-alias dt='du -sh * | sort -rh | awk '\''{sum+=$1; print} END {print "Total Size: " sum}'\'
+# Disk Space Usage
+alias ds='du -sh * | sort -rh | awk '\''{sum+=$1; print} END {print "Total Size: " sum}'\'
 alias copydir='rg --no-ignore --no-heading --with-filename --line-number --text --max-columns 500 --binary "" | nl -ba | tee >(pbcopy) | cat'
 
 # System utilities
@@ -133,6 +134,11 @@ alias gbddd='git branch | grep -v "main" | xargs git branch -d'
 # 03. Programming                                                            #
 ##############################################################################
 
+# Deno
+alias d='deno'
+alias dt='d task'
+alias dtd='d task dev'
+  
 # Gradle
 alias gw='./gradlew'
 alias gwr='gw run'

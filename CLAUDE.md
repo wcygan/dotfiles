@@ -69,6 +69,8 @@ Each installation creates timestamped backups and provides rollback capability.
 - The project follows safe installation patterns with automatic backup/restore
 - Integration tests run in isolated temporary environments
 - Pre-commit hooks validate code quality before commits
+- **ALWAYS** run `deno fmt --check` after making changes to verify formatting
+- Apply formatting fixes with `deno fmt` if needed
 
 ## Zed Editor Tasks
 

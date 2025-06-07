@@ -69,6 +69,8 @@ Each installation creates timestamped backups and provides rollback capability.
 - The project follows safe installation patterns with automatic backup/restore
 - Integration tests run in isolated temporary environments
 - Pre-commit hooks validate code quality before commits
+- **ALWAYS** run `deno fmt` immediately after writing or editing any file in this repository
+- This ensures consistent formatting and prevents `deno fmt --check` failures in CI
 - **ALWAYS** run `deno fmt --check` after making changes to verify formatting
 - Apply formatting fixes with `deno fmt` if needed
 

@@ -25,6 +25,11 @@ interface RollbackConfig {
   force: boolean;
 }
 
+interface FileToRestore {
+  relativePath: string;
+  isDirectory: boolean;
+}
+
 function printGreen(message: string) {
   console.log(`${colors.green}${message}${colors.reset}`);
 }
@@ -71,6 +76,36 @@ async function promptUser(message: string): Promise<boolean> {
   return input === "yes" || input === "y";
 }
 
+async function collectFilesToRestore(
+  backupDir: string,
+  basePath: string = "",
+): Promise<FileToRestore[]> {
+  const files: FileToRestore[] = [];
+  const currentPath = basePath ? join(backupDir, basePath) : backupDir;
+
+  for await (const dirEntry of Deno.readDir(currentPath)) {
+    const relativePath = basePath ? join(basePath, dirEntry.name) : dirEntry.name;
+
+    if (dirEntry.isFile) {
+      // Include dotfiles and config files from subdirectories
+      if (dirEntry.name.startsWith(".") || basePath !== "") {
+        files.push({ relativePath, isDirectory: false });
+      }
+    } else if (dirEntry.isDirectory) {
+      // Handle special directories
+      if (
+        dirEntry.name === ".config" || dirEntry.name === ".claude" || dirEntry.name === "Library"
+      ) {
+        // Recursively collect files from these directories
+        const subFiles = await collectFilesToRestore(backupDir, relativePath);
+        files.push(...subFiles);
+      }
+    }
+  }
+
+  return files;
+}
+
 async function rollbackDotfiles(config: RollbackConfig): Promise<void> {
   const { backupDir, homeDir, force } = config;
 
@@ -84,21 +119,16 @@ async function rollbackDotfiles(config: RollbackConfig): Promise<void> {
   printYellow(`Home directory: ${homeDir}`);
 
   // Get list of files in backup directory
-  const filesToRestore: string[] = [];
-  for await (const dirEntry of Deno.readDir(backupDir)) {
-    if (dirEntry.isFile && dirEntry.name.startsWith(".")) {
-      filesToRestore.push(dirEntry.name);
-    }
-  }
+  const filesToRestore = await collectFilesToRestore(backupDir);
 
   if (filesToRestore.length === 0) {
-    printYellow("ℹ️  No dotfiles found in backup directory");
+    printYellow("ℹ️  No files found in backup directory");
     return;
   }
 
   printBlue(`Found ${filesToRestore.length} files to restore:`);
   for (const file of filesToRestore) {
-    console.log(`  • ${file}`);
+    console.log(`  • ${file.relativePath}`);
   }
 
   // Confirm rollback
@@ -115,17 +145,25 @@ async function rollbackDotfiles(config: RollbackConfig): Promise<void> {
   // Restore files
   let restoredCount = 0;
   for (const file of filesToRestore) {
-    const backupFilePath = join(backupDir, file);
-    const targetFilePath = join(homeDir, file);
+    const backupFilePath = join(backupDir, file.relativePath);
+    const targetFilePath = join(homeDir, file.relativePath);
 
     try {
+      // Ensure target directory exists
+      const targetDir = join(homeDir, ...file.relativePath.split("/").slice(0, -1));
+      if (targetDir !== homeDir) {
+        await Deno.mkdir(targetDir, { recursive: true });
+      }
+
       // Copy file from backup to home directory
       await copy(backupFilePath, targetFilePath, { overwrite: true });
-      printGreen(`✓ Restored ${file}`);
+      printGreen(`✓ Restored ${file.relativePath}`);
       restoredCount++;
     } catch (error) {
       printRed(
-        `✗ Failed to restore ${file}: ${error instanceof Error ? error.message : String(error)}`,
+        `✗ Failed to restore ${file.relativePath}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       );
     }
   }

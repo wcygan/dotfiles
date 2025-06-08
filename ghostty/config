@@ -1,0 +1,24 @@
+# Visuals
+theme = catppuccin-frappe
+font-size = 22
+unfocused-split-opacity = 1.0
+window-inherit-font-size = false
+cursor-style-blink = false
+keybind = shift+enter=text:\n
+
+# Copy text to clipboard when highlighting:
+copy-on-select = clipboard
+
+# Ensure to start in ~/ (home directory)
+working-directory = home
+
+# Add / delete terminal tabs
+keybind = super+shift+t=new_tab
+keybind = super+shift+w=close_surface
+
+# Switch between terminal tabs
+keybind = cmd+alt+right=next_tab
+keybind = cmd+alt+left=previous_tab
+
+# Reload the config
+keybind = super+shift+r=reload_config

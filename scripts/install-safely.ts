@@ -64,6 +64,9 @@ const CLAUDE_CONFIG_FILES = ["CLAUDE.md", "settings.json", "mcp.json"];
 // Claude commands directory to manage
 const CLAUDE_COMMANDS_DIR = "commands";
 
+// Ghostty configuration file
+const GHOSTTY_CONFIG_FILE = "config";
+
 // Utility functions
 function printStatus(message: string): void {
   console.log(`${colors.green}✅${colors.reset} ${message}`);
@@ -284,6 +287,55 @@ async function backupClaudeConfig(
   } catch (error) {
     printWarning(
       `Could not backup Claude configuration: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+
+  return backedUpFiles;
+}
+
+async function backupGhosttyConfig(
+  homeDir: string,
+  backupDir: string,
+): Promise<string[]> {
+  const ghosttyConfigDir = join(homeDir, "Library", "Application Support", "com.mitchellh.ghostty");
+  const ghosttyBackupDir = join(
+    backupDir,
+    "Library",
+    "Application Support",
+    "com.mitchellh.ghostty",
+  );
+  const backedUpFiles: string[] = [];
+
+  const ghosttyConfigExists = await exists(join(ghosttyConfigDir, GHOSTTY_CONFIG_FILE));
+  if (!ghosttyConfigExists) {
+    console.log(
+      `   ${colors.yellow}No existing Ghostty configuration found${colors.reset}`,
+    );
+    return backedUpFiles;
+  }
+
+  try {
+    await ensureDir(ghosttyBackupDir);
+
+    const sourcePath = join(ghosttyConfigDir, GHOSTTY_CONFIG_FILE);
+    const backupPath = join(ghosttyBackupDir, GHOSTTY_CONFIG_FILE);
+
+    try {
+      await copy(sourcePath, backupPath, { overwrite: true });
+      printStatus(`Backed up Ghostty ${GHOSTTY_CONFIG_FILE}`);
+      backedUpFiles.push(`ghostty/${GHOSTTY_CONFIG_FILE}`);
+    } catch (error) {
+      printWarning(
+        `Could not backup Ghostty ${GHOSTTY_CONFIG_FILE}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  } catch (error) {
+    printWarning(
+      `Could not backup Ghostty configuration: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
@@ -531,6 +583,44 @@ async function copyClaudeConfig(
   }
 }
 
+async function copyGhosttyConfig(
+  dotfilesDir: string,
+  homeDir: string,
+): Promise<boolean> {
+  printBlue("👻 Copying Ghostty configuration file...");
+  const ghosttySourceFile = join(dotfilesDir, "ghostty", GHOSTTY_CONFIG_FILE);
+  const ghosttyConfigDir = join(homeDir, "Library", "Application Support", "com.mitchellh.ghostty");
+  const ghosttyDestFile = join(ghosttyConfigDir, GHOSTTY_CONFIG_FILE);
+
+  // Check if Ghostty config exists in dotfiles
+  const ghosttyConfigExists = await exists(ghosttySourceFile);
+  if (!ghosttyConfigExists) {
+    printWarning(
+      "No ghostty/config file found in dotfiles, skipping Ghostty configuration",
+    );
+    return true;
+  }
+
+  try {
+    // Ensure Ghostty config directory exists
+    await ensureDir(ghosttyConfigDir);
+    printStatus(`Created Ghostty config directory: ${ghosttyConfigDir}`);
+
+    // Copy the config file
+    await copy(ghosttySourceFile, ghosttyDestFile, { overwrite: true });
+    printStatus(`Copied Ghostty config to ${ghosttyDestFile}`);
+
+    return true;
+  } catch (error) {
+    printError(
+      `Failed to copy Ghostty configuration: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    return false;
+  }
+}
+
 async function copyPowerShellProfile(
   dotfilesDir: string,
   homeDir: string,
@@ -730,6 +820,17 @@ This script will:
     );
     backedUpFiles.push(...claudeBackedUpFiles);
 
+    // Backup Ghostty configuration (macOS only)
+    if (Deno.build.os === "darwin") {
+      console.log();
+      printBlue("👻 Backing up Ghostty configuration...");
+      const ghosttyBackedUpFiles = await backupGhosttyConfig(
+        config.homeDir,
+        config.backupDir,
+      );
+      backedUpFiles.push(...ghosttyBackedUpFiles);
+    }
+
     // Show current shell
     console.log();
     printBlue("🐚 Current shell information:");
@@ -802,6 +903,18 @@ This script will:
       printWarning("Claude configuration installation failed, but continuing...");
     }
 
+    // Copy Ghostty configuration (macOS only)
+    if (Deno.build.os === "darwin") {
+      console.log();
+      const ghosttyInstallSuccess = await copyGhosttyConfig(
+        config.dotfilesDir,
+        config.homeDir,
+      );
+      if (!ghosttyInstallSuccess) {
+        printWarning("Ghostty configuration installation failed, but continuing...");
+      }
+    }
+
     // Copy PowerShell profile (Windows only)
     console.log();
     const psInstallSuccess = await copyPowerShellProfile(
@@ -832,6 +945,9 @@ This script will:
     console.log("   ✅ Installed new dotfiles from repository");
     console.log("   ✅ Installed Zed configuration files");
     console.log("   ✅ Installed Claude configuration files and custom commands");
+    if (Deno.build.os === "darwin") {
+      console.log("   ✅ Installed Ghostty terminal configuration");
+    }
     if (Deno.build.os === "windows") {
       console.log("   ✅ Installed PowerShell profile");
     }

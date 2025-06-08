@@ -66,6 +66,18 @@ IMPORTANT: I run a Talos Linux Kubernetes Cluster. Use these modern alternatives
 - **yq**: Use for YAML processing and manipulation
 - **hexyl**: Use for hex viewing of binary files
 
+### Output Format Preferences
+
+**ALWAYS** prefer JSON output for parsing when available:
+
+- Use `-o json` or `--json` flags when available (e.g., `kubectl get nodes -o json`)
+- Parse structured JSON output instead of text formats for reliability
+- Use `jq` for JSON processing in scripts
+- Examples:
+  - `kubectl get pods -o json | jq '.items[].metadata.name'`
+  - `docker inspect container-name | jq '.[0].State.Status'`
+  - `aws ec2 describe-instances --output json | jq '.Reservations[].Instances[]'`
+
 ### Common Commands
 
 ```bash

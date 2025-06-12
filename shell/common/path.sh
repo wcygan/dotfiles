@@ -3,6 +3,9 @@ export PATH="/usr/local/bin:$PATH"
 # Go tools
 export PATH=$PATH:$(go env GOPATH)/bin
 
+# DuckDB CLI
+export PATH='/Users/wcygan/.duckdb/cli/latest':$PATH
+
 # Homebrew tools
 export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 export PATH="/opt/homebrew/opt/llvm/bin:$PATH"

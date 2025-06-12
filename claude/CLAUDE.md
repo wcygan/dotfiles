@@ -159,9 +159,59 @@ Use the task management system for tracking work items:
 - `deno.json` - Project configuration and tasks
 - `import_map.json` - Import mappings (if needed)
 
+## Documentation Style
+
+### README Files
+
+**KEEP README FILES CONCISE AND SCANNABLE:**
+
+- **Maximum 50 lines** for most projects
+- **No excessive emojis** or decorative elements
+- **Essential sections only**: Purpose, Quick Start, Key Commands
+- **No verbose explanations** - let code and comments speak
+- **Single quick start command** when possible
+- **Brief feature lists** without detailed descriptions
+- **Minimal project structure** - only if complex
+- **Essential links only** - avoid resource dumps
+
+**Example concise README:**
+
+````markdown
+# Project Name
+
+Brief one-line description of what it does.
+
+## Quick Start
+
+```bash
+deno task init && deno task dev
+```
+````
+
+## Key Commands
+
+- `deno task test` - Run tests
+- `deno task build` - Build project
+
+## Features
+
+- Core feature 1
+- Core feature 2
+- Core feature 3
+
+```
+**Avoid:**
+- Long feature descriptions
+- Extensive project structure diagrams  
+- Multiple installation methods
+- Verbose technical explanations
+- Marketing-style language
+- Detailed configuration options in main README
+
 ## IMPORTANT Notes
 
 - **YOU MUST** follow these guidelines exactly as written
 - **ALWAYS** ask for clarification if requirements conflict
 - **NEVER** use deprecated patterns or old import styles
 - **ALWAYS** prioritize performance and type safety
+```

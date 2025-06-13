@@ -26,6 +26,7 @@ alias ....='cd ../../..'
 # Editor and shell configuration
 alias edit='zed'
 alias x='claude'
+alias xs'claude --model sonnet'
 alias xx='cd ~/Development/development-workspace'
 
 # Shell-agnostic aliases - detect current shell and use appropriate config

@@ -115,6 +115,36 @@ git worktree remove ../project-feature
 4. **NEVER** commit without running pre-commit checks
 5. **ALWAYS** use semantic commit messages (feat:, fix:, docs:, refactor:, test:, chore:)
 
+### AI-Assisted Development Pattern
+
+1. **WRITE** failing tests first (test-driven development)
+2. **GENERATE** implementation with AI assistance
+3. **VERIFY** code meets requirements and security standards
+4. **REFACTOR** at appropriate checkpoints, not continuously
+5. **LOG** extensively for debugging AI-generated code
+
+### Context Management
+
+- **PROVIDE** clear, specific requirements to minimize context gaps
+- **INCLUDE** relevant project context in prompts
+- **DOCUMENT** assumptions and decisions in code comments
+
+## Security & Code Verification
+
+### AI-Generated Code Review
+
+- **ALWAYS** review and understand AI-generated code before accepting
+- **NEVER** commit code you don't fully understand
+- **RUN** security scanning on all generated code
+- **VERIFY** all third-party dependencies suggested by AI
+- **TEST** edge cases and error handling thoroughly
+
+### Sensitive Data Protection
+
+- **NEVER** share API keys, credentials, or proprietary code with AI
+- **USE** environment variables or secret management tools
+- **SANITIZE** logs and debug output before sharing
+
 ## Project Planning & Coordination
 
 ### PLAN.md Adherence
@@ -140,6 +170,21 @@ When working as part of a multi-agent team:
 - **USE** git worktrees to work on separate branches without conflicts
 - **CREATE** status files in `/tmp/{project-name}/claude-scratch/` for inter-agent communication
 - **COORDINATE** using shared JSON status files for structured updates in project-specific directories
+
+## Performance & Optimization
+
+### Token Efficiency
+
+- **OPTIMIZE** prompts for clarity and brevity
+- **BATCH** related operations in single requests
+- **USE** structured outputs (JSON) for parsing efficiency
+- **CACHE** common patterns and solutions locally
+
+### Parallel Development
+
+- **USE** Docker containers for isolated AI agent environments
+- **IMPLEMENT** clear synchronization points for multi-agent work
+- **MAINTAIN** shared state files in `/tmp/{project-name}/`
 
 ## Task Management
 
@@ -207,6 +252,19 @@ deno task init && deno task dev
 - Verbose technical explanations
 - Marketing-style language
 - Detailed configuration options in main README
+
+## Claude Code Features
+
+### Thinking Modes
+- `think` - Standard mode (4,000 tokens)
+- `think hard` - Enhanced analysis
+- `think harder` - Deep computation
+- `ultrathink` - Maximum analysis (31,999 tokens)
+
+### Effective Usage
+- **USE** thinking modes for complex architectural decisions
+- **AVOID** over-thinking simple tasks
+- **BALANCE** computation time with task complexity
 
 ## IMPORTANT Notes
 

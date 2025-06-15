@@ -51,20 +51,22 @@ IMPORTANT: I run a Talos Linux Kubernetes Cluster. Use these modern alternatives
 
 ### Preferred Command-Line Tools
 
-**ALWAYS** prefer these modern, fast alternatives:
+**CRITICAL: When using Bash commands, ALWAYS prefer these modern, fast alternatives over legacy tools:**
 
-- **ripgrep (rg)**: Use instead of grep for searching code
-- **fd**: Use instead of find for finding files
-- **fzf**: Use for interactive fuzzy finding
-- **bat**: Use instead of cat for syntax-highlighted file viewing
-- **exa/eza**: Use instead of ls for better file listings
-- **delta**: Use for better git diffs
+- **ripgrep (rg)**: Use instead of grep for searching code - **NEVER use grep**
+- **fd**: Use instead of find for finding files - **NEVER use find**
+- **fzf**: Use for interactive fuzzy finding and selection
+- **bat**: Use instead of cat for syntax-highlighted file viewing - **NEVER use cat for code**
+- **exa/eza**: Use instead of ls for better file listings - **NEVER use plain ls**
+- **delta**: Use for better git diffs - **NEVER use plain git diff**
 - **zoxide**: Use instead of cd for smarter directory navigation
-- **duf**: Use instead of df for disk usage
-- **htop/btop**: Use instead of top for process monitoring
-- **jq**: Use for JSON processing and manipulation
-- **yq**: Use for YAML processing and manipulation
-- **hexyl**: Use for hex viewing of binary files
+- **duf**: Use instead of df for disk usage - **NEVER use df**
+- **htop/btop**: Use instead of top for process monitoring - **NEVER use top**
+- **jq**: Use for JSON processing and manipulation - REQUIRED for all JSON tasks
+- **yq**: Use for YAML processing and manipulation - REQUIRED for all YAML tasks
+- **hexyl**: Use for hex viewing of binary files - **NEVER use xxd or hexdump**
+
+**IMPORTANT**: These tools are NOT optional suggestions - they are MANDATORY preferences. When writing any Bash commands or scripts, you MUST use these modern alternatives instead of their legacy counterparts.
 
 ### Output Format Preferences
 

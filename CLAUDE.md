@@ -111,3 +111,48 @@ Zed tasks are commands that run in the integrated terminal. Tasks can be defined
 - `cmd-shift-p` → `task: spawn` - Run a task
 - `task: rerun` - Rerun last task
 - Custom keybindings can trigger specific tasks
+
+## Command Ideation Process
+
+### Systematic Process for Discovering New Claude Commands
+
+#### Phase 1: Ecosystem Analysis
+
+1. **Command Inventory**: Count and categorize all existing commands by workflow stage
+2. **Gap Identification**: Map workflow stages with low command coverage
+3. **Pattern Recognition**: Identify naming conventions and usage patterns
+
+#### Phase 2: Pain Point Research
+
+1. **Developer Workflow Gaps**: Survey latest trends and manual pain points
+2. **Technology Evolution**: Research emerging tools and frameworks
+3. **Enterprise Needs**: Identify complex workflows needing automation
+
+#### Phase 3: Command Design Principles
+
+1. **Simple Usage**: `/command [optional-context]` or `/command` (auto-detects)
+2. **Contextual Intelligence**: Commands interpret project structure automatically
+3. **Interactive Fallback**: Guided selection when no argument provided
+4. **Smart Defaults**: Work with sensible defaults for common cases
+
+#### Phase 4: Validation Framework
+
+**Tier 1**: High-impact pain points affecting 50%+ of developers
+**Tier 2**: Strategic workflow automation for growing technologies\
+**Tier 3**: Emerging technology foundation and niche value
+
+### Research Triggers
+
+- Major technology shifts (framework migrations, new tools)
+- Repeated manual tasks in development workflow
+- Team pain points from retrospectives
+- Industry best practice evolution
+
+### Command Categories to Monitor
+
+- **AI/ML Workflows**: Fastest-growing development segment
+- **Frontend Build Tools**: Rapid ecosystem changes
+- **Cloud-Native Complexity**: K8s and container orchestration
+- **Mobile Development**: CI/CD and testing gaps
+- **Database Operations**: Migration and performance management
+- **Security Automation**: Compliance and vulnerability management

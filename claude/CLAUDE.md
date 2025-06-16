@@ -197,6 +197,52 @@ Use the task management system for tracking work items:
 - **Format**: Tasks are markdown files with structured metadata
 - **Integration**: Active tasks sync with TodoWrite for session tracking
 
+## Project Lifecycle Management
+
+### Deno as Lifecycle Operations Harness
+
+**MANDATORY**: Use Deno as the primary lifecycle operations harness in the root of every project:
+
+- **Central Command Hub**: All lifecycle operations MUST be defined in `deno.json` tasks
+- **Standardized Commands**: Use consistent naming across all projects:
+  - `deno task up` - Start/deploy all services (Docker Compose, local servers, etc.)
+  - `deno task down` - Stop/undeploy all services
+  - `deno task test` - Run all tests (unit, integration, e2e)
+  - `deno task test:unit` - Run unit tests only
+  - `deno task test:integration` - Run integration tests only
+  - `deno task dev` - Start development environment with hot reload
+  - `deno task build` - Build project for production
+  - `deno task check` - Type checking
+  - `deno task fmt` - Format code
+  - `deno task lint` - Lint code
+  - `deno task init` - Initialize project for new environment
+  - `deno task ci` - Run full CI pipeline locally
+
+### Integration with Project Tools
+
+**Deno tasks MUST orchestrate project-specific tools:**
+
+```json
+{
+  "tasks": {
+    "up": "docker compose up -d && cd backend && cargo run",
+    "down": "docker compose down",
+    "test": "deno task test:backend && deno task test:frontend",
+    "test:backend": "cd backend && cargo test",
+    "test:frontend": "cd frontend && deno test",
+    "dev": "docker compose up -d db && concurrently \"cd backend && cargo watch -x run\" \"cd frontend && deno task dev\""
+  }
+}
+```
+
+**Key Principles:**
+
+- **Single Entry Point**: Developers should only need `deno task <command>` regardless of project complexity
+- **Directory Awareness**: Tasks handle `cd` operations to run commands in correct directories
+- **Tool Abstraction**: Abstract away whether using npm, cargo, gradle, make, etc.
+- **Compose Integration**: Docker Compose services managed through Deno tasks
+- **Environment Setup**: `deno task init` handles all first-time setup (deps, config, etc.)
+
 ## File Organization
 
 - `/src/` - Source code

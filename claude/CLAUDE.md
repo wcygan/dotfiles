@@ -38,6 +38,43 @@ Use [Deno Fresh](https://fresh.deno.dev/) with these practices:
 - Mock external dependencies for fast, reliable tests
 - Use fresh-testing-library for component/handler testing
 
+#### Fresh 2.0 Essentials
+
+Fresh 2.0 (alpha) is production-ready but has rough edges. Use fallback strategies for styling, proxy patterns for APIs, and pre-built Docker approaches for reliable deployments.
+
+**Setup & Configuration:**
+
+- Use JSR imports: `jsr:@fresh/core@^2.0.0-alpha.22` instead of deno.land URLs
+- Initialize: `deno run -Ar jsr:@fresh/init@2.0.0-alpha.34 myapp`
+- Essential tasks: `dev`, `build`, `start` with proper --watch flags
+- Configure `nodeModulesDir: "auto"` for npm package compatibility
+
+**Styling Strategy:**
+
+- Tailwind plugin is unreliable - implement CSS fallbacks in `static/styles.css`
+- Define key utilities manually: `.min-h-screen`, `.flex`, `.items-center`, `.justify-center`
+- Use AppShell pattern for consistent layout wrapper
+
+**ConnectRPC Integration:**
+
+- Use API proxy routes in `routes/api/[...path].ts` for backend communication
+- Set up transport with `baseUrl: "/api"` for client-side RPC calls
+- Use buf.build packages via npm imports for type safety
+
+**Docker Best Practices:**
+
+- Pre-build assets locally with `deno task build` before Docker build
+- Copy built assets (including `_fresh/`) to container
+- Use `deno cache --node-modules-dir=auto` for dependency caching
+- Configure unique ports (e.g., 8007) to avoid conflicts
+
+**Critical Notes:**
+
+- Fresh 2.0 stable target: Q3 2025 - current alpha is production-ready but evolving
+- Always have CSS fallbacks when Tailwind plugin fails to generate utilities
+- npm registry issues in Docker - pre-building recommended
+- Island architecture: `islands/` for interactive, `components/` for static
+
 ## Infrastructure Choices
 
 IMPORTANT: I run a Talos Linux Kubernetes Cluster. Use these modern alternatives:

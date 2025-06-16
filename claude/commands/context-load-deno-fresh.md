@@ -10,7 +10,7 @@ When this command is executed, you MUST:
 2. **Use WebFetch tool** to gather information from these key sources:
    - **Fresh Documentation**: `https://fresh.deno.dev/docs/`
      - Focus on: islands architecture, routing, server-side rendering
-   - **Preact Guide**: `https://preactjs.com/guide/v10/`
+   - **Preact Guide**: `https://preactjs.com/guide/v10/getting-started`
      - Focus on: components, hooks, signals, performance
    - **Tailwind CSS**: `https://tailwindcss.com/docs`
      - Focus on: utility classes, responsive design, customization

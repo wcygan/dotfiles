@@ -14,7 +14,7 @@ When this command is executed, you MUST:
      - Focus on: L3/L4 policies, L7 policies, DNS policies
    - **Service Mesh**: `https://docs.cilium.io/en/stable/network/servicemesh/`
      - Focus on: Envoy integration, traffic management, observability
-   - **Observability**: `https://docs.cilium.io/en/stable/observability/`
+   - **Observability**: `https://docs.cilium.io/en/stable/gettingstarted/hubble/`
      - Focus on: Hubble, metrics, tracing, monitoring
    - **Performance Guide**: `https://docs.cilium.io/en/stable/operations/performance/`
      - Focus on: tuning, benchmarking, optimization

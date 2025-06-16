@@ -10,10 +10,10 @@ When this command is executed, you MUST:
 2. **Use WebFetch tool** to gather information from these key sources:
    - **DragonflyDB Documentation**: `https://dragonflydb.io/docs/`
      - Focus on: installation, configuration, Redis compatibility
-   - **Redis Compatibility**: `https://dragonflydb.io/docs/category/redis-compatibility`
-     - Focus on: supported commands, migration strategies
-   - **Performance Guide**: `https://dragonflydb.io/docs/managing-dragonfly/performance`
-     - Focus on: benchmarking, optimization, monitoring
+   - **Getting Started**: `https://dragonflydb.io/docs/getting-started`
+     - Focus on: installation, basic configuration, Redis compatibility
+   - **Managing Dragonfly**: `https://dragonflydb.io/docs/managing-dragonfly/`
+     - Focus on: cluster setup, performance tuning, monitoring
    - **Configuration Reference**: `https://dragonflydb.io/docs/managing-dragonfly/`
      - Focus on: cluster setup, persistence, security
    - **Client Libraries**: `https://dragonflydb.io/docs/integrations/`

@@ -14,7 +14,7 @@ When this command is executed, you MUST:
      - Focus on: package discovery, standard library modules
    - **Dax Documentation**: `https://github.com/dsherret/dax`
      - Focus on: cross-platform shell commands, process execution
-   - **Deno Standard Library**: `https://jsr.io/@std`
+   - **Deno Standard Library**: `https://jsr.io/@std` (examples: `https://jsr.io/@std/cli`, `https://jsr.io/@std/async`, `https://jsr.io/@std/fs`, `https://jsr.io/@std/path`, `https://jsr.io/@std/os`, `https://jsr.io/@std/encoding`) and `https://jsr.io/packages`
      - Focus on: filesystem, networking, CLI, testing utilities
    - **Deno Examples**: `https://docs.deno.com/examples/`
      - Focus on: practical use cases, automation scripts

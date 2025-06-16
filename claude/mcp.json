@@ -20,6 +20,14 @@
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+    },
+    "mcp-server-time": {
+      "command": "uvx",
+      "args": ["mcp-server-time"]
     }
   }
 }

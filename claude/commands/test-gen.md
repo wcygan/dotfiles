@@ -1,21 +1,6 @@
 # /test-gen
 
-Generate comprehensive test suites with intelligent test case creation based on code analysis and testing best practices.
-
-## Usage
-
-```
-/test-gen [component|api|e2e|all] [--framework=auto] [--coverage-target=80]
-```
-
-## Parameters
-
-- `component` - Generate unit/component tests for specific modules
-- `api` - Generate API endpoint tests with realistic scenarios
-- `e2e` - Generate end-to-end testing workflows
-- `all` - Generate complete test suite across all categories
-- `--framework` - Override framework detection (jest, vitest, deno, pytest, cargo, go)
-- `--coverage-target` - Set coverage percentage goal (default: 80%)
+Generate comprehensive test suites for $ARGUMENT with intelligent test case creation based on code analysis and testing best practices.
 
 ## Context Intelligence
 

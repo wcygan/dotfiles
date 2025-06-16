@@ -1,15 +1,6 @@
 # /ci-gen
 
-Generates or updates GitHub Actions CI workflow files based on project needs.
-
-## Usage
-
-```
-/ci-gen
-/ci-gen --platform <github|gitlab|circleci>
-/ci-gen --template <basic|advanced|security>
-/ci-gen --update
-```
+Generates or updates CI workflow files for $ARGUMENT based on project needs and technology stack detection.
 
 ## Description
 

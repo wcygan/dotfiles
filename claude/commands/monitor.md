@@ -1,12 +1,6 @@
 # /monitor
 
-Set up comprehensive monitoring, observability, and alerting systems for applications, infrastructure, and business metrics with modern tooling.
-
-## Usage
-
-```
-/monitor [scope: application|infrastructure|business|security]
-```
+Set up comprehensive monitoring, observability, and alerting systems for $ARGUMENT with modern tooling and intelligent metric collection.
 
 ## Monitoring Strategy Framework
 

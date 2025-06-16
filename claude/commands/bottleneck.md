@@ -1,21 +1,6 @@
 # /bottleneck
 
-Identify, analyze, and resolve performance bottlenecks using systematic profiling, monitoring, and optimization techniques across the entire application stack.
-
-## Usage
-
-```
-/bottleneck [analyze|profile|optimize|monitor] [--component=all] [--threshold=auto]
-```
-
-## Parameters
-
-- `analyze` - Identify performance bottlenecks across the application (default)
-- `profile` - Deep performance profiling of specific components
-- `optimize` - Apply automated optimization strategies
-- `monitor` - Set up continuous bottleneck monitoring
-- `--component` - Target specific component: cpu, memory, network, database, cache, all
-- `--threshold` - Performance threshold for bottleneck detection (auto-detect by default)
+Identify, analyze, and resolve performance bottlenecks for $ARGUMENT using systematic profiling, monitoring, and optimization techniques across the entire application stack.
 
 ## Context Intelligence
 

@@ -1,14 +1,6 @@
-# Scaffold Rust Axum Web Server
+# /scaffold-rust-axum
 
-## Description
-
-Creates a new Rust web server project using Axum framework with modern async/await patterns and essential endpoints.
-
-## Usage
-
-```
-/scaffold-rust-axum [project-name]
-```
+Creates a new Rust web server project for $ARGUMENT using Axum framework with modern async/await patterns and essential endpoints.
 
 ## What it does
 

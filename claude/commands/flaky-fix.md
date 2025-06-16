@@ -1,21 +1,6 @@
 # /flaky-fix
 
-Detect, analyze, and fix flaky tests using intelligent pattern recognition and automated stabilization techniques.
-
-## Usage
-
-```
-/flaky-fix [analyze|stabilize|monitor|report] [--threshold=3] [--history-days=30]
-```
-
-## Parameters
-
-- `analyze` - Analyze test history for flakiness patterns (default)
-- `stabilize` - Apply automated fixes to flaky tests
-- `monitor` - Set up continuous flaky test monitoring
-- `report` - Generate comprehensive flakiness report
-- `--threshold` - Number of failures to consider flaky (default: 3)
-- `--history-days` - Days of test history to analyze (default: 30)
+Detect, analyze, and fix flaky tests for $ARGUMENT using intelligent pattern recognition and automated stabilization techniques.
 
 ## Context Intelligence
 

@@ -1,22 +1,6 @@
 # /db-optimize
 
-Comprehensive database performance optimization with intelligent query analysis, index recommendations, configuration tuning, and automated optimization strategies.
-
-## Usage
-
-```
-/db-optimize [analyze|indexes|queries|config|monitor] [--database=auto] [--impact=medium]
-```
-
-## Parameters
-
-- `analyze` - Comprehensive database performance analysis (default)
-- `indexes` - Index optimization and recommendations
-- `queries` - Query performance analysis and optimization
-- `config` - Database configuration tuning
-- `monitor` - Set up ongoing database performance monitoring
-- `--database` - Target database: postgresql, mysql, mongodb, sqlite (auto-detect by default)
-- `--impact` - Optimization impact level: low, medium, high (affects aggressiveness of changes)
+Comprehensive database performance optimization for $ARGUMENT with intelligent query analysis, index recommendations, configuration tuning, and automated optimization strategies.
 
 ## Context Intelligence
 

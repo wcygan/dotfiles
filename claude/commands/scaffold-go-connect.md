@@ -1,14 +1,6 @@
-# Scaffold Go ConnectRPC Server
+# /scaffold-go-connect
 
-## Description
-
-Creates a new Go RPC server project using ConnectRPC with Protocol Buffers, Buf schema management, and type-safe service definitions.
-
-## Usage
-
-```
-/scaffold-go-connect [project-name]
-```
+Creates a new Go RPC server project for $ARGUMENT using ConnectRPC with Protocol Buffers, Buf schema management, and type-safe service definitions.
 
 ## What it does
 

@@ -1,17 +1,6 @@
 # /visualize
 
-Analyzes code and architecture to generate explanatory diagrams.
-
-## Usage
-
-```
-/visualize <target>
-/visualize <target> --type <flowchart|sequence|erd|architecture>
-/visualize <target> --format <mermaid|plantuml|graphviz>
-/visualize <target> --output <file.md>
-```
-
-**Default Output Location**: `/docs/diagrams/` directory
+Analyzes code and architecture for $ARGUMENT to generate explanatory diagrams.
 
 ## Description
 

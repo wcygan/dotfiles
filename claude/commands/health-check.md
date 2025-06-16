@@ -1,12 +1,6 @@
 # /health-check
 
-Implement comprehensive health monitoring for services, databases, and infrastructure with automated alerting and status reporting.
-
-## Usage
-
-```
-/health-check [service name or system component]
-```
+Implement comprehensive health monitoring for $ARGUMENT with automated alerting and status reporting.
 
 ## Health Check Implementation
 

@@ -1,21 +1,6 @@
 # /threat-model
 
-Generate comprehensive threat models using STRIDE methodology with automated risk assessment, attack surface analysis, and mitigation strategies.
-
-## Usage
-
-```
-/threat-model [generate|update|validate|report] [--methodology=stride] [--scope=application|infrastructure|api]
-```
-
-## Parameters
-
-- `generate` - Create new threat model from architecture analysis (default)
-- `update` - Update existing threat model with new components
-- `validate` - Validate current security controls against threat model
-- `report` - Generate comprehensive threat assessment report
-- `--methodology` - Threat modeling approach: stride, pasta, vast, octave (default: stride)
-- `--scope` - Analysis scope: application, infrastructure, api, data-flow
+Generate comprehensive threat models for $ARGUMENT using STRIDE methodology with automated risk assessment, attack surface analysis, and mitigation strategies.
 
 ## Context Intelligence
 

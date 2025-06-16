@@ -1,12 +1,6 @@
 # /deploy
 
-Automates Kubernetes deployment of containerized applications.
-
-## Usage
-
-```
-/deploy <service> --to <environment>
-```
+Automates Kubernetes deployment for $ARGUMENT with intelligent environment detection and manifest generation.
 
 ## Description
 

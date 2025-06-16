@@ -1,21 +1,6 @@
 # /coverage
 
-Comprehensive code coverage analysis, reporting, and improvement automation with intelligent gap identification and test generation suggestions.
-
-## Usage
-
-```
-/coverage [analyze|report|improve|enforce] [--threshold=80] [--format=html,json,lcov]
-```
-
-## Parameters
-
-- `analyze` - Analyze current coverage and identify gaps (default)
-- `report` - Generate comprehensive coverage reports
-- `improve` - Suggest specific improvements to increase coverage
-- `enforce` - Set up coverage enforcement in CI/CD
-- `--threshold` - Coverage percentage threshold (default: 80%)
-- `--format` - Output formats: html, json, lcov, cobertura, text
+Comprehensive code coverage analysis for $ARGUMENT with intelligent gap identification, reporting, and improvement automation.
 
 ## Context Intelligence
 

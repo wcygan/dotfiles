@@ -1,14 +1,6 @@
-# Scaffold Deno Fresh Web App
+# /scaffold-deno-fresh
 
-## Description
-
-Creates a new server-side rendered web application using Deno Fresh 2 framework with islands architecture and zero build step development.
-
-## Usage
-
-```
-/scaffold-deno-fresh [project-name]
-```
+Creates a new server-side rendered web application for $ARGUMENT using Deno Fresh 2 framework with islands architecture and zero build step development.
 
 ## What it does
 

@@ -1,14 +1,6 @@
 # /harden
 
-Proactively applies security best practices to applications and infrastructure.
-
-## Usage
-
-```
-/harden <target>
-/harden <target> --level <basic|strict|paranoid>
-/harden <target> --compliance <soc2|pci|hipaa>
-```
+Proactively applies security best practices for $ARGUMENT across applications and infrastructure.
 
 ## Description
 

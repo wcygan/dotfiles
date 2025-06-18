@@ -29,12 +29,12 @@ Creates a complete Docusaurus documentation site in the `/docs` folder with auto
 **Core Files:**
 
 - `package.json` - Docusaurus dependencies and npm scripts
-- `docusaurus.config.js` - Site configuration with auto-detected project info
+- `docusaurus.config.ts` - Site configuration with auto-detected project info and Mermaid support
 - `sidebar.js` - Auto-generated sidebar configuration
 - `docs/intro.md` - Generated introduction page with project overview
-- `docs/getting-started.md` - Installation and quick start guide
 - `docs/api/` - Placeholder for API documentation
 - `static/img/` - Static assets directory
+- `src/pages/index.tsx` - Simplified homepage without marketing components
 
 **Content Generation:**
 
@@ -42,6 +42,11 @@ Creates a complete Docusaurus documentation site in the `/docs` folder with auto
 - Generates project description from README.md if available
 - Creates initial documentation structure based on project type detection
 - Sets up proper meta tags and site configuration
+- Reviews and updates `docusaurus.config.ts` with project-relevant information:
+  - Corrects project name, organization, and repository URLs
+  - Sets appropriate tagline based on project description
+  - Configures deployment URL based on project hosting
+  - Updates theme colors and branding to match project
 
 #### 2. Deno Integration (`/deno.json` in project root)
 
@@ -66,15 +71,20 @@ Automatically adds a `docs` task to the project's `deno.json`:
 
 #### 3. Enhanced Features
 
-**Mermaid Diagram Support (with --diagrams flag):**
+**Mermaid Diagram Support (enabled by default):**
 
-```javascript
-// Automatically configures in docusaurus.config.js
-module.exports = {
+```typescript
+// Automatically configured in docusaurus.config.ts
+import { themes as prismThemes } from "prism-react-renderer";
+import type { Config } from "@docusaurus/types";
+import type * as Preset from "@docusaurus/preset-classic";
+
+const config: Config = {
   markdown: {
     mermaid: true,
   },
   themes: ["@docusaurus/theme-mermaid"],
+  // Additional configuration...
 };
 ```
 
@@ -115,10 +125,14 @@ module.exports = {
 
 ### Configuration Files Generated
 
-#### `docusaurus.config.js`
+#### `docusaurus.config.ts`
 
-```javascript
-const config = {
+```typescript
+import { themes as prismThemes } from "prism-react-renderer";
+import type { Config } from "@docusaurus/types";
+import type * as Preset from "@docusaurus/preset-classic";
+
+const config: Config = {
   title: "{PROJECT_NAME}",
   tagline: "{AUTO_DETECTED_DESCRIPTION}",
   favicon: "img/favicon.ico",
@@ -127,29 +141,46 @@ const config = {
   organizationName: "{GITHUB_ORG}",
   projectName: "{PROJECT_NAME}",
 
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "warn",
+
+  i18n: {
+    defaultLocale: "en",
+    locales: ["en"],
+  },
+
   presets: [
     [
       "classic",
       {
         docs: {
-          sidebarPath: require.resolve("./sidebars.js"),
+          sidebarPath: "./sidebars.js",
           editUrl: "https://github.com/{ORG}/{REPO}/tree/main/docs/",
         },
         blog: false, // Disabled by default for technical docs
         theme: {
-          customCss: require.resolve("./src/css/custom.css"),
+          customCss: "./src/css/custom.css",
         },
-      },
+      } satisfies Preset.Options,
     ],
   ],
+
+  markdown: {
+    mermaid: true,
+  },
+  themes: ["@docusaurus/theme-mermaid"],
 
   themeConfig: {
     navbar: {
       title: "{PROJECT_NAME}",
+      logo: {
+        alt: "{PROJECT_NAME} Logo",
+        src: "img/logo.svg",
+      },
       items: [
         {
           type: "docSidebar",
-          sidebarId: "docsSidebar",
+          sidebarId: "tutorialSidebar",
           position: "left",
           label: "Documentation",
         },
@@ -162,18 +193,90 @@ const config = {
     },
     footer: {
       style: "dark",
+      links: [
+        {
+          title: "Docs",
+          items: [
+            {
+              label: "Getting Started",
+              to: "/docs/intro",
+            },
+          ],
+        },
+        {
+          title: "More",
+          items: [
+            {
+              label: "GitHub",
+              href: "https://github.com/{ORG}/{REPO}",
+            },
+          ],
+        },
+      ],
       copyright: `Copyright © ${new Date().getFullYear()} {PROJECT_NAME}. Built with Docusaurus.`,
     },
-  },
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+    },
+    mermaid: {
+      theme: { light: "neutral", dark: "forest" },
+    },
+  } satisfies Preset.ThemeConfig,
 };
+
+export default config;
 ```
+
+#### Homepage Customization
+
+The command creates a simplified homepage (`src/pages/index.tsx`) focused on documentation:
+
+```tsx
+import clsx from "clsx";
+import Link from "@docusaurus/Link";
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
+import Layout from "@theme/Layout";
+import styles from "./index.module.css";
+
+export default function Home(): JSX.Element {
+  const { siteConfig } = useDocusaurusContext();
+  return (
+    <Layout
+      title={`${siteConfig.title} Documentation`}
+      description="{PROJECT_NAME} documentation and API reference"
+    >
+      <header className={clsx("hero hero--primary", styles.heroBanner)}>
+        <div className="container">
+          <h1 className="hero__title">{siteConfig.title}</h1>
+          <p className="hero__subtitle">{siteConfig.tagline}</p>
+          <div className={styles.buttons}>
+            <Link
+              className="button button--secondary button--lg"
+              to="/docs/intro"
+            >
+              View Documentation →
+            </Link>
+          </div>
+        </div>
+      </header>
+    </Layout>
+  );
+}
+```
+
+**Homepage Features:**
+
+- Clean, documentation-focused design without marketing elements
+- Proper page metadata with project description
+- Single call-to-action button linking to documentation
+- No HomepageFeatures component or promotional sections
 
 #### Generated Content Structure
 
 ```markdown
 docs/
 ├── intro.md # Project overview and introduction
-├── getting-started.md # Installation and quick start
 ├── api/ # API documentation
 │ ├── overview.md
 │ └── reference.md
@@ -184,6 +287,14 @@ docs/
 ├── cli.md
 └── troubleshooting.md
 ```
+
+**Note:** The command automatically cleans up default Docusaurus files:
+
+- Removes `docs/tutorial-basics/` directory
+- Removes `docs/tutorial-extras/` directory
+- Removes `docs/getting-started.md` (replaced with project-specific content)
+- Removes `src/components/HomepageFeatures` component with marketing sections
+- Simplifies `src/pages/index.tsx` to show only title, tagline, and "View Documentation →" button
 
 ### Integration Features
 
@@ -219,11 +330,13 @@ docs/
 /docs-init my-awesome-project
 ```
 
-### Initialize with diagram support:
+### Initialize with automatic Mermaid support:
 
 ```bash
-/docs-init diagrams
+/docs-init
 ```
+
+Note: Mermaid diagram support is now enabled by default for all new documentation sites.
 
 ### Force re-initialization:
 
@@ -240,7 +353,7 @@ docs/
 
 ## Prerequisites
 
-- Node.js 16+ (for Docusaurus)
+- Node.js 18+ (for Docusaurus 3.0+)
 - npm or yarn package manager
 - Git repository (for GitHub integration features)
 - Project must have `deno.json` in root for Deno task integration

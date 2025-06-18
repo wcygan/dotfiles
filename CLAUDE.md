@@ -130,10 +130,12 @@ Zed tasks are commands that run in the integrated terminal. Tasks can be defined
 
 #### Phase 3: Command Design Principles
 
-1. **Simple Usage**: `/command [optional-context]` or `/command` (auto-detects)
-2. **Contextual Intelligence**: Commands interpret project structure automatically
-3. **Interactive Fallback**: Guided selection when no argument provided
-4. **Smart Defaults**: Work with sensible defaults for common cases
+1. **$ARGUMENTS Pattern**: Use `[$ARGUMENTS]` for flexible, context-aware input parsing
+2. **Contextual Intelligence**: Commands interpret project structure and existing state automatically
+3. **Smart Inference**: Extract intent from natural language arguments rather than rigid syntax
+4. **Context-First Design**: Analyze current environment before requiring user input
+5. **Keyword Detection**: Parse `$ARGUMENTS` for intent keywords while using remainder as content
+6. **No Wizards**: Avoid interactive prompts; infer from context and arguments instead
 
 #### Phase 4: Validation Framework
 
@@ -156,3 +158,53 @@ Zed tasks are commands that run in the integrated terminal. Tasks can be defined
 - **Mobile Development**: CI/CD and testing gaps
 - **Database Operations**: Migration and performance management
 - **Security Automation**: Compliance and vulnerability management
+
+## Command Implementation Guidelines
+
+### $ARGUMENTS Pattern Best Practices
+
+**Context Analysis First:**
+
+```bash
+# Command should analyze existing state before parsing arguments
+/docs-init [$ARGUMENTS]  # Checks for existing /docs, project type, git repo
+/docs-add [$ARGUMENTS]   # Analyzes current doc structure, infers placement
+/docs-update [$ARGUMENTS] # Detects what needs updating based on project changes
+```
+
+**Flexible Argument Parsing:**
+
+- **No arguments**: Infer from context (current directory, project structure, existing files)
+- **Single keyword**: Use as primary intent (`validate`, `force`, `diagrams`)
+- **Multiple keywords**: Parse for type + content (`guide Quick Start`, `api User Management`)
+- **Natural language**: Extract intent from full phrases (`Getting Started with Authentication`)
+
+**Smart Defaults Over Configuration:**
+
+- Detect project type from files (`deno.json`, `Cargo.toml`, `go.mod`, `package.json`)
+- Use well-known file locations (`/docs`, `/src`, `/api`, `/tests`)
+- Infer relationships between related files and directories
+- Preserve existing patterns and conventions
+
+**Context-Aware Behavior Examples:**
+
+```bash
+# Auto-detects project name, type, and configures appropriately
+/docs-init
+
+# Infers "guide" type from existing structure, places in guides/ folder
+/docs-add Quick Start Guide
+
+# Detects OpenAPI files, updates API docs, validates Mermaid diagrams
+/docs-update
+
+# Creates troubleshooting section, analyzes existing categories
+/docs-add troubleshooting Common Issues
+```
+
+**Error Handling Philosophy:**
+
+- Suggest corrective actions rather than failing
+- Provide context about why something cannot be done
+- Offer alternative approaches when primary action is blocked
+- Use existing project patterns to guide suggestions

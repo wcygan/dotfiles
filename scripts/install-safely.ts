@@ -736,6 +736,84 @@ async function copyGeminiConfig(
   }
 }
 
+async function configureMcpServers(
+  claudeConfigDir: string,
+): Promise<boolean> {
+  printBlue("🔧 Configuring Claude MCP servers...");
+
+  const mcpConfigPath = join(claudeConfigDir, "mcp.json");
+
+  // Check if mcp.json exists
+  if (!await exists(mcpConfigPath)) {
+    printWarning("No mcp.json found, skipping MCP server configuration");
+    return true;
+  }
+
+  try {
+    // Read the mcp.json file
+    const mcpContent = await Deno.readTextFile(mcpConfigPath);
+    const mcpConfig = JSON.parse(mcpContent);
+
+    if (!mcpConfig.mcpServers) {
+      printWarning("No MCP servers defined in mcp.json");
+      return true;
+    }
+
+    let configuredCount = 0;
+    let failedCount = 0;
+
+    // Configure each MCP server
+    for (const [serverName, serverConfig] of Object.entries(mcpConfig.mcpServers)) {
+      const config = serverConfig as Record<string, unknown>;
+
+      // Build the claude mcp add command with user scope for global availability
+      const args = ["claude", "mcp", "add", "-s", "user", serverName, config.command as string];
+
+      // Add transport type if specified
+      if (config.type && config.type !== "stdio") {
+        args.push("-t", config.type as string);
+      }
+
+      // Add arguments with -- separator for complex args
+      if (config.args && Array.isArray(config.args) && config.args.length > 0) {
+        const configArgs = config.args as string[];
+        // Check if args contain flags that need escaping
+        const hasFlags = configArgs.some((arg) => arg.startsWith("-"));
+        if (hasFlags) {
+          args.push("--");
+        }
+        args.push(...configArgs);
+      }
+
+      // Run the command
+      const result = await runCommand(args);
+
+      if (result.success) {
+        printStatus(`Configured MCP server: ${serverName}`);
+        configuredCount++;
+      } else {
+        printWarning(`Failed to configure MCP server ${serverName}: ${result.output}`);
+        failedCount++;
+      }
+    }
+
+    if (configuredCount > 0) {
+      printStatus(`Successfully configured ${configuredCount} MCP servers`);
+    }
+
+    if (failedCount > 0) {
+      printWarning(`Failed to configure ${failedCount} MCP servers`);
+    }
+
+    return true;
+  } catch (error) {
+    printWarning(
+      `Could not configure MCP servers: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return false;
+  }
+}
+
 async function copyGhosttyConfig(
   dotfilesDir: string,
   homeDir: string,
@@ -1065,6 +1143,17 @@ This script will:
       printWarning("Claude configuration installation failed, but continuing...");
     }
 
+    // Configure MCP servers for Claude
+    if (claudeInstallSuccess) {
+      console.log();
+      const mcpConfigSuccess = await configureMcpServers(
+        join(config.homeDir, ".claude"),
+      );
+      if (!mcpConfigSuccess) {
+        printWarning("MCP server configuration failed, but continuing...");
+      }
+    }
+
     // Copy Gemini configuration
     console.log();
     const geminiInstallSuccess = await copyGeminiConfig(
@@ -1117,6 +1206,7 @@ This script will:
     console.log("   ✅ Installed new dotfiles from repository");
     console.log("   ✅ Installed Zed configuration files");
     console.log("   ✅ Installed Claude configuration files and custom commands");
+    console.log("   ✅ Configured Claude MCP servers from mcp.json");
     console.log("   ✅ Installed Gemini configuration files");
     if (Deno.build.os === "darwin") {
       console.log("   ✅ Installed Ghostty terminal configuration");

@@ -25,6 +25,7 @@ alias ....='cd ../../..'
 
 # Editor and shell configuration
 alias edit='zed'
+alias g='gemini'
 alias x='claude'
 alias xs'claude --model sonnet'
 alias xx='cd ~/Development/development-workspace'
@@ -34,7 +35,7 @@ if [ -n "$ZSH_VERSION" ]; then
     # ZSH-specific aliases
     alias vv='vzsh'
     alias ss='szsh'
-    alias vzsh='edit ~/.zshrc'
+    alias vzsh='edit ~/Development/development-workspace/dotfiles'
     alias szsh='source ~/.zshrc'
 elif [ -n "$BASH_VERSION" ]; then
     # Bash-specific aliases

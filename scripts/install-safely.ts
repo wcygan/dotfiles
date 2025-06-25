@@ -64,6 +64,9 @@ const CLAUDE_CONFIG_FILES = ["CLAUDE.md", "settings.json", "mcp.json"];
 // Claude commands directory to manage
 const CLAUDE_COMMANDS_DIR = "commands";
 
+// Gemini configuration files to manage
+const GEMINI_CONFIG_FILES = ["GEMINI.md", "settings.json"];
+
 // Ghostty configuration file
 const GHOSTTY_CONFIG_FILE = "config";
 
@@ -287,6 +290,55 @@ async function backupClaudeConfig(
   } catch (error) {
     printWarning(
       `Could not backup Claude configuration: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+
+  return backedUpFiles;
+}
+
+async function backupGeminiConfig(
+  homeDir: string,
+  backupDir: string,
+): Promise<string[]> {
+  const geminiConfigDir = join(homeDir, ".gemini");
+  const geminiBackupDir = join(backupDir, ".gemini");
+  const backedUpFiles: string[] = [];
+
+  const geminiDirExists = await exists(geminiConfigDir);
+  if (!geminiDirExists) {
+    console.log(
+      `   ${colors.yellow}No existing Gemini configuration found${colors.reset}`,
+    );
+    return backedUpFiles;
+  }
+
+  try {
+    await ensureDir(geminiBackupDir);
+
+    // Backup individual config files
+    for (const configFile of GEMINI_CONFIG_FILES) {
+      const sourcePath = join(geminiConfigDir, configFile);
+      const backupPath = join(geminiBackupDir, configFile);
+
+      if (await exists(sourcePath)) {
+        try {
+          await copy(sourcePath, backupPath, { overwrite: true });
+          printStatus(`Backed up Gemini ${configFile}`);
+          backedUpFiles.push(`gemini/${configFile}`);
+        } catch (error) {
+          printWarning(
+            `Could not backup Gemini ${configFile}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+      }
+    }
+  } catch (error) {
+    printWarning(
+      `Could not backup Gemini configuration: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
@@ -583,6 +635,68 @@ async function copyClaudeConfig(
   }
 }
 
+async function copyGeminiConfig(
+  dotfilesDir: string,
+  homeDir: string,
+): Promise<boolean> {
+  printBlue("♊️ Copying Gemini configuration files...");
+  const geminiSourceDir = join(dotfilesDir, "gemini");
+  const geminiConfigDir = join(homeDir, ".gemini");
+
+  // Check if gemini directory exists in dotfiles
+  const geminiDirExists = await exists(geminiSourceDir);
+  if (!geminiDirExists) {
+    printWarning(
+      "No gemini directory found in dotfiles, skipping Gemini configuration",
+    );
+    return true;
+  }
+
+  try {
+    // Ensure Gemini config directory exists
+    await ensureDir(geminiConfigDir);
+    printStatus(`Created Gemini config directory: ${geminiConfigDir}`);
+
+    let copiedCount = 0;
+
+    // Copy individual config files
+    for (const configFile of GEMINI_CONFIG_FILES) {
+      const sourcePath = join(geminiSourceDir, configFile);
+      const destPath = join(geminiConfigDir, configFile);
+
+      if (await exists(sourcePath)) {
+        try {
+          await copy(sourcePath, destPath, { overwrite: true });
+          printStatus(`Copied ${configFile} to Gemini config`);
+          copiedCount++;
+        } catch (error) {
+          printWarning(
+            `Could not copy ${configFile}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+      } else {
+        console.log(
+          `   ${colors.yellow}No ${configFile} found in gemini directory${colors.reset}`,
+        );
+      }
+    }
+
+    if (copiedCount > 0) {
+      printStatus(`Successfully copied ${copiedCount} Gemini configuration items`);
+    }
+    return true;
+  } catch (error) {
+    printError(
+      `Failed to copy Gemini configuration: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    return false;
+  }
+}
+
 async function copyGhosttyConfig(
   dotfilesDir: string,
   homeDir: string,
@@ -820,6 +934,15 @@ This script will:
     );
     backedUpFiles.push(...claudeBackedUpFiles);
 
+    // Backup Gemini configuration
+    console.log();
+    printBlue("♊️ Backing up Gemini configuration...");
+    const geminiBackedUpFiles = await backupGeminiConfig(
+      config.homeDir,
+      config.backupDir,
+    );
+    backedUpFiles.push(...geminiBackedUpFiles);
+
     // Backup Ghostty configuration (macOS only)
     if (Deno.build.os === "darwin") {
       console.log();
@@ -903,6 +1026,16 @@ This script will:
       printWarning("Claude configuration installation failed, but continuing...");
     }
 
+    // Copy Gemini configuration
+    console.log();
+    const geminiInstallSuccess = await copyGeminiConfig(
+      config.dotfilesDir,
+      config.homeDir,
+    );
+    if (!geminiInstallSuccess) {
+      printWarning("Gemini configuration installation failed, but continuing...");
+    }
+
     // Copy Ghostty configuration (macOS only)
     if (Deno.build.os === "darwin") {
       console.log();
@@ -945,6 +1078,7 @@ This script will:
     console.log("   ✅ Installed new dotfiles from repository");
     console.log("   ✅ Installed Zed configuration files");
     console.log("   ✅ Installed Claude configuration files and custom commands");
+    console.log("   ✅ Installed Gemini configuration files");
     if (Deno.build.os === "darwin") {
       console.log("   ✅ Installed Ghostty terminal configuration");
     }

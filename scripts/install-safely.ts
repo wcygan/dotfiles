@@ -676,11 +676,50 @@ async function copyGeminiConfig(
             }`,
           );
         }
-      } else {
-        console.log(
-          `   ${colors.yellow}No ${configFile} found in gemini directory${colors.reset}`,
+      }
+    }
+
+    // Copy discover_tools.ts script
+    const discoverToolsSource = join(dotfilesDir, "gemini", "discover_tools.ts");
+    const discoverToolsDest = join(geminiConfigDir, "discover_tools.ts");
+    if (await exists(discoverToolsSource)) {
+      try {
+        await copy(discoverToolsSource, discoverToolsDest, { overwrite: true });
+        printStatus("Copied discover_tools.ts to Gemini config");
+        copiedCount++;
+      } catch (error) {
+        printWarning(
+          `Could not copy discover_tools.ts: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
         );
       }
+    }
+
+    // Update settings.json for tool discovery
+    const settingsPath = join(geminiConfigDir, "settings.json");
+    let settings = {};
+    try {
+      const settingsContent = await Deno.readTextFile(settingsPath);
+      settings = JSON.parse(settingsContent);
+    } catch (_e) {
+      // Ignore if file doesn't exist or is invalid JSON
+    }
+
+    const updatedSettings = {
+      ...settings,
+      toolDiscoveryCommand: "deno run --allow-read --allow-run ~/.gemini/discover_tools.ts",
+    };
+
+    try {
+      await Deno.writeTextFile(settingsPath, JSON.stringify(updatedSettings, null, 2));
+      printStatus("Updated Gemini settings.json for tool discovery");
+    } catch (error) {
+      printWarning(
+        `Could not update Gemini settings.json: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
 
     if (copiedCount > 0) {

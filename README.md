@@ -37,9 +37,12 @@ To add a new extension:
    ```json
    {
      "name": "your-extension-name",
-     "mcpServer": {
-       "command": "command-to-run",
-       "args": ["arg1", "arg2"]
+     "version": "1.0.0",
+     "mcpServers": {
+       "server-name": {
+         "command": "command-to-run",
+         "args": ["arg1", "arg2"]
+       }
      }
    }
    ```
@@ -59,9 +62,12 @@ Provides Git repository management capabilities through the MCP Git server.
 ```json
 {
   "name": "git",
-  "mcpServer": {
-    "command": "uvx",
-    "args": ["mcp-server-git"]
+  "version": "1.0.0",
+  "mcpServers": {
+    "git": {
+      "command": "uvx",
+      "args": ["mcp-server-git"]
+    }
   }
 }
 ```
@@ -84,9 +90,12 @@ Enables structured thinking and reasoning capabilities for complex problem-solvi
 ```json
 {
   "name": "sequential-thinking",
-  "mcpServer": {
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+  "version": "1.0.0",
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    }
   }
 }
 ```

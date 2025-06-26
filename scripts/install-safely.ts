@@ -1133,245 +1133,485 @@ This script will:
     await ensureDir(config.backupDir);
     printStatus(`Created backup directory: ${config.backupDir}`);
 
-    // Backup existing dotfiles
+    // Backup existing dotfiles and configurations in parallel
     console.log();
-    printBlue("💾 Backing up existing dotfiles...");
+    printBlue("💾 Backing up existing files (running in parallel)...");
     const backedUpFiles: string[] = [];
 
-    for (const file of DOTFILES) {
-      const wasBackedUp = await backupFile(
-        file,
-        config.homeDir,
-        config.backupDir,
-      );
-      if (wasBackedUp) {
-        backedUpFiles.push(file);
+    try {
+      // Create array of backup task promises for parallel execution
+      const backupTasks: Promise<{ type: string; files: string[] }>[] = [];
+
+      // Backup regular dotfiles - create individual promises for each file
+      for (const file of DOTFILES) {
+        backupTasks.push((
+          async () => {
+            try {
+              printBlue(`💾 Backing up ${file}...`);
+              const success = await backupFile(file, config.homeDir, config.backupDir);
+              return { type: "dotfiles", files: success ? [file] : [] };
+            } catch (error) {
+              printWarning(
+                `Error backing up ${file}: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              );
+              return { type: "dotfiles", files: [] };
+            }
+          }
+        )());
       }
-    }
 
-    // Backup optional files
-    console.log();
-    printBlue("🔍 Checking for optional files...");
-    for (const file of OPTIONAL_FILES) {
-      const wasBackedUp = await backupFile(
-        file,
-        config.homeDir,
-        config.backupDir,
-      );
-      if (wasBackedUp) {
-        backedUpFiles.push(file);
+      // Backup optional files - create individual promises for each file
+      for (const file of OPTIONAL_FILES) {
+        backupTasks.push((
+          async () => {
+            try {
+              printBlue(`🔍 Checking for optional file ${file}...`);
+              const success = await backupFile(file, config.homeDir, config.backupDir);
+              return { type: "optional", files: success ? [file] : [] };
+            } catch (error) {
+              printWarning(
+                `Error backing up optional file ${file}: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              );
+              return { type: "optional", files: [] };
+            }
+          }
+        )());
       }
-    }
 
-    // Backup Zed configuration
-    console.log();
-    printBlue("🎯 Backing up Zed configuration...");
-    const zedBackedUpFiles = await backupZedConfig(
-      config.homeDir,
-      config.backupDir,
-    );
-    backedUpFiles.push(...zedBackedUpFiles);
+      // Backup Zed configuration
+      backupTasks.push((
+        async () => {
+          try {
+            printBlue("🎯 Backing up Zed configuration...");
+            const files = await backupZedConfig(config.homeDir, config.backupDir);
+            return { type: "zed", files };
+          } catch (error) {
+            printWarning(
+              `Error backing up Zed configuration: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+            return { type: "zed", files: [] };
+          }
+        }
+      )());
 
-    // Backup Claude configuration
-    console.log();
-    printBlue("🤖 Backing up Claude configuration...");
-    const claudeBackedUpFiles = await backupClaudeConfig(
-      config.homeDir,
-      config.backupDir,
-    );
-    backedUpFiles.push(...claudeBackedUpFiles);
+      // Backup Claude configuration
+      backupTasks.push((
+        async () => {
+          try {
+            printBlue("🤖 Backing up Claude configuration...");
+            const files = await backupClaudeConfig(config.homeDir, config.backupDir);
+            return { type: "claude", files };
+          } catch (error) {
+            printWarning(
+              `Error backing up Claude configuration: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+            return { type: "claude", files: [] };
+          }
+        }
+      )());
 
-    // Backup Gemini configuration
-    console.log();
-    printBlue("♊️ Backing up Gemini configuration...");
-    const geminiBackedUpFiles = await backupGeminiConfig(
-      config.homeDir,
-      config.backupDir,
-    );
-    backedUpFiles.push(...geminiBackedUpFiles);
+      // Backup Gemini configuration
+      backupTasks.push((
+        async () => {
+          try {
+            printBlue("♊️ Backing up Gemini configuration...");
+            const files = await backupGeminiConfig(config.homeDir, config.backupDir);
+            return { type: "gemini", files };
+          } catch (error) {
+            printWarning(
+              `Error backing up Gemini configuration: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+            return { type: "gemini", files: [] };
+          }
+        }
+      )());
 
-    // Backup Ghostty configuration (macOS only)
-    if (Deno.build.os === "darwin") {
+      // Backup Ghostty configuration (macOS only)
+      if (Deno.build.os === "darwin") {
+        backupTasks.push((
+          async () => {
+            try {
+              printBlue("👻 Backing up Ghostty configuration...");
+              const files = await backupGhosttyConfig(config.homeDir, config.backupDir);
+              return { type: "ghostty", files };
+            } catch (error) {
+              printWarning(
+                `Error backing up Ghostty configuration: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              );
+              return { type: "ghostty", files: [] };
+            }
+          }
+        )());
+      }
+
+      // PARALLEL BACKUP EXECUTION:
+      // Using Promise.allSettled to run all backup tasks concurrently while ensuring graceful error handling.
+      // Unlike Promise.all, Promise.allSettled never rejects - it waits for all promises to settle
+      // (either fulfill or reject) and returns results for each. This allows us to:
+      // 1. Maximize performance by running backups in parallel
+      // 2. Continue processing even if some backup tasks fail
+      // 3. Collect detailed results for each task to make informed decisions
+      // 4. Provide comprehensive error reporting while maintaining operation continuity
+      const backupResults = await Promise.allSettled(backupTasks);
+
+      // Process results and collect backed up files
+      const successfulBackups: { type: string; files: string[] }[] = [];
+      let failedBackups = 0;
+
+      let criticalFailure = false;
+      for (const result of backupResults) {
+        if (result.status === "fulfilled") {
+          if (
+            result.value.files.length === 0 &&
+            (result.value.type === "zed" || result.value.type === "claude")
+          ) {
+            criticalFailure = true;
+            printWarning(
+              `Critical backup task for ${result.value.type} failed with no files backed up.`,
+            );
+          }
+          successfulBackups.push(result.value);
+          backedUpFiles.push(...result.value.files);
+        } else {
+          failedBackups++;
+          printWarning(
+            `Backup task failed: ${
+              result.reason instanceof Error ? result.reason.message : String(result.reason)
+            }`,
+          );
+        }
+      }
+
+      if (criticalFailure) {
+        printWarning("Critical backups failed. Aborting process.");
+        Deno.exit(1);
+      }
+
+      // Log summary
       console.log();
-      printBlue("👻 Backing up Ghostty configuration...");
-      const ghosttyBackedUpFiles = await backupGhosttyConfig(
-        config.homeDir,
-        config.backupDir,
-      );
-      backedUpFiles.push(...ghosttyBackedUpFiles);
-    }
+      printStatus(`Completed parallel backup of ${backedUpFiles.length} files`);
+      if (failedBackups > 0) {
+        printWarning(`${failedBackups} backup tasks failed`);
+      }
 
-    // Show current shell
-    console.log();
-    printBlue("🐚 Current shell information:");
-    console.log(`   Shell: ${colors.yellow}${config.shell}${colors.reset}`);
-    console.log(`   User: ${colors.yellow}${config.user}${colors.reset}`);
+      // Group results by type and log summary
+      const backupSummary = new Map<string, number>();
+      for (const result of successfulBackups) {
+        const currentCount = backupSummary.get(result.type) || 0;
+        backupSummary.set(result.type, currentCount + result.files.length);
+      }
 
-    // Detect shell
-    const shellInfo = detectShell(config.shell);
-    if (!shellInfo) {
-      printWarning(`Unknown shell: ${config.shell}`);
-      console.log("Continuing with installation anyway...");
-    } else {
-      console.log(
-        `   Detected: ${colors.green}${shellInfo.type}${colors.reset}`,
-      );
-    }
+      for (const [type, count] of backupSummary) {
+        if (count > 0) {
+          printStatus(`${type}: ${count} files backed up`);
+        }
+      }
 
-    // Confirm installation
-    if (!args.force) {
+      // Show current shell
       console.log();
-      printYellow(
-        "⚠️  This will replace your current dotfiles with the repository versions.",
-      );
-      printYellow(
-        `   Your existing files are safely backed up in: ${config.backupDir}`,
-      );
-      console.log();
+      printBlue("🐚 Current shell information:");
+      console.log(`   Shell: ${colors.yellow}${config.shell}${colors.reset}`);
+      console.log(`   User: ${colors.yellow}${config.user}${colors.reset}`);
 
-      const shouldContinue = confirm("Continue with installation?");
-      if (!shouldContinue) {
-        printWarning("Installation cancelled by user");
+      // Detect shell
+      const shellInfo = detectShell(config.shell);
+      if (!shellInfo) {
+        printWarning(`Unknown shell: ${config.shell}`);
+        console.log("Continuing with installation anyway...");
+      } else {
         console.log(
-          `Your backups are still available in: ${colors.yellow}${config.backupDir}${colors.reset}`,
+          `   Detected: ${colors.green}${shellInfo.type}${colors.reset}`,
         );
-        Deno.exit(0);
       }
-    }
 
-    // Update repository
-    console.log();
-    await updateRepository(config.dotfilesDir);
+      // Confirm installation
+      if (!args.force) {
+        console.log();
+        printYellow(
+          "⚠️  This will replace your current dotfiles with the repository versions.",
+        );
+        printYellow(
+          `   Your existing files are safely backed up in: ${config.backupDir}`,
+        );
+        console.log();
 
-    // Copy dotfiles
-    console.log();
-    const installSuccess = await copyDotfiles(
-      config.dotfilesDir,
-      config.homeDir,
-    );
-    if (!installSuccess) {
+        const shouldContinue = confirm("Continue with installation?");
+        if (!shouldContinue) {
+          printWarning("Installation cancelled by user");
+          console.log(
+            `Your backups are still available in: ${colors.yellow}${config.backupDir}${colors.reset}`,
+          );
+          Deno.exit(0);
+        }
+      }
+
+      // Update repository
+      console.log();
+      await updateRepository(config.dotfilesDir);
+
+      // Install configurations in parallel
+      console.log();
+      printBlue("📦 Installing configurations (running in parallel)...");
+
+      // Initialize variables outside try block to ensure they're in scope for error handling
+      let successfulInstalls = 0;
+      let failedInstalls = 0;
+      let dotfilesInstallSuccess = false;
+      let claudeInstallSuccess = false;
+
+      try {
+        // Create array of installation task promises for parallel execution
+        const installationTasks: Promise<{ task: string; success: boolean; error?: string }>[] = [];
+
+        // Copy dotfiles
+        installationTasks.push(
+          (async () => {
+            try {
+              const success = await copyDotfiles(config.dotfilesDir, config.homeDir);
+              return { task: "copyDotfiles", success };
+            } catch (error) {
+              return {
+                task: "copyDotfiles",
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+              };
+            }
+          })(),
+        );
+
+        // Copy Zed configuration
+        installationTasks.push(
+          (async () => {
+            try {
+              const success = await copyZedConfig(config.dotfilesDir, config.homeDir);
+              return { task: "copyZedConfig", success };
+            } catch (error) {
+              return {
+                task: "copyZedConfig",
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+              };
+            }
+          })(),
+        );
+
+        // Copy Claude configuration
+        installationTasks.push(
+          (async () => {
+            try {
+              const success = await copyClaudeConfig(config.dotfilesDir, config.homeDir);
+              return { task: "copyClaudeConfig", success };
+            } catch (error) {
+              return {
+                task: "copyClaudeConfig",
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+              };
+            }
+          })(),
+        );
+
+        // Copy Gemini configuration
+        installationTasks.push(
+          (async () => {
+            try {
+              const success = await copyGeminiConfig(config.dotfilesDir, config.homeDir);
+              return { task: "copyGeminiConfig", success };
+            } catch (error) {
+              return {
+                task: "copyGeminiConfig",
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+              };
+            }
+          })(),
+        );
+
+        // Copy Ghostty configuration (macOS only)
+        if (Deno.build.os === "darwin") {
+          installationTasks.push(
+            (async () => {
+              try {
+                const success = await copyGhosttyConfig(config.dotfilesDir, config.homeDir);
+                return { task: "copyGhosttyConfig", success };
+              } catch (error) {
+                return {
+                  task: "copyGhosttyConfig",
+                  success: false,
+                  error: error instanceof Error ? error.message : String(error),
+                };
+              }
+            })(),
+          );
+        }
+
+        // Copy PowerShell profile (Windows only)
+        if (Deno.build.os === "windows") {
+          installationTasks.push(
+            (async () => {
+              try {
+                const success = await copyPowerShellProfile(config.dotfilesDir, config.homeDir);
+                return { task: "copyPowerShellProfile", success };
+              } catch (error) {
+                return {
+                  task: "copyPowerShellProfile",
+                  success: false,
+                  error: error instanceof Error ? error.message : String(error),
+                };
+              }
+            })(),
+          );
+        }
+
+        // PARALLEL INSTALLATION EXECUTION:
+        // Promise.allSettled is employed here to execute all installation tasks concurrently, enhancing performance
+        // and efficiency. By allowing each promise to settle, we can:
+        // 1. Freely process successful installations alongside failed ones
+        // 2. Gather detailed outcomes for every operation
+        // 3. Sustain the script's continuity despite individual errors
+        // This method is preferred here to handle partial installations gracefully without affecting the overall flow.
+        const installationResults = await Promise.allSettled(installationTasks);
+
+        // Process results and handle errors
+
+        for (const result of installationResults) {
+          if (result.status === "fulfilled") {
+            const taskResult = result.value;
+            if (taskResult.success) {
+              printStatus(`${taskResult.task} completed successfully`);
+              successfulInstalls++;
+
+              // Track specific installations for post-processing
+              if (taskResult.task === "copyDotfiles") {
+                dotfilesInstallSuccess = true;
+              } else if (taskResult.task === "copyClaudeConfig") {
+                claudeInstallSuccess = true;
+              }
+            } else {
+              printWarning(
+                `${taskResult.task} failed${
+                  taskResult.error ? `: ${taskResult.error}` : ", but continuing..."
+                }`,
+              );
+              failedInstalls++;
+            }
+          } else {
+            printError(
+              `Installation task failed: ${
+                result.reason instanceof Error ? result.reason.message : String(result.reason)
+              }`,
+            );
+            failedInstalls++;
+          }
+        }
+
+        // Check if dotfiles installation was successful (critical for continuing)
+        if (!dotfilesInstallSuccess) {
+          printError("Critical dotfiles installation failed. Aborting.");
+          Deno.exit(1);
+        }
+      } catch (error) {
+        printError(
+          `Installation phase failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        Deno.exit(1);
+      }
+
+      // Log summary
+      console.log();
+      printStatus(
+        `Completed parallel installation: ${successfulInstalls} successful, ${failedInstalls} failed`,
+      );
+
+      // Configure MCP servers for Claude (must run after Claude config is installed)
+      if (claudeInstallSuccess) {
+        console.log();
+        const mcpConfigSuccess = await configureMcpServers(
+          join(config.homeDir, ".claude"),
+        );
+        if (!mcpConfigSuccess) {
+          printWarning("MCP server configuration failed, but continuing...");
+        }
+      } else {
+        printWarning(
+          "Skipping MCP server configuration - copyClaudeConfig did not complete successfully",
+        );
+      }
+
+      // Reload shell configuration
+      console.log();
+      if (shellInfo) {
+        await reloadShell(shellInfo.type, config.homeDir);
+      }
+
+      // Installation complete
+      console.log();
+      console.log(
+        `${colors.green}🎉 Installation completed successfully!${colors.reset}`,
+      );
+      console.log();
+      printBlue("📋 What was done:");
+      console.log("   ✅ Verified code formatting before installation");
+      console.log(
+        `   ✅ Backed up existing dotfiles to: ${colors.yellow}${config.backupDir}${colors.reset}`,
+      );
+      console.log("   ✅ Installed new dotfiles from repository");
+      console.log("   ✅ Installed Zed configuration files");
+      console.log("   ✅ Installed Claude configuration files and custom commands");
+      console.log("   ✅ Configured Claude MCP servers from mcp.json");
+      console.log("   ✅ Installed Gemini configuration files");
+      if (Deno.build.os === "darwin") {
+        console.log("   ✅ Installed Ghostty terminal configuration");
+      }
+      if (Deno.build.os === "windows") {
+        console.log("   ✅ Installed PowerShell profile");
+      }
+      console.log("   ✅ Reloaded shell configuration");
+      console.log();
+      printBlue("🧪 Test your installation:");
+      console.log(
+        `   • Try: ${colors.yellow}d${colors.reset} (should open development workspace in an editor)`,
+      );
+      console.log(
+        `   • Try: ${colors.yellow}k get nodes${colors.reset} (kubectl shortcut)`,
+      );
+      console.log(`   • Try: ${colors.yellow}cgr${colors.reset} (cargo run)`);
+      console.log(
+        `   • Try: ${colors.yellow}mm${colors.reset} (git main branch helper)`,
+      );
+      console.log(
+        `   • Try: ${colors.yellow}vv${colors.reset} (edit shell config) or ${colors.yellow}ss${colors.reset} (reload shell)`,
+      );
+      console.log(
+        `   • Try: ${colors.yellow}current_shell${colors.reset} (see which shell you're using)`,
+      );
+      console.log();
+      printBlue("🔄 If you need to rollback:");
+      console.log(
+        `   ${colors.yellow}deno run --allow-all rollback.ts ${config.backupDir}${colors.reset}`,
+      );
+      console.log();
+      console.log(
+        `${colors.green}Enjoy your new dotfiles setup! 🎊${colors.reset}`,
+      );
+    } catch (error) {
+      printError(
+        `Backup phase failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
       Deno.exit(1);
     }
-
-    // Copy Zed configuration
-    console.log();
-    const zedInstallSuccess = await copyZedConfig(
-      config.dotfilesDir,
-      config.homeDir,
-    );
-    if (!zedInstallSuccess) {
-      printWarning("Zed configuration installation failed, but continuing...");
-    }
-
-    // Copy Claude configuration
-    console.log();
-    const claudeInstallSuccess = await copyClaudeConfig(
-      config.dotfilesDir,
-      config.homeDir,
-    );
-    if (!claudeInstallSuccess) {
-      printWarning("Claude configuration installation failed, but continuing...");
-    }
-
-    // Configure MCP servers for Claude
-    if (claudeInstallSuccess) {
-      console.log();
-      const mcpConfigSuccess = await configureMcpServers(
-        join(config.homeDir, ".claude"),
-      );
-      if (!mcpConfigSuccess) {
-        printWarning("MCP server configuration failed, but continuing...");
-      }
-    }
-
-    // Copy Gemini configuration
-    console.log();
-    const geminiInstallSuccess = await copyGeminiConfig(
-      config.dotfilesDir,
-      config.homeDir,
-    );
-    if (!geminiInstallSuccess) {
-      printWarning("Gemini configuration installation failed, but continuing...");
-    }
-
-    // Copy Ghostty configuration (macOS only)
-    if (Deno.build.os === "darwin") {
-      console.log();
-      const ghosttyInstallSuccess = await copyGhosttyConfig(
-        config.dotfilesDir,
-        config.homeDir,
-      );
-      if (!ghosttyInstallSuccess) {
-        printWarning("Ghostty configuration installation failed, but continuing...");
-      }
-    }
-
-    // Copy PowerShell profile (Windows only)
-    console.log();
-    const psInstallSuccess = await copyPowerShellProfile(
-      config.dotfilesDir,
-      config.homeDir,
-    );
-    if (!psInstallSuccess) {
-      printWarning("PowerShell profile installation failed, but continuing...");
-    }
-
-    // Reload shell configuration
-    console.log();
-    if (shellInfo) {
-      await reloadShell(shellInfo.type, config.homeDir);
-    }
-
-    // Installation complete
-    console.log();
-    console.log(
-      `${colors.green}🎉 Installation completed successfully!${colors.reset}`,
-    );
-    console.log();
-    printBlue("📋 What was done:");
-    console.log("   ✅ Verified code formatting before installation");
-    console.log(
-      `   ✅ Backed up existing dotfiles to: ${colors.yellow}${config.backupDir}${colors.reset}`,
-    );
-    console.log("   ✅ Installed new dotfiles from repository");
-    console.log("   ✅ Installed Zed configuration files");
-    console.log("   ✅ Installed Claude configuration files and custom commands");
-    console.log("   ✅ Configured Claude MCP servers from mcp.json");
-    console.log("   ✅ Installed Gemini configuration files");
-    if (Deno.build.os === "darwin") {
-      console.log("   ✅ Installed Ghostty terminal configuration");
-    }
-    if (Deno.build.os === "windows") {
-      console.log("   ✅ Installed PowerShell profile");
-    }
-    console.log("   ✅ Reloaded shell configuration");
-    console.log();
-    printBlue("🧪 Test your installation:");
-    console.log(
-      `   • Try: ${colors.yellow}d${colors.reset} (should open development workspace in an editor)`,
-    );
-    console.log(
-      `   • Try: ${colors.yellow}k get nodes${colors.reset} (kubectl shortcut)`,
-    );
-    console.log(`   • Try: ${colors.yellow}cgr${colors.reset} (cargo run)`);
-    console.log(
-      `   • Try: ${colors.yellow}mm${colors.reset} (git main branch helper)`,
-    );
-    console.log(
-      `   • Try: ${colors.yellow}vv${colors.reset} (edit shell config) or ${colors.yellow}ss${colors.reset} (reload shell)`,
-    );
-    console.log(
-      `   • Try: ${colors.yellow}current_shell${colors.reset} (see which shell you're using)`,
-    );
-    console.log();
-    printBlue("🔄 If you need to rollback:");
-    console.log(
-      `   ${colors.yellow}deno run --allow-all rollback.ts ${config.backupDir}${colors.reset}`,
-    );
-    console.log();
-    console.log(
-      `${colors.green}Enjoy your new dotfiles setup! 🎊${colors.reset}`,
-    );
   } catch (error) {
     printError(
       `Installation failed: ${error instanceof Error ? error.message : String(error)}`,

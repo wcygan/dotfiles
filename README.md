@@ -12,6 +12,8 @@
    deno task install
    ```
 
+   **Note:** The installation script now runs with improved concurrency, using parallel processing for backup and installation operations to significantly reduce setup time while maintaining safety through comprehensive error handling.
+
 ## Gemini CLI Extensions
 
 This repository includes Gemini CLI extensions located in the `gemini/extensions/` directory. These extensions enhance the Gemini CLI with additional capabilities through MCP (Model Context Protocol) servers.

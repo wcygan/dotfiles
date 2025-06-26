@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "description": "Modern dotfiles with Deno TypeScript installation scripts",
+  "description": "Modern dotfiles with Deno TypeScript installation scripts featuring parallel processing for fast, safe installation",
   "imports": {
     "@std/path": "jsr:@std/path@^1.0.9",
     "@std/fs": "jsr:@std/fs@^1.0.17",

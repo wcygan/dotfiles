@@ -26,11 +26,13 @@ shell/
 
 ## Installation
 
-The `install-safely.ts` script automatically copies these files to their appropriate locations:
+The `install-safely.ts` script automatically copies these files to their appropriate locations using parallel processing for improved performance:
 
 - **Unix shells (bash/zsh)**: Files are copied to `$HOME` with a dot prefix (e.g., `bashrc` → `.bashrc`)
 - **PowerShell**: `profile.ps1` is copied to `~/Documents/WindowsPowerShell/Microsoft.PowerShell_profile.ps1`
 - **Common files**: Sourced by both bash and zsh configurations
+
+The installation process now runs backup and installation operations concurrently while preserving sequential steps where order matters (e.g., validation before backup).
 
 ## Adding New Shells
 

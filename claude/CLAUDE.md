@@ -51,9 +51,11 @@ Fresh 2.0 (alpha) is production-ready but has rough edges. Use fallback strategi
 
 **Styling Strategy:**
 
+- **ALWAYS leverage Tailwind's Preflight CSS reset** for cross-browser consistency and design system foundation
 - Tailwind plugin is unreliable - implement CSS fallbacks in `static/styles.css`
 - Define key utilities manually: `.min-h-screen`, `.flex`, `.items-center`, `.justify-center`
 - Use AppShell pattern for consistent layout wrapper
+- Embrace Preflight's opinionated defaults (no margins, unstyled headings/lists) for intentional design
 
 **ConnectRPC Integration:**
 

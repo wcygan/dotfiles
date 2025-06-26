@@ -736,6 +736,68 @@ async function copyGeminiConfig(
   }
 }
 
+interface McpServer {
+  command: string;
+  args?: string[];
+  type?: string;
+  env?: Record<string, string>;
+}
+
+interface InstalledServer {
+  name: string;
+  scope: string;
+  command: string;
+  args: string[];
+}
+
+async function getInstalledUserServers(): Promise<Map<string, InstalledServer>> {
+  const servers = new Map<string, InstalledServer>();
+
+  const listResult = await runCommand(["claude", "mcp", "list"]);
+  if (!listResult.success) {
+    return servers;
+  }
+
+  const lines = listResult.output.split("\n").filter((line) => line.trim());
+
+  for (const line of lines) {
+    const colonIndex = line.indexOf(":");
+    if (colonIndex === -1) continue;
+
+    const serverName = line.substring(0, colonIndex).trim();
+    const getResult = await runCommand(["claude", "mcp", "get", serverName]);
+
+    if (getResult.success && getResult.output.includes("Scope: User")) {
+      const commandPart = line.substring(colonIndex + 1).trim();
+      const parts = commandPart.split(" ");
+
+      servers.set(serverName, {
+        name: serverName,
+        scope: "User",
+        command: parts[0] || "",
+        args: parts.slice(1),
+      });
+    }
+  }
+
+  return servers;
+}
+
+function areServerConfigsEqual(installed: InstalledServer, desired: McpServer): boolean {
+  // Compare command
+  if (installed.command !== desired.command) {
+    return false;
+  }
+
+  // Compare args (normalize by removing -y flags for comparison)
+  const normalizeArgs = (args: string[]) => args.filter((arg) => arg !== "-y").join(" ");
+
+  const installedArgs = normalizeArgs(installed.args);
+  const desiredArgs = normalizeArgs(desired.args || []);
+
+  return installedArgs === desiredArgs;
+}
+
 async function configureMcpServers(
   claudeConfigDir: string,
 ): Promise<boolean> {
@@ -759,30 +821,71 @@ async function configureMcpServers(
       return true;
     }
 
+    // Get currently installed servers
+    printStatus("Analyzing currently installed MCP servers...");
+    const installedServers = await getInstalledUserServers();
+
+    // Compute what needs to be done
+    const toAdd: string[] = [];
+    const toUpdate: string[] = [];
+    let alreadyConfigured = 0;
+
+    for (const [serverName, serverConfig] of Object.entries(mcpConfig.mcpServers)) {
+      const config = serverConfig as McpServer;
+      const installed = installedServers.get(serverName);
+
+      if (!installed) {
+        toAdd.push(serverName);
+      } else if (!areServerConfigsEqual(installed, config)) {
+        toUpdate.push(serverName);
+      } else {
+        alreadyConfigured++;
+      }
+    }
+
+    // Report status
+    if (alreadyConfigured > 0) {
+      printStatus(`${alreadyConfigured} servers already properly configured`);
+    }
+
     let configuredCount = 0;
     let failedCount = 0;
 
-    // Configure each MCP server
-    for (const [serverName, serverConfig] of Object.entries(mcpConfig.mcpServers)) {
-      const config = serverConfig as Record<string, unknown>;
+    // Update servers that need updating
+    for (const serverName of toUpdate) {
+      printWarning(`Updating configuration for: ${serverName}`);
+
+      // Remove old configuration
+      const removeResult = await runCommand(["claude", "mcp", "remove", serverName, "-s", "user"]);
+      if (!removeResult.success) {
+        printWarning(`Failed to remove old config for ${serverName}: ${removeResult.output}`);
+        failedCount++;
+        continue;
+      }
+
+      // Add to the list of servers to add
+      toAdd.push(serverName);
+    }
+
+    // Add new servers
+    for (const serverName of toAdd) {
+      const config = mcpConfig.mcpServers[serverName] as McpServer;
 
       // Build the claude mcp add command with user scope for global availability
-      const args = ["claude", "mcp", "add", "-s", "user", serverName, config.command as string];
+      const args = ["claude", "mcp", "add", "-s", "user", serverName, config.command];
 
       // Add transport type if specified
       if (config.type && config.type !== "stdio") {
-        args.push("-t", config.type as string);
+        args.push("-t", config.type);
       }
 
       // Add arguments with -- separator for complex args
       if (config.args && Array.isArray(config.args) && config.args.length > 0) {
-        const configArgs = config.args as string[];
-        // Check if args contain flags that need escaping
-        const hasFlags = configArgs.some((arg) => arg.startsWith("-"));
+        const hasFlags = config.args.some((arg: string) => arg.startsWith("-"));
         if (hasFlags) {
           args.push("--");
         }
-        args.push(...configArgs);
+        args.push(...config.args);
       }
 
       // Run the command
@@ -797,12 +900,17 @@ async function configureMcpServers(
       }
     }
 
+    // Summary
     if (configuredCount > 0) {
       printStatus(`Successfully configured ${configuredCount} MCP servers`);
     }
 
     if (failedCount > 0) {
       printWarning(`Failed to configure ${failedCount} MCP servers`);
+    }
+
+    if (configuredCount === 0 && failedCount === 0 && alreadyConfigured > 0) {
+      printStatus("All MCP servers were already properly configured!");
     }
 
     return true;

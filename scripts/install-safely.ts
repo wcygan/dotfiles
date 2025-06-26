@@ -820,6 +820,39 @@ function areServerConfigsEqual(installed: InstalledServer, desired: McpServer): 
   return installedArgs === desiredArgs;
 }
 
+interface McpDiff {
+  missing: string[];
+  toUpdate: string[];
+  upToDate: string[];
+}
+
+function computeMcpDiff(
+  desired: Record<string, McpServer>,
+  installed: Map<string, InstalledServer>,
+): McpDiff {
+  const missing: string[] = [];
+  const toUpdate: string[] = [];
+  const upToDate: string[] = [];
+
+  for (const [serverName, serverConfig] of Object.entries(desired)) {
+    const installedServer = installed.get(serverName);
+
+    if (!installedServer) {
+      missing.push(serverName);
+    } else if (!areServerConfigsEqual(installedServer, serverConfig)) {
+      toUpdate.push(serverName);
+    } else {
+      upToDate.push(serverName);
+    }
+  }
+
+  return {
+    missing,
+    toUpdate,
+    upToDate,
+  };
+}
+
 async function configureMcpServers(
   claudeConfigDir: string,
 ): Promise<boolean> {
@@ -1270,18 +1303,8 @@ This script will:
       const successfulBackups: { type: string; files: string[] }[] = [];
       let failedBackups = 0;
 
-      let criticalFailure = false;
       for (const result of backupResults) {
         if (result.status === "fulfilled") {
-          if (
-            result.value.files.length === 0 &&
-            (result.value.type === "zed" || result.value.type === "claude")
-          ) {
-            criticalFailure = true;
-            printWarning(
-              `Critical backup task for ${result.value.type} failed with no files backed up.`,
-            );
-          }
           successfulBackups.push(result.value);
           backedUpFiles.push(...result.value.files);
         } else {
@@ -1292,11 +1315,6 @@ This script will:
             }`,
           );
         }
-      }
-
-      if (criticalFailure) {
-        printWarning("Critical backups failed. Aborting process.");
-        Deno.exit(1);
       }
 
       // Log summary

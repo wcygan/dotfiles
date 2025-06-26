@@ -880,27 +880,77 @@ async function configureMcpServers(
     printStatus("Analyzing currently installed MCP servers...");
     const installedServers = await getInstalledUserServers();
 
-    // Compute what needs to be done
-    const toAdd: string[] = [];
-    const toUpdate: string[] = [];
-    let alreadyConfigured = 0;
+    // Compute what needs to be done using the new diff function
+    const diff = computeMcpDiff(mcpConfig.mcpServers, installedServers);
 
-    for (const [serverName, serverConfig] of Object.entries(mcpConfig.mcpServers)) {
-      const config = serverConfig as McpServer;
-      const installed = installedServers.get(serverName);
+    // Log detailed diff results with clear sections
+    console.log();
+    printBlue("📊 MCP Server Configuration Analysis:");
+    console.log("═".repeat(50));
 
-      if (!installed) {
-        toAdd.push(serverName);
-      } else if (!areServerConfigsEqual(installed, config)) {
-        toUpdate.push(serverName);
-      } else {
-        alreadyConfigured++;
+    // Missing servers section
+    if (diff.missing.length > 0) {
+      console.log(`\n${colors.yellow}❌ Missing servers (${diff.missing.length})${colors.reset}`);
+      console.log("─".repeat(30));
+      for (const serverName of diff.missing) {
+        console.log(`   • ${serverName} - Will be installed`);
       }
+    } else {
+      console.log(`\n${colors.green}✅ Missing servers: None${colors.reset}`);
     }
 
-    // Report status
+    // Servers to update section
+    if (diff.toUpdate.length > 0) {
+      console.log(`\n${colors.blue}🔄 Servers to update (${diff.toUpdate.length})${colors.reset}`);
+      console.log("─".repeat(30));
+      for (const serverName of diff.toUpdate) {
+        const installed = installedServers.get(serverName);
+        const desired = mcpConfig.mcpServers[serverName] as McpServer;
+        console.log(`   • ${serverName}`);
+        if (installed && desired) {
+          if (installed.command !== desired.command) {
+            console.log(`     - Command: ${installed.command} → ${desired.command}`);
+          }
+          const installedArgs = installed.args.join(" ");
+          const desiredArgs = (desired.args || []).join(" ");
+          if (installedArgs !== desiredArgs) {
+            console.log(`     - Args: "${installedArgs}" → "${desiredArgs}"`);
+          }
+        }
+      }
+    } else {
+      console.log(`\n${colors.green}✅ Servers to update: None${colors.reset}`);
+    }
+
+    // Already configured section
+    if (diff.upToDate.length > 0) {
+      console.log(
+        `\n${colors.green}✅ Already configured (${diff.upToDate.length})${colors.reset}`,
+      );
+      console.log("─".repeat(30));
+      for (const serverName of diff.upToDate) {
+        console.log(`   • ${serverName} - Up to date`);
+      }
+    } else {
+      console.log(`\n${colors.yellow}ℹ️  Already configured: None${colors.reset}`);
+    }
+
+    console.log("\n" + "═".repeat(50));
+    console.log();
+
+    const toAdd: string[] = [...diff.missing];
+    const toUpdate: string[] = [...diff.toUpdate];
+    const alreadyConfigured = diff.upToDate.length;
+
+    // Summary status
     if (alreadyConfigured > 0) {
       printStatus(`${alreadyConfigured} servers already properly configured`);
+    }
+    if (toAdd.length > 0) {
+      printStatus(`${toAdd.length} servers will be installed`);
+    }
+    if (toUpdate.length > 0) {
+      printStatus(`${toUpdate.length} servers will be updated`);
     }
 
     let configuredCount = 0;

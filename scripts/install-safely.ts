@@ -696,6 +696,28 @@ async function copyGeminiConfig(
       }
     }
 
+    // Copy extensions directory if it exists
+    const extSource = join(dotfilesDir, "gemini", "extensions");
+    const extDest = join(homeDir, ".gemini", "extensions");
+    if (await exists(extSource)) {
+      try {
+        await ensureDir(extDest);
+        await copy(extSource, extDest, { overwrite: true });
+        printStatus("Copied Gemini CLI extensions");
+        copiedCount++;
+      } catch (error) {
+        printWarning(
+          `Could not copy Gemini extensions: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    } else {
+      console.log(
+        `   ${colors.yellow}No extensions directory found in gemini directory${colors.reset}`,
+      );
+    }
+
     // Update settings.json for tool discovery
     const settingsPath = join(geminiConfigDir, "settings.json");
     let settings = {};

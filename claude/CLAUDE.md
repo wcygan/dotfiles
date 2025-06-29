@@ -178,6 +178,13 @@ gh pr review --approve
 gh issue create --title "Bug" --label "bug"
 gh issue list --assignee @me
 gh issue comment 123
+gh issue view 123 --json title,body,state,assignees
+gh issue edit 123 --add-label "priority:high"
+gh issue close 123
+gh issue reopen 123
+gh issue status
+gh issue pin 123
+gh issue transfer 123 --repo owner/target-repo
 
 # API usage for advanced operations
 gh api repos/{owner}/{repo}/pulls/{number}/reviews
@@ -190,6 +197,152 @@ gh api search/issues --raw-field q="is:pr is:open review-requested:@me"
 - Use explicit parameters over interactive mode
 - Handle errors gracefully with existence checks
 - Use API for review comments (CLI limitation)
+
+### Pull Request Best Practices
+
+**MANDATORY**: Follow these practices for well-crafted PRs:
+
+**PR Structure & Size:**
+
+- **Keep PRs small and focused** - fulfill a single purpose
+- Break complex issues into smaller, logical pull requests for faster reviews
+- Use time-boxed spikes to determine how to segment large features
+
+**Clear Titles & Descriptions:**
+
+- Write descriptive titles explaining WHAT is being solved
+- Create descriptions that guide reviewers through the code
+- Use clear sections: Summary, Changes, Test Plan, Related Issues
+- Highlight related files and group them by concepts
+- Include screenshots/visuals for frontend changes
+
+**Self-Review Process:**
+
+- **ALWAYS** review, build, and test your own PR before submitting
+- Add inline comments to explain complex logic or guide reviewers
+- Specify review order if multiple files are changed
+- Indicate the type of feedback needed (quick look vs. deep critique)
+
+**Security & Quality:**
+
+- Check dependency changes and investigate security alerts
+- Run all tests and linting before submission
+- Include issue tracking keys for traceability
+- Use semantic commit messages focusing on WHAT changed and WHY
+
+**Reviewer-Centric Approach:**
+
+- Think of PRs as a "product" where reviewers are "customers"
+- Make the review process as easy and clear as possible
+- Keep team informed with status labels (ready for review, blocked, in progress)
+- Link related issues, project boards, and conversations
+
+**PR Description Template:**
+
+```markdown
+## Summary
+
+Brief description of changes and motivation
+
+## Changes
+
+- Specific change 1
+- Specific change 2
+
+## Test Plan
+
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+
+## Related Issues
+
+Fixes #123
+Related to #456
+
+## Review Notes
+
+- Focus on [specific area]
+- Review files in this order: [list]
+```
+
+### GitHub Issues for Work Tracking
+
+**MANDATORY**: Use GitHub Issues for comprehensive work tracking and project management:
+
+**Core Issue Management:**
+
+- Use Issues to track ideas, feedback, tasks, and bugs
+- Create issues through CLI for seamless workflow integration
+- Support hierarchical work breakdown with sub-issues for complex tasks
+- Link issues to pull requests using keywords (`fixes #123`, `closes #456`)
+
+**Issue Creation Best Practices:**
+
+- Write descriptive titles that clearly identify the problem/task
+- Include detailed descriptions with:
+  - Problem statement or feature requirement
+  - Acceptance criteria using task lists `[ ]`
+  - Context and background information
+  - Screenshots or examples when applicable
+
+**Workflow Integration:**
+
+- **Create branches directly from issues** for feature development
+- Use `@mentions` to notify collaborators and assign responsibilities
+- Reference related issues with `#` prefix for cross-linking
+- Convert issues to GitHub Discussions when conversations become exploratory
+
+**Issue Organization:**
+
+- Use **labels** for categorization (bug, enhancement, priority levels)
+- Assign **milestones** for release planning and deadline tracking
+- Pin important issues for visibility
+- Filter and search issues for project insights
+
+**Advanced Features:**
+
+- Create **issue templates** to standardize bug reports and feature requests
+- Use **saved replies** for common responses and efficiency
+- Enable **automation** through GitHub Actions for issue management
+- Integrate with **GitHub Projects** for comprehensive project tracking
+
+**Issue Lifecycle Commands:**
+
+```bash
+# Create comprehensive issues
+gh issue create --title "Feature: Add user authentication" --body "$(cat <<'EOF'
+## Problem
+Users need secure login functionality
+
+## Acceptance Criteria
+- [ ] Login form with email/password
+- [ ] Password strength validation  
+- [ ] Remember me functionality
+- [ ] Password reset flow
+
+## Related Issues
+Related to #123 (API design)
+EOF
+)" --label "enhancement" --milestone "v2.0" --assignee @me
+
+# Advanced issue management
+gh issue list --state open --label "bug" --assignee @me --json number,title,labels
+gh issue view 123 --json title,body,state,assignees,milestone
+gh issue edit 123 --add-assignee @user --add-label "priority:high"
+gh issue comment 123 --body "Updated implementation approach"
+
+# Project planning
+gh issue list --milestone "v2.0" --json number,title,state
+gh issue status  # Show assigned issues across repositories
+```
+
+**Issue Automation Patterns:**
+
+- Use keywords in PR descriptions to auto-close issues (`fixes #123`)
+- Set up GitHub Actions for issue labeling and assignment
+- Create issue templates for consistent reporting
+- Use project boards for visual work tracking and sprint planning
 
 ## Development Workflow
 

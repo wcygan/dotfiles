@@ -148,6 +148,49 @@ git worktree list
 git worktree remove ../project-feature
 ```
 
+### GitHub CLI (`gh`) Usage
+
+**MANDATORY**: Use the GitHub CLI for all GitHub operations instead of web interface:
+
+- **Load comprehensive guide**: Use `/context-load-gh-cli` command in Claude Code CLI
+- **Pull Request creation**: Use HEREDOC for multi-line descriptions
+- **API access**: Use `gh api` for operations not directly supported by CLI
+- **JSON output**: Always use `--json` flags for parsing when available
+
+**Key Commands:**
+
+```bash
+# Pull Request operations
+gh pr create --title "title" --body "$(cat <<'EOF'
+## Summary
+- Change description
+
+## Test plan
+- [ ] Tests pass
+EOF
+)"
+gh pr list --json number,title,state
+gh pr view 123 --json reviews
+gh pr comment 123 --body "comment"
+gh pr review --approve
+
+# Issue operations  
+gh issue create --title "Bug" --label "bug"
+gh issue list --assignee @me
+gh issue comment 123
+
+# API usage for advanced operations
+gh api repos/{owner}/{repo}/pulls/{number}/reviews
+gh api search/issues --raw-field q="is:pr is:open review-requested:@me"
+```
+
+**Best Practices:**
+
+- Check state before actions: `gh pr view --json state`
+- Use explicit parameters over interactive mode
+- Handle errors gracefully with existence checks
+- Use API for review comments (CLI limitation)
+
 ## Development Workflow
 
 1. **ALWAYS** run type checking/linting after code changes (e.g., `deno check`, `go vet`, `cargo check`)

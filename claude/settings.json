@@ -15,6 +15,7 @@
       "Bash(rg *)",
       "Bash(ripgrep *)",
       "Bash(find *)",
+      "Bash(gh *)",
       "Bash(fd *)",
       "Bash(fzf *)",
       "Bash(bat *)",

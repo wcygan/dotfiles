@@ -1,311 +1,209 @@
+---
+allowed-tools: Bash(gh pr create:*), Bash(gh pr list:*), Bash(gh auth status:*), Bash(git status:*), Bash(git push:*), Bash(git branch:*), Bash(git diff:*), Bash(git log:*), Bash(gh issue view:*)
+description: Create pull requests with intelligent analysis
+---
+
 # /pr
 
-Automates creation of high-quality, descriptive pull requests.
+Creates high-quality pull requests using the GitHub CLI (`gh`) with intelligent analysis and formatting.
 
 ## Usage
 
 ```
 /pr
-/pr --draft
-/pr --template <template_name>
-/pr --reviewers <@user1,@user2>
+/pr draft
+/pr template=<name>
+/pr reviewers=<user1,user2>
+/pr base=<branch>
+/pr title="Custom PR title"
+/pr labels=<label1,label2>
 ```
 
 ## Description
 
-This command analyzes your current branch changes and creates a comprehensive pull request with proper formatting, context, and metadata. It enforces team conventions and improves communication efficiency.
+This command leverages the `gh` CLI to create comprehensive pull requests with proper formatting, context, and metadata. It analyzes your changes and enforces team conventions.
 
-### What it does:
+### Core Workflow
 
-#### 1. Change Analysis
+#### 1. Pre-flight Checks
 
-Analyzes the current branch to understand the scope and nature of changes:
+```bash
+# Check if gh is authenticated
+gh auth status
 
-**Git Analysis:**
+# Verify we're in a git repository
+git rev-parse --git-dir
 
-- Compares current branch against main/master using `git diff main...HEAD`
-- Identifies modified, added, and deleted files
-- Analyzes commit history since branch divergence
-- Detects code patterns and architectural changes
+# Check for uncommitted changes
+git status --porcelain
 
-**Code Impact Assessment:**
-
-- Identifies breaking changes in public APIs
-- Detects database migrations or schema changes
-- Recognizes new dependencies or version updates
-- Flags potential security implications
-
-#### 2. Intelligent Title Generation
-
-Creates conventional commit-style titles based on change analysis:
-
-**Title Patterns:**
-
-```
-feat(api): add user profile management endpoints
-fix(auth): resolve JWT token expiration handling
-refactor(database): migrate from REST to GraphQL
-docs(readme): update installation instructions
-chore(deps): upgrade axios to v1.6.0
+# Ensure branch is pushed to remote
+git push -u origin $(git branch --show-current)
 ```
 
-**Scope Detection:**
+#### 2. Change Analysis
 
-- Analyzes changed files to determine scope (api, frontend, auth, etc.)
-- Uses directory structure and file patterns for context
-- Considers framework conventions (controllers, services, components)
+The command runs these `gh` and `git` commands in parallel:
 
-#### 3. Comprehensive Description Generation
+```bash
+# Get current branch and base branch
+git branch --show-current
+git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'
 
-Generates structured PR descriptions with multiple sections:
+# Analyze changes
+git diff --name-status origin/main...HEAD
+git log --oneline origin/main...HEAD
+git diff --stat origin/main...HEAD
 
-**Standard Template:**
+# Check for existing PR
+gh pr list --head $(git branch --show-current) --json number,state
+```
 
-```markdown
+#### 3. Intelligent Title Generation
+
+Based on commit analysis and conventional commit patterns:
+
+```bash
+# Analyze commit messages for patterns
+git log --pretty=format:"%s" origin/main...HEAD | head -1
+
+# If no clear pattern, analyze file changes
+git diff --name-only origin/main...HEAD | head -10
+```
+
+**Generated Titles:**
+- `feat(api): add user authentication endpoints`
+- `fix(auth): resolve token expiration issue`
+- `docs: update API documentation`
+- `chore(deps): update dependencies`
+
+#### 4. PR Creation with gh
+
+```bash
+# Create PR with generated content
+gh pr create \
+  --title "feat(api): add user authentication" \
+  --body "$(cat <<'EOF'
 ## Summary
 
-- **What**: Brief description of the changes made
-- **Why**: Business justification or problem being solved
-- **How**: Technical approach and implementation details
+Brief description of changes
 
-## Changes Made
+## Changes
+- Added authentication endpoints
+- Updated user model
+- Added test coverage
 
-- [ ] Added user profile API endpoints (`/api/v1/profile/*`)
-- [ ] Implemented profile validation middleware
-- [ ] Updated database schema with profile fields
-- [ ] Added comprehensive test coverage (95% line coverage)
+## Test Plan
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] Manual testing completed
 
-## Testing
-
-- [ ] Unit tests pass (`npm test`)
-- [ ] Integration tests pass (`npm run test:integration`)
-- [ ] Manual testing completed for profile CRUD operations
-- [ ] Security testing for authentication edge cases
-
-## Breaking Changes
-
-⚠️ **BREAKING**: Modified `/api/v1/user` response format
-
-- Old: `{ "user": { "name": "...", "email": "..." } }`
-- New: `{ "user": { "profile": { "name": "...", "email": "..." } } }`
-
-## Migration Guide
-
-For API consumers:
-
-1. Update response parsing logic to access `user.profile.*`
-2. Update any hardcoded field references
-3. Test against staging environment before production deployment
-
-## Screenshots/Demo
-
-<!-- Add screenshots for UI changes -->
-<!-- Add API response examples for backend changes -->
-
-## Checklist
-
-- [x] Code follows project style guidelines
-- [x] Tests added/updated for new functionality
-- [x] Documentation updated
-- [x] No merge conflicts
-- [ ] Security review completed (if applicable)
-- [ ] Performance impact assessed
-```
-
-#### 4. Issue Linking
-
-Automatically links related issues and tickets:
-
-**Branch Name Analysis:**
-
-- Detects patterns like `feature/JIRA-123-user-profiles`
-- Extracts issue numbers from branch names
-- Generates appropriate closing keywords
-
-**Generated Links:**
-
-```markdown
-Closes #123
-Fixes JIRA-456
-Resolves https://github.com/org/repo/issues/789
-```
-
-#### 5. Smart Reviewer Suggestions
-
-Suggests relevant reviewers based on code analysis:
-
-**Review Assignment Logic:**
-
-- Analyzes `git blame` on changed files to find frequent contributors
-- Considers CODEOWNERS file if present
-- Suggests domain experts based on file paths (frontend, backend, DevOps)
-- Balances review load across team members
-
-**Team Detection:**
-
-```yaml
-# .github/CODEOWNERS
-/src/api/ @backend-team @alice
-/src/frontend/ @frontend-team @bob
-/k8s/ @devops-team @charlie
-*.md @docs-team
-```
-
-#### 6. Template System
-
-Supports custom PR templates for different change types:
-
-**Template Detection:**
-
-- Analyzes changes to determine appropriate template
-- Supports feature, bugfix, hotfix, and documentation templates
-- Uses `.github/pull_request_template/` directory structure
-
-**Custom Templates:**
-
-```markdown
-<!-- .github/pull_request_template/feature.md -->
-
-## New Feature Checklist
-
-- [ ] Feature flag implemented (if applicable)
-- [ ] A/B testing configuration added
-- [ ] Analytics events implemented
-- [ ] Feature documentation written
-- [ ] Rollback plan documented
+## Related Issues
+Fixes #123
+EOF
+)" \
+  --draft \
+  --assignee @me \
+  --label "enhancement" \
+  --reviewer alice,bob
 ```
 
 ### Advanced Features
 
-#### CI/CD Integration
+#### Smart Reviewer Detection
 
-Generates PR descriptions that trigger appropriate CI workflows:
+```bash
+# Find CODEOWNERS
+if [ -f .github/CODEOWNERS ]; then
+  # Parse CODEOWNERS for relevant reviewers
+  grep -E "^$(git diff --name-only origin/main...HEAD | head -1)" .github/CODEOWNERS
+fi
 
-**Workflow Triggers:**
-
-```markdown
-<!-- Trigger specific test suites -->
-
-/test backend
-/test frontend\
-/test e2e
-
-<!-- Deploy to staging -->
-
-/deploy staging
-
-<!-- Security scan -->
-
-/security-scan
+# Find frequent contributors to changed files
+git log --pretty=format:"%an" origin/main...HEAD -- $(git diff --name-only origin/main...HEAD) | \
+  sort | uniq -c | sort -rn | head -3
 ```
 
-#### Performance Impact Analysis
+#### Issue Linking
 
-Analyzes potential performance implications:
+```bash
+# Extract issue number from branch name
+BRANCH=$(git branch --show-current)
+ISSUE=$(echo $BRANCH | grep -oE '[0-9]+' | head -1)
 
-**Bundle Size Analysis:**
+# Check if issue exists
+if [ -n "$ISSUE" ]; then
+  gh issue view $ISSUE --json state,title
+fi
+```
 
-- Detects new dependencies that might increase bundle size
-- Warns about large file additions
-- Suggests code splitting opportunities
+#### Template Support
 
-**Database Impact:**
+```bash
+# Check for PR templates
+TEMPLATE_DIR=".github/pull_request_template"
+if [ -d "$TEMPLATE_DIR" ]; then
+  ls -1 "$TEMPLATE_DIR"/*.md
+fi
 
-- Identifies new queries or schema changes
-- Warns about N+1 query patterns
-- Suggests indexing for new query patterns
-
-#### Security Considerations
-
-Flags potential security implications:
-
-**Security Checklist:**
-
-- Authentication/authorization changes
-- New external dependencies
-- Input validation modifications
-- Environment variable changes
+# Use specific template
+gh pr create --template .github/pull_request_template/feature.md
+```
 
 ## Examples
 
-### Create a standard PR:
+### Basic PR Creation
 
-```
+```bash
 /pr
+# Runs: gh pr create --title "..." --body "..." --assignee @me
 ```
 
-### Create a draft PR for early feedback:
+### Draft PR with Reviewers
 
-```
-/pr --draft
-```
-
-### Use a specific template:
-
-```
-/pr --template hotfix
+```bash
+/pr draft reviewers=alice,bob
+# Runs: gh pr create --draft --reviewer alice,bob ...
 ```
 
-### Specify reviewers:
+### PR with Custom Base Branch
 
-```
-/pr --reviewers @alice,@backend-team
-```
-
-## Configuration
-
-Supports team-specific configuration via `.github/pr-config.yml`:
-
-```yaml
-teams:
-  backend: ["alice", "bob"]
-  frontend: ["charlie", "diana"]
-  devops: ["eve"]
-
-templates:
-  feature: ".github/pull_request_template/feature.md"
-  bugfix: ".github/pull_request_template/bugfix.md"
-  hotfix: ".github/pull_request_template/hotfix.md"
-
-auto_reviewers:
-  min_reviewers: 2
-  exclude_author: true
-  balance_load: true
-
-required_checks:
-  - "ci/build"
-  - "ci/test"
-  - "security/scan"
-
-labels:
-  auto_assign: true
-  size_labels: true # small, medium, large based on diff size
-  type_labels: true # feature, bugfix, docs, etc.
+```bash
+/pr base=develop
+# Runs: gh pr create --base develop ...
 ```
 
-## Quality Assurance
+### PR with Labels
 
-### PR Title Validation
+```bash
+/pr labels=bug,priority-high
+# Runs: gh pr create --label bug --label priority-high ...
+```
 
-- Enforces conventional commit format
-- Validates scope against known project modules
-- Suggests improvements for unclear titles
+## Integration with CI/CD
 
-### Description Quality Checks
+The command automatically adds CI trigger comments when appropriate:
 
-- Ensures minimum description length
-- Validates required sections are present
-- Checks for TODO items or placeholder text
+```markdown
+<!-- Added to PR body when test changes detected -->
+/test all
+/test unit
+/test integration
 
-### Change Validation
+<!-- Added when deployment files changed -->
+/deploy preview
+```
 
-- Warns about large PRs (suggests splitting)
-- Flags missing tests for new features
-- Detects missing documentation updates
+## Error Handling
 
-## Integration with Other Commands
+- **Not a git repository**: Suggests `git init` or navigating to correct directory
+- **No remote**: Offers to add remote with `git remote add origin <url>`
+- **Uncommitted changes**: Prompts to commit or stash changes
+- **gh not authenticated**: Runs `gh auth login`
+- **Branch not pushed**: Automatically pushes with `git push -u origin <branch>`
 
-- Use after `/refactor` to document architectural changes
-- Combine with `/test` results to include coverage information
-- Use with `/document` to ensure documentation is updated
-- Integrate with `/review` findings to address code quality issues
+## See Also
+
+- `/pr-review` - Review and manage pull requests
+- `/pr-update` - Update existing pull request
+- `/pr-check` - Check PR status and CI/CD state

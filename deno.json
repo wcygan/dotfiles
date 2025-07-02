@@ -47,6 +47,6 @@
     "semiColons": true,
     "singleQuote": false,
     "proseWrap": "preserve",
-    "exclude": ["docs-prototype/"]
+    "exclude": ["docs-prototype/", "claude/commands/*.md"]
   }
 }

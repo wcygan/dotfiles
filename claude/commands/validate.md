@@ -1,4 +1,28 @@
-Run comprehensive validation across the codebase:
+---
+allowed-tools: Bash(deno:*), Bash(cargo:*), Bash(go:*), Bash(mvn:*), Bash(kubectl:*), Bash(jq:*), Bash(yq:*)
+description: Run comprehensive validation with automatic project type detection and live results
+---
+
+# /validate
+
+Run comprehensive validation across @[project-files] with automatic project type detection and real-time validation results.
+
+## Live Validation Context
+
+- **JSON Validation**: !`fd "\.json$" . | xargs -I {} sh -c 'jq empty {} 2>&1 || echo "Invalid JSON: {}"' | grep -c "Invalid" || echo "0"`
+- **YAML Validation**: !`fd "\.ya?ml$" . | xargs -I {} sh -c 'yq eval . {} > /dev/null 2>&1 || echo "Invalid YAML: {}"' | head -5`
+- **TypeScript Check**: !`if [ -f "deno.json" ]; then deno check $(fd "\.ts$" . | head -5); fi`
+- **Rust Check**: !`if [ -f "Cargo.toml" ]; then cargo check --quiet 2>&1 | head -3; fi`
+- **Go Validation**: !`if [ -f "go.mod" ]; then go vet ./... 2>&1 | head -3; fi`
+
+## Project Analysis
+
+Analyze project configuration for targeted validation:
+- **Project Detection**: @package.json @deno.json @Cargo.toml @go.mod @pom.xml
+- **Configuration Files**: @tsconfig.json @docker-compose.yml @k8s/*.yaml
+- **Build Configuration**: @Dockerfile @Makefile @gradle.build @webpack.config.js
+- **Testing Setup**: @**/*.test.* @jest.config.* @vitest.config.*
+- **Linting Config**: @.eslintrc.* @clippy.toml @golangci.yml
 
 1. **Language-Specific Validation:**
 

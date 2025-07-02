@@ -1,6 +1,27 @@
+---
+allowed-tools: Bash(kubectl:*), Bash(docker:*), Bash(curl:*), Bash(jq:*), Bash(systemctl:*)
+description: Implement comprehensive health monitoring with real-time system assessment
+---
+
 # /health-check
 
-Implement comprehensive health monitoring for $ARGUMENT with automated alerting and status reporting.
+Implement comprehensive health monitoring for $ARGUMENT with automated alerting and status reporting. Think harder about complex distributed system health patterns and monitoring strategies when dealing with microservices architectures.
+
+## Live System Context
+
+- **Cluster Status**: !`kubectl get nodes -o json | jq '.items[] | {name: .metadata.name, status: .status.conditions[-1].type}'`
+- **Container Health**: !`docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | head -10`
+- **System Services**: !`systemctl --failed --no-legend | wc -l`
+- **Resource Usage**: !`free -h && df -h / | tail -1`
+- **Active Health Endpoints**: !`curl -s http://localhost:8080/health || echo "Health endpoint unreachable"`
+
+## Configuration Analysis
+
+Analyze existing configuration files for current health check setup:
+- System architecture: @docker-compose.yml @k8s/*.yaml
+- Application configs: @package.json @deno.json @Cargo.toml
+- Monitoring setup: @prometheus.yml @grafana-dashboards/*.json
+- Health check implementations: @**/*health*.{ts,js,go,rs,java}
 
 ## Health Check Implementation
 

@@ -1,6 +1,28 @@
+---
+allowed-tools: Bash(kubectl:*), Bash(docker:*), Bash(rg:*), Bash(fd:*), Bash(yq:*), Bash(jq:*)
+description: Generate comprehensive threat models using STRIDE methodology with live system analysis
+---
+
 # /threat-model
 
-Generate comprehensive threat models for $ARGUMENT using STRIDE methodology with automated risk assessment, attack surface analysis, and mitigation strategies.
+Generate comprehensive threat models for $ARGUMENT using STRIDE methodology with automated risk assessment, attack surface analysis, and mitigation strategies. Think harder about sophisticated attack vectors and security implications when analyzing complex distributed systems or financial applications.
+
+## Live Security Context
+
+- **Service Discovery**: !`kubectl get services -o json | jq '.items[] | {name: .metadata.name, type: .spec.type, ports: .spec.ports}'`
+- **Network Exposure**: !`kubectl get ingress -o json | jq '.items[] | {name: .metadata.name, hosts: .spec.rules[].host}'`
+- **Security Policies**: !`kubectl get networkpolicies,podsecuritypolicies 2>/dev/null | wc -l`
+- **Container Vulnerabilities**: !`docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.CreatedAt}}" | head -10`
+- **Open Ports**: !`netstat -tuln | grep LISTEN | head -10`
+
+## Architecture Analysis
+
+Analyze system architecture and configuration for threat modeling:
+- **Infrastructure**: @docker-compose.yml @k8s/*.yaml @terraform/*.tf
+- **API Definitions**: @openapi.yaml @**/*.proto @routes/**/*.{ts,js,go,rs}
+- **Security Config**: @nginx.conf @traefik.yml @istio/*.yaml
+- **Authentication**: @auth/*.{ts,js,go,rs} @**/*auth*.{ts,js,go,rs}
+- **Environment**: @.env.example @config/*.yaml @secrets/*.yaml
 
 ## Context Intelligence
 

@@ -175,15 +175,24 @@ Zed tasks are commands that run in the integrated terminal. Tasks can be defined
 
 ## Command Implementation Guidelines
 
+### Command Organization Structure
+
+Commands are organized in a namespaced directory structure under `claude/commands/`:
+
+- Each namespace has its own directory (e.g., `git/`, `test/`, `docs/`)
+- Sub-namespaces create nested directories (e.g., `git/pr/`, `test/analyze/`)
+- Command files use descriptive names without prefixes (e.g., `create.md` not `pr-create.md`)
+- The full command path derives from the directory structure: `git/pr/create.md` → `/git:pr:create`
+
 ### $ARGUMENTS Pattern Best Practices
 
 **Context Analysis First:**
 
 ```bash
 # Command should analyze existing state before parsing arguments
-/docs-init [$ARGUMENTS]  # Checks for existing /docs, project type, git repo
-/docs-add [$ARGUMENTS]   # Analyzes current doc structure, infers placement
-/docs-update [$ARGUMENTS] # Detects what needs updating based on project changes
+/docs:manage:init [$ARGUMENTS]  # Checks for existing /docs, project type, git repo
+/docs:manage:add [$ARGUMENTS]   # Analyzes current doc structure, infers placement
+/docs:manage:update [$ARGUMENTS] # Detects what needs updating based on project changes
 ```
 
 **Flexible Argument Parsing:**
@@ -204,16 +213,16 @@ Zed tasks are commands that run in the integrated terminal. Tasks can be defined
 
 ```bash
 # Auto-detects project name, type, and configures appropriately
-/docs-init
+/docs:manage:init
 
 # Infers "guide" type from existing structure, places in guides/ folder
-/docs-add Quick Start Guide
+/docs:manage:add Quick Start Guide
 
 # Detects OpenAPI files, updates API docs, validates Mermaid diagrams
-/docs-update
+/docs:manage:update
 
 # Creates troubleshooting section, analyzes existing categories
-/docs-add troubleshooting Common Issues
+/docs:manage:add troubleshooting Common Issues
 ```
 
 **Error Handling Philosophy:**
@@ -253,6 +262,32 @@ Claude commands are organized using a namespace structure: `/<namespace>:<subnam
 /context-load-deno-fresh → /context:deno:fresh
 /test-gen → /test:generate:unit
 /docs-init → /docs:manage:init
+```
+
+### Creating New Commands
+
+When creating new commands, follow the namespace structure:
+
+1. **Identify the appropriate namespace** - Choose from existing namespaces or propose a new one
+2. **Create the file in the correct directory** - e.g., `claude/commands/test/analyze/complexity.md`
+3. **Name the file descriptively** - Use the final command name without namespace prefixes
+4. **The command will be accessible as** - `/test:analyze:complexity`
+
+Example directory structure:
+
+```
+claude/commands/
+├── git/
+│   ├── pr/
+│   │   ├── create.md     → /git:pr:create
+│   │   └── review.md     → /git:pr:review
+│   └── commit/
+│       └── standard.md   → /git:commit:standard
+└── test/
+    ├── generate/
+    │   └── unit.md       → /test:generate:unit
+    └── analyze/
+        └── coverage.md   → /test:analyze:coverage
 ```
 
 ## Slash Commands with Bash Command Execution

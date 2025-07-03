@@ -972,14 +972,10 @@ jobs:
 
   // Font loading for different scripts
   font-family:
-    "Inter",
-    // Latin scripts
-    "Noto Sans Arabic",
-    // Arabic script
-    "Noto Sans CJK",
-    // Chinese, Japanese, Korean
-    "Noto Sans Devanagari",
-    // Hindi, Sanskrit
+    "Inter", // Latin scripts
+    "Noto Sans Arabic", // Arabic script
+    "Noto Sans CJK", // Chinese, Japanese, Korean
+    "Noto Sans Devanagari", // Hindi, Sanskrit
     sans-serif;
 
   // Text expansion accommodation

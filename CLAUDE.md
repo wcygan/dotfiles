@@ -46,7 +46,21 @@ deno run --allow-all scripts/pre-commit-check.ts # Pre-commit validation
 ### Configuration Directories
 
 - `claude/` - Claude AI assistant configuration and scripts
-  - `claude/commands/` - Custom slash commands for Claude Code CLI
+  - `claude/commands/` - Namespaced slash commands for Claude Code CLI organized by domain:
+    - `agent/` - Multi-agent coordination and personas
+    - `context/` - Context loading for various technologies
+    - `scaffold/` - Project scaffolding templates
+    - `git/` - Git and GitHub operations
+    - `docs/` - Documentation management
+    - `test/` - Testing and quality assurance
+    - `code/` - Code operations and analysis
+    - `task/` - Task management
+    - `ops/` - DevOps and operations
+    - `security/` - Security auditing and hardening
+    - `analyze/` - Analysis and research tools
+    - `workflow/` - Workflow management
+    - `meta/` - Meta commands and utilities
+    - `tool/` - Tool-specific commands
 - `cursor/`, `vscode/`, `zed/` - Editor-specific configurations with keybindings
 - Shell dotfiles are dynamically generated during installation
 
@@ -208,6 +222,38 @@ Zed tasks are commands that run in the integrated terminal. Tasks can be defined
 - Provide context about why something cannot be done
 - Offer alternative approaches when primary action is blocked
 - Use existing project patterns to guide suggestions
+
+## Namespaced Slash Commands
+
+Claude commands are organized using a namespace structure: `/<namespace>:<subnamespace>:<command>`
+
+### Command Namespaces
+
+- **agent:** - Multi-agent coordination (`/agent:core:init`, `/agent:persona:backend-specialist`)
+- **context:** - Load technology context (`/context:deno:fresh`, `/context:rust:web`)
+- **scaffold:** - Project scaffolding (`/scaffold:go:connect`, `/scaffold:rust:axum`)
+- **git:** - Git operations (`/git:pr:create`, `/git:commit:push`)
+- **docs:** - Documentation (`/docs:manage:init`, `/docs:generate:api`)
+- **test:** - Testing (`/test:run:tdd`, `/test:analyze:coverage`)
+- **code:** - Code operations (`/code:refactor:standard`, `/code:analyze:deps`)
+- **task:** - Task management (`/task:manage:create`, `/task:view:current`)
+- **ops:** - DevOps (`/ops:deploy:standard`, `/ops:monitor:setup`)
+- **security:** - Security (`/security:audit:secrets`, `/security:model:threat`)
+- **analyze:** - Analysis (`/analyze:think:standard`, `/analyze:research:web-deep`)
+- **workflow:** - Workflow (`/workflow:manage:plan`, `/workflow:view:progress`)
+- **meta:** - Meta utilities (`/meta:command:generate`, `/meta:search:smart`)
+- **tool:** - Tool-specific (`/tool:diagram`, `/tool:zed-task`)
+
+### Examples
+
+```bash
+# Old command → New namespaced command
+/pr → /git:pr:create
+/agent-persona-backend-specialist → /agent:persona:backend-specialist
+/context-load-deno-fresh → /context:deno:fresh
+/test-gen → /test:generate:unit
+/docs-init → /docs:manage:init
+```
 
 ## Slash Commands with Bash Command Execution
 

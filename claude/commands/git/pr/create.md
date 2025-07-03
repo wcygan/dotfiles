@@ -72,6 +72,7 @@ git diff --name-only origin/main...HEAD | head -10
 ```
 
 **Generated Titles:**
+
 - `feat(api): add user authentication endpoints`
 - `fix(auth): resolve token expiration issue`
 - `docs: update API documentation`
@@ -186,11 +187,13 @@ The command automatically adds CI trigger comments when appropriate:
 
 ```markdown
 <!-- Added to PR body when test changes detected -->
+
 /test all
 /test unit
 /test integration
 
 <!-- Added when deployment files changed -->
+
 /deploy preview
 ```
 

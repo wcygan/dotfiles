@@ -243,6 +243,7 @@ The command performs these checks automatically:
 ## Keyboard Shortcuts
 
 When viewing diffs in the terminal:
+
 - `j/k` - Navigate between files
 - `n/p` - Next/previous comment
 - `q` - Quit review mode

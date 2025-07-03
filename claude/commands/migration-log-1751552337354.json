@@ -1,0 +1,1068 @@
+{
+  "timestamp": "2025-07-03T14:18:57.353Z",
+  "direction": "forward",
+  "successCount": 174,
+  "errorCount": 2,
+  "errors": [
+    "/Users/wcygan/Development/development-workspace/dotfiles/claude/commands/new-worktree.md: No such file or directory (os error 2): rename '/Users/wcygan/Development/development-workspace/dotfiles/claude/commands/new-worktree.md' -> '/Users/wcygan/Development/development-workspace/dotfiles/claude/commands/git/workflow/worktree.md'",
+    "/Users/wcygan/Development/development-workspace/dotfiles/claude/commands/k8s-debug.md: No such file or directory (os error 2): rename '/Users/wcygan/Development/development-workspace/dotfiles/claude/commands/k8s-debug.md' -> '/Users/wcygan/Development/development-workspace/dotfiles/claude/commands/ops/k8s/debug.md'"
+  ],
+  "migrations": [
+    {
+      "from": "agent-init.md",
+      "to": "agent/core/init.md",
+      "namespace": "agent:core",
+      "command": "/agent:core:init"
+    },
+    {
+      "from": "agent-assign.md",
+      "to": "agent/core/assign.md",
+      "namespace": "agent:core",
+      "command": "/agent:core:assign"
+    },
+    {
+      "from": "agent-start.md",
+      "to": "agent/core/start.md",
+      "namespace": "agent:core",
+      "command": "/agent:core:start"
+    },
+    {
+      "from": "agent-status.md",
+      "to": "agent/core/status.md",
+      "namespace": "agent:core",
+      "command": "/agent:core:status"
+    },
+    {
+      "from": "agent-complete.md",
+      "to": "agent/core/complete.md",
+      "namespace": "agent:core",
+      "command": "/agent:core:complete"
+    },
+    {
+      "from": "coordinate.md",
+      "to": "agent/workflow/coordinate.md",
+      "namespace": "agent:workflow",
+      "command": "/agent:workflow:coordinate"
+    },
+    {
+      "from": "parallel.md",
+      "to": "agent/workflow/parallel.md",
+      "namespace": "agent:workflow",
+      "command": "/agent:workflow:parallel"
+    },
+    {
+      "from": "parallel-enhanced.md",
+      "to": "agent/workflow/parallel-enhanced.md",
+      "namespace": "agent:workflow",
+      "command": "/agent:workflow:parallel-enhanced"
+    },
+    {
+      "from": "plan-multi-agent.md",
+      "to": "agent/workflow/plan-multi-agent.md",
+      "namespace": "agent:workflow",
+      "command": "/agent:workflow:plan-multi-agent"
+    },
+    {
+      "from": "plan.md",
+      "to": "workflow/manage/plan.md",
+      "namespace": "workflow:manage",
+      "command": "/workflow:manage:plan"
+    },
+    {
+      "from": "agent-persona-accessibility-expert.md",
+      "to": "agent/persona/accessibility-expert.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:accessibility-expert"
+    },
+    {
+      "from": "agent-persona-api-designer.md",
+      "to": "agent/persona/api-designer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:api-designer"
+    },
+    {
+      "from": "agent-persona-backend-specialist.md",
+      "to": "agent/persona/backend-specialist.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:backend-specialist"
+    },
+    {
+      "from": "agent-persona-cloud-architect.md",
+      "to": "agent/persona/cloud-architect.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:cloud-architect"
+    },
+    {
+      "from": "agent-persona-code-reviewer.md",
+      "to": "agent/persona/code-reviewer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:code-reviewer"
+    },
+    {
+      "from": "agent-persona-compliance-officer.md",
+      "to": "agent/persona/compliance-officer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:compliance-officer"
+    },
+    {
+      "from": "agent-persona-data-engineer.md",
+      "to": "agent/persona/data-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:data-engineer"
+    },
+    {
+      "from": "agent-persona-database-architect.md",
+      "to": "agent/persona/database-architect.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:database-architect"
+    },
+    {
+      "from": "agent-persona-debugger.md",
+      "to": "agent/persona/debugger.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:debugger"
+    },
+    {
+      "from": "agent-persona-devops-engineer.md",
+      "to": "agent/persona/devops-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:devops-engineer"
+    },
+    {
+      "from": "agent-persona-frontend-specialist.md",
+      "to": "agent/persona/frontend-specialist.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:frontend-specialist"
+    },
+    {
+      "from": "agent-persona-implementation-engineer.md",
+      "to": "agent/persona/implementation-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:implementation-engineer"
+    },
+    {
+      "from": "agent-persona-infrastructure-engineer.md",
+      "to": "agent/persona/infrastructure-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:infrastructure-engineer"
+    },
+    {
+      "from": "agent-persona-localization-engineer.md",
+      "to": "agent/persona/localization-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:localization-engineer"
+    },
+    {
+      "from": "agent-persona-machine-learning-engineer.md",
+      "to": "agent/persona/machine-learning-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:machine-learning-engineer"
+    },
+    {
+      "from": "agent-persona-mobile-developer.md",
+      "to": "agent/persona/mobile-developer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:mobile-developer"
+    },
+    {
+      "from": "agent-persona-performance-engineer.md",
+      "to": "agent/persona/performance-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:performance-engineer"
+    },
+    {
+      "from": "agent-persona-product-manager.md",
+      "to": "agent/persona/product-manager.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:product-manager"
+    },
+    {
+      "from": "agent-persona-qa-analyst.md",
+      "to": "agent/persona/qa-analyst.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:qa-analyst"
+    },
+    {
+      "from": "agent-persona-refactoring-specialist.md",
+      "to": "agent/persona/refactoring-specialist.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:refactoring-specialist"
+    },
+    {
+      "from": "agent-persona-release-manager.md",
+      "to": "agent/persona/release-manager.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:release-manager"
+    },
+    {
+      "from": "agent-persona-requirements-analyst.md",
+      "to": "agent/persona/requirements-analyst.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:requirements-analyst"
+    },
+    {
+      "from": "agent-persona-security-auditor.md",
+      "to": "agent/persona/security-auditor.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:security-auditor"
+    },
+    {
+      "from": "agent-persona-site-reliability-engineer.md",
+      "to": "agent/persona/site-reliability-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:site-reliability-engineer"
+    },
+    {
+      "from": "agent-persona-software-architect.md",
+      "to": "agent/persona/software-architect.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:software-architect"
+    },
+    {
+      "from": "agent-persona-system-integration-engineer.md",
+      "to": "agent/persona/system-integration-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:system-integration-engineer"
+    },
+    {
+      "from": "agent-persona-technical-writer.md",
+      "to": "agent/persona/technical-writer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:technical-writer"
+    },
+    {
+      "from": "agent-persona-test-automation-engineer.md",
+      "to": "agent/persona/test-automation-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:test-automation-engineer"
+    },
+    {
+      "from": "agent-persona-test-engineer.md",
+      "to": "agent/persona/test-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:test-engineer"
+    },
+    {
+      "from": "agent-persona-ux-engineer.md",
+      "to": "agent/persona/ux-engineer.md",
+      "namespace": "agent:persona",
+      "command": "/agent:persona:ux-engineer"
+    },
+    {
+      "from": "context-load-cilium.md",
+      "to": "context/k8s/cilium.md",
+      "namespace": "context:k8s",
+      "command": "/context:k8s:cilium"
+    },
+    {
+      "from": "context-load-deno-fresh.md",
+      "to": "context/deno/fresh.md",
+      "namespace": "context:deno",
+      "command": "/context:deno:fresh"
+    },
+    {
+      "from": "context-load-deno-scripting.md",
+      "to": "context/deno/scripting.md",
+      "namespace": "context:deno",
+      "command": "/context:deno:scripting"
+    },
+    {
+      "from": "context-load-dragonfly.md",
+      "to": "context/db/dragonfly.md",
+      "namespace": "context:db",
+      "command": "/context:db:dragonfly"
+    },
+    {
+      "from": "context-load-flux.md",
+      "to": "context/k8s/flux.md",
+      "namespace": "context:k8s",
+      "command": "/context:k8s:flux"
+    },
+    {
+      "from": "context-load-fresh-connect-stack.md",
+      "to": "context/web/fresh-connect-stack.md",
+      "namespace": "context:web",
+      "command": "/context:web:fresh-connect-stack"
+    },
+    {
+      "from": "context-load-gh-cli.md",
+      "to": "context/web/gh-cli.md",
+      "namespace": "context:web",
+      "command": "/context:web:gh-cli"
+    },
+    {
+      "from": "context-load-github-actions.md",
+      "to": "context/web/github-actions.md",
+      "namespace": "context:web",
+      "command": "/context:web:github-actions"
+    },
+    {
+      "from": "context-load-go-concurrency.md",
+      "to": "context/go/concurrency.md",
+      "namespace": "context:go",
+      "command": "/context:go:concurrency"
+    },
+    {
+      "from": "context-load-go-connectrpc.md",
+      "to": "context/go/connectrpc.md",
+      "namespace": "context:go",
+      "command": "/context:go:connectrpc"
+    },
+    {
+      "from": "context-load-go-web.md",
+      "to": "context/go/web.md",
+      "namespace": "context:go",
+      "command": "/context:go:web"
+    },
+    {
+      "from": "context-load-java-quarkus.md",
+      "to": "context/java/quarkus.md",
+      "namespace": "context:java",
+      "command": "/context:java:quarkus"
+    },
+    {
+      "from": "context-load-java-spring.md",
+      "to": "context/java/spring.md",
+      "namespace": "context:java",
+      "command": "/context:java:spring"
+    },
+    {
+      "from": "context-load-java-temporal.md",
+      "to": "context/java/temporal.md",
+      "namespace": "context:java",
+      "command": "/context:java:temporal"
+    },
+    {
+      "from": "context-load-k8s.md",
+      "to": "context/k8s/core.md",
+      "namespace": "context:k8s",
+      "command": "/context:k8s:core"
+    },
+    {
+      "from": "context-load-logging.md",
+      "to": "context/observability/logging.md",
+      "namespace": "context:observability",
+      "command": "/context:observability:logging"
+    },
+    {
+      "from": "context-load-observability.md",
+      "to": "context/observability/core.md",
+      "namespace": "context:observability",
+      "command": "/context:observability:core"
+    },
+    {
+      "from": "context-load-offline-data-platform.md",
+      "to": "context/web/offline-data-platform.md",
+      "namespace": "context:web",
+      "command": "/context:web:offline-data-platform"
+    },
+    {
+      "from": "context-load-postgres.md",
+      "to": "context/db/postgres.md",
+      "namespace": "context:db",
+      "command": "/context:db:postgres"
+    },
+    {
+      "from": "context-load-redpanda.md",
+      "to": "context/db/redpanda.md",
+      "namespace": "context:db",
+      "command": "/context:db:redpanda"
+    },
+    {
+      "from": "context-load-rust-async.md",
+      "to": "context/rust/async.md",
+      "namespace": "context:rust",
+      "command": "/context:rust:async"
+    },
+    {
+      "from": "context-load-rust-db.md",
+      "to": "context/rust/db.md",
+      "namespace": "context:rust",
+      "command": "/context:rust:db"
+    },
+    {
+      "from": "context-load-rust-web.md",
+      "to": "context/rust/web.md",
+      "namespace": "context:rust",
+      "command": "/context:rust:web"
+    },
+    {
+      "from": "context-load-scylla.md",
+      "to": "context/db/scylla.md",
+      "namespace": "context:db",
+      "command": "/context:db:scylla"
+    },
+    {
+      "from": "context-load-security.md",
+      "to": "context/security/core.md",
+      "namespace": "context:security",
+      "command": "/context:security:core"
+    },
+    {
+      "from": "context-load-tailwind.md",
+      "to": "context/web/tailwind.md",
+      "namespace": "context:web",
+      "command": "/context:web:tailwind"
+    },
+    {
+      "from": "context-load-talos.md",
+      "to": "context/k8s/talos.md",
+      "namespace": "context:k8s",
+      "command": "/context:k8s:talos"
+    },
+    {
+      "from": "context-load-temporal.md",
+      "to": "context/web/temporal.md",
+      "namespace": "context:web",
+      "command": "/context:web:temporal"
+    },
+    {
+      "from": "context-load-testing-deno.md",
+      "to": "context/testing/deno.md",
+      "namespace": "context:testing",
+      "command": "/context:testing:deno"
+    },
+    {
+      "from": "context-load-testing-go.md",
+      "to": "context/testing/go.md",
+      "namespace": "context:testing",
+      "command": "/context:testing:go"
+    },
+    {
+      "from": "context-load-testing-java.md",
+      "to": "context/testing/java.md",
+      "namespace": "context:testing",
+      "command": "/context:testing:java"
+    },
+    {
+      "from": "context-load-testing-rust.md",
+      "to": "context/testing/rust.md",
+      "namespace": "context:testing",
+      "command": "/context:testing:rust"
+    },
+    {
+      "from": "scaffold-deno-fresh.md",
+      "to": "scaffold/deno/fresh.md",
+      "namespace": "scaffold:deno",
+      "command": "/scaffold:deno:fresh"
+    },
+    {
+      "from": "scaffold-deno-script.md",
+      "to": "scaffold/deno/script.md",
+      "namespace": "scaffold:deno",
+      "command": "/scaffold:deno:script"
+    },
+    {
+      "from": "scaffold-go-connect.md",
+      "to": "scaffold/go/connect.md",
+      "namespace": "scaffold:go",
+      "command": "/scaffold:go:connect"
+    },
+    {
+      "from": "scaffold-go-http-server.md",
+      "to": "scaffold/go/http-server.md",
+      "namespace": "scaffold:go",
+      "command": "/scaffold:go:http-server"
+    },
+    {
+      "from": "scaffold-java-quarkus.md",
+      "to": "scaffold/java/quarkus.md",
+      "namespace": "scaffold:java",
+      "command": "/scaffold:java:quarkus"
+    },
+    {
+      "from": "scaffold-rust-axum.md",
+      "to": "scaffold/rust/axum.md",
+      "namespace": "scaffold:rust",
+      "command": "/scaffold:rust:axum"
+    },
+    {
+      "from": "scaffold-rust-cli.md",
+      "to": "scaffold/rust/cli.md",
+      "namespace": "scaffold:rust",
+      "command": "/scaffold:rust:cli"
+    },
+    {
+      "from": "commit.md",
+      "to": "git/commit/standard.md",
+      "namespace": "git:commit",
+      "command": "/git:commit:standard"
+    },
+    {
+      "from": "commit-push.md",
+      "to": "git/commit/push.md",
+      "namespace": "git:commit",
+      "command": "/git:commit:push"
+    },
+    {
+      "from": "pr.md",
+      "to": "git/pr/create.md",
+      "namespace": "git:pr",
+      "command": "/git:pr:create"
+    },
+    {
+      "from": "pr-review.md",
+      "to": "git/pr/review.md",
+      "namespace": "git:pr",
+      "command": "/git:pr:review"
+    },
+    {
+      "from": "pr-update.md",
+      "to": "git/pr/update.md",
+      "namespace": "git:pr",
+      "command": "/git:pr:update"
+    },
+    {
+      "from": "pr-check.md",
+      "to": "git/pr/check.md",
+      "namespace": "git:pr",
+      "command": "/git:pr:check"
+    },
+    {
+      "from": "review-git.md",
+      "to": "git/review/code.md",
+      "namespace": "git:review",
+      "command": "/git:review:code"
+    },
+    {
+      "from": "new-worktree.md",
+      "to": "git/workflow/worktree.md",
+      "namespace": "git:workflow",
+      "command": "/git:workflow:worktree"
+    },
+    {
+      "from": "docs-init.md",
+      "to": "docs/manage/init.md",
+      "namespace": "docs:manage",
+      "command": "/docs:manage:init"
+    },
+    {
+      "from": "docs-add.md",
+      "to": "docs/manage/add.md",
+      "namespace": "docs:manage",
+      "command": "/docs:manage:add"
+    },
+    {
+      "from": "docs-update.md",
+      "to": "docs/manage/update.md",
+      "namespace": "docs:manage",
+      "command": "/docs:manage:update"
+    },
+    {
+      "from": "api-docs.md",
+      "to": "docs/generate/api.md",
+      "namespace": "docs:generate",
+      "command": "/docs:generate:api"
+    },
+    {
+      "from": "changelog.md",
+      "to": "docs/generate/changelog.md",
+      "namespace": "docs:generate",
+      "command": "/docs:generate:changelog"
+    },
+    {
+      "from": "document.md",
+      "to": "docs/generate/document.md",
+      "namespace": "docs:generate",
+      "command": "/docs:generate:document"
+    },
+    {
+      "from": "onboard.md",
+      "to": "docs/generate/onboard.md",
+      "namespace": "docs:generate",
+      "command": "/docs:generate:onboard"
+    },
+    {
+      "from": "explain.md",
+      "to": "docs/analyze/explain.md",
+      "namespace": "docs:analyze",
+      "command": "/docs:analyze:explain"
+    },
+    {
+      "from": "test-gen.md",
+      "to": "test/generate/unit.md",
+      "namespace": "test:generate",
+      "command": "/test:generate:unit"
+    },
+    {
+      "from": "integration-test.md",
+      "to": "test/generate/integration.md",
+      "namespace": "test:generate",
+      "command": "/test:generate:integration"
+    },
+    {
+      "from": "tdd.md",
+      "to": "test/run/tdd.md",
+      "namespace": "test:run",
+      "command": "/test:run:tdd"
+    },
+    {
+      "from": "load-test.md",
+      "to": "test/run/load.md",
+      "namespace": "test:run",
+      "command": "/test:run:load"
+    },
+    {
+      "from": "coverage.md",
+      "to": "test/analyze/coverage.md",
+      "namespace": "test:analyze",
+      "command": "/test:analyze:coverage"
+    },
+    {
+      "from": "flaky-fix.md",
+      "to": "test/fix/flaky.md",
+      "namespace": "test:fix",
+      "command": "/test:fix:flaky"
+    },
+    {
+      "from": "debug.md",
+      "to": "test/debug/core.md",
+      "namespace": "test:debug",
+      "command": "/test:debug:core"
+    },
+    {
+      "from": "validate.md",
+      "to": "test/run/validate.md",
+      "namespace": "test:run",
+      "command": "/test:run:validate"
+    },
+    {
+      "from": "refactor.md",
+      "to": "code/refactor/standard.md",
+      "namespace": "code:refactor",
+      "command": "/code:refactor:standard"
+    },
+    {
+      "from": "simplify.md",
+      "to": "code/refactor/simplify.md",
+      "namespace": "code:refactor",
+      "command": "/code:refactor:simplify"
+    },
+    {
+      "from": "standardize.md",
+      "to": "code/refactor/standardize.md",
+      "namespace": "code:refactor",
+      "command": "/code:refactor:standardize"
+    },
+    {
+      "from": "deps.md",
+      "to": "code/analyze/deps.md",
+      "namespace": "code:analyze",
+      "command": "/code:analyze:deps"
+    },
+    {
+      "from": "dependencies.md",
+      "to": "code/analyze/dependencies.md",
+      "namespace": "code:analyze",
+      "command": "/code:analyze:dependencies"
+    },
+    {
+      "from": "analyze-deps.md",
+      "to": "code/analyze/analyze-deps.md",
+      "namespace": "code:analyze",
+      "command": "/code:analyze:analyze-deps"
+    },
+    {
+      "from": "bottleneck.md",
+      "to": "code/analyze/bottleneck.md",
+      "namespace": "code:analyze",
+      "command": "/code:analyze:bottleneck"
+    },
+    {
+      "from": "technical-debt.md",
+      "to": "code/analyze/technical-debt.md",
+      "namespace": "code:analyze",
+      "command": "/code:analyze:technical-debt"
+    },
+    {
+      "from": "bug-fix.md",
+      "to": "code/fix/bug.md",
+      "namespace": "code:fix",
+      "command": "/code:fix:bug"
+    },
+    {
+      "from": "api.md",
+      "to": "code/generate/api.md",
+      "namespace": "code:generate",
+      "command": "/code:generate:api"
+    },
+    {
+      "from": "deno-ify.md",
+      "to": "code/migrate/deno.md",
+      "namespace": "code:migrate",
+      "command": "/code:migrate:deno"
+    },
+    {
+      "from": "migrate.md",
+      "to": "code/migrate/general.md",
+      "namespace": "code:migrate",
+      "command": "/code:migrate:general"
+    },
+    {
+      "from": "task-create.md",
+      "to": "task/manage/create.md",
+      "namespace": "task:manage",
+      "command": "/task:manage:create"
+    },
+    {
+      "from": "task-update.md",
+      "to": "task/manage/update.md",
+      "namespace": "task:manage",
+      "command": "/task:manage:update"
+    },
+    {
+      "from": "task-list.md",
+      "to": "task/manage/list.md",
+      "namespace": "task:manage",
+      "command": "/task:manage:list"
+    },
+    {
+      "from": "task-show.md",
+      "to": "task/manage/show.md",
+      "namespace": "task:manage",
+      "command": "/task:manage:show"
+    },
+    {
+      "from": "task-search.md",
+      "to": "task/manage/search.md",
+      "namespace": "task:manage",
+      "command": "/task:manage:search"
+    },
+    {
+      "from": "task-archive.md",
+      "to": "task/manage/archive.md",
+      "namespace": "task:manage",
+      "command": "/task:manage:archive"
+    },
+    {
+      "from": "task-log.md",
+      "to": "task/manage/log.md",
+      "namespace": "task:manage",
+      "command": "/task:manage:log"
+    },
+    {
+      "from": "task.md",
+      "to": "task/view/current.md",
+      "namespace": "task:view",
+      "command": "/task:view:current"
+    },
+    {
+      "from": "deploy.md",
+      "to": "ops/deploy/standard.md",
+      "namespace": "ops:deploy",
+      "command": "/ops:deploy:standard"
+    },
+    {
+      "from": "containerize.md",
+      "to": "ops/deploy/containerize.md",
+      "namespace": "ops:deploy",
+      "command": "/ops:deploy:containerize"
+    },
+    {
+      "from": "monitor.md",
+      "to": "ops/monitor/setup.md",
+      "namespace": "ops:monitor",
+      "command": "/ops:monitor:setup"
+    },
+    {
+      "from": "observe.md",
+      "to": "ops/monitor/observe.md",
+      "namespace": "ops:monitor",
+      "command": "/ops:monitor:observe"
+    },
+    {
+      "from": "infra-status.md",
+      "to": "ops/infra/status.md",
+      "namespace": "ops:infra",
+      "command": "/ops:infra:status"
+    },
+    {
+      "from": "health-check.md",
+      "to": "ops/infra/health.md",
+      "namespace": "ops:infra",
+      "command": "/ops:infra:health"
+    },
+    {
+      "from": "k8s-debug.md",
+      "to": "ops/k8s/debug.md",
+      "namespace": "ops:k8s",
+      "command": "/ops:k8s:debug"
+    },
+    {
+      "from": "ci-gen.md",
+      "to": "ops/ci/generate.md",
+      "namespace": "ops:ci",
+      "command": "/ops:ci:generate"
+    },
+    {
+      "from": "pipeline.md",
+      "to": "ops/ci/pipeline.md",
+      "namespace": "ops:ci",
+      "command": "/ops:ci:pipeline"
+    },
+    {
+      "from": "perf.md",
+      "to": "ops/perf/analyze.md",
+      "namespace": "ops:perf",
+      "command": "/ops:perf:analyze"
+    },
+    {
+      "from": "benchmark.md",
+      "to": "ops/perf/benchmark.md",
+      "namespace": "ops:perf",
+      "command": "/ops:perf:benchmark"
+    },
+    {
+      "from": "audit.md",
+      "to": "security/audit/general.md",
+      "namespace": "security:audit",
+      "command": "/security:audit:general"
+    },
+    {
+      "from": "secrets-audit.md",
+      "to": "security/audit/secrets.md",
+      "namespace": "security:audit",
+      "command": "/security:audit:secrets"
+    },
+    {
+      "from": "threat-model.md",
+      "to": "security/model/threat.md",
+      "namespace": "security:model",
+      "command": "/security:model:threat"
+    },
+    {
+      "from": "harden.md",
+      "to": "security/model/harden.md",
+      "namespace": "security:model",
+      "command": "/security:model:harden"
+    },
+    {
+      "from": "think.md",
+      "to": "analyze/think/standard.md",
+      "namespace": "analyze:think",
+      "command": "/analyze:think:standard"
+    },
+    {
+      "from": "quick-web-research.md",
+      "to": "analyze/research/web-quick.md",
+      "namespace": "analyze:research",
+      "command": "/analyze:research:web-quick"
+    },
+    {
+      "from": "deep-web-research.md",
+      "to": "analyze/research/web-deep.md",
+      "namespace": "analyze:research",
+      "command": "/analyze:research:web-deep"
+    },
+    {
+      "from": "deep-dive.md",
+      "to": "analyze/research/deep-dive.md",
+      "namespace": "analyze:research",
+      "command": "/analyze:research:deep-dive"
+    },
+    {
+      "from": "investigate.md",
+      "to": "analyze/research/investigate.md",
+      "namespace": "analyze:research",
+      "command": "/analyze:research:investigate"
+    },
+    {
+      "from": "data-flow.md",
+      "to": "analyze/data/flow.md",
+      "namespace": "analyze:data",
+      "command": "/analyze:data:flow"
+    },
+    {
+      "from": "data-viz.md",
+      "to": "analyze/data/visualize.md",
+      "namespace": "analyze:data",
+      "command": "/analyze:data:visualize"
+    },
+    {
+      "from": "visualize.md",
+      "to": "analyze/data/visualize-general.md",
+      "namespace": "analyze:data",
+      "command": "/analyze:data:visualize-general"
+    },
+    {
+      "from": "map.md",
+      "to": "analyze/code/map.md",
+      "namespace": "analyze:code",
+      "command": "/analyze:code:map"
+    },
+    {
+      "from": "schema.md",
+      "to": "analyze/code/schema.md",
+      "namespace": "analyze:code",
+      "command": "/analyze:code:schema"
+    },
+    {
+      "from": "elaborate.md",
+      "to": "analyze/code/elaborate.md",
+      "namespace": "analyze:code",
+      "command": "/analyze:code:elaborate"
+    },
+    {
+      "from": "db-optimize.md",
+      "to": "analyze/db/optimize.md",
+      "namespace": "analyze:db",
+      "command": "/analyze:db:optimize"
+    },
+    {
+      "from": "start.md",
+      "to": "workflow/start/project.md",
+      "namespace": "workflow:start",
+      "command": "/workflow:start:project"
+    },
+    {
+      "from": "progress.md",
+      "to": "workflow/view/progress.md",
+      "namespace": "workflow:view",
+      "command": "/workflow:view:progress"
+    },
+    {
+      "from": "next-steps.md",
+      "to": "workflow/view/next-steps.md",
+      "namespace": "workflow:view",
+      "command": "/workflow:view:next-steps"
+    },
+    {
+      "from": "options.md",
+      "to": "workflow/view/options.md",
+      "namespace": "workflow:view",
+      "command": "/workflow:view:options"
+    },
+    {
+      "from": "summary.md",
+      "to": "workflow/view/summary.md",
+      "namespace": "workflow:view",
+      "command": "/workflow:view:summary"
+    },
+    {
+      "from": "tldr.md",
+      "to": "workflow/view/tldr.md",
+      "namespace": "workflow:view",
+      "command": "/workflow:view:tldr"
+    },
+    {
+      "from": "organize.md",
+      "to": "workflow/manage/organize.md",
+      "namespace": "workflow:manage",
+      "command": "/workflow:manage:organize"
+    },
+    {
+      "from": "sync.md",
+      "to": "workflow/manage/sync.md",
+      "namespace": "workflow:manage",
+      "command": "/workflow:manage:sync"
+    },
+    {
+      "from": "clean.md",
+      "to": "workflow/manage/clean.md",
+      "namespace": "workflow:manage",
+      "command": "/workflow:manage:clean"
+    },
+    {
+      "from": "release.md",
+      "to": "workflow/manage/release.md",
+      "namespace": "workflow:manage",
+      "command": "/workflow:manage:release"
+    },
+    {
+      "from": "integrate.md",
+      "to": "workflow/manage/integrate.md",
+      "namespace": "workflow:manage",
+      "command": "/workflow:manage:integrate"
+    },
+    {
+      "from": "epic.md",
+      "to": "workflow/create/epic.md",
+      "namespace": "workflow:create",
+      "command": "/workflow:create:epic"
+    },
+    {
+      "from": "prototype.md",
+      "to": "workflow/create/prototype.md",
+      "namespace": "workflow:create",
+      "command": "/workflow:create:prototype"
+    },
+    {
+      "from": "generate-command.md",
+      "to": "meta/command/generate.md",
+      "namespace": "meta:command",
+      "command": "/meta:command:generate"
+    },
+    {
+      "from": "ideate-commands.md",
+      "to": "meta/command/ideate.md",
+      "namespace": "meta:command",
+      "command": "/meta:command:ideate"
+    },
+    {
+      "from": "ideate-new.md",
+      "to": "meta/ideate/new.md",
+      "namespace": "meta:ideate",
+      "command": "/meta:ideate:new"
+    },
+    {
+      "from": "knowledge-extract.md",
+      "to": "meta/extract/knowledge.md",
+      "namespace": "meta:extract",
+      "command": "/meta:extract:knowledge"
+    },
+    {
+      "from": "reflection.md",
+      "to": "meta/reflect/session.md",
+      "namespace": "meta:reflect",
+      "command": "/meta:reflect:session"
+    },
+    {
+      "from": "search-smart.md",
+      "to": "meta/search/smart.md",
+      "namespace": "meta:search",
+      "command": "/meta:search:smart"
+    },
+    {
+      "from": "translate.md",
+      "to": "meta/util/translate.md",
+      "namespace": "meta:util",
+      "command": "/meta:util:translate"
+    },
+    {
+      "from": "scratch.md",
+      "to": "meta/util/scratch.md",
+      "namespace": "meta:util",
+      "command": "/meta:util:scratch"
+    },
+    {
+      "from": "review.md",
+      "to": "tool/review.md",
+      "namespace": "tool",
+      "command": "/tool:review"
+    },
+    {
+      "from": "diagram.md",
+      "to": "tool/diagram.md",
+      "namespace": "tool",
+      "command": "/tool:diagram"
+    },
+    {
+      "from": "zed-task.md",
+      "to": "tool/zed-task.md",
+      "namespace": "tool",
+      "command": "/tool:zed-task"
+    },
+    {
+      "from": "cpr.md",
+      "to": "tool/cpr.md",
+      "namespace": "tool",
+      "command": "/tool:cpr"
+    },
+    {
+      "from": "five.md",
+      "to": "tool/five.md",
+      "namespace": "tool",
+      "command": "/tool:five"
+    }
+  ]
+}

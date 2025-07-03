@@ -18,10 +18,11 @@ Run comprehensive validation across @[project-files] with automatic project type
 ## Project Analysis
 
 Analyze project configuration for targeted validation:
+
 - **Project Detection**: @package.json @deno.json @Cargo.toml @go.mod @pom.xml
 - **Configuration Files**: @tsconfig.json @docker-compose.yml @k8s/*.yaml
 - **Build Configuration**: @Dockerfile @Makefile @gradle.build @webpack.config.js
-- **Testing Setup**: @**/*.test.* @jest.config.* @vitest.config.*
+- **Testing Setup**: @**/_.test._ @jest.config.* @vitest.config.*
 - **Linting Config**: @.eslintrc.* @clippy.toml @golangci.yml
 
 1. **Language-Specific Validation:**

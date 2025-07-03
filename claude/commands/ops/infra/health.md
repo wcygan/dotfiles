@@ -18,10 +18,11 @@ Implement comprehensive health monitoring for $ARGUMENT with automated alerting 
 ## Configuration Analysis
 
 Analyze existing configuration files for current health check setup:
+
 - System architecture: @docker-compose.yml @k8s/*.yaml
 - Application configs: @package.json @deno.json @Cargo.toml
 - Monitoring setup: @prometheus.yml @grafana-dashboards/*.json
-- Health check implementations: @**/*health*.{ts,js,go,rs,java}
+- Health check implementations: @**/_health_.{ts,js,go,rs,java}
 
 ## Health Check Implementation
 

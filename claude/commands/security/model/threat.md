@@ -18,11 +18,12 @@ Generate comprehensive threat models for $ARGUMENT using STRIDE methodology with
 ## Architecture Analysis
 
 Analyze system architecture and configuration for threat modeling:
-- **Infrastructure**: @docker-compose.yml @k8s/*.yaml @terraform/*.tf
+
+- **Infrastructure**: @docker-compose.yml @k8s/_.yaml @terraform/_.tf
 - **API Definitions**: @openapi.yaml @**/*.proto @routes/**/*.{ts,js,go,rs}
 - **Security Config**: @nginx.conf @traefik.yml @istio/*.yaml
-- **Authentication**: @auth/*.{ts,js,go,rs} @**/*auth*.{ts,js,go,rs}
-- **Environment**: @.env.example @config/*.yaml @secrets/*.yaml
+- **Authentication**: @auth/*.{ts,js,go,rs} @**/_auth_.{ts,js,go,rs}
+- **Environment**: @.env.example @config/_.yaml @secrets/_.yaml
 
 ## Context Intelligence
 

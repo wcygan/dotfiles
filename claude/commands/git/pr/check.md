@@ -197,11 +197,13 @@ gh pr view 123 --json mergeable,mergeStateStatus,potentialMergeCommit
 ## Status Indicators
 
 ### PR States
+
 - `OPEN` - PR is open and active
 - `CLOSED` - PR was closed without merging
 - `MERGED` - PR was successfully merged
 
 ### Check States
+
 - `PENDING` - Check is queued or running
 - `SUCCESS` - Check passed
 - `FAILURE` - Check failed
@@ -211,12 +213,14 @@ gh pr view 123 --json mergeable,mergeStateStatus,potentialMergeCommit
 - `TIMED_OUT` - Check exceeded time limit
 
 ### Review States
+
 - `APPROVED` - PR has required approvals
 - `CHANGES_REQUESTED` - Changes requested by reviewers
 - `REVIEW_REQUIRED` - Awaiting required reviews
 - `COMMENTED` - Reviews with comments only
 
 ### Merge States
+
 - `MERGEABLE` - Ready to merge
 - `CONFLICTING` - Has merge conflicts
 - `UNKNOWN` - GitHub is still calculating
@@ -226,6 +230,7 @@ gh pr view 123 --json mergeable,mergeStateStatus,potentialMergeCommit
 ### Common Issues
 
 #### Stuck Checks
+
 ```bash
 # Re-run failed checks
 gh pr checks $PR_NUMBER --json name,state | \
@@ -234,6 +239,7 @@ gh pr checks $PR_NUMBER --json name,state | \
 ```
 
 #### Missing Required Checks
+
 ```bash
 # List required checks
 gh api repos/{owner}/{repo}/branches/main/protection/required_status_checks
@@ -243,6 +249,7 @@ gh pr comment $PR_NUMBER --body "/test all"
 ```
 
 #### Review Dismissal
+
 ```bash
 # Check why reviews were dismissed
 gh api repos/{owner}/{repo}/pulls/$PR_NUMBER/reviews | \
@@ -259,6 +266,7 @@ gh api repos/{owner}/{repo}/pulls/$PR_NUMBER/reviews | \
 ## Automation Scripts
 
 ### PR Health Dashboard
+
 ```bash
 # Check all your open PRs
 gh pr list --author @me --json number,title --jq '.[] | .number' | \
@@ -266,6 +274,7 @@ gh pr list --author @me --json number,title --jq '.[] | .number' | \
 ```
 
 ### Notification on Completion
+
 ```bash
 # Wait for checks and notify
 gh pr checks $PR_NUMBER --watch && \
@@ -275,5 +284,5 @@ gh pr checks $PR_NUMBER --watch && \
 ## See Also
 
 - `/pr` - Create pull requests
-- `/pr-review` - Review pull requests  
+- `/pr-review` - Review pull requests
 - `/pr-update` - Update pull requests

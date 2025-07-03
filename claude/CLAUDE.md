@@ -645,7 +645,10 @@ Use the task management system for tracking work items:
 **~/.scripts Directory:**
 
 - **Purpose**: Contains user-executable scripts installed from dotfiles
+- **Installation**: Scripts from `dotfiles/tools/` are copied here during dotfiles installation
+- **PATH Setup**: Add `export PATH="$HOME/.scripts:$PATH"` to your shell config to run scripts from anywhere
 - **Script Format**: Primarily Deno TypeScript scripts with proper shebang (e.g., `#!/usr/bin/env -S deno run --allow-env`)
+- **Permissions**: Scripts are automatically made executable during installation
 
 ## Documentation Style
 

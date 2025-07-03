@@ -71,7 +71,7 @@ const GEMINI_CONFIG_FILES = ["GEMINI.md", "settings.json"];
 const GHOSTTY_CONFIG_FILE = "config";
 
 // Scripts directory name
-const SCRIPTS_DIR = "system-wide-scripts";
+const SCRIPTS_DIR = "tools";
 
 // Utility functions
 function printStatus(message: string): void {
@@ -1149,11 +1149,11 @@ async function copyScripts(
   const scriptsSourceDir = join(dotfilesDir, SCRIPTS_DIR);
   const scriptsDestDir = join(homeDir, ".scripts");
 
-  // Check if scripts directory exists in dotfiles
+  // Check if tools directory exists in dotfiles
   const scriptsDirExists = await exists(scriptsSourceDir);
   if (!scriptsDirExists) {
     printWarning(
-      "No scripts directory found in dotfiles, skipping scripts installation",
+      "No tools directory found in dotfiles, skipping scripts installation",
     );
     return true;
   }

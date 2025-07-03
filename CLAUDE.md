@@ -208,3 +208,148 @@ Zed tasks are commands that run in the integrated terminal. Tasks can be defined
 - Provide context about why something cannot be done
 - Offer alternative approaches when primary action is blocked
 - Use existing project patterns to guide suggestions
+
+## Slash Commands with Bash Command Execution
+
+Claude Code CLI supports Bash command execution within slash commands, enabling dynamic context injection and powerful automation workflows.
+
+### Bash Command Syntax
+
+**allowed-tools Declaration:**
+
+```yaml
+---
+allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*)
+description: Create a git commit
+---
+```
+
+**Context Injection with !`command`:**
+
+```yaml
+## Context
+
+- Current git status: !`git status`
+- Current git diff (staged and unstaged changes): !`git diff HEAD`
+- Current branch: !`git branch --show-current`
+- Recent commits: !`git log --oneline -10`
+
+## Your task
+
+Based on the above changes, create a single git commit.
+```
+
+### Key Features
+
+- **Scoped Permissions**: Use `allowed-tools` to restrict which Bash commands can be executed
+- **Dynamic Context**: Commands prefixed with !` are executed and their output injected into the prompt
+- **Security**: Commands are sandboxed and restricted to allowed operations only
+- **Real-time Data**: Context commands run at command invocation time, providing current state
+
+### Best Practices
+
+1. **Minimize Allowed Commands**: Only allow necessary commands for the specific workflow
+2. **Use Read-Only Commands for Context**: Prefer informational commands (status, log, diff) for context
+3. **Combine with Extended Thinking**: For complex decisions based on command output
+4. **Error Handling**: Commands that fail will show error output in context
+
+## Extended Thinking
+
+Use extended thinking for complex architectural decisions, challenging bugs, or planning multi-step implementations that require deep reasoning.
+
+### Usage Examples
+
+**Basic thinking:**
+
+```
+> I need to implement a new authentication system using OAuth2 for our API. Think deeply about the best approach for implementing this in our codebase.
+```
+
+**Intensified thinking with follow-ups:**
+
+```
+> think about potential security vulnerabilities in this approach
+
+> think harder about edge cases we should handle
+```
+
+### Thinking Depth Levels
+
+- `think` - Basic extended thinking
+- `think more`, `think a lot`, `think harder`, `think longer` - Triggers deeper thinking
+- Context-specific intensifiers can be added to focus on particular aspects
+
+### Best Use Cases for Extended Thinking
+
+1. **Planning complex architectural changes** - System design decisions
+2. **Debugging intricate issues** - Multi-layer problems requiring deep analysis
+3. **Creating implementation plans** - Breaking down complex features
+4. **Understanding complex codebases** - Analyzing interdependencies
+5. **Evaluating tradeoffs** - Comparing different technical approaches
+
+Extended thinking is visible in the interface and allows for iterative refinement through follow-up prompts.
+
+## Parallel Claude Code Sessions with Git Worktrees
+
+Run multiple Claude Code sessions simultaneously on different features using Git worktrees, enabling true parallel development without branch switching conflicts.
+
+### Git Worktree Workflow
+
+**Create a new worktree for parallel development:**
+
+```bash
+# Create worktree for a feature branch
+git worktree add ../project-feature feature-branch
+
+# Create worktree with new branch
+git worktree add -b new-feature ../project-new-feature
+
+# List all worktrees
+git worktree list
+
+# Remove worktree when done
+git worktree remove ../project-feature
+```
+
+### Best Practices for Parallel Sessions
+
+1. **One Worktree Per Claude Session**: Each Claude Code instance should work in its own worktree
+2. **Clear Naming Convention**: Use descriptive worktree paths like `../project-feature-auth` or `../project-fix-bug-123`
+3. **Independent Development**: Each worktree has its own working directory, allowing truly parallel work
+4. **Coordinate Through PRs**: Use pull requests to merge parallel work back to main branch
+
+### Typical Parallel Workflow
+
+```bash
+# Terminal 1: Main development
+cd ~/projects/myapp
+claude code  # Working on main branch
+
+# Terminal 2: Feature development
+git worktree add -b feature-oauth ../myapp-oauth
+cd ../myapp-oauth
+claude code  # Working on OAuth feature independently
+
+# Terminal 3: Bug fix
+git worktree add -b fix-123 ../myapp-fix-123 origin/main
+cd ../myapp-fix-123
+claude code  # Working on bug fix independently
+```
+
+### Multi-Agent Coordination
+
+When using multiple Claude Code sessions:
+
+- **Shared State Files**: Use `/tmp/{project-name}/` for coordination files
+- **Status Communication**: Create JSON status files for structured updates
+- **PR Comments**: Use GitHub PR comments for cross-session communication
+- **Avoid Conflicts**: Each session works on separate files/features
+- **Join Points**: Define clear synchronization points in PLAN.md
+
+### Advantages
+
+- **No Branch Switching**: Each session maintains its own branch context
+- **True Parallelism**: Multiple developers or AI agents can work simultaneously
+- **Isolated Environments**: Changes in one worktree don't affect others
+- **Faster Development**: No need to stash/switch/pull between features
+- **Better Organization**: Physical separation of different development streams

@@ -8,14 +8,6 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
     },
-    "time": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-time"]
-    },
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
-    },
     "context7": {
       "type": "stdio",
       "command": "npx",
@@ -24,14 +16,6 @@
     "puppeteer": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
-    },
-    "mcp-server-time": {
-      "command": "uvx",
-      "args": ["mcp-server-time"]
-    },
-    "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
     }
   }
 }

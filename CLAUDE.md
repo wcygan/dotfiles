@@ -1,19 +1,15 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository (https://github.com/wcygan/dotfiles).
 
 ## Project Overview
 
-This is a modern dotfiles repository built with Deno TypeScript scripts. It provides safe installation/rollback of shell configurations across platforms (Bash, Zsh, PowerShell) with automatic backup functionality. The project uses Deno for all scripting and automation.
+This is a modern dotfiles repository built with Deno TypeScript scripts. It provides safe installation of shell configurations across platforms (Bash, Zsh) with automatic backup functionality. The project uses Deno for all scripting and automation.
 
 ## Key Commands
 
 ```bash
-# Installation & Management
 deno task install              # Install dotfiles safely (with backup)
-deno task install:force        # Force install without prompts
-deno task rollback             # Rollback to previous configuration
-deno task rollback:force       # Force rollback without prompts
 
 # Development & Testing
 deno task test                 # Run integration tests
@@ -73,6 +69,7 @@ The installation script (`install-safely.ts`) manages these dotfiles:
 - `.vimrc`
 - Claude configuration files (`CLAUDE.md`) to `~/.claude/`
 - Claude custom commands from `claude/commands/` to `~/.claude/commands/`
+- Claude settings from `claude/settings.json` to `~/.claude/settings.json`
 
 Each installation creates timestamped backups and provides rollback capability.
 
@@ -80,13 +77,6 @@ Each installation creates timestamped backups and provides rollback capability.
 
 - All scripting uses Deno with JSR imports (@std/* packages)
 - Cross-platform compatibility is maintained for macOS, Linux, and Windows
-- The project follows safe installation patterns with automatic backup/restore
-- Integration tests run in isolated temporary environments
-- Pre-commit hooks validate code quality before commits
-- **ALWAYS** run `deno fmt` immediately after writing or editing any file in this repository
-- This ensures consistent formatting and prevents `deno fmt --check` failures in CI
-- **ALWAYS** run `deno fmt --check` after making changes to verify formatting
-- Apply formatting fixes with `deno fmt` if needed
 
 ## Zed Editor Tasks
 
@@ -126,53 +116,6 @@ Zed tasks are commands that run in the integrated terminal. Tasks can be defined
 - `task: rerun` - Rerun last task
 - Custom keybindings can trigger specific tasks
 
-## Command Ideation Process
-
-### Systematic Process for Discovering New Claude Commands
-
-#### Phase 1: Ecosystem Analysis
-
-1. **Command Inventory**: Count and categorize all existing commands by workflow stage
-2. **Gap Identification**: Map workflow stages with low command coverage
-3. **Pattern Recognition**: Identify naming conventions and usage patterns
-
-#### Phase 2: Pain Point Research
-
-1. **Developer Workflow Gaps**: Survey latest trends and manual pain points
-2. **Technology Evolution**: Research emerging tools and frameworks
-3. **Enterprise Needs**: Identify complex workflows needing automation
-
-#### Phase 3: Command Design Principles
-
-1. **$ARGUMENTS Pattern**: Use `[$ARGUMENTS]` for flexible, context-aware input parsing
-2. **Contextual Intelligence**: Commands interpret project structure and existing state automatically
-3. **Smart Inference**: Extract intent from natural language arguments rather than rigid syntax
-4. **Context-First Design**: Analyze current environment before requiring user input
-5. **Keyword Detection**: Parse `$ARGUMENTS` for intent keywords while using remainder as content
-6. **No Wizards**: Avoid interactive prompts; infer from context and arguments instead
-
-#### Phase 4: Validation Framework
-
-**Tier 1**: High-impact pain points affecting 50%+ of developers
-**Tier 2**: Strategic workflow automation for growing technologies\
-**Tier 3**: Emerging technology foundation and niche value
-
-### Research Triggers
-
-- Major technology shifts (framework migrations, new tools)
-- Repeated manual tasks in development workflow
-- Team pain points from retrospectives
-- Industry best practice evolution
-
-### Command Categories to Monitor
-
-- **AI/ML Workflows**: Fastest-growing development segment
-- **Frontend Build Tools**: Rapid ecosystem changes
-- **Cloud-Native Complexity**: K8s and container orchestration
-- **Mobile Development**: CI/CD and testing gaps
-- **Database Operations**: Migration and performance management
-- **Security Automation**: Compliance and vulnerability management
-
 ## Command Implementation Guidelines
 
 ### Command Organization Structure
@@ -181,97 +124,16 @@ Commands are organized in a namespaced directory structure under `claude/command
 
 - Each namespace has its own directory (e.g., `git/`, `test/`, `docs/`)
 - Sub-namespaces create nested directories (e.g., `git/pr/`, `test/analyze/`)
-- Command files use descriptive names without prefixes (e.g., `create.md` not `pr-create.md`)
-- The full command path derives from the directory structure: `git/pr/create.md` → `/git:pr:create`
-
-### $ARGUMENTS Pattern Best Practices
-
-**Context Analysis First:**
-
-```bash
-# Command should analyze existing state before parsing arguments
-/docs:manage:init [$ARGUMENTS]  # Checks for existing /docs, project type, git repo
-/docs:manage:add [$ARGUMENTS]   # Analyzes current doc structure, infers placement
-/docs:manage:update [$ARGUMENTS] # Detects what needs updating based on project changes
-```
-
-**Flexible Argument Parsing:**
-
-- **No arguments**: Infer from context (current directory, project structure, existing files)
-- **Single keyword**: Use as primary intent (`validate`, `force`, `diagrams`)
-- **Multiple keywords**: Parse for type + content (`guide Quick Start`, `api User Management`)
-- **Natural language**: Extract intent from full phrases (`Getting Started with Authentication`)
-
-**Smart Defaults Over Configuration:**
-
-- Detect project type from files (`deno.json`, `Cargo.toml`, `go.mod`, `package.json`)
-- Use well-known file locations (`/docs`, `/src`, `/api`, `/tests`)
-- Infer relationships between related files and directories
-- Preserve existing patterns and conventions
-
-**Context-Aware Behavior Examples:**
-
-```bash
-# Auto-detects project name, type, and configures appropriately
-/docs:manage:init
-
-# Infers "guide" type from existing structure, places in guides/ folder
-/docs:manage:add Quick Start Guide
-
-# Detects OpenAPI files, updates API docs, validates Mermaid diagrams
-/docs:manage:update
-
-# Creates troubleshooting section, analyzes existing categories
-/docs:manage:add troubleshooting Common Issues
-```
-
-**Error Handling Philosophy:**
-
-- Suggest corrective actions rather than failing
-- Provide context about why something cannot be done
-- Offer alternative approaches when primary action is blocked
-- Use existing project patterns to guide suggestions
-
-## Namespaced Slash Commands
-
-Claude commands are organized using a namespace structure: `/<namespace>:<subnamespace>:<command>`
-
-### Command Namespaces
-
-- **agent:** - Multi-agent coordination (`/agent:core:init`, `/agent:persona:backend-specialist`)
-- **context:** - Load technology context (`/context:deno:fresh`, `/context:rust:web`)
-- **scaffold:** - Project scaffolding (`/scaffold:go:connect`, `/scaffold:rust:axum`)
-- **git:** - Git operations (`/git:pr:create`, `/git:commit:push`)
-- **docs:** - Documentation (`/docs:manage:init`, `/docs:generate:api`)
-- **test:** - Testing (`/test:run:tdd`, `/test:analyze:coverage`)
-- **code:** - Code operations (`/code:refactor:standard`, `/code:analyze:deps`)
-- **task:** - Task management (`/task:manage:create`, `/task:view:current`)
-- **ops:** - DevOps (`/ops:deploy:standard`, `/ops:monitor:setup`)
-- **security:** - Security (`/security:audit:secrets`, `/security:model:threat`)
-- **analyze:** - Analysis (`/analyze:think:standard`, `/analyze:research:web-deep`)
-- **workflow:** - Workflow (`/workflow:manage:plan`, `/workflow:view:progress`)
-- **meta:** - Meta utilities (`/meta:command:generate`, `/meta:search:smart`)
-- **tool:** - Tool-specific (`/tool:diagram`, `/tool:zed-task`)
-
-### Examples
-
-```bash
-# Old command → New namespaced command
-/pr → /git:pr:create
-/agent-persona-backend-specialist → /agent:persona:backend-specialist
-/context-load-deno-fresh → /context:deno:fresh
-/test-gen → /test:generate:unit
-/docs-init → /docs:manage:init
-```
+- Command files use descriptive names with prefixes (e.g., `pr-create.md` instead of `create.md`)
 
 ### Creating New Commands
 
 When creating new commands, follow the namespace structure:
 
 1. **Identify the appropriate namespace** - Choose from existing namespaces or propose a new one
-2. **Create the file in the correct directory** - e.g., `claude/commands/test/analyze/complexity.md`
-3. **Name the file descriptively** - Use the final command name without namespace prefixes
-4. **The command will be accessible as** - `/test:analyze:complexity`
+2. **Create the file in the correct directory** - e.g., `claude/commands/test/analyze/analyze-test-complexity.md`
+3. **Name the file descriptively** - Use the final command name with namespace prefixes
+4. **The command will be accessible as** - `/analyze-test-complexity`
 
 Example directory structure:
 
@@ -279,15 +141,15 @@ Example directory structure:
 claude/commands/
 ├── git/
 │   ├── pr/
-│   │   ├── create.md     → /git:pr:create
-│   │   └── review.md     → /git:pr:review
+│   │   ├── pr-create.md     → /pr-create
+│   │   └── pr-review.md     → /pr-review
 │   └── commit/
-│       └── standard.md   → /git:commit:standard
+│       └── commit.md   → /commit
 └── test/
     ├── generate/
-    │   └── unit.md       → /test:generate:unit
+    │   └── generate-unit-tests.md     → /generate-unit-tests
     └── analyze/
-        └── coverage.md   → /test:analyze:coverage
+        └── analyze-test-coverage.md   → /analyze-test-coverage
 ```
 
 ## Slash Commands with Bash Command Execution
@@ -416,16 +278,6 @@ git worktree add -b fix-123 ../myapp-fix-123 origin/main
 cd ../myapp-fix-123
 claude code  # Working on bug fix independently
 ```
-
-### Multi-Agent Coordination
-
-When using multiple Claude Code sessions:
-
-- **Shared State Files**: Use `/tmp/{project-name}/` for coordination files
-- **Status Communication**: Create JSON status files for structured updates
-- **PR Comments**: Use GitHub PR comments for cross-session communication
-- **Avoid Conflicts**: Each session works on separate files/features
-- **Join Points**: Define clear synchronization points in PLAN.md
 
 ### Advantages
 

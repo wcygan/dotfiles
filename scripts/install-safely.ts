@@ -70,6 +70,9 @@ const GEMINI_CONFIG_FILES = ["GEMINI.md", "settings.json"];
 // Ghostty configuration file
 const GHOSTTY_CONFIG_FILE = "config";
 
+// Scripts directory name
+const SCRIPTS_DIR = "system-wide-scripts";
+
 // Utility functions
 function printStatus(message: string): void {
   console.log(`${colors.green}✅${colors.reset} ${message}`);
@@ -1107,6 +1110,103 @@ async function copyPowerShellProfile(
   }
 }
 
+async function backupScripts(
+  homeDir: string,
+  backupDir: string,
+): Promise<string[]> {
+  const scriptsDir = join(homeDir, ".scripts");
+  const scriptsBackupDir = join(backupDir, ".scripts");
+  const backedUpFiles: string[] = [];
+
+  const scriptsDirExists = await exists(scriptsDir);
+  if (!scriptsDirExists) {
+    console.log(
+      `   ${colors.yellow}No existing ~/.scripts directory found${colors.reset}`,
+    );
+    return backedUpFiles;
+  }
+
+  try {
+    await copy(scriptsDir, scriptsBackupDir, { overwrite: true });
+    printStatus(`Backed up ~/.scripts directory`);
+    backedUpFiles.push(".scripts");
+  } catch (error) {
+    printWarning(
+      `Could not backup ~/.scripts directory: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+
+  return backedUpFiles;
+}
+
+async function copyScripts(
+  dotfilesDir: string,
+  homeDir: string,
+): Promise<boolean> {
+  printBlue("📜 Copying scripts to ~/.scripts...");
+  const scriptsSourceDir = join(dotfilesDir, SCRIPTS_DIR);
+  const scriptsDestDir = join(homeDir, ".scripts");
+
+  // Check if scripts directory exists in dotfiles
+  const scriptsDirExists = await exists(scriptsSourceDir);
+  if (!scriptsDirExists) {
+    printWarning(
+      "No scripts directory found in dotfiles, skipping scripts installation",
+    );
+    return true;
+  }
+
+  try {
+    // Ensure ~/.scripts directory exists
+    await ensureDir(scriptsDestDir);
+    printStatus(`Created scripts directory: ${scriptsDestDir}`);
+
+    // Get all script files
+    let copiedCount = 0;
+    for await (const entry of Deno.readDir(scriptsSourceDir)) {
+      if (entry.isFile && (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))) {
+        const sourcePath = join(scriptsSourceDir, entry.name);
+        const destPath = join(scriptsDestDir, entry.name);
+
+        try {
+          await copy(sourcePath, destPath, { overwrite: true });
+
+          // Make the script executable
+          if (Deno.build.os !== "windows") {
+            await Deno.chmod(destPath, 0o755);
+          }
+
+          printStatus(`Copied and made executable: ${entry.name}`);
+          copiedCount++;
+        } catch (error) {
+          printWarning(
+            `Could not copy script ${entry.name}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+      }
+    }
+
+    if (copiedCount > 0) {
+      printStatus(`Successfully copied ${copiedCount} scripts to ~/.scripts`);
+      console.log();
+      console.log(
+        `   ${colors.blue}Note:${colors.reset} Add ~/.scripts to your PATH to run these scripts from anywhere.`,
+      );
+      console.log(`   ${colors.yellow}export PATH="$HOME/.scripts:$PATH"${colors.reset}`);
+    }
+    return true;
+  } catch (error) {
+    printError(
+      `Failed to copy scripts: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return false;
+  }
+}
+
 async function reloadShell(shellType: string, homeDir: string): Promise<void> {
   printBlue("🔃 Reloading shell configuration...");
 
@@ -1339,6 +1439,22 @@ This script will:
         )());
       }
 
+      // Backup scripts directory
+      backupTasks.push((
+        async () => {
+          try {
+            printBlue("📜 Backing up scripts directory...");
+            const files = await backupScripts(config.homeDir, config.backupDir);
+            return { type: "scripts", files };
+          } catch (error) {
+            printWarning(
+              `Error backing up scripts: ${error instanceof Error ? error.message : String(error)}`,
+            );
+            return { type: "scripts", files: [] };
+          }
+        }
+      )());
+
       // PARALLEL BACKUP EXECUTION:
       // Using Promise.allSettled to run all backup tasks concurrently while ensuring graceful error handling.
       // Unlike Promise.all, Promise.allSettled never rejects - it waits for all promises to settle
@@ -1543,6 +1659,22 @@ This script will:
           );
         }
 
+        // Copy scripts to ~/.scripts
+        installationTasks.push(
+          (async () => {
+            try {
+              const success = await copyScripts(config.dotfilesDir, config.homeDir);
+              return { task: "copyScripts", success };
+            } catch (error) {
+              return {
+                task: "copyScripts",
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+              };
+            }
+          })(),
+        );
+
         // PARALLEL INSTALLATION EXECUTION:
         // Promise.allSettled is employed here to execute all installation tasks concurrently, enhancing performance
         // and efficiency. By allowing each promise to settle, we can:
@@ -1640,6 +1772,7 @@ This script will:
       console.log("   ✅ Installed Claude configuration files and custom commands");
       console.log("   ✅ Configured Claude MCP servers from mcp.json");
       console.log("   ✅ Installed Gemini configuration files");
+      console.log("   ✅ Installed scripts to ~/.scripts directory");
       if (Deno.build.os === "darwin") {
         console.log("   ✅ Installed Ghostty terminal configuration");
       }
@@ -1664,6 +1797,9 @@ This script will:
       );
       console.log(
         `   • Try: ${colors.yellow}current_shell${colors.reset} (see which shell you're using)`,
+      );
+      console.log(
+        `   • Try: ${colors.yellow}hello.ts${colors.reset} (test script from ~/.scripts)`,
       );
       console.log();
       printBlue("🔄 If you need to rollback:");

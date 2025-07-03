@@ -640,6 +640,13 @@ Use the task management system for tracking work items:
 - `deno.json` - Project configuration and tasks
 - `import_map.json` - Import mappings (if needed)
 
+## User Scripts Directory
+
+**~/.scripts Directory:**
+
+- **Purpose**: Contains user-executable scripts installed from dotfiles
+- **Script Format**: Primarily Deno TypeScript scripts with proper shebang (e.g., `#!/usr/bin/env -S deno run --allow-env`)
+
 ## Documentation Style
 
 ### README Files

@@ -148,6 +148,159 @@ git worktree list
 git worktree remove ../project-feature
 ```
 
+## Parallel Claude Code Sessions with Git Worktrees
+
+Run multiple Claude Code sessions simultaneously on different features using Git worktrees, enabling true parallel development without branch switching conflicts.
+
+### Git Worktree Workflow
+
+**Create a new worktree for parallel development:**
+
+```bash
+# Create worktree for a feature branch
+git worktree add ../project-feature feature-branch
+
+# Create worktree with new branch
+git worktree add -b new-feature ../project-new-feature
+
+# Create worktree from specific commit or tag
+git worktree add ../project-hotfix hotfix-branch origin/main
+
+# List all worktrees
+git worktree list
+
+# Remove worktree when done
+git worktree remove ../project-feature
+```
+
+### Best Practices for Parallel Sessions
+
+1. **One Branch Per Claude Session**: Each Claude Code instance works on its own dedicated branch
+2. **Descriptive Naming Convention**: Use clear worktree paths like `../project-auth-feature` or `../project-fix-bug-123`
+3. **Independent Development**: Each worktree has its own working directory and dependencies
+4. **Clean Separation**: Keep different features/fixes in separate branches to avoid conflicts
+5. **PR-Based Integration**: Merge work back to main through pull requests
+
+### Typical Parallel Workflow
+
+```bash
+# Terminal 1: Main development
+cd ~/projects/myapp
+claude code  # Working on main branch refactoring
+
+# Terminal 2: New feature development
+git worktree add -b feature-oauth ../myapp-oauth
+cd ../myapp-oauth
+deno task init  # Initialize dependencies for this worktree
+claude code  # Working on OAuth feature independently
+
+# Terminal 3: Critical bug fix
+git worktree add -b fix-memory-leak ../myapp-fix-memory origin/main
+cd ../myapp-fix-memory
+claude code  # Working on memory leak fix independently
+
+# Terminal 4: Experimental feature
+git worktree add -b experiment-ai-chat ../myapp-ai-experiment
+cd ../myapp-ai-experiment
+claude code  # Working on experimental AI features
+```
+
+### Project Setup in Each Worktree
+
+**IMPORTANT**: Each worktree needs its own environment setup:
+
+```bash
+# After creating a new worktree
+cd ../project-new-feature
+
+# For Deno projects
+deno task init
+deno cache --reload
+
+# For Node projects
+npm install
+
+# For Rust projects
+cargo build
+
+# For Go projects
+go mod download
+```
+
+### Managing Multiple Features
+
+**Organizing Active Development:**
+
+```bash
+# See all active worktrees
+git worktree list
+
+# Example output:
+# /Users/you/projects/myapp          abc123 [main]
+# /Users/you/projects/myapp-oauth    def456 [feature-oauth]
+# /Users/you/projects/myapp-fix      ghi789 [fix-memory-leak]
+
+# Clean up completed features
+cd ../myapp-oauth
+gh pr create --title "Add OAuth authentication" --body "..."
+cd ../myapp
+git worktree remove ../myapp-oauth
+```
+
+### Advantages of Parallel Worktrees
+
+- **No Context Switching**: Each session maintains its own branch context and file state
+- **True Parallelism**: Work on multiple features without waiting or stashing changes
+- **Isolated Environments**: Dependencies and build artifacts don't interfere between features
+- **Faster Development**: No need to switch branches, stash changes, or rebuild between tasks
+- **Better Organization**: Physical separation makes it clear what each session is working on
+- **Risk Mitigation**: Experimental changes isolated from stable development
+
+### Integration Strategy
+
+**Merging Parallel Work:**
+
+1. Complete feature development in worktree
+2. Run tests and verify changes: `deno task test`
+3. Create PR from worktree: `gh pr create`
+4. Review and merge PR through GitHub
+5. Remove worktree after merge: `git worktree remove ../feature-path`
+6. Update main and pull changes to other worktrees as needed
+
+### Common Patterns
+
+**Feature Development:**
+
+```bash
+git worktree add -b feature-user-profiles ../app-user-profiles
+cd ../app-user-profiles
+# Develop feature in isolation
+```
+
+**Bug Fixes:**
+
+```bash
+git worktree add -b fix-issue-123 ../app-fix-123 origin/main
+cd ../app-fix-123
+# Fix bug without disrupting feature work
+```
+
+**Experimentation:**
+
+```bash
+git worktree add -b experiment-new-ui ../app-experiment
+cd ../app-experiment
+# Try new ideas without commitment
+```
+
+**Release Preparation:**
+
+```bash
+git worktree add -b release-v2.0 ../app-release origin/main
+cd ../app-release
+# Prepare release while development continues
+```
+
 ### GitHub CLI (`gh`) Usage
 
 **MANDATORY**: Use the GitHub CLI for all GitHub operations instead of web interface:

@@ -339,6 +339,177 @@ Example output:
 - **Extended Thinking**: Commands can trigger deep analysis with thinking keywords (e.g., think, think deeply, think harder, ultrathink)
 - **Namespacing**: Organize in subdirectories for logical grouping
 
+## Sub-Agent Integration in Slash Commands
+
+Based on insights from Claude Code sub-agent architecture, slash commands can leverage parallel execution for enhanced performance and capabilities.
+
+### When to Use Sub-Agents in Slash Commands
+
+**Ideal Use Cases:**
+
+1. **Large-scale Code Analysis** - Exploring multiple files/directories in parallel
+2. **Independent Research Tasks** - Gathering information from different sources simultaneously
+3. **Multi-aspect Analysis** - Analyzing code quality, security, performance in parallel
+4. **Documentation Generation** - Creating docs for multiple components concurrently
+
+**Not Recommended For:**
+
+1. **Sequential Operations** - Tasks with dependencies between steps
+2. **Simple Single-file Operations** - Overhead outweighs benefits
+3. **State-modifying Operations** - Risk of conflicts with parallel writes
+
+### Sub-Agent Slash Command Template
+
+```yaml
+---
+allowed-tools: Task, Bash(find:*), Bash(rg:*), Read
+description: Analyze codebase architecture using parallel sub-agents
+---
+
+## Context
+
+- Project structure: !`fd . -t d -d 3`
+- File count by type: !`fd . -e js -e ts -e py | wc -l`
+
+## Your task
+
+Analyze this codebase using parallel sub-agents to understand:
+
+1. **Architecture Agent**: Analyze overall project structure and design patterns
+2. **Dependencies Agent**: Map out all dependencies and their relationships  
+3. **Security Agent**: Identify potential security vulnerabilities
+4. **Performance Agent**: Find performance bottlenecks and optimization opportunities
+5. **Test Coverage Agent**: Analyze test coverage and testing patterns
+
+Launch these 5 agents in parallel to explore the codebase. Each agent should:
+- Focus only on their specific domain
+- Create a summary report
+- Identify key findings and recommendations
+
+Synthesize all findings into a comprehensive architecture report.
+```
+
+### Implementation Patterns
+
+**1. Discovery Pattern** - Multiple agents explore different aspects:
+
+```yaml
+## Your task
+
+Use 4 parallel agents to discover:
+  - Agent 1: All API endpoints in the codebase
+  - Agent 2: Database schema and models
+  - Agent 3: Authentication and authorization flows
+  - Agent 4: External service integrations
+```
+
+**2. Analysis Pattern** - Deep dive into specific areas:
+
+```yaml
+## Your task
+
+Analyze the authentication system using 3 parallel agents:
+  - Agent 1: Review security implementation
+  - Agent 2: Check test coverage
+  - Agent 3: Document current flows
+```
+
+**3. Generation Pattern** - Create multiple artifacts:
+
+```yaml
+## Your task
+
+Generate documentation using 5 parallel agents:
+  - Agent 1: API documentation
+  - Agent 2: Component documentation
+  - Agent 3: Configuration guide
+  - Agent 4: Deployment instructions
+  - Agent 5: Troubleshooting guide
+```
+
+### Best Practices for Sub-Agent Commands
+
+1. **Let Claude Code Manage Parallelism**
+   - Don't specify exact parallelism levels
+   - System automatically optimizes based on task complexity
+
+2. **Clear Task Boundaries**
+   - Each sub-agent should have a well-defined, independent scope
+   - Avoid overlapping responsibilities
+
+3. **Token Efficiency**
+   - Be aware that each sub-agent consumes its own token budget
+   - Use for high-value tasks where parallel execution provides significant benefits
+
+4. **Context Preservation**
+   - Main agent synthesizes findings from all sub-agents
+   - Use structured output formats for easier aggregation
+
+5. **Error Handling**
+   - Design tasks to be resilient to partial failures
+   - Main agent should handle missing or incomplete sub-agent results
+
+### Example Sub-Agent Commands
+
+**Code Quality Analysis** (`/analyze-code-quality`):
+
+```yaml
+---
+allowed-tools: Task, Read, Grep, Bash(rg:*)
+description: Comprehensive code quality analysis using parallel agents
+---
+
+## Your task
+
+Perform comprehensive code quality analysis using multiple agents:
+
+1. **Complexity Analysis**: Identify complex functions and modules
+2. **Duplication Detection**: Find duplicate code patterns
+3. **Style Consistency**: Check coding standards adherence
+4. **Documentation Coverage**: Assess documentation completeness
+5. **Dead Code Detection**: Find unused code
+6. **Type Safety**: Analyze type coverage and safety
+
+Each agent works independently. Compile findings into actionable recommendations.
+```
+
+**Migration Planning** (`/plan-migration`):
+
+```yaml
+---
+allowed-tools: Task, Read, Grep
+description: Plan technology migration using parallel analysis
+---
+
+## Your task
+
+Plan migration from $ARGUMENTS using parallel agents to analyze:
+
+1. **Current Implementation**: Map existing usage patterns
+2. **Dependencies**: Identify all dependent code
+3. **Risk Assessment**: Evaluate migration risks
+4. **Migration Strategy**: Design phased approach
+5. **Testing Requirements**: Define test scenarios
+
+Synthesize into a comprehensive migration plan with timeline and risk mitigation.
+```
+
+### Performance Considerations
+
+- **Token Usage**: Sub-agents multiply token consumption
+- **Execution Time**: Parallel execution reduces wall-clock time significantly
+- **Queue Management**: System handles up to 10 parallel tasks, queues additional
+- **Context Windows**: Each sub-agent gets fresh context, enabling larger codebases
+
+### Integration with Existing Features
+
+Sub-agents work seamlessly with other slash command features:
+
+- **Dynamic Context**: Use `!` commands to provide context to all agents
+- **File References**: Share file contents across sub-agents with `@file`
+- **Extended Thinking**: Combine with thinking modes for complex analysis
+- **Arguments**: Pass user input to customize agent behavior
+
 ## Parallel Claude Code Sessions with Git Worktrees
 
 Run multiple Claude Code sessions simultaneously on different features using Git worktrees, enabling true parallel development without branch switching conflicts.

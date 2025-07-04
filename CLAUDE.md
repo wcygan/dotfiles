@@ -234,6 +234,111 @@ Use extended thinking for complex architectural decisions, challenging bugs, or 
 
 Extended thinking is visible in the interface and allows for iterative refinement through follow-up prompts.
 
+## Slash Command Template
+
+The `/commit` command (@claude/commands/git/commit/commit.md) serves as the gold standard for implementing slash commands, demonstrating all key features and best practices.
+
+### Gold Standard Example: /commit
+
+```yaml
+---
+allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*)
+description: Create a git commit
+---
+
+## Context
+
+- Current git status: !`git status`
+- Current git diff (staged and unstaged changes): !`git diff HEAD`
+- Current branch: !`git branch --show-current`
+- Recent commits: !`git log --oneline -10`
+
+## Your task
+
+Generate a conventional commit message following https://www.conventionalcommits.org/en/v1.0.0/ specification and create the commit automatically.
+```
+
+### Key Features Demonstrated
+
+1. **Front Matter Configuration**
+   - `allowed-tools`: Explicitly scopes which Bash commands can be executed
+   - `description`: Clear, concise purpose of the command
+
+2. **Dynamic Context Injection**
+   - Uses `!` prefix for bash command execution (this pulls in dynamic context into the prompt, very useful to get real world examples)
+   - Provides real-time repository state
+   - Multiple context commands for comprehensive understanding
+
+3. **Clear Task Definition**
+   - Specific, actionable instructions
+   - References external standards (Conventional Commits)
+   - Step-by-step process explanation
+
+4. **Best Practices**
+   - Security-first with minimal allowed commands
+   - Read-only context commands (status, diff, log)
+   - Clear examples of expected output
+   - Automated action after analysis
+
+### Template Structure
+
+```yaml
+---
+allowed-tools: Tool1(command:scope), Tool2(command:scope)
+description: Brief description of command purpose
+---
+
+## Context
+
+- Dynamic context 1: !`bash command`
+- Dynamic context 2: !`another command`
+- File reference: @path/to/file
+
+## Your task
+
+Clear instructions on what to accomplish.
+
+Steps:
+1. First step
+2. Second step
+3. Final step
+
+Example output:
+- Example 1
+- Example 2
+```
+
+### Implementation Guidelines
+
+1. **Security Considerations**
+   - Only allow necessary commands in `allowed-tools`
+   - Prefer read-only commands for context gathering
+   - Never allow commands that could modify system state unexpectedly
+
+2. **Context Design**
+   - Gather sufficient context for informed decision-making
+   - Order context logically (current state → history → related info)
+   - Use descriptive labels for each context item
+
+3. **Task Clarity**
+   - State the objective clearly
+   - Provide step-by-step guidance when appropriate
+   - Include examples of expected outcomes
+   - Reference relevant standards or conventions
+
+4. **User Experience**
+   - Keep descriptions concise but complete
+   - Use consistent formatting across commands
+   - Provide feedback on command execution
+   - Handle edge cases gracefully
+
+### Advanced Features Integration
+
+- **Arguments**: Use `$ARGUMENTS` for dynamic input from the user
+- **File References**: Use `@file/path` to include file contents
+- **Extended Thinking**: Commands can trigger deep analysis with thinking keywords (e.g., think, think deeply, think harder, ultrathink)
+- **Namespacing**: Organize in subdirectories for logical grouping
+
 ## Parallel Claude Code Sessions with Git Worktrees
 
 Run multiple Claude Code sessions simultaneously on different features using Git worktrees, enabling true parallel development without branch switching conflicts.

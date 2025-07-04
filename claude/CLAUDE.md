@@ -351,6 +351,309 @@ gh api search/issues --raw-field q="is:pr is:open review-requested:@me"
 - Handle errors gracefully with existence checks
 - Use API for review comments (CLI limitation)
 
+## Claude Code Sub-Agent Architecture
+
+**CRITICAL**: Sub-agents are the key to transforming Claude Code from a helpful assistant into a powerful parallel execution engine. Master these patterns to achieve 10x productivity gains.
+
+### Core Principles
+
+1. **Sub-Agents for Research, Not Decisions**
+   - Sub-agents excel at information gathering, exploration, and analysis
+   - Keep decision-making and code writing in the main agent
+   - Each sub-agent has its own context window (leverage for large codebases)
+
+2. **Parallel-First Design**
+   - Launch multiple sub-agents immediately upon receiving complex tasks
+   - Up to 10 concurrent sub-agents supported
+   - Tasks queue automatically when exceeding limit
+   - Let Claude Code manage parallelism automatically
+
+3. **Token Cost Awareness**
+   - Single agents use ~4x more tokens than chat
+   - Multi-agent systems use ~15x more tokens than chat
+   - Reserve for high-value tasks where performance gains justify costs
+   - 90%+ performance improvements possible for suitable tasks
+
+### Sub-Agent Task Patterns
+
+**Safe for Parallel Execution:**
+
+```markdown
+✅ File discovery and analysis
+✅ Code pattern searches across multiple files\
+✅ Dependency analysis and mapping
+✅ Documentation gathering
+✅ Test file analysis
+✅ Configuration exploration
+✅ API endpoint discovery
+✅ Database schema analysis
+```
+
+**Requires Sequential Coordination:**
+
+```markdown
+❌ Shared file modifications
+❌ Integration point changes
+❌ Configuration updates
+❌ Database migrations
+❌ Package dependency updates
+❌ Git operations
+```
+
+### Multi-Phase Workflow Architecture
+
+**Phase 1: Discovery (5-10 parallel sub-agents)**
+
+```markdown
+## Discovery Phase Tasks
+
+- Analyze codebase structure
+- Map file dependencies
+- Identify coding patterns
+- Locate test coverage
+- Find configuration files
+- Discover API endpoints
+- Analyze database schemas
+```
+
+**Phase 2: Planning (Main agent only)**
+
+```markdown
+## Planning Phase
+
+- Synthesize all findings
+- Identify conflicts/dependencies
+- Create implementation strategy
+- Design task boundaries
+```
+
+**Phase 3: Implementation (3-7 parallel sub-agents)**
+
+```markdown
+## Implementation Phase Tasks
+
+1. Component creation (owns: src/components/*)
+2. Test implementation (owns: tests/*)
+3. Style development (owns: styles/*)
+4. Type definitions (owns: types/*)
+5. Utility functions (owns: utils/*)
+6. Documentation (owns: docs/*)
+7. Mock data (owns: mocks/*)
+```
+
+**Phase 4: Integration (1-2 sub-agents)**
+
+```markdown
+## Integration Phase
+
+- Validate cross-component consistency
+- Run full test suite
+- Update integration points
+- Verify build success
+```
+
+### Implementation Guidelines
+
+**In your project's CLAUDE.md file, add explicit sub-agent instructions:**
+
+````markdown
+## Sub-Agent Delegation Strategy
+
+### Feature Implementation Workflow
+
+When implementing new features, immediately delegate to parallel sub-agents:
+
+1. **Component Agent** (owns: src/components/Feature/*)
+   - Create React/Vue/Svelte components
+   - Implement component logic
+   - Add local state management
+
+2. **Style Agent** (owns: styles/feature/*)
+   - Create CSS/SCSS files
+   - Implement responsive design
+   - Add animations
+
+3. **Test Agent** (owns: tests/feature/*)
+   - Write unit tests
+   - Create integration tests
+   - Add e2e test scenarios
+
+4. **Type Agent** (owns: types/feature.ts)
+   - Define TypeScript interfaces
+   - Create type guards
+   - Export shared types
+
+5. **API Agent** (owns: api/feature/*)
+   - Implement API endpoints
+   - Add request/response handling
+   - Create API documentation
+
+6. **Hook Agent** (owns: hooks/useFeature*)
+   - Create custom React hooks
+   - Implement state logic
+   - Add effect management
+
+7. **Documentation Agent** (owns: docs/feature.md)
+   - Write feature documentation
+   - Create usage examples
+   - Update README if needed
+
+### Research Workflow
+
+For complex research tasks, use this pattern:
+
+```bash
+"Research these 3 approaches in parallel:
+1. Research approach A for solving X
+2. Research approach B for solving X  
+3. Research approach C for solving X
+Use 3 agents in parallel."
+```
+````
+
+### Codebase Analysis Workflow
+
+When analyzing large codebases:
+
+```bash
+"Analyze this codebase using 5 parallel agents:
+1. Analyze authentication flow
+2. Analyze data models
+3. Analyze API structure
+4. Analyze frontend components
+5. Analyze test coverage"
+```
+
+````
+### Communication Patterns
+
+**Inter-Agent Communication via Scratchpad Files:**
+
+```markdown
+## Scratchpad Structure
+/tmp/project-name/claude-scratch/
+├── discovery-results.json     # Phase 1 findings
+├── component-manifest.json    # Component registry
+├── api-endpoints.json        # API documentation
+├── type-definitions.json     # Shared types
+└── integration-points.json   # Cross-component deps
+````
+
+**Status Tracking Format:**
+
+```json
+{
+  "agent": "component-agent",
+  "status": "completed",
+  "created_files": [
+    "src/components/UserProfile/index.tsx",
+    "src/components/UserProfile/UserProfile.tsx"
+  ],
+  "exports": ["UserProfile", "UserProfileProps"],
+  "dependencies": ["useAuth", "UserType"]
+}
+```
+
+### Performance Optimization
+
+1. **Batch Small Tasks**
+   - Group related small operations into single sub-agent tasks
+   - Reduces overhead and context setup costs
+   - Example: One agent for all utility functions vs. one per function
+
+2. **Strip Comments for Analysis**
+   - Remove comments when passing code between agents
+   - Reduces token usage by 20-30%
+   - Preserve comments only when specifically needed
+
+3. **Early Context Preservation**
+   - Use sub-agents early in conversation
+   - Preserves main agent context for decision-making
+   - Delegates memory-intensive operations
+
+4. **Optimize Parallelism Level**
+   - Start with 5-7 agents for most tasks
+   - Scale to 10 for truly independent operations
+   - Monitor queue depth and adjust
+
+### Example Workflows
+
+**Full Feature Implementation:**
+
+```markdown
+Task: Implement user authentication feature
+
+Phase 1 - Research (4 agents):
+
+- Agent 1: Analyze existing auth patterns
+- Agent 2: Research security best practices
+- Agent 3: Evaluate auth libraries
+- Agent 4: Review current user model
+
+Phase 2 - Planning (Main agent):
+
+- Synthesize research
+- Design auth architecture
+- Create task breakdown
+
+Phase 3 - Implementation (7 agents):
+
+- Agent 1: Auth components (login/register forms)
+- Agent 2: Auth API endpoints
+- Agent 3: Auth middleware
+- Agent 4: Auth types/interfaces
+- Agent 5: Auth tests
+- Agent 6: Auth documentation
+- Agent 7: Auth utilities
+
+Phase 4 - Integration (2 agents):
+
+- Agent 1: Integration testing
+- Agent 2: Documentation updates
+```
+
+**Refactoring Workflow:**
+
+```markdown
+Task: Refactor payment system
+
+Phase 1 - Analysis (5 agents):
+
+- Agent 1: Map payment flow
+- Agent 2: Identify code smells
+- Agent 3: Analyze test coverage
+- Agent 4: Find duplicate code
+- Agent 5: Review error handling
+
+Phase 2 - Planning (Main agent):
+
+- Design refactoring strategy
+- Identify breaking changes
+- Plan migration path
+
+Phase 3 - Execution (6 agents):
+
+- Agent 1: Refactor payment models
+- Agent 2: Update payment services
+- Agent 3: Migrate payment tests
+- Agent 4: Update payment APIs
+- Agent 5: Refactor payment UI
+- Agent 6: Update documentation
+```
+
+### Best Practices Summary
+
+1. **Always delegate research tasks** to sub-agents
+2. **Never delegate decision-making** to sub-agents
+3. **Design clear file ownership** boundaries
+4. **Use scratchpad files** for coordination
+5. **Monitor token usage** and adjust strategy
+6. **Start with templates** and iterate
+7. **Batch related small tasks** together
+8. **Strip comments** for analysis tasks
+9. **Leverage parallel reads**, coordinate writes
+10. **Document sub-agent patterns** in CLAUDE.md
+
 ### Pull Request Best Practices
 
 **MANDATORY**: Follow these practices for well-crafted PRs:
@@ -550,6 +853,8 @@ When a `PLAN.md` file exists in the project root, **YOU MUST**:
 
 ### Multi-Agent Workflow
 
+**IMPORTANT**: For comprehensive sub-agent patterns and best practices, see the **Claude Code Sub-Agent Architecture** section above.
+
 When working as part of a multi-agent team:
 
 - **CHECK** `/tmp/{project-name}/project-status.md` or coordination files for shared state
@@ -560,6 +865,7 @@ When working as part of a multi-agent team:
 - **USE** git worktrees to work on separate branches without conflicts
 - **CREATE** status files in `/tmp/{project-name}/claude-scratch/` for inter-agent communication
 - **COORDINATE** using shared JSON status files for structured updates in project-specific directories
+- **LEVERAGE** sub-agents for parallel research and exploration tasks (see Sub-Agent Architecture section)
 
 ## Performance & Optimization
 

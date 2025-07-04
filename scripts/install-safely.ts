@@ -1114,25 +1114,25 @@ async function backupScripts(
   homeDir: string,
   backupDir: string,
 ): Promise<string[]> {
-  const scriptsDir = join(homeDir, ".scripts");
-  const scriptsBackupDir = join(backupDir, ".scripts");
+  const scriptsDir = join(homeDir, ".tools");
+  const scriptsBackupDir = join(backupDir, ".tools");
   const backedUpFiles: string[] = [];
 
   const scriptsDirExists = await exists(scriptsDir);
   if (!scriptsDirExists) {
     console.log(
-      `   ${colors.yellow}No existing ~/.scripts directory found${colors.reset}`,
+      `   ${colors.yellow}No existing ~/.tools directory found${colors.reset}`,
     );
     return backedUpFiles;
   }
 
   try {
     await copy(scriptsDir, scriptsBackupDir, { overwrite: true });
-    printStatus(`Backed up ~/.scripts directory`);
-    backedUpFiles.push(".scripts");
+    printStatus(`Backed up ~/.tools directory`);
+    backedUpFiles.push(".tools");
   } catch (error) {
     printWarning(
-      `Could not backup ~/.scripts directory: ${
+      `Could not backup ~/.tools directory: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
@@ -1145,9 +1145,9 @@ async function copyScripts(
   dotfilesDir: string,
   homeDir: string,
 ): Promise<boolean> {
-  printBlue("📜 Copying scripts to ~/.scripts...");
+  printBlue("📜 Copying scripts to ~/.tools...");
   const scriptsSourceDir = join(dotfilesDir, SCRIPTS_DIR);
-  const scriptsDestDir = join(homeDir, ".scripts");
+  const scriptsDestDir = join(homeDir, ".tools");
 
   // Check if tools directory exists in dotfiles
   const scriptsDirExists = await exists(scriptsSourceDir);
@@ -1159,7 +1159,7 @@ async function copyScripts(
   }
 
   try {
-    // Ensure ~/.scripts directory exists
+    // Ensure ~/.tools directory exists
     await ensureDir(scriptsDestDir);
     printStatus(`Created scripts directory: ${scriptsDestDir}`);
 
@@ -1191,12 +1191,12 @@ async function copyScripts(
     }
 
     if (copiedCount > 0) {
-      printStatus(`Successfully copied ${copiedCount} scripts to ~/.scripts`);
+      printStatus(`Successfully copied ${copiedCount} scripts to ~/.tools`);
       console.log();
       console.log(
-        `   ${colors.blue}Note:${colors.reset} Add ~/.scripts to your PATH to run these scripts from anywhere.`,
+        `   ${colors.blue}Note:${colors.reset} Add ~/.tools to your PATH to run these scripts from anywhere.`,
       );
-      console.log(`   ${colors.yellow}export PATH="$HOME/.scripts:$PATH"${colors.reset}`);
+      console.log(`   ${colors.yellow}export PATH="$HOME/.tools:$PATH"${colors.reset}`);
     }
     return true;
   } catch (error) {
@@ -1659,7 +1659,7 @@ This script will:
           );
         }
 
-        // Copy scripts to ~/.scripts
+        // Copy scripts to ~/.tools
         installationTasks.push(
           (async () => {
             try {
@@ -1772,7 +1772,7 @@ This script will:
       console.log("   ✅ Installed Claude configuration files and custom commands");
       console.log("   ✅ Configured Claude MCP servers from mcp.json");
       console.log("   ✅ Installed Gemini configuration files");
-      console.log("   ✅ Installed scripts to ~/.scripts directory");
+      console.log("   ✅ Installed scripts to ~/.tools directory");
       if (Deno.build.os === "darwin") {
         console.log("   ✅ Installed Ghostty terminal configuration");
       }
@@ -1799,7 +1799,7 @@ This script will:
         `   • Try: ${colors.yellow}current_shell${colors.reset} (see which shell you're using)`,
       );
       console.log(
-        `   • Try: ${colors.yellow}hello.ts${colors.reset} (test script from ~/.scripts)`,
+        `   • Try: ${colors.yellow}hello.ts${colors.reset} (test script from ~/.tools)`,
       );
       console.log();
       printBlue("🔄 If you need to rollback:");

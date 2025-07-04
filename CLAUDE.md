@@ -58,7 +58,7 @@ deno run --allow-all scripts/pre-commit-check.ts # Pre-commit validation
     - `meta/` - Meta commands and utilities
     - `tool/` - Tool-specific commands
 - `cursor/`, `vscode/`, `zed/` - Editor-specific configurations with keybindings
-- `tools/` - User-installable scripts copied to ~/.scripts during installation
+- `tools/` - User-installable scripts copied to ~/.tools during installation
 - Shell dotfiles are dynamically generated during installation
 
 ### Installation Process
@@ -71,7 +71,7 @@ The installation script (`install-safely.ts`) manages these dotfiles:
 - Claude configuration files (`CLAUDE.md`) to `~/.claude/`
 - Claude custom commands from `claude/commands/` to `~/.claude/commands/`
 - Claude settings from `claude/settings.json` to `~/.claude/settings.json`
-- User scripts from `tools/` to `~/.scripts/`
+- User scripts from `tools/` to `~/.tools/`
 
 Each installation creates timestamped backups and provides rollback capability.
 

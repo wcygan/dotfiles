@@ -9,22 +9,46 @@ description: Systematically improve slash commands one at a time
 - Progress file: @notes/improve-slash-commands/progress.json
 - Total commands: !`fd '\.md$' claude/commands | wc -l`
 - Completed count: !`jq -r '.completed // 0' notes/improve-slash-commands/progress.json 2>/dev/null || echo 0`
-- Current command: !`jq -r '.commands[]? | select(.status == "in-progress") | .filepath // "none"' notes/improve-slash-commands/progress.json 2>/dev/null || echo "none"`
+- In-progress count: !`jq -r '[.commands[]? | select(.status == "in-progress")] | length' notes/improve-slash-commands/progress.json 2>/dev/null || echo 0`
+- My claimed command: !`jq -r --arg sid "$(gdate +%s%N)" '.commands[]? | select(.status == "in-progress" and .claimedBy.sessionId == $sid) | .filepath // "none"' notes/improve-slash-commands/progress.json 2>/dev/null || echo "none"`
 - Next pending: !`jq -r '.commands[]? | select(.status == "pending") | .filepath' notes/improve-slash-commands/progress.json 2>/dev/null | head -1 || echo "none"`
+- Stale claims (>10min): !`jq -r --arg now "$(gdate -u +%s)" '[.commands[]? | select(.status == "in-progress" and (($now | tonumber) - (.claimedBy.timestamp // 0 | tonumber) > 600))] | length' notes/improve-slash-commands/progress.json 2>/dev/null || echo 0`
 
 ## Your task
 
 PROCEDURE improve_next_command():
 
-STEP 1: Load progress state
+STEP 1: Claim a task atomically
 
-- IF progress.json doesn't exist:
-- Initialize with all commands from fd scan
-- IF no in-progress command exists:
-- Find next pending command
-- Mark as "in-progress" in progress.json
-- ELSE:
-- Resume work on in-progress command
+- Load current progress.json state
+- Check for MY existing claim (sessionId matches):
+  - IF I have an existing claim: Resume work on that command
+  - ELSE: Proceed to claim a new task
+
+- Find claimable commands:
+  - Pending commands (status == "pending")
+  - Stale claims (status == "in-progress" AND timestamp > 10 minutes old)
+
+- IF no claimable commands exist:
+  - Report "All commands are being worked on or completed"
+  - Exit gracefully
+
+- IMMEDIATELY claim the first available command:
+  - Read current progress.json
+  - Update the selected command entry with:
+    ```json
+    {
+      "status": "in-progress",
+      "claimedBy": {
+        "sessionId": "<session-id-from-context>",
+        "timestamp": <unix-timestamp-seconds>
+      },
+      "lastModified": "<ISO-8601-timestamp>"
+    }
+    ```
+  - Write updated progress.json atomically
+  - Verify claim was successful by re-reading
+  - IF claim failed (someone else claimed it): Try next available command
 
 STEP 2: Analyze current command
 
@@ -86,6 +110,7 @@ STEP 4: Validate and format
 STEP 5: Update progress BEFORE committing
 
 - Mark command as "completed" in progress.json
+- Clear the claimedBy field (set to null)
 - Record improvements made:
 
 * frontMatterAdded/Updated
@@ -107,6 +132,9 @@ STEP 7: Report status
 
 - Show: "✓ Improved {command-name} ({completed}/{total} completed)"
 - Display key improvements made
+- Show parallel work status:
+  - "Currently {in-progress-count} commands being worked on by other agents"
+  - "Session ID: {session-id}"
 - IF all completed:
   - Generate final summary report
   - Display comprehensive TLDR
@@ -295,4 +323,65 @@ Example safe pattern:
 
 ```bash
 !`command 2>/dev/null || echo "default value"`
+```
+
+## Concurrent Execution Pattern
+
+### Enabling Parallel Agent Work
+
+This command supports multiple agents working in parallel on different commands:
+
+1. **Launch Multiple Sessions**:
+   ```bash
+   # Terminal 1
+   claude code
+   > /improve-slash-commands
+
+   # Terminal 2
+   claude code
+   > /improve-slash-commands
+
+   # Terminal 3
+   claude code
+   > /improve-slash-commands
+   ```
+
+2. **Automatic Task Distribution**:
+   - Each agent claims tasks atomically at startup
+   - No two agents will work on the same command
+   - Agents automatically skip already-claimed tasks
+   - Session IDs ensure unique identification
+
+3. **Stale Claim Recovery**:
+   - If an agent crashes or disconnects
+   - Claims older than 10 minutes are considered stale
+   - Other agents can reclaim stale tasks automatically
+
+4. **Progress Tracking**:
+   - Context section shows in-progress count
+   - Each agent sees which commands are being worked on
+   - Completed count updates in real-time
+
+### Coordination Best Practices
+
+- **Atomic Commits**: Each agent commits their command file + progress.json together
+- **No Manual Coordination**: The claiming mechanism handles all coordination
+- **Graceful Completion**: Agents exit when no more tasks are available
+- **Progress Visibility**: Use `jq '.commands[] | select(.status == "in-progress")' notes/improve-slash-commands/progress.json` to see active work
+
+### Example Progress.json Entry with Claim
+
+```json
+{
+  "id": "042",
+  "name": "generate-unit-tests",
+  "filepath": "claude/commands/test/generate/generate-unit-tests.md",
+  "namespace": "test/generate",
+  "status": "in-progress",
+  "claimedBy": {
+    "sessionId": "1751703298807183000",
+    "timestamp": 1751703298
+  },
+  "lastModified": "2025-07-05T15:30:00Z"
+}
 ```

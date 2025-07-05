@@ -135,9 +135,10 @@
       "filepath": "claude/commands/agent/merge/agent-prep-merge.md",
       "namespace": "agent/merge",
       "status": "completed",
-      "lastModified": "2025-07-05T13:15:00Z",
+      "lastModified": "2025-07-05T13:25:00Z",
       "improvements": [
-        "programmaticStructureAdded"
+        "programmaticStructureAdded",
+        "hardcodedSessionIdsFixed"
       ],
       "metrics": {
         "hadFrontMatter": true,

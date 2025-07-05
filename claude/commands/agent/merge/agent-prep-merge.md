@@ -9,7 +9,7 @@ Prepares branches from multiple worktrees for clean merging by checking for conf
 
 ## Context
 
-- **Session ID**: 1751710408580641000
+- **Session ID**: !`gdate +%s%N 2>/dev/null || date +%s000000000`
 - **Current branch**: !`git branch --show-current`
 - **Active worktrees**: !`git worktree list | rg -v "bare" | wc -l | xargs -I {} echo "{} active worktrees"`
 - **Worktree details**: !`git worktree list | rg -v "bare" | awk '{print $1 " → " $3}' | sed 's/\[//g' | sed 's/\]//g'`
@@ -44,7 +44,7 @@ $ARGUMENTS
 STEP 1: Initialize session and parse arguments
 
 ```typescript
-const SESSION_ID = "1751710408580642000";
+const SESSION_ID = await $`gdate +%s%N 2>/dev/null || date +%s000000000`.text().trim();
 const PROJECT = await $`basename "$(git rev-parse --show-toplevel)"`.text();
 const STATE_FILE = `/tmp/${PROJECT}/merge-prep-state-${SESSION_ID}.json`;
 const COORDINATION_DIR = `/tmp/${PROJECT}`;
@@ -315,33 +315,33 @@ STEP 6: Create executable test script
 
 ```bash
 # Generate executable test script
-cat > "/tmp/$PROJECT/run-integration-tests-${SESSION_ID}.sh" << 'EOF'
+cat > "/tmp/$PROJECT/run-integration-tests-${SESSION_ID}.sh" << EOF
 #!/bin/bash
 set -e
 
 echo "🧪 Running integration tests for merge preparation..."
-echo "Session: 1751710408580643000"
-echo "Started: $(date)"
+echo "Session: ${SESSION_ID}"
+echo "Started: \$(date)"
 
 # Load test plan
 TEST_PLAN_FILE="/tmp/$PROJECT/test-plan-${SESSION_ID}.json"
-if [[ ! -f "$TEST_PLAN_FILE" ]]; then
-  echo "❌ Test plan not found: $TEST_PLAN_FILE"
+if [[ ! -f "\$TEST_PLAN_FILE" ]]; then
+  echo "❌ Test plan not found: \$TEST_PLAN_FILE"
   exit 1
 fi
 
 # Execute test commands
-COMMANDS=$(jq -r '.commands[]' "$TEST_PLAN_FILE")
+COMMANDS=\$(jq -r '.commands[]' "\$TEST_PLAN_FILE")
 while IFS= read -r cmd; do
-  echo "Executing: $cmd"
-  eval "$cmd" || {
-    echo "❌ Test command failed: $cmd"
+  echo "Executing: \$cmd"
+  eval "\$cmd" || {
+    echo "❌ Test command failed: \$cmd"
     exit 1
   }
-done <<< "$COMMANDS"
+done <<< "\$COMMANDS"
 
 echo "✅ All integration tests passed!"
-echo "Completed: $(date)"
+echo "Completed: \$(date)"
 EOF
 
 chmod +x "/tmp/$PROJECT/run-integration-tests-${SESSION_ID}.sh"

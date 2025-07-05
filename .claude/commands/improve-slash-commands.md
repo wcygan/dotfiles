@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write, Bash(jq:*), Bash(gdate:*), Bash(fd:*), Bash(deno fmt:*), Bash(git add:*), Bash(git commit:*), TodoWrite
+allowed-tools: Read, Write, Bash(jq:*), Bash(gdate:*), Bash(fd:*), Bash(deno fmt:*), Bash(git add:*), Bash(git commit:*), Bash(git status:*), TodoWrite
 description: Systematically improve slash commands one at a time
 ---
 
@@ -49,9 +49,17 @@ STEP 3: Apply improvements systematically
 
 - Add dynamic context section if beneficial:
 
+* CRITICAL: Include Session ID: !`gdate +%s%N` for EVERY command
 * Git commands need: status, diff, branch, log
 * File operations need: directory listings, file checks
 * Analysis commands need: code search, structure discovery
+
+- Test ALL bash commands in Context section:
+
+* Test each command individually for compatibility
+* Handle shell quoting issues (avoid != in jq, proper escaping)
+* Provide fallback values: !`command || echo "fallback"`
+* Verify proper output before including
 
 - Restructure task definition:
 
@@ -73,12 +81,7 @@ STEP 4: Validate and format
 - Run: deno fmt {filepath}
 - Confirm improvements follow best practices
 
-STEP 5: Commit changes
-
-- Stage: git add {filepath}
-- Commit: git commit -m "improve(commands): enhance {command-name} with best practices"
-
-STEP 6: Update progress
+STEP 5: Update progress BEFORE committing
 
 - Mark command as "completed" in progress.json
 - Record improvements made:
@@ -90,6 +93,13 @@ STEP 6: Update progress
 
 - Update lastModified timestamp
 - Increment completed count
+
+STEP 6: ATOMIC commit of both files
+
+- CRITICAL: Stage BOTH command file AND progress.json together
+- git add {filepath} notes/improve-slash-commands/progress.json
+- git commit -m "improve(commands): enhance {command-name} with best practices"
+- NEVER commit these files separately
 
 STEP 7: Report status
 
@@ -113,6 +123,7 @@ STEP 7: Report status
    - Use explicit control flow
 
 3. **State Management**:
+   - MANDATORY: Session ID in EVERY command's Context section
    - Unique session files with nanosecond timestamps
    - Checkpoint capabilities for long operations
    - Clean up temp files in FINALLY blocks
@@ -124,8 +135,19 @@ STEP 7: Report status
 
 5. **Token Efficiency**:
    - Reference files with @ instead of embedding
-   - Use precise tools (jq for JSON, rg for search)
+   - Use precise tools (jq for JSON, rg for search, fd for file finding)
    - Batch related operations
+
+6. **Testing Requirements**:
+   - Test EVERY bash command before including in Context
+   - Handle shell quoting and special characters properly
+   - Always provide fallback values for commands that might fail
+   - Verify output format matches expectations
+
+7. **Atomic Commits**:
+   - ALWAYS commit command file and progress.json together
+   - Never split progress tracking from actual changes
+   - Ensures consistency and rollback safety
 
 ## Improvement Patterns
 
@@ -165,3 +187,29 @@ Add state management:
 - Checkpoint after each major step
 - Resume capability from checkpoints
 - Progress tracking in state file
+
+## Critical Testing Checklist
+
+Before marking ANY command as improved:
+
+- [ ] Session ID included in Context section: !`gdate +%s%N`
+- [ ] All bash commands tested individually for output
+- [ ] Shell quoting issues resolved (no unescaped !, proper quotes)
+- [ ] Fallback values provided for all dynamic commands
+- [ ] Command file and progress.json staged together
+- [ ] Atomic commit includes both files
+- [ ] No separate commits for progress tracking
+
+### Common Bash Command Issues to Test
+
+1. **jq expressions**: Avoid != operator, use proper escaping
+2. **Git commands**: Test with actual repository state
+3. **kubectl/docker**: Handle connection failures gracefully
+4. **File operations**: Provide defaults for missing files
+5. **Command substitution**: Watch for special characters
+
+Example safe pattern:
+
+```bash
+!`command 2>/dev/null || echo "default value"`
+```

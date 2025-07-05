@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 1,
+  "completed": 2,
   "inProgress": null,
-  "lastUpdated": "2025-07-05T12:00:00Z",
+  "lastUpdated": "2025-07-05T12:24:07Z",
   "commands": [
     {
       "id": "001",
@@ -30,9 +30,13 @@
       "name": "cpr",
       "filepath": "claude/commands/tool/cpr.md",
       "namespace": "tool",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-05T12:24:07Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
@@ -2397,9 +2401,9 @@
     }
   ],
   "improvementStats": {
-    "frontMatterAdded": 1,
-    "dynamicContextAdded": 1,
-    "programmaticStructureAdded": 1,
+    "frontMatterAdded": 2,
+    "dynamicContextAdded": 2,
+    "programmaticStructureAdded": 2,
     "stateManagementAdded": 1
   }
 }

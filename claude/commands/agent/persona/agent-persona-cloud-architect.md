@@ -7,9 +7,6 @@ description: Cloud architect persona for designing scalable, secure cloud infras
 
 - Session ID: !`gdate +%s%N || date +%s%N`
 - Current cloud environment: !`kubectl config current-context 2>/dev/null || echo "none"`
-- Available cloud CLIs: !`which aws kubectl gcloud az terraform pulumi 2>/dev/null | wc -l`
-- Current AWS region: !`aws configure get region 2>/dev/null || echo "not-configured"`
-- Current GCP project: !`gcloud config get-value project 2>/dev/null || echo "not-configured"`
 - Kubernetes contexts: !`kubectl config get-contexts --no-headers 2>/dev/null | wc -l || echo "0"`
 
 ## Your task

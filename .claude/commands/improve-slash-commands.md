@@ -108,9 +108,27 @@ STEP 7: Report status
 - Show: "✓ Improved {command-name} ({completed}/{total} completed)"
 - Display key improvements made
 - IF all completed:
-- Generate final summary report
+  - Generate final summary report
+  - Display comprehensive TLDR
 - ELSE:
-- Show next command: "Next: {next-command-name}"
+  - Show next command: "Next: {next-command-name}"
+  - Display session TLDR
+
+STEP 8: Generate TLDR (after commit)
+
+PROCEDURE generate_tldr():
+
+- Total commands improved: {completed}/{total}
+- Common improvements applied:
+  - Front matter: {frontMatterCount} commands
+  - Dynamic context: {dynamicContextCount} commands
+  - Programmatic structure: {programmaticCount} commands
+  - State management: {stateManagementCount} commands
+  - Extended thinking: {extendedThinkingCount} commands
+  - Sub-agent patterns: {subAgentCount} commands
+- Unique improvements: {list special enhancements}
+- Session duration: {calculate from first to last update}
+- Next steps: Run `/improve-slash-commands` to continue
 
 ## Best Practices Reference
 

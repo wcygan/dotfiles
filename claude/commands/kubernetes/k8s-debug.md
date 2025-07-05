@@ -1,96 +1,108 @@
+---
+allowed-tools: Bash(kubectl:*), Bash(jq:*), Bash(rg:*), Read, Write
+description: Systematically diagnose and troubleshoot Kubernetes issues
+---
+
 # /k8s-debug
 
-Systematically diagnose and troubleshoot Kubernetes issues with intelligent pod, service, and cluster-level debugging workflows.
+## Context
 
-## Usage
+- Cluster status: !`kubectl cluster-info 2>/dev/null || echo "No cluster connection"`
+- Node availability: !`kubectl get nodes -o json 2>/dev/null | jq -r '.items[] | "\(.metadata.name): \(.status.conditions[] | select(.type=="Ready") | .status)"' || echo "Cannot reach nodes"`
+- Failed pods count: !`kubectl get pods --all-namespaces -o json 2>/dev/null | jq '[.items[] | select(.status.phase != "Running" and .status.phase != "Succeeded")] | length' || echo "0"`
+- Recent warnings: !`kubectl get events --all-namespaces --field-selector type=Warning --sort-by='.lastTimestamp' -o json 2>/dev/null | jq -r '.items[-5:] | reverse | .[] | "\(.involvedObject.namespace)/\(.involvedObject.name): \(.message)"' || echo "No recent warnings"`
 
-```
-/k8s-debug [pod-name]
-/k8s-debug [service-name]
-/k8s-debug [deployment-name]
-/k8s-debug
-```
+## Your task
 
-## Context Detection
+PROCEDURE diagnose_kubernetes_issue():
 
-**When no argument provided:**
+INPUT: resource_name = $ARGUMENTS || null
+  STATE_FILE: /tmp/k8s-debug-$(gdate +%s%N).json
 
-- Lists failing pods across all namespaces
-- Shows recent events and warnings
-- Provides interactive selection for detailed investigation
+STEP 1: Initialize debugging context
+IF resource_name IS NULL:
 
-**When argument provided:**
+- Scan for failing resources across all namespaces
+- Prioritize by failure severity (CrashLoopBackOff > Pending > Error)
+- Present interactive selection for focus
+  ELSE:
+- Detect resource type using kubectl api-resources
+- Verify resource exists
+- Gather resource metadata
 
-- Auto-detects resource type (pod, service, deployment, etc.)
-- Focuses debugging on specified resource
-- Includes related resources in analysis
+STEP 2: Quick health assessment
+FOR EACH critical_component IN [nodes, system-pods, resource-quotas]:
 
-## Diagnostic Workflow
+- Check component health status
+- Flag critical issues for immediate attention
+- Save findings to state file
 
-### Phase 1: Quick Health Assessment
+STEP 3: Resource-specific investigation
+CASE resource_type:
+WHEN "pod":
 
-**Cluster Overview**
+- Fetch pod describe output
+- Retrieve container logs (current and previous)
+- Check resource limits vs actual usage
+- Analyze container restart patterns
+- Verify volume mounts and secrets
 
-- Node status and resource availability
-- Critical system pod health (kube-system namespace)
-- Recent cluster events and warnings
-- Resource quotas and limits
+  WHEN "service":
+  - Verify endpoint availability
+  - Check selector label matching
+  - Test DNS resolution from debug pod
+  - Analyze network policies
+  - Validate ingress configuration
 
-**Namespace Analysis**
+  WHEN "deployment":
+  - Check rollout status and history
+  - Analyze replica set health
+  - Review deployment strategy
+  - Verify pod template spec
+  - Check horizontal pod autoscaler
 
-- Pod status summary across namespaces
-- Service connectivity overview
-- ConfigMap and Secret integrity
-- Recent deployment activity
+STEP 4: Deep diagnostic analysis
+FOR EACH issue_category IN [container-runtime, networking, storage, configuration]:
+CASE issue_category:
+WHEN "container-runtime":
+IF pod.status CONTAINS "ImagePullBackOff":
 
-### Phase 2: Resource-Specific Investigation
+- Verify image exists: docker pull [image]
+- Check registry authentication
+- Validate image pull secrets
+  ELSE IF pod.status CONTAINS "CrashLoopBackOff":
+- Analyze exit codes and error patterns
+- Check resource constraints
+- Review startup/liveness probes
 
-**Pod Debugging**
+  WHEN "networking":
+  TRY:
+  - Launch debug pod for connectivity tests
+  - Test DNS resolution: nslookup kubernetes.default
+  - Verify service discovery
+  - Check network policy restrictions
+    CATCH:
+  - Document network isolation issues
 
-```bash
-# Pod status and events
-kubectl describe pod [pod-name] -n [namespace]
-kubectl get events --field-selector involvedObject.name=[pod-name]
+  WHEN "storage":
+  - Verify PVC binding status
+  - Check storage class provisioner
+  - Validate mount permissions
+  - Analyze disk usage patterns
 
-# Container logs and status
-kubectl logs [pod-name] --previous --tail=100
-kubectl logs [pod-name] -c [container] --follow
+  WHEN "configuration":
+  - Validate ConfigMap/Secret references
+  - Check environment variable injection
+  - Verify RBAC permissions
+  - Analyze security context conflicts
 
-# Resource usage and limits
-kubectl top pod [pod-name] -n [namespace]
-kubectl get pod [pod-name] -o yaml | grep -A 10 resources
-```
+STEP 5: Performance analysis
+IF resource_type IN ["pod", "deployment"]:
 
-**Service Debugging**
-
-```bash
-# Service endpoints and connectivity
-kubectl describe service [service-name] -n [namespace]
-kubectl get endpoints [service-name] -n [namespace]
-
-# Network policy analysis
-kubectl get networkpolicies -n [namespace]
-kubectl describe networkpolicy -n [namespace]
-
-# Ingress and load balancer status
-kubectl get ingress -n [namespace]
-kubectl describe ingress [ingress-name] -n [namespace]
-```
-
-**Deployment Analysis**
-
-```bash
-# Deployment status and history
-kubectl describe deployment [deployment-name] -n [namespace]
-kubectl rollout status deployment/[deployment-name] -n [namespace]
-kubectl rollout history deployment/[deployment-name] -n [namespace]
-
-# ReplicaSet investigation
-kubectl get rs -n [namespace] --selector=app=[app-label]
-kubectl describe rs [replicaset-name] -n [namespace]
-```
-
-### Phase 3: Deep Diagnostic Analysis
+- Collect resource metrics: cpu, memory, network I/O
+- Identify throttling or OOM patterns
+- Analyze container restart frequency
+- Check horizontal/vertical scaling triggers
 
 **Container Runtime Issues**
 
@@ -146,141 +158,174 @@ kubectl describe rs [replicaset-name] -n [namespace]
    - Update propagation delays
    - Base64 encoding issues
 
-### Phase 4: Performance Analysis
+STEP 6: Generate actionable recommendations
+recommendations = []
 
-**Resource Utilization**
+    FOR EACH issue IN identified_issues:
+      recommendation = {
+        "severity": classify_severity(issue),
+        "category": issue.category,
+        "description": issue.description,
+        "fix_commands": generate_fix_commands(issue),
+        "prevention": suggest_preventive_measures(issue)
+      }
+      recommendations.append(recommendation)
 
-```bash
-# Current resource usage
-kubectl top pods -n [namespace] --sort-by=cpu
-kubectl top pods -n [namespace] --sort-by=memory
+    SORT recommendations BY severity DESC
 
-# Node resource availability
-kubectl top nodes
-kubectl describe nodes | grep -A 5 "Allocated resources"
+STEP 7: Output comprehensive report
+PRINT "=== Kubernetes Debugging Report ==="
+PRINT "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+PRINT "Resource: ${resource_name:-Cluster-wide scan}"
+
+    IF critical_issues.length > 0:
+      PRINT "\n🚨 CRITICAL ISSUES REQUIRING IMMEDIATE ACTION:"
+      FOR EACH issue IN critical_issues:
+        PRINT "- ${issue.description}"
+        PRINT "  Fix: ${issue.fix_command}"
+
+    PRINT "\n📊 Diagnostic Summary:"
+    FOR EACH category IN [health_status, resource_usage, configuration, networking]:
+      PRINT formatted_findings(category)
+
+    PRINT "\n🔧 Recommended Actions:"
+    FOR EACH rec IN recommendations:
+      PRINT "${rec.severity}: ${rec.description}"
+      FOR EACH cmd IN rec.fix_commands:
+        PRINT "  $ ${cmd}"
+
+    SAVE state_file WITH all_findings
+    PRINT "\nFull diagnostic data saved to: ${STATE_FILE}"
+
+## Helper Functions
+
+FUNCTION classify_severity(issue):
+IF issue.affects_availability:
+RETURN "CRITICAL"
+ELSE IF issue.affects_performance:
+RETURN "HIGH"
+ELSE IF issue.affects_security:
+RETURN "HIGH"
+ELSE:
+RETURN "MEDIUM"
+
+FUNCTION generate_fix_commands(issue):
+commands = []
+CASE issue.type:
+WHEN "ImagePullBackOff":
+commands.add("kubectl create secret docker-registry ...")
+commands.add("kubectl patch deployment ... -p '{\"spec\":{...}}'")
+WHEN "CrashLoopBackOff":
+commands.add("kubectl logs ${pod} --previous")
+commands.add("kubectl edit deployment ${deployment}")
+WHEN "Pending":
+commands.add("kubectl describe pod ${pod} | grep Events")
+commands.add("kubectl get nodes -o wide")
+RETURN commands
+
+## Common Issue Patterns
+
+PATTERN crash_loop_backoff:
+SYMPTOMS:
+
+- Pod status shows CrashLoopBackOff
+- Restart count increasing
+- Container exits immediately
+  ROOT_CAUSES:
+- Application crashes on startup
+- Missing dependencies or configuration
+- Insufficient resources
+- Failed health checks
+  DIAGNOSTIC_STEPS:
+
+1. Check logs: kubectl logs ${pod} --previous
+2. Verify resource limits
+3. Test image locally
+4. Review startup probe configuration
+
+PATTERN image_pull_errors:
+SYMPTOMS:
+
+- ErrImagePull or ImagePullBackOff status
+- Events show "Failed to pull image"
+  ROOT_CAUSES:
+- Image doesn't exist
+- Registry authentication failure
+- Network connectivity issues
+- Rate limiting
+  DIAGNOSTIC_STEPS:
+
+1. Verify image: docker pull ${image}
+2. Check pull secrets
+3. Test registry connectivity
+4. Review image pull policy
+
+PATTERN pod_pending:
+SYMPTOMS:
+
+- Pod stuck in Pending state
+- No node assignment
+  ROOT_CAUSES:
+- Insufficient cluster resources
+- Node selector constraints
+- Taints and tolerations mismatch
+- PVC not bound
+  DIAGNOSTIC_STEPS:
+
+1. Check node capacity
+2. Review scheduling constraints
+3. Verify PVC status
+4. Analyze pod events
+
+## State Management
+
+The command maintains debugging state in `/tmp/k8s-debug-{session-id}.json` for:
+
+- Tracking investigated resources
+- Storing diagnostic findings
+- Enabling debug session resume
+- Generating comprehensive reports
+
+Example state structure:
+
+```json
+{
+  "session_id": "1751705386263510000",
+  "resource": "frontend-deployment",
+  "namespace": "production",
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "category": "resources",
+      "issue": "Memory limit too low causing OOMKills",
+      "evidence": "10 OOMKill events in last hour",
+      "fix_commands": [
+        "kubectl patch deployment frontend-deployment -p '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"app\",\"resources\":{\"limits\":{\"memory\":\"512Mi\"}}}]}}}}'"
+      ]
+    }
+  ],
+  "recommendations": [],
+  "timestamp": "2024-01-01T12:00:00Z"
+}
 ```
 
-**Application Metrics**
+## Error Handling
 
-1. **Pod Performance**
-   - CPU throttling detection
-   - Memory pressure indicators
-   - Container restart patterns
-   - Readiness and liveness probe failures
+IF kubectl commands fail:
 
-2. **Cluster Performance**
-   - Node resource contention
-   - Scheduler performance
-   - etcd health and latency
-   - API server response times
+- Check cluster connectivity
+- Verify kubeconfig settings
+- Test with explicit context: --context=${context}
+- Fallback to cached data if available
 
-### Phase 5: Actionable Recommendations
+IF resource not found:
 
-**Immediate Actions**
+- Suggest similar resources using fuzzy matching
+- List resources in namespace
+- Check other namespaces
 
-- Critical issues requiring immediate attention
-- Resource constraint resolutions
-- Configuration fixes with specific commands
-- Network connectivity repairs
+IF permissions denied:
 
-**Short-term Improvements**
-
-- Resource limit optimization
-- Health check configuration
-- Monitoring and alerting setup
-- Documentation of debugging steps
-
-**Long-term Optimizations**
-
-- Cluster architecture improvements
-- Automation of common debugging tasks
-- Preventive monitoring implementation
-- Disaster recovery procedures
-
-## Common Debugging Scenarios
-
-### CrashLoopBackOff
-
-1. **Check container logs**:
-   ```bash
-   kubectl logs [pod-name] --previous
-   ```
-
-2. **Verify resource limits**:
-   ```bash
-   kubectl describe pod [pod-name] | grep -A 10 Limits
-   ```
-
-3. **Test container locally**:
-   ```bash
-   docker run --rm -it [image] [command]
-   ```
-
-### ImagePullBackOff
-
-1. **Verify image exists**:
-   ```bash
-   docker pull [image-name]
-   ```
-
-2. **Check registry authentication**:
-   ```bash
-   kubectl get secrets -n [namespace] | grep docker
-   kubectl describe secret [secret-name] -n [namespace]
-   ```
-
-### Pending Pods
-
-1. **Check node resources**:
-   ```bash
-   kubectl describe nodes | grep -A 10 "Non-terminated Pods"
-   ```
-
-2. **Verify node selectors and affinity**:
-   ```bash
-   kubectl describe pod [pod-name] | grep -A 5 "Node-Selectors"
-   ```
-
-### Service Not Accessible
-
-1. **Check service endpoints**:
-   ```bash
-   kubectl get endpoints [service-name] -n [namespace]
-   ```
-
-2. **Test service connectivity**:
-   ```bash
-   kubectl run debug --image=busybox --rm -it -- wget -qO- [service-name]:[port]
-   ```
-
-## Integration with Existing Commands
-
-- Use `/monitor` for ongoing cluster health tracking
-- Follow with `/health-check` for systematic validation
-- Apply `/harden` for security improvements discovered
-- Use `/document` to record debugging procedures
-
-## Output Format
-
-**Summary Dashboard**
-
-- Health status overview with color coding
-- Critical issues requiring immediate attention
-- Resource utilization highlights
-- Connectivity status summary
-
-**Detailed Analysis**
-
-- Step-by-step diagnostic results
-- Specific kubectl commands used
-- Configuration recommendations
-- Performance optimization suggestions
-
-**Action Plan**
-
-- Prioritized list of issues to address
-- Specific commands to run for fixes
-- Monitoring recommendations
-- Follow-up investigation areas
-
-The debugging process adapts based on detected issues, focusing efforts on the most likely root causes while providing comprehensive coverage of potential problems.
+- Document required RBAC permissions
+- Suggest minimum role requirements
+- Provide role binding examples

@@ -51,7 +51,7 @@ TL;DR: Best Practices for Prompts/Slash Commands in CLAUDE.md
 1. Minimize Non-Determinism - Goal: Same inputs → same outputs
 2. Modular - Break into reusable components
 3. Human checkpoints - AWAIT approval for critical operations
-4. Token efficient - Reference files, use precise tools (jq, rg)
+4. Token efficient - Reference files, use precise tools (jq (json query / processor — essential for working with JSON files), rg (recursively search directories for regex pattern), fd (find files according to patterns))
 5. Error resilient - Handle partial failures gracefully
 
 🛠️ Integration Features

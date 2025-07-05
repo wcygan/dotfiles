@@ -115,5 +115,44 @@ Before marking a command as improved:
 - [ ] Proper quoting and escaping verified
 - [ ] Fallback values provided for all commands
 
+## Atomic Commit Workflow
+
+### CRITICAL: Always Commit progress.json Changes Atomically
+
+**When improving commands, you MUST commit progress.json updates together with the command file changes:**
+
+1. **Stage Both Files Together:**
+   ```bash
+   git add claude/commands/path/to/command.md notes/improve-slash-commands/progress.json
+   ```
+
+2. **Single Atomic Commit:**
+   ```bash
+   git commit -m "improve(commands): enhance {command-name} with best practices"
+   ```
+
+3. **Never Commit Separately:**
+   - ❌ DON'T: Commit command file first, then progress.json later
+   - ❌ DON'T: Update progress.json without committing the improved command
+   - ✅ DO: Always stage and commit both files in a single atomic operation
+
+### Why This Matters
+
+- **Consistency**: The progress tracking stays in sync with actual improvements
+- **Rollback Safety**: If a commit needs to be reverted, both files revert together
+- **Clear History**: Each commit shows exactly what was improved and tracks it
+- **Prevents Drift**: Avoids progress.json showing work that wasn't actually committed
+
+### Example Workflow
+
+```bash
+# After improving a command
+git add claude/commands/kubernetes/k8s-debug.md
+git add notes/improve-slash-commands/progress.json
+
+# Commit both atomically
+git commit -m "improve(commands): enhance k8s-debug with best practices"
+```
+
 ```
 ```

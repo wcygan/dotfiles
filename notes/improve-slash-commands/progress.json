@@ -1,18 +1,23 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 0,
+  "completed": 1,
   "inProgress": null,
-  "lastUpdated": null,
+  "lastUpdated": "2025-07-05T12:00:00Z",
   "commands": [
     {
       "id": "001",
       "name": "k8s-debug",
       "filepath": "claude/commands/kubernetes/k8s-debug.md",
       "namespace": "kubernetes",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-05T12:00:00Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
@@ -2392,9 +2397,9 @@
     }
   ],
   "improvementStats": {
-    "frontMatterAdded": 0,
-    "dynamicContextAdded": 0,
-    "programmaticStructureAdded": 0,
-    "stateManagementAdded": 0
+    "frontMatterAdded": 1,
+    "dynamicContextAdded": 1,
+    "programmaticStructureAdded": 1,
+    "stateManagementAdded": 1
   }
 }

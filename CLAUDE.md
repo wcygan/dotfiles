@@ -57,6 +57,10 @@ deno run --allow-all scripts/pre-commit-check.ts # Pre-commit validation
     - `workflow/` - Workflow management
     - `meta/` - Meta commands and utilities
     - `tool/` - Tool-specific commands
+- `.claude/` - Hidden directory for project-specific Claude Code metadata
+  - `.claude/commands/` - Project-specific slash commands (e.g., `/improve-slash-commands`)
+  - `.claude/settings.local.json` - Local Claude Code settings overrides
+  - This directory contains sensitive or project-specific configurations not meant for distribution
 - `cursor/`, `vscode/`, `zed/` - Editor-specific configurations with keybindings
 - `tools/` - User-installable scripts copied to ~/.tools during installation
 - Shell dotfiles are dynamically generated during installation

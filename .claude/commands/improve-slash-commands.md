@@ -114,21 +114,15 @@ STEP 7: Report status
   - Show next command: "Next: {next-command-name}"
   - Display session TLDR
 
-STEP 8: Generate TLDR (after commit)
+STEP 8: TLDR the diff
 
-PROCEDURE generate_tldr():
-
-- Total commands improved: {completed}/{total}
-- Common improvements applied:
-  - Front matter: {frontMatterCount} commands
-  - Dynamic context: {dynamicContextCount} commands
-  - Programmatic structure: {programmaticCount} commands
-  - State management: {stateManagementCount} commands
-  - Extended thinking: {extendedThinkingCount} commands
-  - Sub-agent patterns: {subAgentCount} commands
-- Unique improvements: {list special enhancements}
-- Session duration: {calculate from first to last update}
-- Next steps: Run `/improve-slash-commands` to continue
+- Show concise summary of actual changes made to the command file
+- Focus on the key transformations:
+  - "Added YAML front matter with tools: X, Y, Z"
+  - "Introduced dynamic context for real-time git status"
+  - "Converted to STEP-based execution with error handling"
+  - "Added session-based state management"
+- Example: "Transformed casual instructions → programmatic STEP structure with FOR loops, added !`git status` context injection, implemented /tmp/$SESSION_ID state files"
 
 ## Best Practices Reference
 

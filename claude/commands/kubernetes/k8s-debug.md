@@ -7,9 +7,10 @@ description: Systematically diagnose and troubleshoot Kubernetes issues
 
 ## Context
 
+- Session ID: !`gdate +%s%N`
 - Cluster status: !`kubectl cluster-info 2>/dev/null || echo "No cluster connection"`
 - Node availability: !`kubectl get nodes -o json 2>/dev/null | jq -r '.items[] | "\(.metadata.name): \(.status.conditions[] | select(.type=="Ready") | .status)"' || echo "Cannot reach nodes"`
-- Failed pods count: !`kubectl get pods --all-namespaces -o json 2>/dev/null | jq '[.items[] | select(.status.phase != "Running" and .status.phase != "Succeeded")] | length' || echo "0"`
+- Failed pods count: !`kubectl get pods --all-namespaces -o json 2>/dev/null | jq '[.items[] | select(.status.phase == "Failed" or .status.phase == "Unknown" or .status.phase == "Pending" or .status.phase == "Error")] | length' || echo "0"`
 - Recent warnings: !`kubectl get events --all-namespaces --field-selector type=Warning --sort-by='.lastTimestamp' -o json 2>/dev/null | jq -r '.items[-5:] | reverse | .[] | "\(.involvedObject.namespace)/\(.involvedObject.name): \(.message)"' || echo "No recent warnings"`
 
 ## Your task
@@ -17,7 +18,7 @@ description: Systematically diagnose and troubleshoot Kubernetes issues
 PROCEDURE diagnose_kubernetes_issue():
 
 INPUT: resource_name = $ARGUMENTS || null
-  STATE_FILE: /tmp/k8s-debug-$(gdate +%s%N).json
+  STATE_FILE: /tmp/k8s-debug-$SESSION_ID.json
 
 STEP 1: Initialize debugging context
 IF resource_name IS NULL:
@@ -279,7 +280,7 @@ SYMPTOMS:
 
 ## State Management
 
-The command maintains debugging state in `/tmp/k8s-debug-{session-id}.json` for:
+The command maintains debugging state in `/tmp/k8s-debug-$SESSION_ID.json` for:
 
 - Tracking investigated resources
 - Storing diagnostic findings

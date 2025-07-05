@@ -2,7 +2,7 @@
 
 We will improve all slash commmands under /claude/commands to follow the new best practices:
 
-```bash
+````bash
 TL;DR: Best Practices for Prompts/Slash Commands in CLAUDE.md
 
 🎯 Core Philosophy
@@ -69,4 +69,51 @@ TL;DR: Best Practices for Prompts/Slash Commands in CLAUDE.md
 - Context preservation - Main agent synthesizes sub-agent findings
 
 The /commit command (file: claude/commands/git/commit/commit.md) serves as the gold standard example, demonstrating all these best practices in action.
+
+## Critical Testing Requirements
+
+### Session ID Requirement
+**EVERY command MUST include a SESSION_ID in the context section:**
+```yaml
+## Context
+- Session ID: !`gdate +%s%N`
+````
+
+This ensures:
+
+- Unique temporary files for each invocation
+- No conflicts between concurrent sessions
+- Clean state isolation
+
+### Bash Command Testing
+
+**EVERY bash command in the Context section MUST be tested for compatibility:**
+
+1. Test each command individually before including
+2. Handle shell quoting issues properly:
+   - Avoid `!=` in jq expressions when passed through shell
+   - Use proper escaping for quotes within quotes
+   - Test with actual kubectl/docker/git environments
+
+3. Common pitfalls to avoid:
+   - Shell interpretation of `!` character
+   - Nested quotes in jq expressions
+   - Special characters in command substitution
+
+4. Always provide fallback values:
+   ```bash
+   !`command || echo "fallback value"`
+   ```
+
+### Testing Checklist
+
+Before marking a command as improved:
+
+- [ ] All bash commands in Context section tested individually
+- [ ] Session ID generation verified with `gdate +%s%N`
+- [ ] Error handling for missing tools/connections
+- [ ] Proper quoting and escaping verified
+- [ ] Fallback values provided for all commands
+
+```
 ```

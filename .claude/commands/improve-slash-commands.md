@@ -30,6 +30,7 @@ STEP 2: Analyze current command
 
 - Read the command file
 - Identify current structure
+- FOR complex commands: Use "think hard" to deeply analyze optimization opportunities
 - Determine improvement needs based on best practices:
 
 * Has proper YAML front matter?
@@ -38,6 +39,7 @@ STEP 2: Analyze current command
 * Uses dynamic context (!`command`)?
 * Has programmatic structure?
 * Uses proper state management?
+* Could benefit from extended thinking capabilities?
 
 STEP 3: Apply improvements systematically
 
@@ -149,6 +151,72 @@ STEP 7: Report status
    - Never split progress tracking from actual changes
    - Ensures consistency and rollback safety
 
+## Extended Thinking for Command Optimization
+
+### When to Use Extended Thinking
+
+Use "think hard" or deeper thinking modes when improving commands that involve:
+
+1. **Complex Logic Flow**:
+   - Multi-phase workflows with dependencies
+   - State machines with multiple transitions
+   - Nested conditional logic requiring careful analysis
+
+2. **Architecture Decisions**:
+   - Choosing between sub-agent vs sequential execution
+   - Designing optimal state management strategies
+   - Determining appropriate error handling patterns
+
+3. **Performance Optimization**:
+   - Analyzing token usage patterns
+   - Identifying opportunities for parallel execution
+   - Optimizing context window usage
+
+4. **Security Analysis**:
+   - Evaluating allowed-tools permissions
+   - Identifying potential security vulnerabilities
+   - Designing safe command patterns
+
+### How to Apply Extended Thinking
+
+- Add thinking triggers in command descriptions:
+  ```yaml
+  description: Complex analysis requiring deep architectural thinking
+  ```
+
+- Include thinking prompts in task definitions:
+  ```markdown
+  ## Your task
+
+  Think deeply about the optimal approach for this multi-phase workflow.
+  Consider performance, security, and maintainability tradeoffs.
+  ```
+
+- For analysis commands, suggest thinking intensifiers:
+  ```markdown
+  STEP 1: Initial analysis
+
+  - think hard about potential edge cases
+  - think harder about security implications
+  ```
+
+### Extended Thinking Patterns
+
+1. **Research Commands** - Enable deeper analysis:
+   ```markdown
+   Use extended thinking to thoroughly explore all aspects of $ARGUMENTS
+   ```
+
+2. **Debugging Commands** - Complex problem solving:
+   ```markdown
+   Think deeply about root causes and systematic debugging approaches
+   ```
+
+3. **Architecture Commands** - Design decisions:
+   ```markdown
+   Think harder about system design tradeoffs and long-term maintainability
+   ```
+
 ## Improvement Patterns
 
 ### Pattern 1: Simple Command Enhancement
@@ -199,6 +267,7 @@ Before marking ANY command as improved:
 - [ ] Command file and progress.json staged together
 - [ ] Atomic commit includes both files
 - [ ] No separate commits for progress tracking
+- [ ] Extended thinking considered for complex commands
 
 ### Common Bash Command Issues to Test
 

@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 6,
+  "completed": 7,
   "inProgress": null,
-  "lastUpdated": "2025-07-05T13:04:00Z",
+  "lastUpdated": "2025-07-05T13:15:00Z",
   "commands": [
     {
       "id": "001",
@@ -134,9 +134,11 @@
       "name": "agent-prep-merge",
       "filepath": "claude/commands/agent/merge/agent-prep-merge.md",
       "namespace": "agent/merge",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-05T13:15:00Z",
+      "improvements": [
+        "programmaticStructureAdded"
+      ],
       "metrics": {
         "hadFrontMatter": true,
         "hadDynamicContext": true,
@@ -2428,7 +2430,7 @@
   "improvementStats": {
     "frontMatterAdded": 5,
     "dynamicContextAdded": 5,
-    "programmaticStructureAdded": 5,
+    "programmaticStructureAdded": 6,
     "stateManagementAdded": 4,
     "extendedThinkingAdded": 1,
     "subAgentPatternsAdded": 1

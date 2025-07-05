@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 7,
+  "completed": 8,
   "inProgress": null,
-  "lastUpdated": "2025-07-05T13:15:00Z",
+  "lastUpdated": "2025-07-05T13:37:00Z",
   "commands": [
     {
       "id": "001",
@@ -152,9 +152,15 @@
       "name": "agent-persona-accessibility-expert",
       "filepath": "claude/commands/agent/persona/agent-persona-accessibility-expert.md",
       "namespace": "agent/persona",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-05T13:37:00Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
@@ -2429,11 +2435,11 @@
     }
   ],
   "improvementStats": {
-    "frontMatterAdded": 5,
-    "dynamicContextAdded": 5,
-    "programmaticStructureAdded": 6,
-    "stateManagementAdded": 4,
-    "extendedThinkingAdded": 1,
+    "frontMatterAdded": 6,
+    "dynamicContextAdded": 6,
+    "programmaticStructureAdded": 7,
+    "stateManagementAdded": 5,
+    "extendedThinkingAdded": 2,
     "subAgentPatternsAdded": 1
   }
 }

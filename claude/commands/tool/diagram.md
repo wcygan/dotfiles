@@ -60,6 +60,7 @@ STEP 4: Generate diagram
 - FOR complex diagrams: Use sub-agents for parallel analysis
 - Structure output with clear component boundaries
 - Add directional flows and relationships
+- Apply consistent color themes and icons (see Visual Design Guidelines)
 
 STEP 5: Export diagram (if mmdc available)
 
@@ -319,6 +320,48 @@ mmdc -i diagram.mmd -o diagram.pdf -c config.json
 fd "\.mmd$" . -x mmdc -i {} -o {.}.png
 ```
 
+### Theme Configuration
+
+Create a `mermaid-config.json` for consistent styling:
+
+```json
+{
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#3498db",
+    "primaryTextColor": "#fff",
+    "primaryBorderColor": "#2980b9",
+    "lineColor": "#34495e",
+    "secondaryColor": "#27ae60",
+    "tertiaryColor": "#e67e22",
+    "background": "#ffffff",
+    "mainBkg": "#ecf0f1",
+    "secondBkg": "#bdc3c7",
+    "tertiaryBkg": "#95a5a6",
+    "textColor": "#2c3e50",
+    "fontSize": "16px",
+    "fontFamily": "Arial, sans-serif",
+    "nodeSpacing": 50,
+    "rankSpacing": 100
+  },
+  "flowchart": {
+    "curve": "basis",
+    "nodeSpacing": 30,
+    "rankSpacing": 50,
+    "useMaxWidth": true
+  },
+  "sequence": {
+    "diagramMarginX": 50,
+    "diagramMarginY": 10,
+    "actorMargin": 50,
+    "width": 150,
+    "height": 65
+  }
+}
+```
+
+Use with: `mmdc -i diagram.mmd -o diagram.png -c mermaid-config.json`
+
 ### State Management for Complex Diagrams
 
 ```json
@@ -374,6 +417,168 @@ async function generateArchitectureDiagram(rootPath: string) {
 
   return diagram;
 }
+```
+
+### Visual Design Guidelines
+
+#### Color Themes
+
+Use consistent color schemes based on component types:
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': {
+  'primaryColor':'#ff6b6b',
+  'primaryTextColor':'#fff',
+  'primaryBorderColor':'#ff4757',
+  'lineColor':'#5f27cd',
+  'secondaryColor':'#4834d4',
+  'tertiaryColor':'#30336b',
+  'background':'#f5f3f0',
+  'mainBkg':'#ffffff',
+  'secondBkg':'#f1f2f6',
+  'tertiaryBkg':'#dfe4ea'
+}}}%%
+```
+
+**Standard Color Assignments:**
+
+- **Frontend/UI**: Blue tones (#3498db, #2980b9)
+- **Backend/API**: Green tones (#27ae60, #16a085)
+- **Database**: Orange tones (#e67e22, #d35400)
+- **Security/Auth**: Red tones (#e74c3c, #c0392b)
+- **External Services**: Purple tones (#9b59b6, #8e44ad)
+- **Infrastructure**: Gray tones (#7f8c8d, #34495e)
+- **Message Queues**: Yellow tones (#f1c40f, #f39c12)
+
+#### Icon System
+
+Use standardized icons for component types:
+
+```mermaid
+flowchart LR
+    A[fa:fa-users Client] --> B[fa:fa-shield-alt Gateway]
+    B --> C[fa:fa-server API]
+    C --> D[fa:fa-database Database]
+    C --> E[fa:fa-envelope Queue]
+    C --> F[fa:fa-cloud External]
+```
+
+**Component Icons:**
+
+- **Users/Clients**: fa:fa-users, fa:fa-mobile, fa:fa-desktop
+- **Security**: fa:fa-shield-alt, fa:fa-lock, fa:fa-key
+- **Services**: fa:fa-server, fa:fa-cogs, fa:fa-microchip
+- **Data Storage**: fa:fa-database, fa:fa-hdd, fa:fa-archive
+- **Messaging**: fa:fa-envelope, fa:fa-comments, fa:fa-paper-plane
+- **Cloud/External**: fa:fa-cloud, fa:fa-globe, fa:fa-satellite
+- **Monitoring**: fa:fa-chart-line, fa:fa-tachometer-alt, fa:fa-eye
+
+#### Mermaid Styling Examples
+
+**Architecture Diagram with Colors and Icons:**
+
+```mermaid
+flowchart TB
+    subgraph Frontend ["fa:fa-desktop Frontend Layer"]
+        style Frontend fill:#3498db,stroke:#2980b9,color:#fff
+        A[fa:fa-chrome Browser App]
+        B[fa:fa-mobile Mobile App]
+    end
+    
+    subgraph Backend ["fa:fa-server Backend Services"]
+        style Backend fill:#27ae60,stroke:#16a085,color:#fff
+        C[fa:fa-shield-alt Auth Service]
+        D[fa:fa-shopping-cart Order Service]
+        E[fa:fa-credit-card Payment Service]
+    end
+    
+    subgraph Data ["fa:fa-database Data Layer"]
+        style Data fill:#e67e22,stroke:#d35400,color:#fff
+        F[(fa:fa-database PostgreSQL)]
+        G[(fa:fa-hdd Redis Cache)]
+    end
+    
+    subgraph External ["fa:fa-cloud External Services"]
+        style External fill:#9b59b6,stroke:#8e44ad,color:#fff
+        H[fa:fa-envelope Email Service]
+        I[fa:fa-credit-card Stripe API]
+    end
+    
+    A & B --> C
+    C --> D & E
+    D & E --> F
+    D --> G
+    E --> I
+    C --> H
+```
+
+**State Diagram with Themed Colors:**
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending: Order Placed
+    Pending --> Processing: Payment Confirmed
+    Processing --> Shipped: Items Packed
+    Shipped --> Delivered: Package Received
+    Processing --> Cancelled: Payment Failed
+    
+    state Pending {
+        [*] --> AwaitingPayment
+        AwaitingPayment --> PaymentProcessing
+    }
+    
+    classDef pending fill:#f39c12,stroke:#e67e22,color:#fff
+    classDef processing fill:#3498db,stroke:#2980b9,color:#fff
+    classDef success fill:#27ae60,stroke:#16a085,color:#fff
+    classDef error fill:#e74c3c,stroke:#c0392b,color:#fff
+    
+    class Pending pending
+    class Processing processing
+    class Delivered success
+    class Cancelled error
+```
+
+#### ASCII Art Icon Conventions
+
+For ASCII diagrams, use text-based icon representations:
+
+```
+[DB]    - Database
+[API]   - API Service
+[Q]     - Message Queue
+[CDN]   - Content Delivery Network
+[LB]    - Load Balancer
+[GW]    - Gateway
+[AUTH]  - Authentication Service
+[CACHE] - Cache Layer
+[LOG]   - Logging Service
+[MON]   - Monitoring
+```
+
+Example with ASCII icons:
+
+```
+┌─────────────────────────────────────────┐
+│            [CDN] Static Assets          │
+└────────────────┬────────────────────────┘
+                 │
+         ┌───────▼────────┐
+         │  [LB] HAProxy  │
+         └───────┬────────┘
+                 │
+    ┌────────────┴────────────┐
+    │                         │
+┌───▼─────┐            ┌─────▼──────┐
+│  [API]  │            │   [AUTH]   │
+│ Gateway │            │  Service   │
+└───┬─────┘            └─────┬──────┘
+    │                        │
+    └───────────┬────────────┘
+                │
+         ┌──────▼──────┐
+         │    [DB]     │
+         │ PostgreSQL  │
+         └─────────────┘
 ```
 
 ### Extended Thinking for Complex Diagrams
@@ -440,6 +645,14 @@ Analyze this codebase for diagram generation using 5 parallel agents:
 4. **Show data flow** - Indicate direction with arrows
 5. **Group related items** - Use boxes/boundaries
 6. **Include legend** - Explain symbols if needed
+
+### Visual Consistency
+
+1. **Color by Function** - Use the standard color assignments consistently
+2. **Icon Standards** - Apply FontAwesome icons for familiar visual language
+3. **Theme Adherence** - Use predefined themes across all diagrams
+4. **Accessibility** - Ensure sufficient contrast for readability
+5. **Component Shapes** - Rectangles for services, cylinders for databases, diamonds for decisions
 
 ### Performance Optimization
 

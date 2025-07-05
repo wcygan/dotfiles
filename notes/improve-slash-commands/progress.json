@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 3,
+  "completed": 4,
   "inProgress": null,
-  "lastUpdated": "2025-07-05T12:35:00Z",
+  "lastUpdated": "2025-07-05T12:47:37Z",
   "commands": [
     {
       "id": "001",
@@ -72,9 +72,14 @@
       "name": "five",
       "filepath": "claude/commands/tool/five.md",
       "namespace": "tool",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-05T12:47:37Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
@@ -2409,9 +2414,9 @@
     }
   ],
   "improvementStats": {
-    "frontMatterAdded": 2,
-    "dynamicContextAdded": 2,
-    "programmaticStructureAdded": 2,
-    "stateManagementAdded": 1
+    "frontMatterAdded": 3,
+    "dynamicContextAdded": 3,
+    "programmaticStructureAdded": 3,
+    "stateManagementAdded": 2
   }
 }

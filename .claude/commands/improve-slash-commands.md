@@ -72,8 +72,8 @@ STEP 3: Apply improvements systematically
 
 - Add state management for complex workflows:
 
-* Session IDs: !`gdate +%s%N`
-* State files: /tmp/{command}-state-$SESSION_ID.json
+* Session IDs: !`gdate +%s%N` (NEVER hard-code - always use dynamic generation)
+* State files: /tmp/{command}-state-!`gdate +%s%N`.json
 * Checkpoints for resumability
 
 STEP 4: Validate and format
@@ -137,7 +137,8 @@ STEP 8: TLDR the diff
    - Use explicit control flow
 
 3. **State Management**:
-   - MANDATORY: Session ID in EVERY command's Context section
+   - MANDATORY: Session ID in EVERY command's Context section using !`gdate +%s%N`
+   - **NEVER hard-code session IDs** - always use dynamic bash commands
    - Unique session files with nanosecond timestamps
    - Checkpoint capabilities for long operations
    - Clean up temp files in FINALLY blocks
@@ -273,6 +274,7 @@ Add state management:
 Before marking ANY command as improved:
 
 - [ ] Session ID included in Context section: !`gdate +%s%N`
+- [ ] **CRITICAL**: Session ID uses !`gdate +%s%N` - NEVER hard-code session IDs
 - [ ] All bash commands tested individually for output
 - [ ] Shell quoting issues resolved (no unescaped !, proper quotes)
 - [ ] Fallback values provided for all dynamic commands

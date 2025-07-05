@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 4,
+  "completed": 5,
   "inProgress": null,
-  "lastUpdated": "2025-07-05T12:47:37Z",
+  "lastUpdated": "2025-07-05T12:58:00Z",
   "commands": [
     {
       "id": "001",
@@ -92,9 +92,16 @@
       "name": "review",
       "filepath": "claude/commands/tool/review.md",
       "namespace": "tool",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-05T12:58:00Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
@@ -2414,9 +2421,11 @@
     }
   ],
   "improvementStats": {
-    "frontMatterAdded": 3,
-    "dynamicContextAdded": 3,
-    "programmaticStructureAdded": 3,
-    "stateManagementAdded": 2
+    "frontMatterAdded": 4,
+    "dynamicContextAdded": 4,
+    "programmaticStructureAdded": 4,
+    "stateManagementAdded": 3,
+    "extendedThinkingAdded": 1,
+    "subAgentPatternsAdded": 1
   }
 }

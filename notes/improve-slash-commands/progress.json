@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 11,
+  "completed": 12,
   "inProgress": null,
   "lastUpdated": "2025-07-05T14:15:00Z",
   "commands": [
@@ -244,9 +244,17 @@
       "name": "agent-persona-code-reviewer",
       "filepath": "claude/commands/agent/persona/agent-persona-code-reviewer.md",
       "namespace": "agent/persona",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-05T14:28:00Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded",
+        "codeReviewPersonaTransformed"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
@@ -2461,13 +2469,14 @@
     }
   ],
   "improvementStats": {
-    "frontMatterAdded": 7,
-    "dynamicContextAdded": 7,
-    "programmaticStructureAdded": 8,
-    "stateManagementAdded": 6,
-    "extendedThinkingAdded": 3,
-    "subAgentPatternsAdded": 2,
+    "frontMatterAdded": 8,
+    "dynamicContextAdded": 8,
+    "programmaticStructureAdded": 9,
+    "stateManagementAdded": 7,
+    "extendedThinkingAdded": 4,
+    "subAgentPatternsAdded": 3,
     "frameworkDetectionAdded": 1,
-    "comprehensiveTransformation": 1
+    "comprehensiveTransformation": 1,
+    "codeReviewPersonaTransformed": 1
   }
 }

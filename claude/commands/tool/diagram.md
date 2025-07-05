@@ -1,33 +1,84 @@
-# /diagram
+---
+allowed-tools: Read, Write, Bash(fd:*), Bash(rg:*), Bash(mmdc:*), Bash(gdate:*), Agent
+description: Generate architecture and flow diagrams with ASCII art and Mermaid
+---
 
-Generate architecture, flow, and relationship diagrams from code structure and documentation using ASCII art and mermaid syntax.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N`
+- Project files: !`fd -t f -e ts -e js -e rs -e go -e java -e py . | head -20`
+- Main entry points: !`fd "^(main|index|app)\\.(ts|js|rs|go|java|py)$" . | head -10`
+- Package info: !`fd "^(package\\.json|Cargo\\.toml|go\\.mod|pom\\.xml|requirements\\.txt)$" . | head -5`
+- Mermaid CLI available: !`which mmdc > /dev/null && echo "yes" || echo "no"`
 
-```
-/diagram [type: architecture|flow|sequence|class|entity] [scope]
-```
+## Your task
 
-## Diagram Generation Process
+PROCEDURE generate_diagram():
 
-### 1. Code Analysis
+STEP 1: Parse request parameters
 
-```bash
-# Analyze project structure
-fd "main|index|app" --type f
-rg "class|interface|struct|type" --type-add 'code:*.{rs,go,ts,java}'
+- Extract diagram type from $ARGUMENTS (default: architecture)
+- Valid types: architecture, flow, sequence, class, entity, component
+- Extract scope/focus area if provided
+- FOR complex analysis: think hard about the optimal diagram structure
 
-# Find relationships
-rg "import|require|use|extends|implements" -A 1 -B 1
-rg "new|create|getInstance" -A 2
+STEP 2: Analyze codebase structure
 
-# Identify APIs and endpoints
-rg "@(Get|Post|Put|Delete)|router\.|app\." -A 2
-```
+- IF scope provided:
+  - Focus analysis on specific area: !`fd -t f "$SCOPE" . | head -20`
+- ELSE:
+  - Scan project structure: !`fd -t f -e ts -e js -e rs -e go -e java -e py . | wc -l`
+  - Identify main components: !`fd -t d -d 2 . | head -20`
 
-### 2. Diagram Types
+STEP 3: Gather relevant information
 
-#### Architecture Diagram (ASCII)
+FOR diagram_type:
+CASE "architecture":
+
+- Find service boundaries: !`fd -t d "(service|module|component)" . | head -10`
+- Identify databases: !`rg -i "(postgres|mysql|mongo|redis)" --type-add 'config:*.{yml,yaml,json,env}' -t config`
+- Locate API layers: !`rg "@(Controller|Route|Api)" -t ts -t js -t java`
+
+CASE "flow":
+
+- Trace request flow: !`rg "(router|route|endpoint)" -A 2`
+- Find middleware: !`rg "middleware|interceptor|filter" -l`
+
+CASE "class":
+
+- Extract classes: !`rg "^\\s*(export\\s+)?class\\s+\\w+" -o`
+- Find inheritance: !`rg "extends|implements" -B 1`
+
+CASE "sequence":
+
+- Identify actors: !`rg "(client|server|service|api)" -i`
+- Map interactions: !`rg "(call|request|response|emit)" -A 2`
+
+STEP 4: Generate diagram
+
+- Choose appropriate format (ASCII for simplicity, Mermaid for complexity)
+- FOR complex diagrams: Use sub-agents for parallel analysis
+- Structure output with clear component boundaries
+- Add directional flows and relationships
+
+STEP 5: Export diagram (if mmdc available)
+
+- Save Mermaid diagram to temp file: /tmp/diagram-$SESSION_ID.mmd
+- IF mmdc available AND user requests image:
+  - Generate PNG: mmdc -i /tmp/diagram-$SESSION_ID.mmd -o diagram.png
+  - Generate SVG: mmdc -i /tmp/diagram-$SESSION_ID.mmd -o diagram.svg
+  - Report output location
+
+STEP 6: Enhance with documentation
+
+- Add component descriptions
+- Document key relationships
+- Include architectural decisions
+- Provide usage notes
+
+## Diagram Examples
+
+### Architecture Diagram (ASCII)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -205,7 +256,7 @@ classDiagram
                             └─────────────────┘
 ```
 
-### 3. Component Diagram
+### Component Diagram
 
 ```
 ┌───────────────────────────────────────────────────┐
@@ -252,7 +303,41 @@ classDiagram
                     └─────────────┘
 ```
 
-### 4. Auto-Generation Script
+### Mermaid CLI Usage
+
+```bash
+# Convert Mermaid diagram to PNG
+mmdc -i diagram.mmd -o diagram.png
+
+# Convert to SVG with custom theme
+mmdc -i diagram.mmd -o diagram.svg -t dark
+
+# Generate PDF with custom config
+mmdc -i diagram.mmd -o diagram.pdf -c config.json
+
+# Batch convert multiple diagrams
+fd "\.mmd$" . -x mmdc -i {} -o {.}.png
+```
+
+### State Management for Complex Diagrams
+
+```json
+// /tmp/diagram-state-$SESSION_ID.json
+{
+  "sessionId": "1234567890",
+  "phase": "analyzing",
+  "components": [],
+  "relationships": [],
+  "diagrams": {
+    "architecture": null,
+    "flow": null,
+    "sequence": null
+  },
+  "exports": []
+}
+```
+
+### Auto-Generation Script
 
 ```typescript
 // generate-diagram.ts
@@ -291,18 +376,26 @@ async function generateArchitectureDiagram(rootPath: string) {
 }
 ```
 
-### 5. Interactive Diagrams
+### Extended Thinking for Complex Diagrams
 
-```html
-<!-- For web output -->
-<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true });
-</script>
+FOR complex architectural decisions:
 
-<div class="mermaid">
-  ${generatedDiagram}
-</div>
+- think hard about component boundaries and relationships
+- think harder about data flow and security boundaries
+- Consider scalability and deployment patterns
+
+### Sub-Agent Delegation Pattern
+
+FOR large codebases, use parallel analysis:
+
+```markdown
+Analyze this codebase for diagram generation using 5 parallel agents:
+
+1. Frontend structure and components
+2. Backend services and APIs
+3. Database schemas and relationships
+4. External integrations and dependencies
+5. Infrastructure and deployment configuration
 ```
 
 ## Output Format
@@ -337,7 +430,9 @@ async function generateArchitectureDiagram(rootPath: string) {
 - [Security boundaries]
 ```
 
-## Diagram Best Practices
+## Best Practices
+
+### Diagram Design
 
 1. **Keep it simple** - Focus on key components
 2. **Use consistent symbols** - Stick to standard notations
@@ -346,11 +441,52 @@ async function generateArchitectureDiagram(rootPath: string) {
 5. **Group related items** - Use boxes/boundaries
 6. **Include legend** - Explain symbols if needed
 
-## Guidelines
+### Performance Optimization
 
-- Start with high-level overview
-- Add detail progressively
-- Use colors sparingly (ASCII compatible)
-- Maintain aspect ratio for readability
-- Export in multiple formats if needed
-- Keep source files for updates
+1. **Use caching** - Store analyzed components in state file
+2. **Incremental updates** - Only re-analyze changed files
+3. **Parallel analysis** - Use sub-agents for large codebases
+4. **Selective rendering** - Generate only requested diagram types
+
+## Advanced Features
+
+### Automatic Diagram Updates
+
+```bash
+# Watch for changes and regenerate
+fd -e ts -e js . -x echo {} | entr sh -c 'claude code "/diagram architecture"'
+```
+
+### CI/CD Integration
+
+```yaml
+# GitHub Action example
+- name: Generate Architecture Diagrams
+  run: |
+    claude code "/diagram architecture" > architecture.mmd
+    mmdc -i architecture.mmd -o docs/architecture.png
+    mmdc -i architecture.mmd -o docs/architecture.svg
+```
+
+### Multi-Format Export
+
+PROCEDURE export_all_formats():
+
+- Generate base Mermaid diagram
+- Export as PNG for README
+- Export as SVG for web docs
+- Export as PDF for reports
+- Create ASCII version for CLI
+
+## Error Handling
+
+TRY:
+
+- Analyze codebase
+- Generate diagram
+- Export formats
+  CATCH (missing dependencies):
+- Fall back to ASCII output
+- Document missing tools
+  FINALLY:
+- Clean up temp files: rm /tmp/diagram-$SESSION_ID.*

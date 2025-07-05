@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 2,
+  "completed": 3,
   "inProgress": null,
-  "lastUpdated": "2025-07-05T12:24:07Z",
+  "lastUpdated": "2025-07-05T12:35:00Z",
   "commands": [
     {
       "id": "001",
@@ -49,9 +49,17 @@
       "name": "diagram",
       "filepath": "claude/commands/tool/diagram.md",
       "namespace": "tool",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-05T12:35:00Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded",
+        "mmdcToolAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,

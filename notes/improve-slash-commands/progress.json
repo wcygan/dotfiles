@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 5,
+  "completed": 6,
   "inProgress": null,
-  "lastUpdated": "2025-07-05T12:58:00Z",
+  "lastUpdated": "2025-07-05T13:04:00Z",
   "commands": [
     {
       "id": "001",
@@ -114,9 +114,14 @@
       "name": "zed-task",
       "filepath": "claude/commands/tool/zed-task.md",
       "namespace": "tool",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-05T13:04:00Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
@@ -2421,10 +2426,10 @@
     }
   ],
   "improvementStats": {
-    "frontMatterAdded": 4,
-    "dynamicContextAdded": 4,
-    "programmaticStructureAdded": 4,
-    "stateManagementAdded": 3,
+    "frontMatterAdded": 5,
+    "dynamicContextAdded": 5,
+    "programmaticStructureAdded": 5,
+    "stateManagementAdded": 4,
     "extendedThinkingAdded": 1,
     "subAgentPatternsAdded": 1
   }

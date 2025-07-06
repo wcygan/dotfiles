@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 25,
-  "inProgress": 0,
-  "lastUpdated": "2025-07-06T10:07:38.695Z",
+  "completed": 29,
+  "inProgress": 2,
+  "lastUpdated": "2025-07-06T13:26:08Z",
   "commands": [
     {
       "id": "001",
@@ -679,14 +679,22 @@
       "name": "agent-persona-requirements-analyst",
       "filepath": "claude/commands/agent/persona/agent-persona-requirements-analyst.md",
       "namespace": "agent/persona",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-06T13:26:08Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded",
+        "workflowExamplesAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
-        "hadStateManagement": true
+        "hadStateManagement": false
       },
       "claimedBy": null
     },
@@ -695,8 +703,8 @@
       "name": "agent-persona-security-auditor",
       "filepath": "claude/commands/agent/persona/agent-persona-security-auditor.md",
       "namespace": "agent/persona",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-06T13:24:16Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -704,15 +712,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751808220187861000",
+        "timestamp": 1751808220
+      }
     },
     {
       "id": "031",
       "name": "agent-persona-site-reliability-engineer",
       "filepath": "claude/commands/agent/persona/agent-persona-site-reliability-engineer.md",
       "namespace": "agent/persona",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-06T13:24:57Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -720,7 +731,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751808157386262000",
+        "timestamp": 1751808297
+      }
     },
     {
       "id": "032",

@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 25,
+  "completed": 23,
   "inProgress": 133,
-  "lastUpdated": "2025-07-06T07:35:19Z",
+  "lastUpdated": "2025-07-06T07:37:07Z",
   "commands": [
     {
       "id": "001",
@@ -497,7 +497,7 @@
       "filepath": "claude/commands/agent/persona/agent-persona-machine-learning-engineer.md",
       "namespace": "agent/persona",
       "status": "completed",
-      "lastModified": "2025-07-06T07:35:00Z",
+      "lastModified": "2025-07-06T10:35:21+03:00",
       "improvements": [
         "frontMatterAdded",
         "dynamicContextAdded",
@@ -505,7 +505,8 @@
         "stateManagementAdded",
         "extendedThinkingAdded",
         "subAgentPatternsAdded",
-        "mlopsWorkflowAdded"
+        "massiveContentReductionFrom596To219Lines",
+        "mlEngineerPersonaTransformed"
       ],
       "metrics": {
         "hadFrontMatter": false,
@@ -594,17 +595,24 @@
       "name": "agent-persona-qa-analyst",
       "filepath": "claude/commands/agent/persona/agent-persona-qa-analyst.md",
       "namespace": "agent/persona",
-      "status": "in_progress",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-06T07:37:07Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": "1751750226510057000",
-      "claimedAt": "2025-07-06T07:32:48Z"
+      "claimedBy": null,
+      "claimedAt": null
     },
     {
       "id": "027",
@@ -2869,18 +2877,20 @@
     }
   ],
   "improvementStats": {
-    "frontMatterAdded": 11,
-    "dynamicContextAdded": 11,
-    "programmaticStructureAdded": 12,
-    "stateManagementAdded": 10,
-    "extendedThinkingAdded": 7,
-    "subAgentPatternsAdded": 6,
+    "frontMatterAdded": 12,
+    "dynamicContextAdded": 12,
+    "programmaticStructureAdded": 13,
+    "stateManagementAdded": 11,
+    "extendedThinkingAdded": 8,
+    "subAgentPatternsAdded": 7,
     "frameworkDetectionAdded": 1,
     "comprehensiveTransformation": 1,
     "codeReviewPersonaTransformed": 1,
     "implementationEngineerPersonaTransformed": 1,
     "infrastructurePersonaTransformed": 1,
     "massiveContentReductionFrom660To170Lines": 1,
-    "debuggerPersonaTransformed": 1
+    "debuggerPersonaTransformed": 1,
+    "mlEngineerPersonaTransformed": 1,
+    "massiveContentReductionFrom596To219Lines": 1
   }
 }

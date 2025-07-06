@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 17,
+  "completed": 19,
   "inProgress": null,
-  "lastUpdated": "2025-01-05T14:57:00Z",
+  "lastUpdated": "2025-07-05T21:18:25Z",
   "commands": [
     {
       "id": "001",
@@ -339,19 +339,24 @@
       "name": "agent-persona-debugger",
       "filepath": "claude/commands/agent/persona/agent-persona-debugger.md",
       "namespace": "agent/persona",
-      "status": "in-progress",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-05T21:16:43Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded",
+        "debuggerPersonaTransformed"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": true,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "1751749852422175000",
-        "timestamp": 1751749886
-      }
+      "claimedBy": null
     },
     {
       "id": "017",
@@ -426,19 +431,25 @@
       "name": "agent-persona-infrastructure-engineer",
       "filepath": "claude/commands/agent/persona/agent-persona-infrastructure-engineer.md",
       "namespace": "agent/persona",
-      "status": "in-progress",
-      "lastModified": "2025-07-05T21:16:42Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-05T21:18:30Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded",
+        "massiveContentReductionFrom660To170Lines",
+        "infrastructurePersonaTransformed"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": {
-        "sessionId": "1751750136212183000",
-        "timestamp": 1751750203
-      }
+      "claimedBy": null
     },
     {
       "id": "021",
@@ -464,7 +475,7 @@
       "name": "agent-persona-machine-learning-engineer",
       "filepath": "claude/commands/agent/persona/agent-persona-machine-learning-engineer.md",
       "namespace": "agent/persona",
-      "status": "pending",
+      "status": "in-progress",
       "lastModified": null,
       "improvements": [],
       "metrics": {
@@ -472,6 +483,10 @@
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
+      },
+      "claimedBy": {
+        "sessionId": "1751750099353448000",
+        "timestamp": 1751750099
       }
     },
     {
@@ -479,7 +494,7 @@
       "name": "agent-persona-mobile-developer",
       "filepath": "claude/commands/agent/persona/agent-persona-mobile-developer.md",
       "namespace": "agent/persona",
-      "status": "pending",
+      "status": "in-progress",
       "lastModified": null,
       "improvements": [],
       "metrics": {
@@ -487,6 +502,10 @@
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
+      },
+      "claimedBy": {
+        "sessionId": "1751750223680907000",
+        "timestamp": 1751750256
       }
     },
     {
@@ -2531,15 +2550,17 @@
     }
   ],
   "improvementStats": {
-    "frontMatterAdded": 9,
-    "dynamicContextAdded": 9,
-    "programmaticStructureAdded": 10,
-    "stateManagementAdded": 8,
-    "extendedThinkingAdded": 5,
-    "subAgentPatternsAdded": 4,
+    "frontMatterAdded": 10,
+    "dynamicContextAdded": 10,
+    "programmaticStructureAdded": 11,
+    "stateManagementAdded": 9,
+    "extendedThinkingAdded": 6,
+    "subAgentPatternsAdded": 5,
     "frameworkDetectionAdded": 1,
     "comprehensiveTransformation": 1,
     "codeReviewPersonaTransformed": 1,
-    "implementationEngineerPersonaTransformed": 1
+    "implementationEngineerPersonaTransformed": 1,
+    "infrastructurePersonaTransformed": 1,
+    "massiveContentReductionFrom660To170Lines": 1
   }
 }

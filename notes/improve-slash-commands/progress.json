@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 31,
-  "inProgress": 2,
-  "lastUpdated": "2025-07-06T13:30:53Z",
+  "completed": 32,
+  "inProgress": 1,
+  "lastUpdated": "2025-07-06T13:32:13Z",
   "commands": [
     {
       "id": "001",
@@ -704,11 +704,15 @@
       "filepath": "claude/commands/agent/persona/agent-persona-security-auditor.md",
       "namespace": "agent/persona",
       "status": "completed",
-      "lastModified": "2025-07-06T13:29:08Z",
+      "lastModified": "2025-07-06T13:32:13Z",
       "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
         "extendedThinkingAdded",
-        "parallelAnalysisEnhanced",
-        "subAgentPatternsAdded"
+        "subAgentPatternsAdded",
+        "securityFrameworkIntegrated"
       ],
       "metrics": {
         "hadFrontMatter": false,
@@ -745,19 +749,24 @@
       "name": "agent-persona-software-architect",
       "filepath": "claude/commands/agent/persona/agent-persona-software-architect.md",
       "namespace": "agent/persona",
-      "status": "in-progress",
-      "lastModified": "2025-07-06T13:26:50Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-06T13:32:05Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded",
+        "bashCommandFixed"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "1751808216702755000",
-        "timestamp": 1751808410
-      }
+      "claimedBy": null
     },
     {
       "id": "033",

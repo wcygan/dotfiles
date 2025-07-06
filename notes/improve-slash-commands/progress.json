@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 24,
+  "completed": 25,
   "inProgress": 133,
-  "lastUpdated": "2025-07-06T07:35:00Z",
+  "lastUpdated": "2025-07-06T07:35:19Z",
   "commands": [
     {
       "id": "001",
@@ -568,9 +568,16 @@
       "name": "agent-persona-product-manager",
       "filepath": "claude/commands/agent/persona/agent-persona-product-manager.md",
       "namespace": "agent/persona",
-      "status": "in-progress",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-06T07:35:19Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,

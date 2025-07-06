@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 23,
-  "inProgress": 133,
-  "lastUpdated": "2025-07-06T07:37:07Z",
+  "completed": 25,
+  "inProgress": 131,
+  "lastUpdated": "2025-07-06T07:42:09Z",
   "commands": [
     {
       "id": "001",
@@ -268,7 +268,7 @@
       "filepath": "claude/commands/agent/persona/agent-persona-compliance-officer.md",
       "namespace": "agent/persona",
       "status": "completed",
-      "lastModified": "2025-07-05T14:42:00Z",
+      "lastModified": "2025-07-06T07:42:08Z",
       "improvements": [
         "frontMatterAdded",
         "dynamicContextAdded",
@@ -276,7 +276,11 @@
         "stateManagementAdded",
         "extendedThinkingAdded",
         "subAgentPatternsAdded",
-        "massiveContentReductionFrom820To130Lines"
+        "massiveContentReductionFrom820To130Lines",
+        "enhancedProgrammaticWorkflow",
+        "expandedComplianceFrameworks",
+        "comprehensiveControlImplementation",
+        "improvedSubAgentPatterns"
       ],
       "metrics": {
         "hadFrontMatter": false,
@@ -284,7 +288,9 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": null,
+      "claimedAt": null,
+      "completedAt": "2025-07-06T07:42:08Z"
     },
     {
       "id": "014",
@@ -619,34 +625,54 @@
       "name": "agent-persona-refactoring-specialist",
       "filepath": "claude/commands/agent/persona/agent-persona-refactoring-specialist.md",
       "namespace": "agent/persona",
-      "status": "in_progress",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-06T07:40:41Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded",
+        "refactoringWorkflowAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": "1751750226510057000",
-      "claimedAt": "2025-07-06T07:32:48Z"
+      "completedBy": {
+        "sessionId": "1751787641976438000",
+        "timestamp": 1751787641
+      }
     },
     {
       "id": "028",
       "name": "agent-persona-release-manager",
       "filepath": "claude/commands/agent/persona/agent-persona-release-manager.md",
       "namespace": "agent/persona",
-      "status": "in_progress",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-06T07:42:09Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded",
+        "releaseWorkflowAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": "1751750226510057000",
-      "claimedAt": "2025-07-06T07:32:48Z"
+      "completedBy": {
+        "sessionId": "1751787729428457000",
+        "timestamp": 1751787729
+      }
     },
     {
       "id": "029",

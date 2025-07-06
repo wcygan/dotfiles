@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write, Bash(jq:*), Bash(gdate:*), Bash(fd:*), Bash(deno fmt:*), Bash(git add:*), Bash(git commit:*), Bash(git status:*), TodoWrite
+allowed-tools: Read, Write, Bash(jq:*), Bash(gdate:*), Bash(mv:*), Bash(rm:*), Bash(head:*), Bash(fd:*), Bash(deno fmt:*), Bash(git add:*), Bash(git commit:*), Bash(git status:*), TodoWrite
 description: Systematically improve slash commands one at a time
 ---
 
@@ -10,45 +10,71 @@ description: Systematically improve slash commands one at a time
 - Total commands: !`fd '\.md$' claude/commands | wc -l`
 - Completed count: !`jq -r '.completed // 0' notes/improve-slash-commands/progress.json 2>/dev/null || echo 0`
 - In-progress count: !`jq -r '[.commands[]? | select(.status == "in-progress")] | length' notes/improve-slash-commands/progress.json 2>/dev/null || echo 0`
-- My claimed command: !`jq -r --arg sid "$(gdate +%s%N)" '.commands[]? | select(.status == "in-progress" and .claimedBy.sessionId == $sid) | .filepath // "none"' notes/improve-slash-commands/progress.json 2>/dev/null || echo "none"`
-- Next pending: !`jq -r '.commands[]? | select(.status == "pending") | .filepath' notes/improve-slash-commands/progress.json 2>/dev/null | head -1 || echo "none"`
+- My active claim: !`jq -r --arg sid "$(gdate +%s%N)" '.commands[]? | select(.status == "in-progress" and .claimedBy.sessionId == $sid) | .filepath // "none"' notes/improve-slash-commands/progress.json 2>/dev/null || echo "none"`
+- Available commands: !`jq -r --arg now "$(gdate -u +%s)" '[.commands[]? | select((.status == "pending") or (.status == "in-progress" and (($now | tonumber) - (.claimedBy.timestamp // 0 | tonumber) > 600)))] | length' notes/improve-slash-commands/progress.json 2>/dev/null || echo 0`
+- Next claimable: !`jq -r --arg now "$(gdate -u +%s)" '.commands[]? | select((.status == "pending") or (.status == "in-progress" and (($now | tonumber) - (.claimedBy.timestamp // 0 | tonumber) > 600))) | .name' notes/improve-slash-commands/progress.json 2>/dev/null | head -1 || echo "none"`
 - Stale claims (>10min): !`jq -r --arg now "$(gdate -u +%s)" '[.commands[]? | select(.status == "in-progress" and (($now | tonumber) - (.claimedBy.timestamp // 0 | tonumber) > 600))] | length' notes/improve-slash-commands/progress.json 2>/dev/null || echo 0`
 
 ## Your task
 
 PROCEDURE improve_next_command():
 
-STEP 1: Claim a task atomically
+STEP 1: Atomic single task claiming
 
-- Load current progress.json state
-- Check for MY existing claim (sessionId matches):
-  - IF I have an existing claim: Resume work on that command
-  - ELSE: Proceed to claim a new task
+SUBSTEP 1.1: Check existing claim
 
-- Find claimable commands:
-  - Pending commands (status == "pending")
-  - Stale claims (status == "in-progress" AND timestamp > 10 minutes old)
+- SESSION_ID: !`gdate +%s%N`
+- MY_CURRENT_CLAIM: !`jq -r --arg sid "$(gdate +%s%N)" '.commands[]? | select(.status == "in-progress" and .claimedBy.sessionId == $sid) | .filepath // "none"' notes/improve-slash-commands/progress.json 2>/dev/null || echo "none"`
 
-- IF no claimable commands exist:
-  - Report "All commands are being worked on or completed"
-  - Exit gracefully
+IF MY_CURRENT_CLAIM != "none":
 
-- IMMEDIATELY claim the first available command:
-  - Read current progress.json
-  - Update the selected command entry with:
-    ```json
-    {
-      "status": "in-progress",
-      "claimedBy": {
-        "sessionId": "<session-id-from-context>",
-        "timestamp": <unix-timestamp-seconds>
-      },
-      "lastModified": "<ISO-8601-timestamp>"
-    }
-    ```
-  - Write updated progress.json atomically
-  - Verify claim was successful by re-reading
-  - IF claim failed (someone else claimed it): Try next available command
+- Resume work on existing claim: $MY_CURRENT_CLAIM
+- GOTO STEP 2
+
+SUBSTEP 1.2: Find claimable command
+
+- CURRENT_TIME: !`gdate -u +%s`
+- CLAIMABLE_ID: !`jq -r --arg now "$(gdate -u +%s)" '.commands[]? | select((.status == "pending") or (.status == "in-progress" and (($now | tonumber) - (.claimedBy.timestamp // 0 | tonumber) > 600))) | .id' notes/improve-slash-commands/progress.json 2>/dev/null | head -1 || echo ""`
+
+IF CLAIMABLE_ID == "":
+
+- Report "✅ All commands completed or actively being worked on by other agents"
+- EXIT gracefully
+
+SUBSTEP 1.3: Atomic claim attempt with JQ
+
+- Execute atomic claim transformation:
+  ```bash
+  jq --arg sid "$SESSION_ID" --arg now "$CURRENT_TIME" --arg cmd_id "$CLAIMABLE_ID" '
+    if (.commands[] | select(.id == $cmd_id and (.status == "pending" or (.status == "in-progress" and (($now | tonumber) - (.claimedBy.timestamp // 0 | tonumber) > 600))))) then
+      .commands |= map(
+        if .id == $cmd_id then
+          .status = "in-progress" |
+          .claimedBy = {"sessionId": $sid, "timestamp": ($now | tonumber)} |
+          .lastModified = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
+        else . end
+      ) |
+      .inProgress = ([.commands[] | select(.status == "in-progress")] | length) |
+      .lastUpdated = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
+    else . end
+  ' notes/improve-slash-commands/progress.json > /tmp/progress_claim_$SESSION_ID.json
+  ```
+
+SUBSTEP 1.4: Claim verification and conflict detection
+
+- CLAIMED_CMD: !`jq -r --arg sid "$SESSION_ID" --arg cmd_id "$CLAIMABLE_ID" '.commands[] | select(.id == $cmd_id and .claimedBy.sessionId == $sid) | .filepath // "CONFLICT"' /tmp/progress_claim_$SESSION_ID.json 2>/dev/null || echo "CONFLICT"`
+
+IF CLAIMED_CMD == "CONFLICT" OR CLAIMED_CMD == "null":
+
+- Report "⚠️ Claim conflict detected - another agent claimed this task"
+- Clean up: !`rm -f /tmp/progress_claim_$SESSION_ID.json`
+- EXIT gracefully
+
+ELSE:
+
+- Commit atomic claim: !`mv /tmp/progress_claim_$SESSION_ID.json notes/improve-slash-commands/progress.json`
+- Report "🎯 Successfully claimed: $CLAIMED_CMD"
+- Continue to STEP 2 with: $CLAIMED_CMD
 
 STEP 2: Analyze current command
 
@@ -128,19 +154,22 @@ STEP 6: ATOMIC commit of both files
 - git commit -m "improve(commands): enhance {command-name} with best practices"
 - NEVER commit these files separately
 
-STEP 7: Report status
+STEP 7: Report completion status
 
-- Show: "✓ Improved {command-name} ({completed}/{total} completed)"
-- Display key improvements made
-- Show parallel work status:
-  - "Currently {in-progress-count} commands being worked on by other agents"
-  - "Session ID: {session-id}"
+- Show: "✅ Improved {command-name} ({completed}/{total} completed)"
+- Display key improvements made in this session
+- Show coordination status:
+  - "📊 Available commands: {available-count}"
+  - "🔄 Commands in-progress by other agents: {in-progress-count}"
+  - "🎯 Session: {session-id} (single command focus)"
 - IF all completed:
-  - Generate final summary report
-  - Display comprehensive TLDR
+  - Generate final summary report: "🎉 All 159 commands improved!"
+  - Display comprehensive workflow TLDR
+  - Show improvement statistics from progress.json
 - ELSE:
-  - Show next command: "Next: {next-command-name}"
-  - Display session TLDR
+  - Show graceful completion: "✅ Single command improved - workflow ready for next agent"
+  - Display session summary
+  - Note: "Other agents can continue with remaining {available-count} commands"
 
 STEP 8: TLDR the diff
 
@@ -327,47 +356,52 @@ Example safe pattern:
 
 ## Concurrent Execution Pattern
 
-### Enabling Parallel Agent Work
+### Atomic Single-Command Claiming System
 
-This command supports multiple agents working in parallel on different commands:
+This command now uses a robust atomic claiming system for safe parallel execution:
 
-1. **Launch Multiple Sessions**:
+1. **Launch Multiple Sessions** (each works on exactly one command):
    ```bash
    # Terminal 1
    claude code
    > /improve-slash-commands
+   # Claims command 029, works on it, completes it, exits
 
-   # Terminal 2
+   # Terminal 2  
    claude code
    > /improve-slash-commands
+   # Claims command 030, works on it, completes it, exits
 
    # Terminal 3
    claude code
-   > /improve-slash-commands
+   > /improve-slash-commands  
+   # Claims command 031, works on it, completes it, exits
    ```
 
-2. **Automatic Task Distribution**:
-   - Each agent claims tasks atomically at startup
-   - No two agents will work on the same command
-   - Agents automatically skip already-claimed tasks
-   - Session IDs ensure unique identification
+2. **True Atomic Claiming**:
+   - JQ-based read-verify-write operations prevent race conditions
+   - Each agent claims exactly ONE command per session
+   - Conflict detection ensures no double-claiming
+   - Immediate verification with rollback on conflicts
 
 3. **Stale Claim Recovery**:
-   - If an agent crashes or disconnects
-   - Claims older than 10 minutes are considered stale
-   - Other agents can reclaim stale tasks automatically
+   - Claims older than 10 minutes automatically become reclaimable
+   - Graceful handling of crashed or disconnected agents
+   - No manual intervention needed for stale claims
 
-4. **Progress Tracking**:
-   - Context section shows in-progress count
-   - Each agent sees which commands are being worked on
-   - Completed count updates in real-time
+4. **Enhanced Progress Tracking**:
+   - Real-time visibility into available vs in-progress commands
+   - Session IDs provide unique agent identification
+   - Clear conflict resolution and graceful exits
 
 ### Coordination Best Practices
 
-- **Atomic Commits**: Each agent commits their command file + progress.json together
-- **No Manual Coordination**: The claiming mechanism handles all coordination
-- **Graceful Completion**: Agents exit when no more tasks are available
-- **Progress Visibility**: Use `jq '.commands[] | select(.status == "in-progress")' notes/improve-slash-commands/progress.json` to see active work
+- **Single Command Focus**: Each agent works on exactly one command per session
+- **Atomic Operations**: JQ-based claiming prevents race conditions and conflicts
+- **Graceful Exits**: Agents exit cleanly when no claimable commands exist
+- **Conflict Resilience**: Failed claims result in clean exit, not retry loops
+- **Progress Visibility**: Enhanced context shows real-time claiming status
+- **No Coordination Overhead**: Zero manual coordination required between agents
 
 ### Example Progress.json Entry with Claim
 

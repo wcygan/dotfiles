@@ -544,19 +544,24 @@
       "name": "agent-persona-performance-engineer",
       "filepath": "claude/commands/agent/persona/agent-persona-performance-engineer.md",
       "namespace": "agent/persona",
-      "status": "in-progress",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-06T10:33:12Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded",
+        "performanceEngineeringWorkflowAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": {
-        "sessionId": "1751750228973729000",
-        "timestamp": 1751750290
-      }
+      "claimedBy": null
     },
     {
       "id": "025",

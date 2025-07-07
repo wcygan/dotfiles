@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 128,
-  "inProgress": 26,
-  "lastUpdated": "2025-07-07T15:23:56.512Z",
+  "completed": 129,
+  "inProgress": 29,
+  "lastUpdated": "2025-07-07T15:24:05.287Z",
   "commands": [
     {
       "id": "001",
@@ -2664,18 +2664,20 @@
       "name": "benchmark",
       "filepath": "claude/commands/ops/perf/benchmark.md",
       "namespace": "ops/perf",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:20.532Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:24:05.286Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751901680532rvn3zqkos0",
-        "timestamp": 1751901680
       }
     },
     {
@@ -3247,8 +3249,8 @@
       "name": "next-steps",
       "filepath": "claude/commands/workflow/view/next-steps.md",
       "namespace": "workflow/view",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:23:59.097Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3256,15 +3258,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901839097zkopu9wz8l",
+        "timestamp": 1751901839
+      }
     },
     {
       "id": "156",
       "name": "options",
       "filepath": "claude/commands/workflow/view/options.md",
       "namespace": "workflow/view",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:24:01.189Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3272,15 +3277,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901841189a42nr12zl3",
+        "timestamp": 1751901841
+      }
     },
     {
       "id": "157",
       "name": "progress",
       "filepath": "claude/commands/workflow/view/progress.md",
       "namespace": "workflow/view",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:24:02.503Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3288,15 +3296,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901842503g1h7fnpzq2",
+        "timestamp": 1751901842
+      }
     },
     {
       "id": "158",
       "name": "summary",
       "filepath": "claude/commands/workflow/view/summary.md",
       "namespace": "workflow/view",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:24:03.488Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3304,7 +3315,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901843488a91hdcozva",
+        "timestamp": 1751901843
+      }
     },
     {
       "id": "159",
@@ -3341,3 +3355,4 @@
     "massiveContentReductionFrom596To219Lines": 1
   }
 }
+

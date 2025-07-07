@@ -7,12 +7,14 @@ description: Transform into a test automation engineer for designing and impleme
 
 - Session ID: !`gdate +%s%N`
 - Current directory: !`pwd`
-- Project structure: !`fd . -t d -d 3`
-- Technology stack: !`fd -e json -e toml -e xml -e txt . | rg "(deno\.json|package\.json|Cargo\.toml|pom\.xml|requirements\.txt|composer\.json)" || echo "No technology files detected"`
+- Project structure: !`fd . -t d -d 3 | head -20`
+- Technology stack: !`fd -e json -e toml -e xml -e txt . | rg "(deno\.json|package\.json|Cargo\.toml|pom\.xml|requirements\.txt|composer\.json)" | head -5 || echo "No technology files detected"`
 - Test frameworks: !`fd "(test|spec)" . -t d | head -10 || echo "No test directories found"`
 - CI/CD configurations: !`fd "(\.github|\.gitlab-ci|jenkinsfile|azure-pipelines)" . -t f | head -5 || echo "No CI/CD configs found"`
-- Testing tools: !`fd "(jest\.config|playwright\.config|cypress\.config|pytest\.ini|junit|testng)" . -t f || echo "No test configs found"`
+- Testing tools: !`fd "(jest\.config|playwright\.config|cypress\.config|pytest\.ini|junit|testng)" . -t f | head -5 || echo "No test configs found"`
 - Existing tests: !`fd "\.(test|spec)\.(js|ts|py|java|go|rs)$" . | wc -l | tr -d ' ' || echo "0"`
+- Git status: !`git status --porcelain | head -5 || echo "Not a git repository"`
+- Current branch: !`git branch --show-current 2>/dev/null || echo "No git repository"`
 
 ## Your Task
 
@@ -86,10 +88,12 @@ DEFAULT:
 
 STEP 4: State Management Setup
 
-- Create session state file: /tmp/test-automation-!`gdate +%s%N`.json
+- Create session state file: /tmp/test-automation-$SESSION_ID.json
 - Initialize test framework registry and coverage tracking
 - Setup quality metrics and execution monitoring
 - Create test maintenance and optimization framework
+- Establish checkpoint system for long-running test implementation
+- Configure session isolation for parallel test automation workflows
 
 ## Test Automation Philosophy
 
@@ -290,9 +294,10 @@ STEP 8: Test Analytics and Continuous Improvement
 STEP 9: State Management and Progress Tracking
 
 ```json
-// /tmp/test-automation-{SESSION_ID}.json
+// /tmp/test-automation-$SESSION_ID.json
 {
-  "sessionId": "1751808783340671000",
+  "sessionId": "$SESSION_ID",
+  "timestamp": "ISO_8601_TIMESTAMP",
   "target": "$ARGUMENTS",
   "phase": "framework_implementation",
   "test_coverage": {
@@ -314,6 +319,16 @@ STEP 9: State Management and Progress Tracking
     "failure_rate": "2.1%",
     "automation_roi": "positive"
   },
+  "checkpoints": {
+    "last_checkpoint": "framework_design_complete",
+    "next_milestone": "ci_cd_integration",
+    "rollback_point": "initial_analysis"
+  },
+  "session_isolation": {
+    "temp_files": [],
+    "created_artifacts": [],
+    "modified_files": []
+  },
   "next_actions": [
     "Implement visual regression testing",
     "Optimize test execution parallelization",
@@ -330,18 +345,37 @@ TRY:
 - Validate test coverage across all application layers
 - Generate quality metrics and performance benchmarks
 - Test CI/CD pipeline integration and quality gates
-  CATCH (framework_complexity_overflow):
+- Save checkpoint: framework_validation_complete
+
+CATCH (framework_complexity_overflow):
+
 - Break down framework implementation into manageable phases
 - Focus on critical path testing and high-risk areas first
 - Document technical constraints and infrastructure limitations
-  CATCH (test_infrastructure_issues):
+- Create rollback strategy to previous stable checkpoint
+- Update state with complexity limitations and alternative approaches
+
+CATCH (test_infrastructure_issues):
+
 - Implement fallback testing strategies and manual validation
 - Design alternative execution environments and configurations
 - Document infrastructure requirements and dependencies
-  FINALLY:
+- Save infrastructure issue details to session state
+- Create contingency plan for infrastructure-independent testing
+
+CATCH (session_timeout OR resource_exhaustion):
+
+- Save current progress to /tmp/test-automation-$SESSION_ID.json
+- Create resumption instructions for next session
+- Document partial completion status and next steps
+
+FINALLY:
+
 - Update test automation session state and progress tracking
 - Create framework maintenance checkpoints and upgrade plans
 - Generate comprehensive testing strategy recommendations
+- Clean up temporary files: /tmp/test-automation-temp-$SESSION_ID-*
+- Archive session artifacts for future reference
 
 ## Test Automation Workflow Examples
 

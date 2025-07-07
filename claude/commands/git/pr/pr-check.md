@@ -1,156 +1,306 @@
 ---
-allowed-tools: Bash(gh pr view:*), Bash(gh pr checks:*), Bash(gh pr list:*), Bash(gh api:*), Bash(gh run list:*), Bash(gh run view:*), Bash(gh workflow run:*), Bash(git fetch:*), Bash(git checkout:*), Bash(git merge:*), Bash(git diff:*), Bash(jq:*), Bash(osascript:*)
-description: Check PR status and CI/CD state
+allowed-tools: Bash(gh:*), Bash(git:*), Bash(jq:*), Bash(gdate:*), Bash(osascript:*), Write, Read
+description: Comprehensive PR status monitoring with CI/CD state analysis and merge readiness validation
 ---
 
-# /pr-check
+## Context
 
-Checks pull request status, CI/CD state, and merge readiness using the GitHub CLI (`gh`).
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
+- Current directory: !`pwd`
+- Current branch: !`git branch --show-current 2>/dev/null || echo "no-git-repo"`
+- Git status: !`git status --porcelain 2>/dev/null | wc -l | tr -d ' ' || echo "0"` files changed
+- Remote origin: !`git remote get-url origin 2>/dev/null | sed 's/.*github.com[:/]\([^/]*\/[^.]*\).*/\1/' || echo "no-remote"`
+- Available PRs: !`gh pr list --json number,title,state 2>/dev/null | jq length 2>/dev/null || echo "0"`
+- Open PRs by author: !`gh pr list --author @me --state open --json number 2>/dev/null | jq length 2>/dev/null || echo "0"`
+- Default branch PR: !`gh pr view --json number,state 2>/dev/null | jq -r '.number // "none"' 2>/dev/null || echo "none"`
+- GitHub CLI status: !`gh auth status 2>/dev/null | head -1 || echo "Not authenticated"`
 
-## Usage
+## Your Task
 
-```
-/pr-check [PR_NUMBER]
-/pr-check status [PR_NUMBER]
-/pr-check checks [PR_NUMBER]
-/pr-check conflicts [PR_NUMBER]
-/pr-check reviews [PR_NUMBER]
-/pr-check mergeable [PR_NUMBER]
-/pr-check watch [PR_NUMBER]
-```
+Provide comprehensive pull request status monitoring and analysis using systematic evaluation of CI/CD state, review status, and merge readiness.
 
-## Description
+STEP 1: Initialize PR monitoring session and parameter validation
 
-This command provides comprehensive PR status monitoring through the `gh` CLI, helping you track CI/CD progress, review status, and merge readiness.
+- CREATE session state file: `/tmp/pr-check-state-$SESSION_ID.json`
+- SET initial state:
+  ```json
+  {
+    "sessionId": "$SESSION_ID",
+    "timestamp": "$(gdate -Iseconds 2>/dev/null || date -Iseconds)",
+    "pr_number": null,
+    "monitoring_mode": "single_check",
+    "analysis_depth": "standard"
+  }
+  ```
 
-### Core Workflow
+- PARSE command arguments from $ARGUMENTS:
+  - IF $ARGUMENTS contains PR number: Extract and validate PR exists
+  - ELSE IF current branch has associated PR: Auto-detect PR number
+  - ELSE: List available PRs for selection
 
-#### 1. PR Status Overview
+- VALIDATE GitHub CLI authentication and repository access
+- UPDATE session state with validated PR number and context
+
+STEP 2: Comprehensive PR status analysis with intelligent depth detection
+
+Think deeply about the optimal analysis strategy based on PR complexity, CI/CD pipeline depth, and merge requirements.
+
+- DETERMINE analysis scope based on PR characteristics:
+  - **Simple PRs**: Basic status, reviews, checks
+  - **Complex PRs**: Extended analysis with CI/CD deep dive
+  - **Enterprise PRs**: Full compliance and security analysis
+
+- ANALYZE PR metadata and determine monitoring requirements:
+  ```bash
+  gh pr view $PR_NUMBER --json state,mergeable,mergeStateStatus,statusCheckRollup,reviewDecision,reviews,author,createdAt,updatedAt,additions,deletions,changedFiles
+  ```
+
+- ASSESS CI/CD pipeline complexity:
+  ```bash
+  gh pr checks $PR_NUMBER --json name,state,conclusion,startedAt,completedAt
+  ```
+
+STEP 3: Multi-dimensional PR status evaluation with conditional analysis
+
+CASE analysis_depth:
+WHEN "standard":
+
+- EXECUTE core status evaluation:
+  1. **Basic PR Information**:
+     ```bash
+     gh pr view $PR_NUMBER --json title,author,state,createdAt,updatedAt,additions,deletions,changedFiles
+     ```
+
+  2. **Review Status Assessment**:
+     ```bash
+     gh pr view $PR_NUMBER --json reviewDecision,reviews
+     ```
+
+  3. **CI/CD Checks Overview**:
+     ```bash
+     gh pr checks $PR_NUMBER
+     ```
+
+  4. **Merge Readiness Validation**:
+     ```bash
+     gh pr view $PR_NUMBER --json mergeable,mergeStateStatus
+     ```
+
+WHEN "comprehensive":
+
+- Think harder about comprehensive analysis patterns for complex PRs
+- EXECUTE extended analysis with detailed CI/CD monitoring:
+  1. **Full Status Check Rollup**:
+     ```bash
+     gh pr view $PR_NUMBER --json statusCheckRollup
+     ```
+
+  2. **Detailed Check Analysis**:
+     ```bash
+     gh api repos/{owner}/{repo}/commits/$(gh pr view $PR_NUMBER --json headRefOid -q .headRefOid)/check-runs
+     ```
+
+  3. **Workflow Run Analysis**:
+     ```bash
+     gh run list --branch $(gh pr view $PR_NUMBER --json headRefName -q .headRefName) --json databaseId,status,conclusion,createdAt
+     ```
+
+  4. **Branch Protection Analysis**:
+     ```bash
+     gh api repos/{owner}/{repo}/branches/$(gh pr view $PR_NUMBER --json baseRefName -q .baseRefName)/protection
+     ```
+
+STEP 4: Intelligent CI/CD monitoring with failure analysis
+
+TRY:
+
+- EXECUTE systematic CI/CD status evaluation:
+  1. **Check Status Inventory**:
+     ```bash
+     gh pr checks $PR_NUMBER --json name,state,conclusion,startedAt,completedAt
+     ```
+
+  2. **Failing Checks Identification**:
+     ```bash
+     gh pr checks $PR_NUMBER --json name,state,conclusion | jq -r '.[] | select(.conclusion == "failure") | .name'
+     ```
+
+  3. **IF failing checks detected**:
+     - GET detailed failure logs:
+       ```bash
+       gh run list --branch $(gh pr view $PR_NUMBER --json headRefName -q .headRefName) --json databaseId,status,conclusion | jq -r '.[] | select(.conclusion == "failure") | .databaseId'
+       ```
+     - ANALYZE failure patterns and provide remediation suggestions
+
+  4. **Pending Checks Monitoring**:
+     ```bash
+     gh pr checks $PR_NUMBER --json name,state | jq -r '.[] | select(.state == "pending" or .state == "in_progress") | .name'
+     ```
+
+CATCH (ci_analysis_failed):
+
+- LOG CI/CD analysis errors to session state
+- PROVIDE manual check instructions
+- CONTINUE with available status information
+- SAVE fallback monitoring commands
+
+STEP 5: Advanced merge conflict detection and resolution guidance
+
+- EXECUTE comprehensive merge analysis:
+  1. **Merge Conflict Detection**:
+     ```bash
+     gh pr view $PR_NUMBER --json mergeable,mergeStateStatus
+     ```
+
+  2. **IF merge conflicts detected**:
+     - CREATE temporary conflict analysis:
+       ```bash
+       git fetch origin pull/$PR_NUMBER/head:temp-pr-$PR_NUMBER
+       git checkout temp-pr-$PR_NUMBER
+       git merge origin/$(gh pr view $PR_NUMBER --json baseRefName -q .baseRefName) --no-commit --no-ff
+       ```
+     - IDENTIFY conflicting files:
+       ```bash
+       git diff --name-only --diff-filter=U
+       ```
+     - CLEANUP temporary branch:
+       ```bash
+       git merge --abort; git checkout -; git branch -D temp-pr-$PR_NUMBER
+       ```
+
+  3. **Branch Protection Compliance**:
+     ```bash
+     gh api repos/{owner}/{repo}/branches/$(gh pr view $PR_NUMBER --json baseRefName -q .baseRefName)/protection --jq '.required_status_checks.contexts[]'
+     ```
+
+STEP 6: Comprehensive status report generation with actionable insights
+
+- GENERATE structured status report: `/tmp/pr-check-report-$SESSION_ID.md`
+- INCLUDE in report:
+  - **Executive Summary**: PR readiness score and key blockers
+  - **Review Status**: Approval state and required actions
+  - **CI/CD Health**: Check status and failure analysis
+  - **Merge Readiness**: Conflict status and requirements
+  - **Action Items**: Prioritized next steps for PR advancement
+  - **Compliance Check**: Branch protection and policy adherence
+
+- SAVE detailed analysis to session state
+- PROVIDE real-time monitoring options if requested
+
+STEP 7: Conditional real-time monitoring and notification setup
+
+IF $ARGUMENTS contains "watch" OR "monitor":
+
+- Think deeply about optimal monitoring patterns for long-running CI/CD pipelines
+- IMPLEMENT real-time monitoring loop:
+  ```bash
+  while true; do
+    clear
+    echo "PR #$PR_NUMBER Status - $(gdate '+%Y-%m-%d %H:%M:%S' 2>/dev/null || date '+%Y-%m-%d %H:%M:%S')"
+    echo "=====================================\n"
+    
+    # Status summary
+    gh pr checks $PR_NUMBER | head -10
+    
+    # Review decision
+    echo "\nReview Status:"
+    gh pr view $PR_NUMBER --json reviewDecision -q .reviewDecision
+    
+    # Merge readiness
+    echo "\nMerge Status:"
+    gh pr view $PR_NUMBER --json mergeable,mergeStateStatus | jq -r '"Mergeable: \(.mergeable) | State: \(.mergeStateStatus)"'
+    
+    sleep 30
+  done
+  ```
+
+- OPTIONAL: Set up completion notifications:
+  ```bash
+  osascript -e 'display notification "PR checks completed!" with title "PR #'$PR_NUMBER'"'
+  ```
+
+FINALLY:
+
+- UPDATE session state with completion status
+- SAVE monitoring session log: `/tmp/pr-check-session-$SESSION_ID.log`
+- CLEAN UP temporary files and branches
+
+## Usage Patterns
+
+### Basic Usage
 
 ```bash
-# Get comprehensive PR status
-gh pr view $PR_NUMBER --json state,mergeable,mergeStateStatus,statusCheckRollup
+# Check current branch PR
+/pr-check
 
-# Check review status
-gh pr view $PR_NUMBER --json reviewDecision,reviews
+# Check specific PR
+/pr-check 123
 
-# Check merge readiness
-gh pr view $PR_NUMBER --json mergeable,mergeStateStatus
+# Comprehensive analysis
+/pr-check 123 comprehensive
+
+# Real-time monitoring
+/pr-check 123 watch
 ```
 
-#### 2. CI/CD Monitoring
-
-##### Check Status
+### Advanced Monitoring
 
 ```bash
-# List all checks
-gh pr checks $PR_NUMBER
+# Enterprise compliance check
+/pr-check 456 enterprise
 
-# Get detailed check information
-gh api repos/{owner}/{repo}/commits/$(gh pr view $PR_NUMBER --json headRefOid -q .headRefOid)/check-runs \
-  --jq '.check_runs[] | {name: .name, status: .status, conclusion: .conclusion}'
+# Focus on CI/CD issues
+/pr-check 789 checks
 
-# Watch checks until completion
-gh pr checks $PR_NUMBER --watch
+# Merge readiness assessment
+/pr-check 123 mergeable
 ```
 
-##### Failing Checks Analysis
+## Status Indicators
 
-```bash
-# Get details of failing checks
-gh pr checks $PR_NUMBER --json name,state,conclusion | \
-  jq -r '.[] | select(.conclusion == "failure") | .name'
+### PR States
 
-# Get logs from failed checks
-gh run list --branch $(gh pr view $PR_NUMBER --json headRefName -q .headRefName) --json databaseId,status,conclusion | \
-  jq -r '.[] | select(.conclusion == "failure") | .databaseId' | \
-  xargs -I {} gh run view {} --log-failed
-```
+- `OPEN` - PR is open and active
+- `CLOSED` - PR was closed without merging
+- `MERGED` - PR was successfully merged
 
-#### 3. Merge Conflict Detection
+### Check States
 
-```bash
-# Check for merge conflicts
-gh pr view $PR_NUMBER --json mergeable,mergeStateStatus
+- `PENDING` - Check is queued or running
+- `SUCCESS` - Check passed
+- `FAILURE` - Check failed
+- `NEUTRAL` - Check completed with warnings
+- `CANCELLED` - Check was cancelled
+- `SKIPPED` - Check was skipped
+- `TIMED_OUT` - Check exceeded time limit
 
-# Get conflict details
-gh api repos/{owner}/{repo}/pulls/$PR_NUMBER --jq '.mergeable_state'
+### Review States
 
-# Show files with conflicts
-git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER
-git checkout pr-$PR_NUMBER
-git merge origin/main --no-commit --no-ff
-git diff --name-only --diff-filter=U
-```
+- `APPROVED` - PR has required approvals
+- `CHANGES_REQUESTED` - Changes requested by reviewers
+- `REVIEW_REQUIRED` - Awaiting required reviews
+- `COMMENTED` - Reviews with comments only
 
-### Advanced Features
+### Merge States
 
-#### Comprehensive Status Report
+- `MERGEABLE` - Ready to merge
+- `CONFLICTING` - Has merge conflicts
+- `UNKNOWN` - GitHub is still calculating
 
-The command generates a detailed status report:
+## Extended Thinking Integration
 
-```bash
-echo "=== PR #$PR_NUMBER Status Report ==="
-echo
+**For Complex PR Analysis:**
 
-# Basic info
-gh pr view $PR_NUMBER --json title,author,state,createdAt | \
-  jq -r '"Title: \(.title)\nAuthor: \(.author.login)\nState: \(.state)\nCreated: \(.createdAt)"'
+- Use "think deeply" for multi-service PR impact analysis
+- Use "think harder" for security and compliance review
+- Use "ultrathink" for enterprise architecture change assessment
 
-echo -e "\n--- Reviews ---"
-gh pr view $PR_NUMBER --json reviews,reviewDecision | \
-  jq -r '.reviews[] | "\(.author.login): \(.state)"'
+**Enhanced Analysis Areas:**
 
-echo -e "\n--- Checks ---"
-gh pr checks $PR_NUMBER
-
-echo -e "\n--- Merge Status ---"
-gh pr view $PR_NUMBER --json mergeable,mergeStateStatus | \
-  jq -r '"Mergeable: \(.mergeable)\nStatus: \(.mergeStateStatus)"'
-```
-
-#### Real-time Monitoring
-
-```bash
-# Watch PR status with auto-refresh
-while true; do
-  clear
-  echo "PR #$PR_NUMBER - $(date)"
-  echo "=================="
-  
-  # Show check status
-  gh pr checks $PR_NUMBER | head -10
-  
-  # Show review status
-  echo -e "\nReviews:"
-  gh pr view $PR_NUMBER --json reviewDecision -q .reviewDecision
-  
-  sleep 30
-done
-```
-
-#### Merge Readiness Checklist
-
-```bash
-# Automated merge readiness check
-echo "Merge Readiness Checklist for PR #$PR_NUMBER"
-echo "==========================================="
-
-# Required reviews
-REVIEWS=$(gh pr view $PR_NUMBER --json reviewDecision -q .reviewDecision)
-[ "$REVIEWS" = "APPROVED" ] && echo "✅ Reviews approved" || echo "❌ Pending reviews"
-
-# CI checks
-CHECKS=$(gh pr checks $PR_NUMBER --json state -q '.[] | select(.state != "SUCCESS") | .state' | wc -l)
-[ $CHECKS -eq 0 ] && echo "✅ All checks passing" || echo "❌ $CHECKS checks failing"
-
-# Merge conflicts
-MERGEABLE=$(gh pr view $PR_NUMBER --json mergeable -q .mergeable)
-[ "$MERGEABLE" = "true" ] && echo "✅ No merge conflicts" || echo "❌ Has merge conflicts"
-
-# Branch protection
-gh api repos/{owner}/{repo}/branches/main/protection --jq '.required_status_checks.contexts[]' 2>/dev/null
-```
+- Cross-repository dependency impact assessment
+- Security vulnerability and compliance validation
+- Performance impact analysis for large changes
+- Migration strategy evaluation for breaking changes
 
 ## Examples
 

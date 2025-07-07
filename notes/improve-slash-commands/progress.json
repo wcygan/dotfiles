@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 106,
+  "completed": 107,
   "inProgress": 11,
-  "lastUpdated": "2025-07-07T15:14:18.764Z",
+  "lastUpdated": "2025-07-07T15:14:44.657Z",
   "commands": [
     {
       "id": "001",
@@ -2264,18 +2264,21 @@
       "name": "pr-check",
       "filepath": "claude/commands/git/pr/pr-check.md",
       "namespace": "git/pr",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:11:31.900Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:14:44.657Z",
+      "improvements": [
+        "frontMatterUpdated",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "bashCommandsValidated"
+      ],
       "metrics": {
         "hadFrontMatter": true,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751901091900x77kv6v5kr",
-        "timestamp": 1751901091
       }
     },
     {
@@ -2494,8 +2497,8 @@
       "name": "ci-gen",
       "filepath": "claude/commands/ops/ci/ci-gen.md",
       "namespace": "ops/ci",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:35.982Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2503,7 +2506,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17519012759824ij8qc2eg8",
+        "timestamp": 1751901275
+      }
     },
     {
       "id": "119",

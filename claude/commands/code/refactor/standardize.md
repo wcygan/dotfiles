@@ -211,261 +211,44 @@ FINALLY:
 - Generate final standardization summary
 - Provide next steps for maintaining code standards
 - Update team documentation with new standards
-  error?: {
-  code: string;
-  message: string;
-  details?: unknown;
-  };
-  meta?: {
-  timestamp: string;
-  version: string;
-  requestId: string;
-  };
-  }
 
-function standardizeApiHandler<T>(
-handler: () => Promise<T>
-): async (req: Request) => Promise<Response> {
-return async (req: Request) => {
-const requestId = crypto.randomUUID();
+## Integration and Expected Outcomes
 
-    try {
-      const data = await handler();
-      return Response.json({
-        success: true,
-        data,
-        meta: {
-          timestamp: new Date().toISOString(),
-          version: APP_VERSION,
-          requestId,
-        },
-      });
-    } catch (error) {
-      logger.error('API handler error', { error, requestId });
-      return Response.json({
-        success: false,
-        error: {
-          code: error.code || 'INTERNAL_ERROR',
-          message: error.message || 'An error occurred',
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          version: APP_VERSION,
-          requestId,
-        },
-      }, { status: error.status || 500 });
-    }
+### Integration with Other Commands
 
-};
-}
+- Use after `/analyze` to understand current codebase patterns
+- Combine with `/refactor` for specific code improvements
+- Follow with `/test` to ensure standardization preserves functionality
+- Use with `/format` for consistent code styling
 
-````
-### 5. Configuration Standards
+### Expected Outcomes
 
-```typescript
-// config-standard.ts
-interface StandardConfig {
-  app: {
-    name: string;
-    version: string;
-    environment: "development" | "staging" | "production";
-  };
+1. **Consistent Codebase**: Unified naming conventions and structure across all files
+2. **Improved Maintainability**: Easier to navigate and understand codebase
+3. **Enhanced Collaboration**: Team follows same coding standards
+4. **Automated Enforcement**: Pre-commit hooks prevent standard violations
+5. **Documentation**: Style guide and standards reference for team
 
-  server: {
-    host: string;
-    port: number;
-    cors: {
-      origins: string[];
-      credentials: boolean;
-    };
-  };
+### Success Metrics
 
-  database: {
-    host: string;
-    port: number;
-    name: string;
-    user: string;
-    password: string;
-    ssl: boolean;
-  };
+- **Naming Consistency**: 95%+ files follow naming conventions
+- **Import Organization**: 100% files have organized imports
+- **Code Format**: All files pass formatting checks
+- **Structure Compliance**: Standard directory structure followed
+- **Validation**: All tests pass after standardization
 
-  logging: {
-    level: "debug" | "info" | "warn" | "error";
-    format: "json" | "pretty";
-  };
-}
+## Session State Management
 
-// Standardized config loading
-function loadConfig(): StandardConfig {
-  return {
-    app: {
-      name: Deno.env.get("APP_NAME") || "app",
-      version: Deno.env.get("APP_VERSION") || "0.0.0",
-      environment: (Deno.env.get("APP_ENV") || "development") as any,
-    },
-    server: {
-      host: Deno.env.get("HOST") || "0.0.0.0",
-      port: parseInt(Deno.env.get("PORT") || "8000"),
-      cors: {
-        origins: (Deno.env.get("CORS_ORIGINS") || "*").split(","),
-        credentials: Deno.env.get("CORS_CREDENTIALS") === "true",
-      },
-    },
-    // ... more config
-  };
-}
-````
+**State Files Created:**
 
-### 6. Testing Standards
+- `/tmp/standardize-state-$SESSION_ID.json` - Main session state
+- `/tmp/standardize-analysis-$SESSION_ID.json` - Analysis results
+- `/tmp/standardize-changes-$SESSION_ID.json` - Applied changes log
+- `/tmp/standardize-report-$SESSION_ID.json` - Final report
 
-```typescript
-// test-standards.ts
-// Standardized test structure
-Deno.test("ComponentName", async (t) => {
-  // Setup
-  await t.step("setup", () => {
-    // Common setup
-  });
+**Resumability:**
 
-  // Feature tests
-  await t.step("should handle normal case", () => {
-    // Arrange
-    const input = createTestInput();
-
-    // Act
-    const result = functionUnderTest(input);
-
-    // Assert
-    assertEquals(result, expectedOutput);
-  });
-
-  await t.step("should handle error case", () => {
-    // Test error scenarios
-  });
-
-  // Cleanup
-  await t.step("cleanup", () => {
-    // Cleanup resources
-  });
-});
-
-// Standardized test utilities
-const TestUtils = {
-  createMockUser: (overrides = {}) => ({
-    id: "test-id",
-    email: "test@example.com",
-    name: "Test User",
-    ...overrides,
-  }),
-
-  createMockRequest: (overrides = {}) =>
-    new Request("http://localhost", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      ...overrides,
-    }),
-};
-```
-
-### 7. Documentation Standards
-
-````typescript
-/**
- * Processes user data according to business rules.
- *
- * @param userData - The user data to process
- * @param options - Processing options
- * @returns Processed user data
- *
- * @example
- * ```typescript
- * const result = await processUser(userData, { validate: true });
- * ```
- *
- * @throws {ValidationError} If userData is invalid
- * @throws {ProcessingError} If processing fails
- */
-async function processUser(
-  userData: UserData,
-  options: ProcessOptions = {},
-): Promise<ProcessedUser> {
-  // Implementation
-}
-````
-
-## Output Format
-
-````markdown
-# Standardization Report
-
-## Summary
-
-- **Files Analyzed**: X
-- **Changes Made**: Y
-- **Patterns Fixed**: Z
-
-## Changes Applied
-
-### Naming Conventions
-
-- ✅ Renamed X files to follow conventions
-- ✅ Updated Y variable names
-- ✅ Standardized Z function names
-
-### Code Structure
-
-- ✅ Reorganized imports in X files
-- ✅ Moved Y files to standard locations
-- ✅ Created Z missing directories
-
-### Patterns Standardized
-
-- ✅ Error handling (X occurrences)
-- ✅ API responses (Y endpoints)
-- ✅ Configuration loading (Z files)
-
-### Before/After Examples
-
-```typescript
-// Before
-const get_user_data = (userId) => { ... }
-
-// After  
-const getUserData = (userId: string): Promise<UserData> => { ... }
-```
-````
-
-## Remaining Issues
-
-- [ ] Manual review needed for X complex cases
-- [ ] Y files have custom patterns that need discussion
-- [ ] Z deprecated patterns need migration plan
-
-## Next Steps
-
-1. Review and commit changes
-2. Update documentation
-3. Configure linters/formatters
-4. Set up pre-commit hooks
-
-```
-## Standards Checklist
-
-- [ ] Consistent file naming
-- [ ] Organized imports
-- [ ] Standard error handling
-- [ ] Unified API responses
-- [ ] Common logging format
-- [ ] Shared type definitions
-- [ ] Test structure consistency
-- [ ] Documentation format
-
-## Guidelines
-
-- Apply changes incrementally
-- Preserve functionality
-- Update tests alongside code
-- Document exceptions
-- Configure automated checks
-- Train team on standards
-```
+- Session can be resumed from any checkpoint
+- Partial changes preserved across sessions
+- Rollback capability to any previous checkpoint
+- State transitions tracked for workflow continuation

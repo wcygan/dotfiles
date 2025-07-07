@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 66,
-  "inProgress": 3,
-  "lastUpdated": "2025-07-07T13:43:19.691Z",
+  "completed": 67,
+  "inProgress": 2,
+  "lastUpdated": "2025-07-07T13:43:38.335Z",
   "commands": [
     {
       "id": "001",
@@ -1394,18 +1394,21 @@
       "name": "standardize",
       "filepath": "claude/commands/code/refactor/standardize.md",
       "namespace": "code/refactor",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:37:08.247Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:43:38.335Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17518954282479xv73t0hys",
-        "timestamp": 1751895428
       }
     },
     {

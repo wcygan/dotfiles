@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 55,
-  "inProgress": 12,
-  "lastUpdated": "2025-07-07T13:40:58.212Z",
+  "completed": 58,
+  "inProgress": 11,
+  "lastUpdated": "2025-07-07T13:41:29.105Z",
   "commands": [
     {
       "id": "001",
@@ -974,18 +974,21 @@
       "name": "data-viz",
       "filepath": "claude/commands/analyze/data/data-viz.md",
       "namespace": "analyze/data",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:39:57.668Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:41:18.fZ",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751895597667oxih50moaj",
-        "timestamp": 1751895597
       }
     },
     {
@@ -1305,18 +1308,20 @@
       "name": "migrate",
       "filepath": "claude/commands/code/migrate/migrate.md",
       "namespace": "code/migrate",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:36:54.084Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:41:13.298Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751895414084dcsl1jgh86",
-        "timestamp": 1751895414
       }
     },
     {
@@ -1443,18 +1448,20 @@
       "name": "context-load-redpanda",
       "filepath": "claude/commands/context/db/context-load-redpanda.md",
       "namespace": "context/db",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:37:17.554Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:41:29.104Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17518954375544y5ll10ie8",
-        "timestamp": 1751895437
       }
     },
     {
@@ -1500,8 +1507,8 @@
       "name": "context-load-deno-scripting",
       "filepath": "claude/commands/context/deno/context-load-deno-scripting.md",
       "namespace": "context/deno",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T13:41:17.599Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1509,15 +1516,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17518956775993bd1ssvrpi",
+        "timestamp": 1751895677
+      }
     },
     {
       "id": "069",
       "name": "context-load-go-concurrency",
       "filepath": "claude/commands/context/go/context-load-go-concurrency.md",
       "namespace": "context/go",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T13:41:21.674Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1525,7 +1535,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751895681674k2wqe6krtp",
+        "timestamp": 1751895681
+      }
     },
     {
       "id": "070",

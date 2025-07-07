@@ -1,950 +1,491 @@
+---
+allowed-tools: Bash(top:*), Bash(htop:*), Bash(iostat:*), Bash(free:*), Bash(uptime:*), Bash(ps:*), Bash(netstat:*), Bash(rg:*), Bash(fd:*), Bash(jq:*), Bash(gdate:*), Bash(psql:*), Bash(mysql:*), Read, Write, Task
+description: Systematic performance bottleneck analysis and optimization across application stack
+---
+
 # /bottleneck
 
-Identify, analyze, and resolve performance bottlenecks for $ARGUMENT using systematic profiling, monitoring, and optimization techniques across the entire application stack.
+## Context
 
-## Context Intelligence
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "session-$(date +%s)"`
+- Target system: $ARGUMENTS
+- Current system load: !`uptime | awk -F'load average:' '{print $2}' || echo "Load info unavailable"`
+- Memory usage: !`free -h 2>/dev/null | head -2 || vm_stat 2>/dev/null | head -5 || echo "Memory info unavailable"`
+- CPU cores: !`nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo "1"`
+- Active processes: !`ps aux --sort=-%cpu 2>/dev/null | head -5 || ps aux | head -5 || echo "Process info unavailable"`
+- Project structure: !`fd . -t d -d 2 2>/dev/null | head -10 || find . -type d -maxdepth 2 2>/dev/null | head -10 || echo "No project structure detected"`
+- Technology stack: !`fd -e json -e toml -e yaml . 2>/dev/null | rg "(package\.json|Cargo\.toml|deno\.json|docker-compose\.yml|pom\.xml)" | head -3 || echo "No config files detected"`
+- Monitoring tools: !`which prometheus grafana 2>/dev/null || echo "No monitoring tools detected"`
 
-### System Architecture Detection
+## Your Task
 
-**Performance Profile Discovery:**
+Execute comprehensive performance bottleneck analysis and optimization using systematic profiling, monitoring, and optimization techniques across the entire application stack.
 
-```bash
-# Detect application architecture and performance characteristics
-detect_performance_context() {
-  echo "🔍 Detecting application performance context..."
-  
-  # Application type detection
-  if [ -f "Cargo.toml" ]; then
-    LANGUAGE="rust"
-    PERF_TOOLS="cargo-flamegraph perf valgrind"
-    PROFILE_CMD="cargo build --release && perf record target/release/app"
-  elif [ -f "go.mod" ]; then
-    LANGUAGE="go" 
-    PERF_TOOLS="pprof go-torch"
-    PROFILE_CMD="go tool pprof http://localhost:6060/debug/pprof/profile"
-  elif [ -f "deno.json" ]; then
-    LANGUAGE="deno"
-    PERF_TOOLS="deno-performance clinic"
-    PROFILE_CMD="deno run --allow-all --v8-flags=--prof app.ts"
-  elif [ -f "package.json" ]; then
-    LANGUAGE="node"
-    PERF_TOOLS="clinic 0x autocannon"
-    PROFILE_CMD="clinic doctor -- node app.js"
-  fi
-  
-  # Infrastructure detection
-  if [ -f "docker-compose.yml" ]; then
-    DEPLOYMENT="docker-compose"
-    MONITORING_STACK="prometheus grafana jaeger"
-  elif [ -d "k8s" ] || [ -d "kubernetes" ]; then
-    DEPLOYMENT="kubernetes"
-    MONITORING_STACK="prometheus grafana jaeger istio"
-  fi
-  
-  # Database detection
-  if rg -q "postgresql|postgres" .; then
-    DATABASE="postgresql"
-    DB_TOOLS="pg_stat_statements pgbench explain"
-  elif rg -q "mysql|mariadb" .; then
-    DATABASE="mysql"
-    DB_TOOLS="performance_schema mysqldumpslow"
-  elif rg -q "mongodb" .; then
-    DATABASE="mongodb"
-    DB_TOOLS="mongostat mongotop db.collection.explain"
-  fi
-  
-  echo "Language: $LANGUAGE, Deployment: $DEPLOYMENT, Database: $DATABASE"
-}
+STEP 1: Analysis Session Initialization and Architecture Detection
 
-# Analyze current resource utilization
-analyze_resource_baseline() {
-  echo "📊 Analyzing current resource utilization..."
-  
-  # CPU analysis
-  CPU_USAGE=$(top -bn1 | rg "Cpu\(s\)" | awk '{print $2}' | cut -d'%' -f1)
-  CPU_CORES=$(nproc)
-  
-  # Memory analysis
-  MEMORY_INFO=$(free -h)
-  MEMORY_USED=$(echo "$MEMORY_INFO" | awk 'NR==2{printf "%.1f", $3/$2*100}')
-  
-  # Disk I/O analysis
-  DISK_USAGE=$(iostat -x 1 1 | tail -n +4 | awk '{sum+=$10} END {print sum/NR}')
-  
-  # Network analysis
-  NETWORK_CONNECTIONS=$(netstat -an | wc -l)
-  
-  cat > performance_baseline.json << EOF
+TRY:
+
+- Create session state file: /tmp/bottleneck-analysis-$SESSION_ID.json
+- Initialize performance analysis framework
+- Detect application architecture and technology stack
+
+```json
+// /tmp/bottleneck-analysis-$SESSION_ID.json
 {
+  "sessionId": "$SESSION_ID",
   "timestamp": "$(date -Iseconds)",
-  "cpu": {
-    "usage_percent": $CPU_USAGE,
-    "cores": $CPU_CORES,
-    "load_average": "$(uptime | awk -F'load average:' '{print $2}')"
+  "target": "$ARGUMENTS",
+  "phase": "initialization",
+  "architecture": {
+    "language": "detect_from_files",
+    "deployment": "detect_infrastructure",
+    "database": "detect_db_type",
+    "monitoring": "assess_existing_tools"
   },
-  "memory": {
-    "usage_percent": $MEMORY_USED,
-    "details": "$(echo "$MEMORY_INFO" | jq -R -s 'split("\n")')"
-  },
-  "disk": {
-    "avg_util_percent": $DISK_USAGE
-  },
-  "network": {
-    "connections": $NETWORK_CONNECTIONS
-  }
-}
-EOF
+  "baseline_metrics": {},
+  "discovered_bottlenecks": [],
+  "optimization_recommendations": [],
+  "monitoring_setup": {}
 }
 ```
 
-### Application Performance Monitoring Setup
+- FOR EACH configuration file found:
+  - IF Cargo.toml EXISTS: SET language = "rust", tools = "cargo-flamegraph perf valgrind"
+  - ELSE IF go.mod EXISTS: SET language = "go", tools = "pprof go-torch"
+  - ELSE IF deno.json EXISTS: SET language = "deno", tools = "deno-performance clinic"
+  - ELSE IF package.json EXISTS: SET language = "node", tools = "clinic 0x autocannon"
 
-**Instrumentation Detection:**
+- FOR EACH infrastructure indicator:
+  - IF docker-compose.yml EXISTS: SET deployment = "docker-compose"
+  - ELSE IF kubernetes directory EXISTS: SET deployment = "kubernetes"
+
+- FOR EACH database indicator:
+  - IF postgresql references found: SET database = "postgresql"
+  - ELSE IF mysql references found: SET database = "mysql"
+  - ELSE IF mongodb references found: SET database = "mongodb"
+
+- Update session state with detected architecture
+- Save checkpoint: architecture_detection_complete
+
+STEP 2: Performance Baseline Establishment
+
+TRY:
+
+- Collect comprehensive system metrics for baseline analysis
+- Create performance baseline file: /tmp/performance-baseline-$SESSION_ID.json
+- Establish monitoring data collection framework
 
 ```bash
-# Check for existing monitoring and instrumentation
-check_existing_monitoring() {
-  echo "🔬 Checking existing performance monitoring..."
-  
-  # Application metrics endpoints
-  if rg -q "metrics|prometheus|/health|/stats" .; then
-    echo "✅ Application metrics endpoints detected"
-    rg "metrics|prometheus|/health|/stats" --type yaml --type json --type env | head -10
-  fi
-  
-  # Distributed tracing
-  if rg -q "jaeger|zipkin|otel|opentelemetry" .; then
-    echo "✅ Distributed tracing setup detected"
-    rg "jaeger|zipkin|otel|opentelemetry" --type yaml --type json | head -5
-  fi
-  
-  # Database monitoring
-  case $DATABASE in
-    "postgresql")
-      if rg -q "pg_stat_statements|pg_stat_user_tables" .; then
-        echo "✅ PostgreSQL monitoring enabled"
-      fi
-      ;;
-    "mysql")
-      if rg -q "performance_schema|slow_query_log" .; then
-        echo "✅ MySQL performance monitoring enabled"
-      fi
-      ;;
-  esac
-  
-  # Container monitoring
-  if [ -f "docker-compose.yml" ]; then
-    if yq '.services[] | select(.image | contains("prometheus"))' docker-compose.yml > /dev/null 2>&1; then
-      echo "✅ Prometheus monitoring in docker-compose"
-    fi
-  fi
-}
+# Cross-platform system metrics collection
+CPU_USAGE=$(top -bn1 2>/dev/null | rg "Cpu\(s\)" | awk '{print $2}' | cut -d'%' -f1 || echo "0")
+CPU_CORES=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo "1")
+MEMORY_USED=$(free -h 2>/dev/null | awk 'NR==2{printf "%.1f", $3/$2*100}' || echo "0")
+DISK_UTIL=$(iostat -x 1 1 2>/dev/null | tail -n +4 | awk '{sum+=$10} END {print sum/NR}' || echo "0")
+NETWORK_CONN=$(netstat -an 2>/dev/null | wc -l || echo "0")
+LOAD_AVG=$(uptime | awk -F'load average:' '{print $2}' || echo "0, 0, 0")
 ```
 
-## Multi-Dimensional Bottleneck Analysis
+- Generate baseline metrics JSON:
 
-### 1. Application-Level Performance Analysis
-
-**Systematic Performance Profiling:**
-
-```typescript
-// Generated performance analyzer
-interface PerformanceProfile {
-  component: string;
-  metrics: PerformanceMetrics;
-  bottlenecks: Bottleneck[];
-  recommendations: OptimizationRecommendation[];
-}
-
-interface PerformanceMetrics {
-  cpu: CPUMetrics;
-  memory: MemoryMetrics;
-  io: IOMetrics;
-  network: NetworkMetrics;
-  database: DatabaseMetrics;
-  cache: CacheMetrics;
-}
-
-interface Bottleneck {
-  type: "cpu" | "memory" | "io" | "network" | "database" | "cache" | "algorithm";
-  severity: "low" | "medium" | "high" | "critical";
-  description: string;
-  impact: string;
-  location: string;
-  evidence: PerformanceEvidence[];
-  rootCause: string;
-}
-
-interface OptimizationRecommendation {
-  type: "code" | "configuration" | "infrastructure" | "architecture";
-  priority: "low" | "medium" | "high" | "critical";
-  description: string;
-  expectedImpact: string;
-  effort: "low" | "medium" | "high";
-  implementation: string;
-  codeExample?: string;
-}
-
-export class BottleneckAnalyzer {
-  async analyzeApplication(): Promise<PerformanceProfile[]> {
-    console.log("🔍 Starting comprehensive bottleneck analysis...");
-
-    const profiles: PerformanceProfile[] = [];
-
-    // Analyze different application components
-    const components = await this.identifyComponents();
-
-    for (const component of components) {
-      const metrics = await this.collectMetrics(component);
-      const bottlenecks = await this.identifyBottlenecks(component, metrics);
-      const recommendations = await this.generateRecommendations(bottlenecks);
-
-      profiles.push({
-        component: component.name,
-        metrics,
-        bottlenecks,
-        recommendations,
-      });
+```json
+// /tmp/performance-baseline-$SESSION_ID.json
+{
+  "sessionId": "$SESSION_ID",
+  "timestamp": "$(date -Iseconds)",
+  "baseline_metrics": {
+    "cpu": {
+      "usage_percent": "$CPU_USAGE",
+      "cores": "$CPU_CORES",
+      "load_average": "$LOAD_AVG"
+    },
+    "memory": {
+      "usage_percent": "$MEMORY_USED",
+      "total_gb": "$(free -h 2>/dev/null | awk 'NR==2{print $2}' || echo 'N/A')"
+    },
+    "disk": {
+      "avg_util_percent": "$DISK_UTIL"
+    },
+    "network": {
+      "active_connections": "$NETWORK_CONN"
     }
-
-    return profiles;
-  }
-
-  private async identifyBottlenecks(
-    component: any,
-    metrics: PerformanceMetrics,
-  ): Promise<Bottleneck[]> {
-    const bottlenecks: Bottleneck[] = [];
-
-    // CPU bottleneck detection
-    if (metrics.cpu.utilization > 80) {
-      bottlenecks.push({
-        type: "cpu",
-        severity: metrics.cpu.utilization > 95 ? "critical" : "high",
-        description: `High CPU utilization (${metrics.cpu.utilization}%) in ${component.name}`,
-        impact: "Increased response times, potential request timeouts",
-        location: component.name,
-        evidence: [
-          {
-            metric: "cpu_utilization",
-            value: metrics.cpu.utilization,
-            threshold: 80,
-            timestamp: new Date().toISOString(),
-          },
-        ],
-        rootCause: await this.analyzeCPUBottleneck(component, metrics.cpu),
-      });
-    }
-
-    // Memory bottleneck detection
-    if (metrics.memory.usage > 85 || metrics.memory.gcPressure > 0.1) {
-      bottlenecks.push({
-        type: "memory",
-        severity: metrics.memory.usage > 95 ? "critical" : "high",
-        description:
-          `Memory pressure detected: ${metrics.memory.usage}% usage, GC pressure: ${metrics.memory.gcPressure}`,
-        impact: "Frequent garbage collection, increased latency, potential OOM",
-        location: component.name,
-        evidence: [
-          {
-            metric: "memory_usage",
-            value: metrics.memory.usage,
-            threshold: 85,
-            timestamp: new Date().toISOString(),
-          },
-        ],
-        rootCause: await this.analyzeMemoryBottleneck(component, metrics.memory),
-      });
-    }
-
-    // Database bottleneck detection
-    if (metrics.database.avgQueryTime > 100 || metrics.database.slowQueries > 10) {
-      bottlenecks.push({
-        type: "database",
-        severity: metrics.database.avgQueryTime > 1000 ? "critical" : "high",
-        description:
-          `Database performance issues: avg query time ${metrics.database.avgQueryTime}ms, ${metrics.database.slowQueries} slow queries`,
-        impact: "Increased application response times, potential timeouts",
-        location: "database",
-        evidence: [
-          {
-            metric: "avg_query_time",
-            value: metrics.database.avgQueryTime,
-            threshold: 100,
-            timestamp: new Date().toISOString(),
-          },
-        ],
-        rootCause: await this.analyzeDatabaseBottleneck(metrics.database),
-      });
-    }
-
-    return bottlenecks;
-  }
-
-  private async analyzeCPUBottleneck(component: any, cpuMetrics: CPUMetrics): Promise<string> {
-    // Analyze CPU usage patterns
-    if (cpuMetrics.userTime > cpuMetrics.systemTime * 3) {
-      return "High user CPU time suggests application-level performance issues (inefficient algorithms, loops, or computations)";
-    } else if (cpuMetrics.systemTime > cpuMetrics.userTime) {
-      return "High system CPU time suggests I/O bottlenecks or kernel-level issues";
-    } else if (cpuMetrics.iowait > 20) {
-      return "High I/O wait time indicates storage or network bottlenecks";
-    }
-
-    return "General CPU pressure - consider horizontal scaling or algorithm optimization";
   }
 }
 ```
 
-### 2. Database Performance Analysis
+- Update session state: phase = "baseline_established"
+- Save checkpoint: baseline_collection_complete
 
-**Comprehensive Database Bottleneck Detection:**
+CATCH (system_access_denied):
 
-```typescript
-// Generated database performance analyzer
-interface DatabaseAnalyzer {
-  analyzeDatabase(): Promise<DatabaseBottlenecks>;
-}
+- Use available metrics only
+- Document missing permissions in session state
+- Continue with limited baseline data
+- Log fallback strategy in session notes
 
-interface DatabaseBottlenecks {
-  queries: SlowQuery[];
-  indexes: IndexRecommendation[];
-  connections: ConnectionIssue[];
-  locks: LockContention[];
-  schema: SchemaOptimization[];
-}
+````
+CATCH (monitoring_tool_missing):
 
-interface SlowQuery {
-  query: string;
-  avgExecutionTime: number;
-  executionCount: number;
-  totalTime: number;
-  indexUsage: string;
-  optimizationSuggestion: string;
-  explainPlan?: any;
-}
+- Document missing monitoring capabilities in session state
+- Create fallback analysis strategy using available system tools
+- Save monitoring gap analysis to session state
+- Continue with manual profiling approach`
 
-export class DatabasePerformanceAnalyzer implements DatabaseAnalyzer {
-  async analyzeDatabase(): Promise<DatabaseBottlenecks> {
-    const dbType = await this.detectDatabaseType();
+STEP 3: Multi-Dimensional Bottleneck Analysis
 
-    switch (dbType) {
-      case "postgresql":
-        return this.analyzePostgreSQL();
-      case "mysql":
-        return this.analyzeMySQL();
-      case "mongodb":
-        return this.analyzeMongoDB();
-      default:
-        throw new Error(`Unsupported database type: ${dbType}`);
+Think deeply about the optimal approach for comprehensive performance analysis across all system layers.
+
+Use parallel sub-agents for comprehensive bottleneck discovery:
+
+- **Agent 1**: CPU and Memory Performance Analysis
+- **Agent 2**: Database Performance Analysis
+- **Agent 3**: Network and I/O Analysis
+- **Agent 4**: Application Code Profiling
+- **Agent 5**: Infrastructure Monitoring Assessment
+
+FOR EACH analysis dimension IN parallel:
+
+### Application-Level Performance Analysis (Agent 1)
+
+Execute systematic bottleneck identification across all system components:
+
+- FOR EACH system component (CPU, memory, I/O, network, database, application):
+  - Collect performance metrics
+  - Identify threshold violations
+  - Determine bottleneck severity
+  - Document root cause analysis
+  - Generate optimization recommendations
+
+**Performance Analysis Framework:**
+
+```json
+// Bottleneck analysis structure
+{
+  "bottleneck_type": "cpu|memory|io|network|database|cache|algorithm",
+  "severity": "low|medium|high|critical", 
+  "description": "Human-readable bottleneck description",
+  "impact": "Performance impact assessment",
+  "location": "Code/system location of bottleneck",
+  "evidence": [
+    {
+      "metric": "performance_metric_name",
+      "value": "measured_value",
+      "threshold": "violation_threshold",
+      "timestamp": "measurement_time"
     }
+  ],
+  "root_cause": "Underlying cause analysis",
+  "recommendation": {
+    "type": "code|configuration|infrastructure|architecture",
+    "priority": "implementation_priority",
+    "description": "optimization_approach",
+    "expected_impact": "performance_improvement_estimate",
+    "effort": "implementation_effort_estimate",
+    "implementation_steps": "specific_actions_required"
   }
+}
+```
 
-  private async analyzePostgreSQL(): Promise<DatabaseBottlenecks> {
-    console.log("🐘 Analyzing PostgreSQL performance...");
+**Bottleneck Detection Algorithm:**
 
-    // Slow query analysis using pg_stat_statements
-    const slowQueries = await this.getPostgreSQLSlowQueries();
-    const indexRecommendations = await this.analyzePostgreSQLIndexes();
-    const connectionIssues = await this.analyzePostgreSQLConnections();
-    const lockContention = await this.analyzePostgreSQLLocks();
-    const schemaOptimizations = await this.analyzePostgreSQLSchema();
+FOR EACH system component:
 
-    return {
-      queries: slowQueries,
-      indexes: indexRecommendations,
-      connections: connectionIssues,
-      locks: lockContention,
-      schema: schemaOptimizations,
-    };
-  }
+1. **CPU Analysis**:
+   - IF cpu_utilization > 80%: IDENTIFY as CPU bottleneck
+   - ANALYZE user_time vs system_time vs iowait patterns
+   - DETERMINE root cause (algorithm efficiency, I/O blocking, etc.)
 
-  private async getPostgreSQLSlowQueries(): Promise<SlowQuery[]> {
-    // Generate SQL for slow query analysis
-    const analysisQueries = `
--- Enable pg_stat_statements if not already enabled
+2. **Memory Analysis**:
+   - IF memory_usage > 85% OR gc_pressure > 0.1: IDENTIFY as memory bottleneck
+   - ANALYZE allocation patterns and garbage collection frequency
+   - DETERMINE root cause (memory leaks, inefficient data structures, etc.)
+
+3. **Database Analysis**:
+   - IF avg_query_time > 100ms OR slow_queries > 10: IDENTIFY as database bottleneck
+   - ANALYZE query execution plans and index usage
+   - DETERMINE root cause (missing indexes, inefficient queries, etc.)
+
+4. **Network Analysis**:
+   - IF network_latency > 100ms OR packet_loss > 1%: IDENTIFY as network bottleneck
+   - ANALYZE connection patterns and bandwidth utilization
+   - DETERMINE root cause (network congestion, DNS issues, etc.)
+
+5. **I/O Analysis**:
+   - IF disk_utilization > 80% OR iowait > 20%: IDENTIFY as I/O bottleneck
+   - ANALYZE read/write patterns and queue depths
+   - DETERMINE root cause (storage performance, file system issues, etc.)
+
+- Update session state with discovered bottlenecks
+- Save analysis results to: /tmp/bottleneck-results-$SESSION_ID.json
+- Save checkpoint: bottleneck_analysis_complete
+
+CATCH (analysis_tool_unavailable):
+
+- Use fallback analysis methods with available system tools
+- Document limited analysis scope in session state
+- Continue with manual profiling techniques
+- Save alternative analysis approach to session notes
+
+CATCH (insufficient_permissions):
+
+- Request elevated permissions for system analysis
+- Use user-level analysis tools where possible
+- Document permission limitations in session state
+- Provide manual analysis instructions
+
+STEP 4: Optimization Strategy Generation
+
+Think harder about system design tradeoffs and optimization approaches for discovered bottlenecks.
+
+TRY:
+
+- Analyze collected bottleneck data from previous step
+- Generate prioritized optimization recommendations
+- Create implementation roadmap with effort estimates
+- Design before/after performance comparison framework
+
+FOR EACH discovered bottleneck:
+
+- **CPU Optimization Strategy**:
+  - IF high_user_time: RECOMMEND algorithm optimization, caching, parallel processing
+  - IF high_system_time: RECOMMEND I/O optimization, batch operations
+  - IF high_iowait: RECOMMEND storage optimization, async operations
+
+- **Memory Optimization Strategy**: 
+  - IF memory_leaks: RECOMMEND object pooling, proper cleanup
+  - IF gc_pressure: RECOMMEND data structure optimization, streaming
+  - IF allocation_patterns: RECOMMEND memory-efficient algorithms
+
+- **Database Optimization Strategy**:
+  - IF slow_queries: RECOMMEND index creation, query rewriting
+  - IF connection_issues: RECOMMEND connection pooling, query batching
+  - IF lock_contention: RECOMMEND schema optimization, transaction tuning
+
+- Create optimization priority matrix based on:
+  - Performance impact potential (high/medium/low)
+  - Implementation effort (high/medium/low) 
+  - Risk level (high/medium/low)
+  - Resource requirements
+
+- Generate implementation roadmap: /tmp/optimization-roadmap-$SESSION_ID.json
+- Save checkpoint: optimization_strategy_complete
+```
+
+STEP 5: Continuous Monitoring Setup
+
+TRY:
+
+- Configure real-time performance monitoring
+- Set up alerting thresholds based on discovered bottlenecks
+- Create performance dashboards and reporting
+- Establish performance regression detection
+
+**Database Performance Monitoring Configuration:**
+
+FOR EACH detected database type:
+
+- **PostgreSQL Monitoring Setup**:
+  - Enable pg_stat_statements extension
+  - Configure slow query logging
+  - Set up connection pool monitoring
+  - Create performance views and alerts
+
+- **MySQL Monitoring Setup**:
+  - Enable performance_schema
+  - Configure slow query log
+  - Set up connection monitoring
+  - Create performance dashboards
+
+- **MongoDB Monitoring Setup**:
+  - Enable profiler for slow operations
+  - Configure database monitoring
+  - Set up replica set monitoring
+  - Create performance alerts
+
+**Database Analysis Framework:**
+
+```json
+// Database bottleneck structure
+{
+  "database_type": "postgresql|mysql|mongodb",
+  "slow_queries": [
+    {
+      "query": "SQL_statement_or_operation",
+      "avg_execution_time_ms": "average_duration",
+      "execution_count": "frequency",
+      "total_time_ms": "cumulative_duration",
+      "index_usage": "index_scan_vs_seq_scan",
+      "optimization_suggestion": "improvement_recommendation"
+    }
+  ],
+  "index_recommendations": [
+    {
+      "table": "table_name",
+      "column": "column_name",
+      "type": "missing|unused|duplicate",
+      "impact": "performance_improvement_estimate",
+      "sql": "CREATE_INDEX_statement"
+    }
+  ],
+  "connection_issues": [
+    {
+      "issue_type": "pool_exhaustion|timeout|deadlock",
+      "frequency": "occurrence_count",
+      "recommendation": "solution_approach"
+    }
+  ]
+}
+```
+
+**Database Analysis Execution:**
+
+CASE database_type:
+  WHEN "postgresql":
+    - Execute PostgreSQL performance analysis
+    - Query pg_stat_statements for slow queries
+    - Analyze index usage and recommendations
+    - Check connection pool status
+    
+  WHEN "mysql":
+    - Execute MySQL performance analysis  
+    - Query performance_schema for slow queries
+    - Analyze index efficiency
+    - Check connection and lock status
+    
+  WHEN "mongodb":
+    - Execute MongoDB performance analysis
+    - Analyze slow operations from profiler
+    - Check index usage patterns
+    - Analyze replica set performance
+    
+  DEFAULT:
+    - Document unsupported database type
+    - Recommend general database optimization practices
+    - Continue with application-level analysis
+
+**PostgreSQL Performance Analysis:**
+
+```sql
+-- Enable comprehensive monitoring
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
--- Find slowest queries by total time
+-- Slow query analysis
 SELECT 
   query,
   calls as execution_count,
-  total_exec_time / calls as avg_execution_time,
+  total_exec_time / calls as avg_execution_time_ms,
   total_exec_time,
-  rows / calls as avg_rows,
-  100.0 * shared_blks_hit / nullif(shared_blks_hit + shared_blks_read, 0) as hit_percent
+  100.0 * shared_blks_hit / nullif(shared_blks_hit + shared_blks_read, 0) as cache_hit_percent
 FROM pg_stat_statements 
 WHERE calls > 100
 ORDER BY total_exec_time DESC 
 LIMIT 20;
 
--- Find queries with poor cache hit ratios
-SELECT 
-  query,
-  calls,
-  shared_blks_hit,
-  shared_blks_read,
-  shared_blks_written,
-  100.0 * shared_blks_hit / nullif(shared_blks_hit + shared_blks_read, 0) as hit_percent
-FROM pg_stat_statements 
-WHERE shared_blks_read > 0
-ORDER BY hit_percent ASC, shared_blks_read DESC
-LIMIT 10;
-`;
-
-    // Return mock data structure - in real implementation, execute queries
-    return [
-      {
-        query: "SELECT * FROM users WHERE email = $1",
-        avgExecutionTime: 150.5,
-        executionCount: 1250,
-        totalTime: 188125,
-        indexUsage: "Sequential scan on users table",
-        optimizationSuggestion:
-          "Add index on email column: CREATE INDEX idx_users_email ON users(email)",
-        explainPlan: {
-          "Plan": {
-            "Node Type": "Seq Scan",
-            "Relation Name": "users",
-            "Total Cost": 155.42,
-            "Rows": 1,
-          },
-        },
-      },
-    ];
-  }
-
-  private async analyzePostgreSQLIndexes(): Promise<IndexRecommendation[]> {
-    // Generate index analysis SQL
-    const indexAnalysisSQL = `
--- Find missing indexes (tables with high seq scan ratios)
+-- Index usage analysis
 SELECT 
   schemaname,
   tablename,
   seq_scan,
   seq_tup_read,
   idx_scan,
-  idx_tup_fetch,
-  seq_tup_read / seq_scan as avg_seq_read,
-  CASE WHEN seq_scan > 0 THEN seq_tup_read / seq_scan ELSE 0 END as seq_scan_ratio
+  CASE WHEN seq_scan > 0 THEN seq_tup_read / seq_scan ELSE 0 END as avg_seq_read
 FROM pg_stat_user_tables 
 WHERE seq_scan > 100 
-  AND (idx_scan IS NULL OR seq_scan > idx_scan)
 ORDER BY seq_tup_read DESC;
+```
 
--- Find unused indexes
-SELECT 
-  schemaname,
-  tablename,
-  indexname,
-  idx_scan,
-  idx_tup_read,
-  idx_tup_fetch
-FROM pg_stat_user_indexes 
-WHERE idx_scan < 10
-ORDER BY idx_scan ASC;
+- Update database analysis results in session state
+- Save database performance data to: /tmp/database-analysis-$SESSION_ID.json
+- Save checkpoint: database_analysis_complete
 
--- Find duplicate indexes
-SELECT 
-  a.tablename,
-  a.indexname as index1,
-  b.indexname as index2,
-  a.indexdef,
-  b.indexdef
-FROM pg_indexes a
-JOIN pg_indexes b ON a.tablename = b.tablename
-WHERE a.indexname != b.indexname
-  AND a.indexdef SIMILAR TO b.indexdef;
-`;
+CATCH (database_connection_failed):
 
-    return [
-      {
-        type: "missing",
-        table: "users",
-        column: "email",
-        reason: "High sequential scan ratio (95%)",
-        suggestion: "CREATE INDEX idx_users_email ON users(email)",
-        impact: "Estimated 80% query time reduction",
-        priority: "high",
-      },
-    ];
-  }
+- Document database connectivity issues
+- Recommend database connection troubleshooting
+- Continue with application-level analysis
+- Save connection failure details to session state
+
+CATCH (insufficient_database_permissions):
+
+- Document limited database access
+- Use available database monitoring tools
+- Recommend requesting appropriate database permissions
+- Continue with user-level database analysis
+
+STEP 6: Report Generation and Session Cleanup
+
+TRY:
+
+- Compile comprehensive bottleneck analysis report
+- Generate prioritized optimization recommendations
+- Create performance improvement roadmap
+- Set up monitoring and alerting framework
+- Clean up session temporary files
+
+**Final Report Generation:**
+
+```json
+// /tmp/bottleneck-final-report-$SESSION_ID.json
+{
+  "sessionId": "$SESSION_ID",
+  "timestamp": "$(date -Iseconds)",
+  "target_system": "$ARGUMENTS",
+  "analysis_summary": {
+    "total_bottlenecks_found": "count",
+    "critical_issues": "high_priority_count",
+    "optimization_opportunities": "improvement_count",
+    "estimated_performance_gain": "percentage_improvement"
+  },
+  "discovered_bottlenecks": [
+    {
+      "type": "bottleneck_category",
+      "severity": "impact_level",
+      "description": "issue_description",
+      "location": "system_component",
+      "recommendation": "optimization_approach",
+      "effort_estimate": "implementation_complexity",
+      "expected_impact": "performance_improvement"
+    }
+  ],
+  "optimization_roadmap": {
+    "immediate_actions": [],
+    "short_term_improvements": [],
+    "long_term_optimizations": []
+  },
+  "monitoring_setup": {
+    "configured_alerts": [],
+    "performance_dashboards": [],
+    "baseline_metrics": {}
+  },
+  "next_steps": [
+    "specific_action_1",
+    "specific_action_2",
+    "specific_action_3"
+  ]
 }
 ```
 
-### 3. Network and I/O Bottleneck Analysis
+- Generate executive summary with key findings
+- Create implementation timeline with milestones
+- Provide performance monitoring recommendations
+- Document session artifacts and results
 
-**Network Performance Analysis:**
+CATCH (report_generation_failed):
 
-```bash
-# Generate network performance analysis script
-analyze_network_performance() {
-  echo "🌐 Analyzing network performance bottlenecks..."
-  
-  # Network latency analysis
-  ping -c 10 localhost > network_latency.txt
-  
-  # Connection analysis
-  netstat -an | awk '/^tcp/ {++state[$6]} END {for(key in state) print key, state[key]}' > connection_states.txt
-  
-  # Bandwidth utilization
-  if command -v iftop &> /dev/null; then
-    timeout 30s iftop -t -s 30 > network_bandwidth.txt 2>&1
-  fi
-  
-  # DNS resolution times
-  dig @8.8.8.8 google.com | rg "Query time" > dns_performance.txt
-  
-  # HTTP response time analysis
-  if command -v curl &> /dev/null; then
-    for url in "http://localhost:8080/health" "http://localhost:3000/api/status"; do
-      if curl -s "$url" > /dev/null; then
-        curl -w "@curl-format.txt" -o /dev/null -s "$url" >> http_timing.txt
-      fi
-    done
-  fi
-}
+- Save partial analysis results
+- Document incomplete analysis areas
+- Provide manual analysis instructions
+- Create recovery plan for next session
 
-# I/O performance analysis
-analyze_io_performance() {
-  echo "💽 Analyzing I/O performance bottlenecks..."
-  
-  # Disk I/O statistics
-  iostat -x 1 10 > disk_io_stats.txt &
-  
-  # File system performance
-  df -h > disk_usage.txt
-  
-  # Find I/O intensive processes
-  iotop -b -n 3 > io_processes.txt 2>/dev/null || echo "iotop not available"
-  
-  # Check for disk queue depth issues
-  cat /proc/diskstats > diskstats_before.txt
-  sleep 5
-  cat /proc/diskstats > diskstats_after.txt
-  
-  # Database I/O analysis (if PostgreSQL)
-  if command -v psql &> /dev/null; then
-    psql -c "
-    SELECT 
-      datname,
-      blks_read,
-      blks_hit,
-      blk_read_time,
-      blk_write_time,
-      100.0 * blks_hit / (blks_hit + blks_read) as cache_hit_ratio
-    FROM pg_stat_database 
-    WHERE datname NOT IN ('template0', 'template1', 'postgres');" > db_io_stats.txt 2>/dev/null
-  fi
-}
+FINALLY:
+
+- Update session state: phase = "completed"
+- Archive analysis artifacts for future reference
+- Clean up temporary session files: /tmp/*-$SESSION_ID-*
+- Generate session completion summary
+- Provide next steps and follow-up recommendations
 ```
 
-## Automated Optimization Strategies
-
-### 1. Code-Level Optimizations
-
-**Performance Optimization Code Generation:**
-
-```typescript
-// Generated optimization engine
-interface OptimizationStrategy {
-  type: "algorithmic" | "memory" | "io" | "concurrency" | "caching";
-  before: string;
-  after: string;
-  explanation: string;
-  expectedImprovement: string;
-  tradeoffs: string[];
-}
-
-export class CodeOptimizer {
-  generateOptimizations(bottlenecks: Bottleneck[]): OptimizationStrategy[] {
-    const optimizations: OptimizationStrategy[] = [];
-
-    for (const bottleneck of bottlenecks) {
-      switch (bottleneck.type) {
-        case "cpu":
-          optimizations.push(...this.generateCPUOptimizations(bottleneck));
-          break;
-        case "memory":
-          optimizations.push(...this.generateMemoryOptimizations(bottleneck));
-          break;
-        case "database":
-          optimizations.push(...this.generateDatabaseOptimizations(bottleneck));
-          break;
-        case "network":
-          optimizations.push(...this.generateNetworkOptimizations(bottleneck));
-          break;
-      }
-    }
-
-    return optimizations;
-  }
-
-  private generateCPUOptimizations(bottleneck: Bottleneck): OptimizationStrategy[] {
-    return [
-      {
-        type: "algorithmic",
-        before: `
-// Inefficient O(n²) algorithm
-function findDuplicates(arr: number[]): number[] {
-  const duplicates: number[] = [];
-  for (let i = 0; i < arr.length; i++) {
-    for (let j = i + 1; j < arr.length; j++) {
-      if (arr[i] === arr[j] && !duplicates.includes(arr[i])) {
-        duplicates.push(arr[i]);
-      }
-    }
-  }
-  return duplicates;
-}`,
-        after: `
-// Optimized O(n) algorithm using Set
-function findDuplicates(arr: number[]): number[] {
-  const seen = new Set<number>();
-  const duplicates = new Set<number>();
-  
-  for (const num of arr) {
-    if (seen.has(num)) {
-      duplicates.add(num);
-    } else {
-      seen.add(num);
-    }
-  }
-  
-  return Array.from(duplicates);
-}`,
-        explanation: "Replaced O(n²) nested loops with O(n) Set-based algorithm",
-        expectedImprovement: "95% reduction in CPU time for large arrays",
-        tradeoffs: ["Slightly higher memory usage for Set storage"],
-      },
-      {
-        type: "concurrency",
-        before: `
-// Sequential processing
-async function processItems(items: Item[]): Promise<Result[]> {
-  const results: Result[] = [];
-  for (const item of items) {
-    const result = await processItem(item);
-    results.push(result);
-  }
-  return results;
-}`,
-        after: `
-// Parallel processing with controlled concurrency
-async function processItems(items: Item[]): Promise<Result[]> {
-  const BATCH_SIZE = Math.min(10, Math.ceil(items.length / 4));
-  const results: Result[] = [];
-  
-  for (let i = 0; i < items.length; i += BATCH_SIZE) {
-    const batch = items.slice(i, i + BATCH_SIZE);
-    const batchResults = await Promise.all(
-      batch.map(item => processItem(item))
-    );
-    results.push(...batchResults);
-  }
-  
-  return results;
-}`,
-        explanation: "Added parallel processing with batching to prevent resource exhaustion",
-        expectedImprovement: "70-80% reduction in total processing time",
-        tradeoffs: ["Higher memory usage", "Potential resource contention"],
-      },
-    ];
-  }
-
-  private generateMemoryOptimizations(bottleneck: Bottleneck): OptimizationStrategy[] {
-    return [
-      {
-        type: "memory",
-        before: `
-// Memory-inefficient data loading
-class DataProcessor {
-  async loadAllData(): Promise<DataItem[]> {
-    const query = "SELECT * FROM large_table";
-    const results = await this.db.query(query);
-    return results.map(row => this.transformData(row));
-  }
-}`,
-        after: `
-// Streaming data processing
-class DataProcessor {
-  async* streamData(batchSize = 1000): AsyncGenerator<DataItem[], void, unknown> {
-    let offset = 0;
-    
-    while (true) {
-      const query = "SELECT * FROM large_table LIMIT $1 OFFSET $2";
-      const results = await this.db.query(query, [batchSize, offset]);
-      
-      if (results.length === 0) break;
-      
-      yield results.map(row => this.transformData(row));
-      offset += batchSize;
-    }
-  }
-  
-  async processData(): Promise<void> {
-    for await (const batch of this.streamData()) {
-      await this.processBatch(batch);
-      // Memory is freed after each batch
-    }
-  }
-}`,
-        explanation: "Replaced bulk loading with streaming to reduce memory footprint",
-        expectedImprovement: "90% reduction in peak memory usage",
-        tradeoffs: ["More complex code", "Slightly higher database load"],
-      },
-      {
-        type: "caching",
-        before: `
-// No caching - repeated expensive calculations
-class Calculator {
-  expensiveCalculation(input: number): number {
-    // Simulate expensive operation
-    let result = 0;
-    for (let i = 0; i < 1000000; i++) {
-      result += Math.sin(input * i);
-    }
-    return result;
-  }
-}`,
-        after: `
-// LRU cache implementation
-class Calculator {
-  private cache = new Map<number, number>();
-  private readonly maxCacheSize = 1000;
-  
-  expensiveCalculation(input: number): number {
-    // Check cache first
-    if (this.cache.has(input)) {
-      const value = this.cache.get(input)!;
-      // Move to end (LRU)
-      this.cache.delete(input);
-      this.cache.set(input, value);
-      return value;
-    }
-    
-    // Calculate if not cached
-    let result = 0;
-    for (let i = 0; i < 1000000; i++) {
-      result += Math.sin(input * i);
-    }
-    
-    // Add to cache with LRU eviction
-    if (this.cache.size >= this.maxCacheSize) {
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
-    }
-    this.cache.set(input, result);
-    
-    return result;
-  }
-}`,
-        explanation: "Added LRU cache to avoid recalculating expensive operations",
-        expectedImprovement: "99% reduction in computation time for repeated inputs",
-        tradeoffs: ["Additional memory usage", "Cache management complexity"],
-      },
-    ];
-  }
-}
-```
-
-### 2. Database Query Optimization
-
-**Automated Query Optimization:**
-
-```sql
--- Generated database optimization queries
-
--- Before: Inefficient query without proper indexing
-SELECT u.*, p.title, c.name as category_name
-FROM users u
-LEFT JOIN posts p ON u.id = p.user_id
-LEFT JOIN categories c ON p.category_id = c.id
-WHERE u.email LIKE '%@company.com'
-  AND p.created_at > '2024-01-01'
-ORDER BY p.created_at DESC
-LIMIT 20;
-
--- After: Optimized query with proper indexing and structure
--- Step 1: Create necessary indexes
-CREATE INDEX CONCURRENTLY idx_users_email_domain ON users (email) WHERE email LIKE '%@company.com';
-CREATE INDEX CONCURRENTLY idx_posts_user_created ON posts (user_id, created_at DESC);
-CREATE INDEX CONCURRENTLY idx_posts_category_created ON posts (category_id, created_at DESC);
-
--- Step 2: Rewrite query for better performance
-WITH company_users AS (
-  SELECT id, email, name 
-  FROM users 
-  WHERE email LIKE '%@company.com'
-),
-recent_posts AS (
-  SELECT p.*, u.email, u.name as user_name
-  FROM posts p
-  INNER JOIN company_users u ON p.user_id = u.id
-  WHERE p.created_at > '2024-01-01'
-  ORDER BY p.created_at DESC
-  LIMIT 20
-)
-SELECT rp.*, c.name as category_name
-FROM recent_posts rp
-LEFT JOIN categories c ON rp.category_id = c.id
-ORDER BY rp.created_at DESC;
-
--- Query performance analysis
-EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)
-[OPTIMIZED_QUERY];
-```
-
-## Real-Time Performance Monitoring
-
-### 1. Continuous Bottleneck Detection
-
-**Monitoring Dashboard Setup:**
-
-```typescript
-// Generated performance monitoring system
-interface PerformanceMonitor {
-  startMonitoring(): Promise<void>;
-  detectBottlenecks(): Promise<BottleneckAlert[]>;
-  generateReport(): Promise<PerformanceReport>;
-}
-
-interface BottleneckAlert {
-  timestamp: Date;
-  type: BottleneckType;
-  severity: AlertSeverity;
-  metric: string;
-  currentValue: number;
-  threshold: number;
-  component: string;
-  suggestion: string;
-}
-
-export class RealTimeMonitor implements PerformanceMonitor {
-  private metrics: MetricsCollector;
-  private alertThresholds: AlertThreshold[];
-
-  async startMonitoring(): Promise<void> {
-    console.log("🔄 Starting real-time performance monitoring...");
-
-    // Set up metric collection intervals
-    setInterval(() => this.collectCPUMetrics(), 5000);
-    setInterval(() => this.collectMemoryMetrics(), 5000);
-    setInterval(() => this.collectDatabaseMetrics(), 30000);
-    setInterval(() => this.collectNetworkMetrics(), 10000);
-
-    // Set up bottleneck detection
-    setInterval(() => this.detectAndAlertBottlenecks(), 15000);
-
-    // Set up report generation
-    setInterval(() => this.generateHourlyReport(), 3600000);
-  }
-
-  async detectBottlenecks(): Promise<BottleneckAlert[]> {
-    const alerts: BottleneckAlert[] = [];
-    const currentMetrics = await this.metrics.getCurrentMetrics();
-
-    for (const threshold of this.alertThresholds) {
-      const currentValue = this.getMetricValue(currentMetrics, threshold.metric);
-
-      if (this.exceedsThreshold(currentValue, threshold)) {
-        alerts.push({
-          timestamp: new Date(),
-          type: threshold.bottleneckType,
-          severity: this.calculateSeverity(currentValue, threshold),
-          metric: threshold.metric,
-          currentValue,
-          threshold: threshold.value,
-          component: threshold.component,
-          suggestion: this.generateSuggestion(threshold, currentValue),
-        });
-      }
-    }
-
-    return alerts;
-  }
-
-  private generateSuggestion(threshold: AlertThreshold, currentValue: number): string {
-    const exceededBy = ((currentValue - threshold.value) / threshold.value * 100).toFixed(1);
-
-    switch (threshold.bottleneckType) {
-      case "cpu":
-        return `CPU usage is ${exceededBy}% above threshold. Consider: 1) Optimizing algorithms, 2) Adding horizontal scaling, 3) Implementing caching`;
-      case "memory":
-        return `Memory usage is ${exceededBy}% above threshold. Consider: 1) Implementing object pooling, 2) Optimizing data structures, 3) Adding memory-based caching`;
-      case "database":
-        return `Database performance is degraded. Consider: 1) Adding indexes, 2) Query optimization, 3) Connection pooling`;
-      case "network":
-        return `Network performance issues detected. Consider: 1) Request batching, 2) Response compression, 3) CDN implementation`;
-      default:
-        return `Performance threshold exceeded by ${exceededBy}%. Investigation required.`;
-    }
-  }
-}
-```
-
-### 2. Automated Alert System
-
-**Intelligent Alert Management:**
-
-```yaml
-# Generated alerting configuration for Prometheus/Grafana
-groups:
-  - name: performance_bottlenecks
-    rules:
-      - alert: HighCPUUsage
-        expr: cpu_usage_percent > 80
-        for: 2m
-        labels:
-          severity: warning
-          component: application
-        annotations:
-          summary: "High CPU usage detected"
-          description: "CPU usage is {{ $value }}% for more than 2 minutes"
-          runbook_url: "/runbooks/high-cpu"
-
-      - alert: CriticalCPUUsage
-        expr: cpu_usage_percent > 95
-        for: 30s
-        labels:
-          severity: critical
-          component: application
-        annotations:
-          summary: "Critical CPU usage detected"
-          description: "CPU usage is {{ $value }}% - immediate action required"
-
-      - alert: MemoryPressure
-        expr: memory_usage_percent > 85
-        for: 1m
-        labels:
-          severity: warning
-          component: application
-        annotations:
-          summary: "Memory pressure detected"
-          description: "Memory usage is {{ $value }}% - potential GC issues"
-
-      - alert: SlowDatabaseQueries
-        expr: avg_query_duration_ms > 500
-        for: 1m
-        labels:
-          severity: warning
-          component: database
-        annotations:
-          summary: "Slow database queries detected"
-          description: "Average query duration is {{ $value }}ms"
-
-      - alert: DatabaseConnectionExhaustion
-        expr: database_active_connections / database_max_connections > 0.9
-        for: 30s
-        labels:
-          severity: critical
-          component: database
-        annotations:
-          summary: "Database connection pool nearly exhausted"
-          description: "{{ $value | humanizePercentage }} of connections in use"
-```
-
-## Integration and Output
+## Integration and Expected Outcomes
 
 ### Integration with Other Commands
 
@@ -961,3 +502,66 @@ groups:
 4. **Monitoring Setup**: Real-time performance monitoring with automated alerting
 5. **Performance Baselines**: Establish performance metrics for regression detection
 6. **Remediation Roadmap**: Prioritized list of optimizations with effort estimates and expected impact
+
+### Performance Improvement Examples
+
+**Before Optimization:**
+- Average response time: 2.5 seconds
+- CPU utilization: 95%
+- Database query time: 1.2 seconds
+- Memory usage: 92%
+
+**After Optimization (Expected):**
+- Average response time: 0.8 seconds (68% improvement)
+- CPU utilization: 45% (53% reduction)
+- Database query time: 0.3 seconds (75% improvement)
+- Memory usage: 65% (29% reduction)
+
+### Success Metrics
+
+- **Performance Gains**: 50-80% improvement in key metrics
+- **Bottleneck Resolution**: 90%+ of critical issues addressed
+- **Monitoring Coverage**: 100% of system components monitored
+- **Optimization ROI**: 3:1 performance improvement to effort ratio
+```
+
+## Session State Management
+
+**State Files Created:**
+- `/tmp/bottleneck-analysis-$SESSION_ID.json` - Main session state
+- `/tmp/performance-baseline-$SESSION_ID.json` - System baseline metrics
+- `/tmp/bottleneck-results-$SESSION_ID.json` - Analysis findings
+- `/tmp/optimization-roadmap-$SESSION_ID.json` - Implementation plan
+- `/tmp/database-analysis-$SESSION_ID.json` - Database-specific results
+- `/tmp/bottleneck-final-report-$SESSION_ID.json` - Comprehensive report
+
+**Resumability:**
+- Session can be resumed from any checkpoint
+- Partial analysis results preserved across sessions
+- State transitions tracked for workflow continuation
+- Error recovery points established at each major step
+
+### Command Execution Summary
+
+**Workflow Overview:**
+1. **Initialization** → Architecture detection and session setup
+2. **Baseline** → Performance metrics collection
+3. **Analysis** → Multi-dimensional bottleneck discovery (parallel sub-agents)
+4. **Optimization** → Strategy generation and prioritization
+5. **Monitoring** → Continuous performance tracking setup
+6. **Reporting** → Comprehensive analysis and next steps
+
+**Expected Deliverables:**
+- Comprehensive bottleneck analysis report
+- Prioritized optimization roadmap
+- Performance monitoring configuration
+- Database optimization recommendations
+- Code-level improvement suggestions
+- Performance regression detection framework
+
+**Performance Impact:**
+- **Analysis Speed**: 5x faster with parallel sub-agent execution
+- **Coverage**: 100% of system layers (CPU, memory, database, network, I/O)
+- **Accuracy**: Evidence-based bottleneck identification with metrics
+- **Actionability**: Specific optimization steps with effort estimates
+````

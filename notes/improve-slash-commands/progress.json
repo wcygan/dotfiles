@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 44,
-  "inProgress": 12,
-  "lastUpdated": "2025-07-07T13:31:30.431Z",
+  "completed": 46,
+  "inProgress": 10,
+  "lastUpdated": "2025-07-07T13:32:52.704Z",
   "commands": [
     {
       "id": "001",
@@ -1168,18 +1168,20 @@
       "name": "dependencies",
       "filepath": "claude/commands/code/analyze/dependencies.md",
       "namespace": "code/analyze",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:28:55.593Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:32:52.703Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "175189493559379c3u78apy",
-        "timestamp": 1751894935
       }
     },
     {
@@ -1206,18 +1208,21 @@
       "name": "technical-debt",
       "filepath": "claude/commands/code/analyze/technical-debt.md",
       "namespace": "code/analyze",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:28:59.828Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:32:06.441Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751894939828utlysfaawq",
-        "timestamp": 1751894939
       }
     },
     {

@@ -1,51 +1,94 @@
+---
+allowed-tools: Bash(fd:*), Bash(rg:*), Bash(git:*), Bash(npm:*), Bash(cargo:*), Bash(go:*), Bash(jq:*), Bash(gdate:*), Read, Write, Task
+description: Comprehensive dependency analysis with relationship mapping, impact assessment, and optimization recommendations
+---
+
 # /dependencies
+
+## Context
+
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Project structure: !`fd . -t d -d 2 | head -10 || echo "Limited directory access"`
+- Technology files: !`fd -e json -e toml -e xml -e txt -e lock . | rg "(package\.json|Cargo\.toml|go\.mod|pom\.xml|requirements\.txt|composer\.json|yarn\.lock|Cargo\.lock)" | head -10 || echo "No dependency files found"`
+- Dependency directories: !`fd "(node_modules|target|vendor|build)" -t d | head -5 || echo "No dependency directories found"`
+- Git repository: !`git status --porcelain | head -5 2>/dev/null || echo "Not a git repository"`
+- Current branch: !`git branch --show-current 2>/dev/null || echo "No git repository"`
 
 Analyze and visualize dependency relationships, impact analysis, and coupling patterns within codebases, systems, or project components.
 
-## Usage
+## Your Task
 
-```
-/dependencies [scope: component|service|project|system]
-```
+Perform comprehensive dependency analysis for the specified scope: $ARGUMENTS
 
-## Dependency Analysis Framework
+Think hard about complex dependency relationships, architectural implications, and optimization opportunities.
 
-### Phase 1: Dependency Discovery
+## STEP-Based Execution Framework
 
-**Code-Level Dependencies**
+STEP 1: Initialize Analysis Session
+
+- Create session state file: /tmp/dependency-analysis-$SESSION_ID.json
+- Initialize analysis scope and project context
+- Set up checkpoint system for resumable analysis
+- Determine analysis scope: $ARGUMENTS
+
+STEP 2: Technology Stack Discovery
+
+TRY:
+
+- Detect primary technology stack from available files
+- Identify dependency management tools (npm, cargo, go mod, maven, etc.)
+- Discover configuration files and build scripts
+- Map project structure and module organization
+- Save checkpoint: technology_detection_complete
+
+CATCH (missing_dependency_files):
+
+- Use code analysis to infer technology stack
+- Search for import/require patterns across files
+- Document assumptions about detected technologies
+- Proceed with generic dependency analysis approach
+
+STEP 3: Dependency Discovery and Mapping
+
+FOR EACH detected technology:
+
+**Code-Level Dependencies Discovery:**
 
 ```bash
 # Language-specific dependency files
-fd "package.json|Cargo.toml|go.mod|pom.xml|requirements.txt|composer.json" --type f
+fd "package.json|Cargo.toml|go.mod|pom.xml|requirements.txt|composer.json" --type f || echo "No dependency files found"
 
-# Import/require statements
-rg "import|require|use|from|include" -n --type-add 'code:*.{rs,go,java,ts,js,py,cpp,h}'
+# Import/require statements analysis
+rg "import|require|use|from|include" -n --type-add 'code:*.{rs,go,java,ts,js,py,cpp,h}' | head -20 || echo "No import statements found"
 
 # Internal module dependencies
-rg "\.\/|\.\.\/|@\/" -n  # Relative imports
-rg "src\/|lib\/|internal\/" -n  # Absolute internal imports
+rg "\.\/|\.\.\/|@\/" -n | head -15 || echo "No relative imports found"
+rg "src\/|lib\/|internal\/" -n | head -15 || echo "No internal imports found"
 ```
 
-**Infrastructure Dependencies**
+**Infrastructure Dependencies:**
 
 ```bash
 # Container and orchestration dependencies
-fd "Dockerfile|docker-compose|k8s|kubernetes" --type f
-rg "image:|FROM|depends_on|volumes_from" --type yaml --type dockerfile
+fd "Dockerfile|docker-compose|k8s|kubernetes" --type f || echo "No container configs found"
+rg "image:|FROM|depends_on|volumes_from" --type yaml --type dockerfile | head -10 || echo "No container dependencies found"
 
 # Service mesh and networking
-rg "Service|Ingress|ConfigMap|Secret" --type yaml
-rg "host:|port:|endpoint:|url:" --type yaml --type json
+rg "Service|Ingress|ConfigMap|Secret" --type yaml | head -10 || echo "No k8s resources found"
+rg "host:|port:|endpoint:|url:" --type yaml --type json | head -10 || echo "No network configs found"
 ```
 
-**Runtime Dependencies**
+**Runtime Dependencies:**
 
 ```bash
 # Database and external service connections
-rg "database|db|postgres|mysql|redis|mongo" -i -A 2 -B 1
-rg "http:|https:|grpc:|tcp:|amqp:" -A 1 -B 1
-rg "api\..*\.|client\.|service\." -A 1 -B 1
+rg "database|db|postgres|mysql|redis|mongo" -i -A 2 -B 1 | head -15 || echo "No database dependencies found"
+rg "http:|https:|grpc:|tcp:|amqp:" -A 1 -B 1 | head -15 || echo "No network protocols found"
+rg "api\..*\.|client\.|service\." -A 1 -B 1 | head -15 || echo "No service dependencies found"
 ```
+
+STEP 4: Technology-Specific Dependency Analysis
 
 ### Phase 2: Dependency Mapping
 

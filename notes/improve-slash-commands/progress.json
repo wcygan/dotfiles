@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 71,
-  "inProgress": 13,
-  "lastUpdated": "2025-07-07T14:51:46.094Z",
+  "completed": 72,
+  "inProgress": 12,
+  "lastUpdated": "2025-07-07T14:52:09.697Z",
   "commands": [
     {
       "id": "001",
@@ -1601,18 +1601,19 @@
       "name": "context-load-java-spring",
       "filepath": "claude/commands/context/java/context-load-java-spring.md",
       "namespace": "context/java",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T14:51:00.747Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T14:52:09.697Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751899860747ojly2m611o0",
-        "timestamp": 1751899860
       }
     },
     {

@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 104,
-  "inProgress": 5,
-  "lastUpdated": "2025-07-07T15:13:42.620Z",
+  "completed": 106,
+  "inProgress": 10,
+  "lastUpdated": "2025-07-07T15:14:14.115Z",
   "commands": [
     {
       "id": "001",
@@ -2139,18 +2139,20 @@
       "name": "onboard",
       "filepath": "claude/commands/docs/generate/onboard.md",
       "namespace": "docs/generate",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:10:55.076Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:14:11.270Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17519010550763dqbfug18n",
-        "timestamp": 1751901055
       }
     },
     {
@@ -2200,18 +2202,21 @@
       "name": "docs-update",
       "filepath": "claude/commands/docs/manage/docs-update.md",
       "namespace": "docs/manage",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:11:11.127Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:14:02.983Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751901071127i8eijvo3u7",
-        "timestamp": 1751901071
       }
     },
     {
@@ -2337,8 +2342,8 @@
       "name": "review-git",
       "filepath": "claude/commands/git/review/review-git.md",
       "namespace": "git/review",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:01.331Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2346,15 +2351,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901241331w1x8duuax3",
+        "timestamp": 1751901241
+      }
     },
     {
       "id": "111",
       "name": "generate-command",
       "filepath": "claude/commands/meta/command/generate-command.md",
       "namespace": "meta/command",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:02.920Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2362,15 +2370,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17519012429206t9s0lmban",
+        "timestamp": 1751901242
+      }
     },
     {
       "id": "112",
       "name": "ideate-commands",
       "filepath": "claude/commands/meta/command/ideate-commands.md",
       "namespace": "meta/command",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:05.438Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2378,15 +2389,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901245438ucbj4rubqu",
+        "timestamp": 1751901245
+      }
     },
     {
       "id": "113",
       "name": "knowledge-extract",
       "filepath": "claude/commands/meta/extract/knowledge-extract.md",
       "namespace": "meta/extract",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:06.337Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2394,15 +2408,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901246337uxqgwdubwz",
+        "timestamp": 1751901246
+      }
     },
     {
       "id": "114",
       "name": "ideate-new",
       "filepath": "claude/commands/meta/ideate/ideate-new.md",
       "namespace": "meta/ideate",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:12.513Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2410,15 +2427,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901252513hkhsc8ecsl",
+        "timestamp": 1751901252
+      }
     },
     {
       "id": "115",
       "name": "reflection",
       "filepath": "claude/commands/meta/reflect/reflection.md",
       "namespace": "meta/reflect",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:13.732Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2426,15 +2446,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901253732iewxa4kd5h",
+        "timestamp": 1751901253
+      }
     },
     {
       "id": "116",
       "name": "search-smart",
       "filepath": "claude/commands/meta/search/search-smart.md",
       "namespace": "meta/search",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:14.114Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2442,7 +2465,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17519012541144j1uhorda0",
+        "timestamp": 1751901254
+      }
     },
     {
       "id": "117",

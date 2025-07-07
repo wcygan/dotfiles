@@ -103,10 +103,32 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       }
+    },
+    {
+      "id": "096",
+      "name": "explain",
+      "filepath": "claude/commands/docs/analyze/explain.md",
+      "namespace": "docs/analyze",
+      "status": "completed",
+      "lastModified": "2025-07-07T10:03:29-05:00",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
+      "metrics": {
+        "hadFrontMatter": false,
+        "hadDynamicContext": false,
+        "hadProgrammaticStructure": false,
+        "hadStateManagement": false
+      }
     }
   ],
   "totalCommands": 159,
-  "completed": 88,
-  "inProgress": 11,
-  "lastUpdated": "2025-07-07T22:10:00.0Z"
+  "completed": 89,
+  "inProgress": 10,
+  "lastUpdated": "2025-07-07T10:03:29-05:00"
 }

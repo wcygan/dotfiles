@@ -83,10 +83,30 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       }
+    },
+    {
+      "id": "098",
+      "name": "changelog",
+      "filepath": "claude/commands/docs/generate/changelog.md",
+      "namespace": "docs/generate",
+      "status": "completed",
+      "lastModified": "2025-07-07T22:10:00.0Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
+      "metrics": {
+        "hadFrontMatter": false,
+        "hadDynamicContext": false,
+        "hadProgrammaticStructure": false,
+        "hadStateManagement": false
+      }
     }
   ],
   "totalCommands": 159,
-  "completed": 87,
-  "inProgress": 12,
-  "lastUpdated": "2025-07-07T15:05:18.4Z"
+  "completed": 88,
+  "inProgress": 11,
+  "lastUpdated": "2025-07-07T22:10:00.0Z"
 }

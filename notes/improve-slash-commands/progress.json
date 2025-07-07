@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 115,
-  "inProgress": 3,
-  "lastUpdated": "2025-07-07T15:17:21.228Z",
+  "completed": 116,
+  "inProgress": 2,
+  "lastUpdated": "2025-07-07T15:17:46.032Z",
   "commands": [
     {
       "id": "001",
@@ -2307,18 +2307,20 @@
       "name": "pr-review",
       "filepath": "claude/commands/git/pr/pr-review.md",
       "namespace": "git/pr",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:11:36.145Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:17:46.032Z",
+      "improvements": [
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "subAgentPatternsAdded",
+        "extendedThinkingAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": true,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "17519010961454mz83vl5y0",
-        "timestamp": 1751901096
       }
     },
     {

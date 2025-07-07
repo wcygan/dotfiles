@@ -27,40 +27,38 @@ STEP 1: Database Discovery and Environment Analysis
 
 STEP 2: Performance Analysis and Bottleneck Identification
 
-IF PostgreSQL detected:
+IF multiple database systems detected:
 
-- Analyze pg_stat_statements for slow queries
-- Examine index usage with pg_stat_user_indexes
-- Check configuration parameters vs. best practices
-- Identify vacuum and analyze issues
+- Use Task tool to delegate parallel analysis:
+  - **PostgreSQL Agent**: Analyze pg_stat_statements, index usage, vacuum optimization
+  - **MySQL Agent**: Analyze performance_schema, InnoDB efficiency, buffer pool metrics
+  - **MongoDB Agent**: Enable profiling, analyze collections, query patterns, connection metrics
+  - **SQLite Agent**: Run EXPLAIN QUERY PLAN, check indexes, analyze file performance
+- Think deeply about cross-database optimization strategies and workload coordination
+- Coordinate findings and identify common bottleneck patterns across systems
 
-ELSE IF MySQL detected:
+ELSE IF single database system:
 
-- Analyze performance_schema for slow queries
-- Check InnoDB buffer pool efficiency
-- Examine index usage statistics
-- Review configuration variables
+- Perform focused analysis on detected database type
+- Think hard about database-specific optimization opportunities and configuration tuning
+- Consider workload characteristics, usage patterns, and performance requirements
 
-ELSE IF MongoDB detected:
+**Database-Specific Analysis Execution:**
 
-- Enable profiling and analyze slow operations
-- Examine index usage per collection
-- Check connection and memory metrics
-- Analyze query execution patterns
-
-ELSE IF SQLite detected:
-
-- Analyze query execution with EXPLAIN QUERY PLAN
-- Check for missing indexes
-- Examine file size and vacuum status
+- **PostgreSQL**: pg_stat_statements analysis, index usage examination, vacuum optimization, configuration tuning
+- **MySQL**: performance_schema queries, InnoDB tuning, connection pool analysis, buffer pool optimization
+- **MongoDB**: Collection profiling, index effectiveness analysis, query pattern optimization, replica set tuning
+- **SQLite**: Query plan analysis, index recommendations, file-based optimization, VACUUM operations
 
 STEP 3: Risk Assessment and Optimization Planning
 
+- Think deeply about optimization risks, trade-offs, and production impact considerations
 - Categorize identified issues by risk level (low/medium/high)
 - Prioritize optimizations by impact vs. implementation complexity
 - Create rollback procedures for configuration changes
 - Generate specific SQL statements for index modifications
-- Estimate performance improvement potential
+- Estimate performance improvement potential and maintenance requirements
+- Consider production downtime, maintenance windows, and business impact
 
 STEP 4: Implementation with Safeguards
 
@@ -92,12 +90,23 @@ STEP 5: Validation and Performance Measurement
 
 STEP 6: Monitoring and Maintenance Setup
 
-- Generate database-specific monitoring queries
-- Create alerting thresholds for key performance metrics
-- Provide maintenance schedules (vacuum, analyze, etc.)
-- Document ongoing optimization procedures
+TRY:
 
-STEP 7: State Management and Cleanup
+- Generate database-specific monitoring queries and performance dashboards
+- Create intelligent alerting thresholds based on baseline metrics
+- Provide automated maintenance schedules (vacuum, analyze, statistics updates)
+- Document ongoing optimization procedures and performance regression detection
+- Set up performance trending and capacity planning metrics
+- Save checkpoint: monitoring_setup_complete
+
+CATCH (monitoring_tool_unavailable):
+
+- Document monitoring requirements and recommended tools
+- Create manual monitoring procedures and scripts
+- Provide performance baseline documentation for future comparison
+- Generate monitoring tool installation and configuration guide
+
+STEP 7: State Management and Session Completion
 
 ```json
 // /tmp/db-optimize-$SESSION_ID.json
@@ -105,27 +114,47 @@ STEP 7: State Management and Cleanup
   "sessionId": "$SESSION_ID",
   "timestamp": "ISO_8601_TIMESTAMP",
   "target": "$ARGUMENTS",
-  "discoveredDatabases": ["postgresql", "mysql"],
+  "phase": "discovery|analysis|optimization|validation|monitoring|complete",
+  "discoveredDatabases": ["postgresql", "mysql", "mongodb", "sqlite"],
+  "analysisStrategy": {
+    "approach": "single|multi-database|parallel-agents",
+    "subAgentsUsed": ["postgresql", "mysql", "mongodb", "sqlite"],
+    "complexityLevel": "simple|moderate|complex"
+  },
   "optimizationResults": {
     "indexesCreated": 3,
     "configChanges": 5,
     "performanceImprovement": "45%",
-    "riskLevel": "low"
+    "riskLevel": "low",
+    "estimatedDowntime": "minimal",
+    "rollbackTested": true
   },
   "recommendations": {
     "immediate": ["Create index on users.email", "Increase shared_buffers"],
     "scheduled": ["VACUUM ANALYZE", "Update table statistics"],
-    "monitoring": ["Track slow query log", "Monitor connection usage"]
+    "monitoring": ["Track slow query log", "Monitor connection usage"],
+    "longTerm": ["Consider read replicas", "Implement connection pooling"]
   },
   "rollbackProcedures": {
     "indexDrops": ["DROP INDEX CONCURRENTLY idx_users_email"],
-    "configRollback": "shared_buffers = 128MB"
+    "configRollback": "shared_buffers = 128MB",
+    "validationSteps": ["Check query performance", "Monitor error logs"]
+  },
+  "checkpoints": {
+    "discovery_complete": true,
+    "analysis_complete": true,
+    "optimization_applied": true,
+    "validation_passed": true,
+    "monitoring_configured": true
   }
 }
 ```
 
 FINALLY:
 
-- Clean up temporary analysis files
-- Archive optimization session data
-- Update project documentation with performance improvements
+- Update session state: phase = "complete"
+- Generate comprehensive optimization report with before/after metrics
+- Archive optimization session data for future reference
+- Clean up temporary analysis files: /tmp/db-optimize-temp-$SESSION_ID-*
+- Create follow-up recommendations and maintenance schedule
+- Update project documentation with performance improvements and monitoring setup

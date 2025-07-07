@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 126,
-  "inProgress": 18,
-  "lastUpdated": "2025-07-07T15:23:26.326Z",
+  "completed": 128,
+  "inProgress": 26,
+  "lastUpdated": "2025-07-07T15:23:56.512Z",
   "commands": [
     {
       "id": "001",
@@ -2683,18 +2683,21 @@
       "name": "perf",
       "filepath": "claude/commands/ops/perf/perf.md",
       "namespace": "ops/perf",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:21.601Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:23:38.273Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751901681601xo3skkpoyk",
-        "timestamp": 1751901681
       }
     },
     {
@@ -2881,18 +2884,20 @@
       "name": "harden",
       "filepath": "claude/commands/security/model/harden.md",
       "namespace": "security/model",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:45.865Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T10:23:39-05:00",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751901705865xr9i2oar7g",
-        "timestamp": 1751901705
       }
     },
     {
@@ -3052,8 +3057,8 @@
       "name": "validate",
       "filepath": "claude/commands/test/run/validate.md",
       "namespace": "test/run",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:23:38.724Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": true,
@@ -3061,15 +3066,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17519018187247hkbx9qvsa",
+        "timestamp": 1751901818
+      }
     },
     {
       "id": "146",
       "name": "epic",
       "filepath": "claude/commands/workflow/create/epic.md",
       "namespace": "workflow/create",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:23:40.755Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3077,15 +3085,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901820755an1343yw4k",
+        "timestamp": 1751901820
+      }
     },
     {
       "id": "147",
       "name": "prototype",
       "filepath": "claude/commands/workflow/create/prototype.md",
       "namespace": "workflow/create",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:23:42.679Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3093,15 +3104,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901822679z8uohplwin",
+        "timestamp": 1751901822
+      }
     },
     {
       "id": "148",
       "name": "clean",
       "filepath": "claude/commands/workflow/manage/clean.md",
       "namespace": "workflow/manage",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:23:46.434Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3109,15 +3123,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901826434ax6tc0px98",
+        "timestamp": 1751901826
+      }
     },
     {
       "id": "149",
       "name": "integrate",
       "filepath": "claude/commands/workflow/manage/integrate.md",
       "namespace": "workflow/manage",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:23:47.953Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3125,15 +3142,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901827953x1zdu5ixhb",
+        "timestamp": 1751901827
+      }
     },
     {
       "id": "150",
       "name": "organize",
       "filepath": "claude/commands/workflow/manage/organize.md",
       "namespace": "workflow/manage",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:23:49.606Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3141,15 +3161,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901829606p9bign5xtv",
+        "timestamp": 1751901829
+      }
     },
     {
       "id": "151",
       "name": "plan",
       "filepath": "claude/commands/workflow/manage/plan.md",
       "namespace": "workflow/manage",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:23:52.092Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3157,15 +3180,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901832092uw389b9y7f",
+        "timestamp": 1751901832
+      }
     },
     {
       "id": "152",
       "name": "release",
       "filepath": "claude/commands/workflow/manage/release.md",
       "namespace": "workflow/manage",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:23:53.991Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3173,15 +3199,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17519018339916mtqu68yhn",
+        "timestamp": 1751901833
+      }
     },
     {
       "id": "153",
       "name": "sync",
       "filepath": "claude/commands/workflow/manage/sync.md",
       "namespace": "workflow/manage",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:23:54.537Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3189,15 +3218,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17519018345372vvatmiyq2",
+        "timestamp": 1751901834
+      }
     },
     {
       "id": "154",
       "name": "start",
       "filepath": "claude/commands/workflow/start/start.md",
       "namespace": "workflow/start",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:23:56.510Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3205,7 +3237,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901836510u0ujkcryw4",
+        "timestamp": 1751901836
+      }
     },
     {
       "id": "155",

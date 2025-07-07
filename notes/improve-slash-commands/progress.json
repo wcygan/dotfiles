@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 103,
-  "inProgress": 6,
-  "lastUpdated": "2025-07-07T15:13:25.487Z",
+  "completed": 104,
+  "inProgress": 5,
+  "lastUpdated": "2025-07-07T15:13:42.620Z",
   "commands": [
     {
       "id": "001",
@@ -2180,18 +2180,19 @@
       "name": "docs-init",
       "filepath": "claude/commands/docs/manage/docs-init.md",
       "namespace": "docs/manage",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:11:04.650Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:13:42.619Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751901064650wc22hqk2sn",
-        "timestamp": 1751901064
       }
     },
     {

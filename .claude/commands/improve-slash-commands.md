@@ -6,31 +6,30 @@ description: Systematically improve slash commands using robust task management
 ## Context
 
 - Session ID: !`gdate +%s%N`
-- Task status: !`cd notes/improve-slash-commands && deno run --allow-read --allow-write task-manager.ts status`
+- Task status: !`deno run --allow-read --allow-write notes/improve-slash-commands/task-manager.ts status`
+- Claim result: !`deno run --allow-read --allow-write notes/improve-slash-commands/task-manager.ts claim`
 
 ## Your task
 
 PROCEDURE improve_next_command():
 
-STEP 1: Claim a task using atomic task manager
+STEP 1: Process claimed task from Context
 
-- CLAIM_RESULT: !`cd notes/improve-slash-commands && deno run --allow-read --allow-write task-manager.ts claim`
-
-IF CLAIM_RESULT contains "No claimable commands available":
+IF Claim result contains "No claimable commands available":
 
 - Report "✅ All commands completed or actively being worked on by other agents"
 - EXIT gracefully
 
 ELSE:
 
-- Extract COMMAND_ID and SESSION_ID from CLAIM_RESULT output
-- Extract FILEPATH from CLAIM_RESULT output
+- Extract COMMAND_ID and SESSION_ID from Claim result output
+- Extract FILEPATH from Claim result output
 - Continue to STEP 2 with claimed command
 
 STEP 2: Analyze current command
 
 - Read the command file at FILEPATH
-- Extract COMMAND_ID and SESSION_ID from CLAIM_RESULT for later use
+- Extract COMMAND_ID and SESSION_ID from Claim result for later use
 - Identify current structure
 - FOR complex commands: Use "think hard" to deeply analyze optimization opportunities
 - Determine improvement needs based on best practices:
@@ -95,7 +94,7 @@ STEP 5: Mark task as completed using task manager
   - extendedThinkingAdded
   - subAgentPatternsAdded
 
-- COMPLETE_RESULT: !`cd notes/improve-slash-commands && deno run --allow-read --allow-write task-manager.ts complete --command-id COMMAND_ID --session-id SESSION_ID --improvement frontMatterAdded --improvement dynamicContextAdded`
+- COMPLETE_RESULT: !`deno run --allow-read --allow-write notes/improve-slash-commands/task-manager.ts complete --command-id COMMAND_ID --session-id SESSION_ID --improvement frontMatterAdded --improvement dynamicContextAdded`
 
 IF COMPLETE_RESULT indicates failure:
 

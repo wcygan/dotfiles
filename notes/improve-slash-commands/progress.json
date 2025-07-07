@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 43,
-  "inProgress": 13,
-  "lastUpdated": "2025-07-07T13:30:57.939Z",
+  "completed": 44,
+  "inProgress": 12,
+  "lastUpdated": "2025-07-07T13:31:30.431Z",
   "commands": [
     {
       "id": "001",
@@ -1027,18 +1027,20 @@
       "name": "deep-dive",
       "filepath": "claude/commands/analyze/research/deep-dive.md",
       "namespace": "analyze/research",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:28:36.062Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:31:30.430Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751894916062l2epjboa0p",
-        "timestamp": 1751894916
       }
     },
     {

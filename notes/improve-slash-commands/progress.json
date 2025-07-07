@@ -2,8 +2,8 @@
   "version": "1.0",
   "totalCommands": 159,
   "completed": 106,
-  "inProgress": 10,
-  "lastUpdated": "2025-07-07T15:14:14.115Z",
+  "inProgress": 11,
+  "lastUpdated": "2025-07-07T15:14:18.764Z",
   "commands": [
     {
       "id": "001",
@@ -2475,8 +2475,8 @@
       "name": "translate",
       "filepath": "claude/commands/meta/util/translate.md",
       "namespace": "meta/util",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:18.763Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2484,7 +2484,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901258763wi4w7sidui",
+        "timestamp": 1751901258
+      }
     },
     {
       "id": "118",

@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 149,
-  "inProgress": 9,
-  "lastUpdated": "2025-07-07T15:28:10.696Z",
+  "completed": 151,
+  "inProgress": 8,
+  "lastUpdated": "2025-07-07T15:29:55.960Z",
   "commands": [
     {
       "id": "001",
@@ -3086,18 +3086,21 @@
       "name": "validate",
       "filepath": "claude/commands/test/run/validate.md",
       "namespace": "test/run",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:38.724Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:29:55.959Z",
+      "improvements": [
+        "frontMatterUpdated",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded",
+        "errorHandlingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": true,
         "hadDynamicContext": true,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17519018187247hkbx9qvsa",
-        "timestamp": 1751901818
       }
     },
     {
@@ -3231,18 +3234,21 @@
       "name": "release",
       "filepath": "claude/commands/workflow/manage/release.md",
       "namespace": "workflow/manage",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:53.991Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:29:52.812Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "errorHandlingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17519018339916mtqu68yhn",
-        "timestamp": 1751901833
       }
     },
     {
@@ -3373,8 +3379,8 @@
       "name": "tldr",
       "filepath": "claude/commands/workflow/view/tldr.md",
       "namespace": "workflow/view",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:29:46.868Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3382,7 +3388,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751902186868wv99ddw1ktz",
+        "timestamp": 1751902186
+      }
     }
   ],
   "improvementStats": {

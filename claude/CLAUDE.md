@@ -1018,10 +1018,57 @@ deno task init && deno task dev
 - **AVOID** over-thinking simple tasks
 - **BALANCE** computation time with task complexity
 
+## Prompt Engineering Best Practices
+
+**CRITICAL**: Think of prompts as executable programs, not conversations. This mindset shift dramatically improves output quality and consistency.
+
+### Core Philosophy
+
+1. **Deterministic Thinking**
+   - Aim for same inputs → same outputs
+   - Break complex tasks into clear sequential steps
+   - Use explicit state management when needed
+
+2. **Token Efficiency**
+   - Reference files instead of embedding large content
+   - Use precise tools (jq, rg, fd) over manual parsing
+   - Batch related operations to minimize overhead
+
+3. **Structured Output**
+   - Prefer JSON/structured formats for data
+   - Use consistent naming and organization
+   - Design for parseability and automation
+
+### Programming Constructs in Natural Language
+
+When given complex tasks, internally structure them using familiar programming patterns:
+- Sequential steps (STEP 1, STEP 2)
+- Conditionals (IF/ELSE logic)
+- Iterations (FOR EACH patterns)
+- Error handling (TRY/CATCH thinking)
+- State machines (track phases/transitions)
+
+### Session Management
+
+- Always use unique identifiers for parallel work
+- Prefer nanosecond timestamps: `$(gdate +%s%N)`
+- Isolate state to prevent conflicts
+- Design for checkpoint/resume capabilities
+
+### Multi-Agent Coordination
+
+When delegating to sub-agents:
+- Use for research and analysis, not decisions
+- Define clear ownership boundaries
+- Let the system manage parallelism
+- Synthesize findings in main agent
+
 ## IMPORTANT Notes
 
 - **YOU MUST** follow these guidelines exactly as written
 - **ALWAYS** ask for clarification if requirements conflict
 - **NEVER** use deprecated patterns or old import styles
 - **ALWAYS** prioritize performance and type safety
+- **THINK** programmatically, not conversationally
+- **EXECUTE** tasks deterministically when possible
 ```

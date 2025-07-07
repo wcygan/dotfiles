@@ -1,84 +1,36 @@
 ---
-allowed-tools: Read, Write, Bash(jq:*), Bash(gdate:*), Bash(mv:*), Bash(rm:*), Bash(head:*), Bash(fd:*), Bash(deno fmt:*), Bash(git add:*), Bash(git commit:*), Bash(git status:*), TodoWrite
-description: Systematically improve slash commands one at a time
+allowed-tools: Read, Write, Edit, Bash(deno run:*), Bash(git add:*), Bash(git commit:*), Bash(git status:*), TodoWrite
+description: Systematically improve slash commands using robust task management
 ---
 
 ## Context
 
 - Session ID: !`gdate +%s%N`
-- Progress file: @notes/improve-slash-commands/progress.json
-- Total commands: !`fd '\.md$' claude/commands | wc -l`
-- Completed count: !`jq -r '.completed // 0' notes/improve-slash-commands/progress.json 2>/dev/null || echo 0`
-- In-progress count: !`jq -r '[.commands[]? | select(.status == "in-progress")] | length' notes/improve-slash-commands/progress.json 2>/dev/null || echo 0`
-- My active claim: !`jq -r --arg sid "$(gdate +%s%N)" '.commands[]? | select(.status == "in-progress" and .claimedBy.sessionId == $sid) | .filepath // "none"' notes/improve-slash-commands/progress.json 2>/dev/null || echo "none"`
-- Available commands: !`jq -r --arg now "$(gdate -u +%s)" '[.commands[]? | select((.status == "pending") or (.status == "in-progress" and (($now | tonumber) - (.claimedBy.timestamp // 0 | tonumber) > 600)))] | length' notes/improve-slash-commands/progress.json 2>/dev/null || echo 0`
-- Next claimable: !`jq -r --arg now "$(gdate -u +%s)" '.commands[]? | select((.status == "pending") or (.status == "in-progress" and (($now | tonumber) - (.claimedBy.timestamp // 0 | tonumber) > 600))) | .name' notes/improve-slash-commands/progress.json 2>/dev/null | head -1 || echo "none"`
-- Stale claims (>10min): !`jq -r --arg now "$(gdate -u +%s)" '[.commands[]? | select(.status == "in-progress" and (($now | tonumber) - (.claimedBy.timestamp // 0 | tonumber) > 600))] | length' notes/improve-slash-commands/progress.json 2>/dev/null || echo 0`
+- Task status: !`cd notes/improve-slash-commands && deno run --allow-read --allow-write task-manager.ts status`
 
 ## Your task
 
 PROCEDURE improve_next_command():
 
-STEP 1: Atomic single task claiming
+STEP 1: Claim a task using atomic task manager
 
-SUBSTEP 1.1: Check existing claim
+- CLAIM_RESULT: !`cd notes/improve-slash-commands && deno run --allow-read --allow-write task-manager.ts claim`
 
-- SESSION_ID: !`gdate +%s%N`
-- MY_CURRENT_CLAIM: !`jq -r --arg sid "$(gdate +%s%N)" '.commands[]? | select(.status == "in-progress" and .claimedBy.sessionId == $sid) | .filepath // "none"' notes/improve-slash-commands/progress.json 2>/dev/null || echo "none"`
-
-IF MY_CURRENT_CLAIM != "none":
-
-- Resume work on existing claim: $MY_CURRENT_CLAIM
-- GOTO STEP 2
-
-SUBSTEP 1.2: Find claimable command
-
-- CURRENT_TIME: !`gdate -u +%s`
-- CLAIMABLE_ID: !`jq -r --arg now "$(gdate -u +%s)" '.commands[]? | select((.status == "pending") or (.status == "in-progress" and (($now | tonumber) - (.claimedBy.timestamp // 0 | tonumber) > 600))) | .id' notes/improve-slash-commands/progress.json 2>/dev/null | head -1 || echo ""`
-
-IF CLAIMABLE_ID == "":
+IF CLAIM_RESULT contains "No claimable commands available":
 
 - Report "✅ All commands completed or actively being worked on by other agents"
 - EXIT gracefully
 
-SUBSTEP 1.3: Atomic claim attempt with JQ
-
-- Execute atomic claim transformation:
-  ```bash
-  jq --arg sid "$SESSION_ID" --arg now "$CURRENT_TIME" --arg cmd_id "$CLAIMABLE_ID" '
-    if (.commands[] | select(.id == $cmd_id and (.status == "pending" or (.status == "in-progress" and (($now | tonumber) - (.claimedBy.timestamp // 0 | tonumber) > 600))))) then
-      .commands |= map(
-        if .id == $cmd_id then
-          .status = "in-progress" |
-          .claimedBy = {"sessionId": $sid, "timestamp": ($now | tonumber)} |
-          .lastModified = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
-        else . end
-      ) |
-      .inProgress = ([.commands[] | select(.status == "in-progress")] | length) |
-      .lastUpdated = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
-    else . end
-  ' notes/improve-slash-commands/progress.json > /tmp/progress_claim_$SESSION_ID.json
-  ```
-
-SUBSTEP 1.4: Claim verification and conflict detection
-
-- CLAIMED_CMD: !`jq -r --arg sid "$SESSION_ID" --arg cmd_id "$CLAIMABLE_ID" '.commands[] | select(.id == $cmd_id and .claimedBy.sessionId == $sid) | .filepath // "CONFLICT"' /tmp/progress_claim_$SESSION_ID.json 2>/dev/null || echo "CONFLICT"`
-
-IF CLAIMED_CMD == "CONFLICT" OR CLAIMED_CMD == "null":
-
-- Report "⚠️ Claim conflict detected - another agent claimed this task"
-- Clean up: !`rm -f /tmp/progress_claim_$SESSION_ID.json`
-- EXIT gracefully
-
 ELSE:
 
-- Commit atomic claim: !`mv /tmp/progress_claim_$SESSION_ID.json notes/improve-slash-commands/progress.json`
-- Report "🎯 Successfully claimed: $CLAIMED_CMD"
-- Continue to STEP 2 with: $CLAIMED_CMD
+- Extract COMMAND_ID and SESSION_ID from CLAIM_RESULT output
+- Extract FILEPATH from CLAIM_RESULT output
+- Continue to STEP 2 with claimed command
 
 STEP 2: Analyze current command
 
-- Read the command file
+- Read the command file at FILEPATH
+- Extract COMMAND_ID and SESSION_ID from CLAIM_RESULT for later use
 - Identify current structure
 - FOR complex commands: Use "think hard" to deeply analyze optimization opportunities
 - Determine improvement needs based on best practices:
@@ -133,24 +85,26 @@ STEP 4: Validate and format
 - Run: deno fmt {filepath}
 - Confirm improvements follow best practices
 
-STEP 5: Update progress BEFORE committing
+STEP 5: Mark task as completed using task manager
 
-- Mark command as "completed" in progress.json
-- Clear the claimedBy field (set to null)
-- Record improvements made:
+- Create improvement list based on changes made:
+  - frontMatterAdded/Updated
+  - dynamicContextAdded
+  - programmaticStructureAdded
+  - stateManagementAdded
+  - extendedThinkingAdded
+  - subAgentPatternsAdded
 
-* frontMatterAdded/Updated
-* dynamicContextAdded
-* programmaticStructureAdded
-* stateManagementAdded
+- COMPLETE_RESULT: !`cd notes/improve-slash-commands && deno run --allow-read --allow-write task-manager.ts complete --command-id COMMAND_ID --session-id SESSION_ID --improvement frontMatterAdded --improvement dynamicContextAdded`
 
-- Update lastModified timestamp
-- Increment completed count
+IF COMPLETE_RESULT indicates failure:
+
+- Report error and EXIT gracefully
 
 STEP 6: ATOMIC commit of both files
 
 - CRITICAL: Stage BOTH command file AND progress.json together
-- git add {filepath} notes/improve-slash-commands/progress.json
+- git add FILEPATH notes/improve-slash-commands/progress.json
 - git commit -m "improve(commands): enhance {command-name} with best practices"
 - NEVER commit these files separately
 
@@ -356,9 +310,9 @@ Example safe pattern:
 
 ## Concurrent Execution Pattern
 
-### Atomic Single-Command Claiming System
+### Deno-Based Task Management System
 
-This command now uses a robust atomic claiming system for safe parallel execution:
+This command now uses a robust Deno-based task management system for safe parallel execution:
 
 1. **Launch Multiple Sessions** (each works on exactly one command):
    ```bash
@@ -379,28 +333,41 @@ This command now uses a robust atomic claiming system for safe parallel executio
    ```
 
 2. **True Atomic Claiming**:
-   - JQ-based read-verify-write operations prevent race conditions
+   - File-based locking using Deno's exclusive write operations
    - Each agent claims exactly ONE command per session
    - Conflict detection ensures no double-claiming
-   - Immediate verification with rollback on conflicts
+   - Automatic cleanup of stale claims (>10 minutes)
 
-3. **Stale Claim Recovery**:
+3. **Robust Task Manager Features**:
    - Claims older than 10 minutes automatically become reclaimable
    - Graceful handling of crashed or disconnected agents
-   - No manual intervention needed for stale claims
+   - Comprehensive error handling and validation
+   - Status reporting and progress tracking
 
-4. **Enhanced Progress Tracking**:
-   - Real-time visibility into available vs in-progress commands
-   - Session IDs provide unique agent identification
-   - Clear conflict resolution and graceful exits
+4. **Task Manager Commands**:
+   ```bash
+   # Claim next available task
+   deno run --allow-read --allow-write task-manager.ts claim
+
+   # Mark task as completed
+   deno run --allow-read --allow-write task-manager.ts complete \
+     --command-id ID --session-id SESSION \
+     --improvement frontMatterAdded --improvement dynamicContextAdded
+
+   # Check status
+   deno run --allow-read --allow-write task-manager.ts status
+
+   # Clean up stale claims
+   deno run --allow-read --allow-write task-manager.ts cleanup
+   ```
 
 ### Coordination Best Practices
 
 - **Single Command Focus**: Each agent works on exactly one command per session
-- **Atomic Operations**: JQ-based claiming prevents race conditions and conflicts
+- **Atomic Operations**: File-based locking prevents race conditions and conflicts
 - **Graceful Exits**: Agents exit cleanly when no claimable commands exist
 - **Conflict Resilience**: Failed claims result in clean exit, not retry loops
-- **Progress Visibility**: Enhanced context shows real-time claiming status
+- **Progress Visibility**: Real-time status through task manager
 - **No Coordination Overhead**: Zero manual coordination required between agents
 
 ### Example Progress.json Entry with Claim
@@ -413,7 +380,7 @@ This command now uses a robust atomic claiming system for safe parallel executio
   "namespace": "test/generate",
   "status": "in-progress",
   "claimedBy": {
-    "sessionId": "1751703298807183000",
+    "sessionId": "17517032988071830001a2b3c",
     "timestamp": 1751703298
   },
   "lastModified": "2025-07-05T15:30:00Z"

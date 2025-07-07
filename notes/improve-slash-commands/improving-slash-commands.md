@@ -1,6 +1,7 @@
 # Improving Slash Commands
 
-We will improve all slash commmands under /claude/commands to follow the new best practices:
+We will improve all slash commmands under /claude/commands to follow the new
+best practices:
 
 ````bash
 TL;DR: Best Practices for Prompts/Slash Commands in CLAUDE.md
@@ -119,7 +120,8 @@ Before marking a command as improved:
 
 ### CRITICAL: Always Commit progress.json Changes Atomically
 
-**When improving commands, you MUST commit progress.json updates together with the command file changes:**
+**When improving commands, you MUST commit progress.json updates together with
+the command file changes:**
 
 1. **Stage Both Files Together:**
    ```bash
@@ -139,9 +141,11 @@ Before marking a command as improved:
 ### Why This Matters
 
 - **Consistency**: The progress tracking stays in sync with actual improvements
-- **Rollback Safety**: If a commit needs to be reverted, both files revert together
+- **Rollback Safety**: If a commit needs to be reverted, both files revert
+  together
 - **Clear History**: Each commit shows exactly what was improved and tracks it
-- **Prevents Drift**: Avoids progress.json showing work that wasn't actually committed
+- **Prevents Drift**: Avoids progress.json showing work that wasn't actually
+  committed
 
 ### Example Workflow
 

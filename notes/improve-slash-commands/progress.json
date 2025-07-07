@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 47,
-  "inProgress": 9,
-  "lastUpdated": "2025-07-07T13:36:39.330Z",
+  "completed": 48,
+  "inProgress": 14,
+  "lastUpdated": "2025-07-07T13:37:08.251Z",
   "commands": [
     {
       "id": "001",
@@ -1193,18 +1193,21 @@
       "name": "deps",
       "filepath": "claude/commands/code/analyze/deps.md",
       "namespace": "code/analyze",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:28:57.975Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:37:03.050Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "175189493797502tkkw1atg",
-        "timestamp": 1751894937
       }
     },
     {
@@ -1272,8 +1275,8 @@
       "name": "deno-ify",
       "filepath": "claude/commands/code/migrate/deno-ify.md",
       "namespace": "code/migrate",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T13:36:51.927Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1281,15 +1284,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751895411927e4ao8tqh50",
+        "timestamp": 1751895411
+      }
     },
     {
       "id": "058",
       "name": "migrate",
       "filepath": "claude/commands/code/migrate/migrate.md",
       "namespace": "code/migrate",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T13:36:54.084Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1297,15 +1303,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751895414084dcsl1jgh86",
+        "timestamp": 1751895414
+      }
     },
     {
       "id": "059",
       "name": "related",
       "filepath": "claude/commands/code/navigate/related.md",
       "namespace": "code/navigate",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T13:36:55.595Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": true,
@@ -1313,15 +1322,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751895415595ct6v8snhe2",
+        "timestamp": 1751895415
+      }
     },
     {
       "id": "060",
       "name": "refactor",
       "filepath": "claude/commands/code/refactor/refactor.md",
       "namespace": "code/refactor",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T13:36:57.254Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1329,15 +1341,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17518954172540gpif3xhn1",
+        "timestamp": 1751895417
+      }
     },
     {
       "id": "061",
       "name": "simplify",
       "filepath": "claude/commands/code/refactor/simplify.md",
       "namespace": "code/refactor",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T13:37:05.314Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1345,15 +1360,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17518954253149ye7hwqhtw",
+        "timestamp": 1751895425
+      }
     },
     {
       "id": "062",
       "name": "standardize",
       "filepath": "claude/commands/code/refactor/standardize.md",
       "namespace": "code/refactor",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T13:37:08.247Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1361,7 +1379,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17518954282479xv73t0hys",
+        "timestamp": 1751895428
+      }
     },
     {
       "id": "063",

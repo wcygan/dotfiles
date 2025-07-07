@@ -42,6 +42,13 @@ STEP 2: Determine explanation strategy and complexity
 
 Think deeply about the optimal explanation approach based on the target and project context.
 
+**Extended Thinking Areas:**
+
+- Technical depth assessment and complexity analysis for adaptive explanations
+- Project context integration strategies for maximum relevance
+- Learning pathway optimization based on user expertise level
+- Multi-modal explanation techniques for different learning styles
+
 - ANALYZE target type from $ARGUMENTS:
   - Code snippet (raw code provided)
   - File path (specific file to explain)

@@ -13,6 +13,8 @@ description: Load comprehensive GitHub CLI context with dynamic repository analy
 - Current branch: !`git branch --show-current 2>/dev/null || echo "No git repository"`
 - Open PRs: !`gh pr list --json number,title --limit 3 2>/dev/null | jq -r '.[] | "#" + (.number | tostring) + ": " + .title' 2>/dev/null || echo "No open PRs or no access"`
 - Open issues: !`gh issue list --json number,title --limit 3 2>/dev/null | jq -r '.[] | "#" + (.number | tostring) + ": " + .title' 2>/dev/null || echo "No open issues or no access"`
+- Recent commits: !`git log --oneline -5 2>/dev/null || echo "No git history"`
+- Git status: !`git status --porcelain 2>/dev/null || echo "No git repository"`
 - Recent activity: !`gh api user/events --limit 3 2>/dev/null | jq -r '.[0:2][] | .type + ": " + .repo.name + " (" + (.created_at | split("T")[0]) + ")' 2>/dev/null || echo "No recent activity or no access"`
 
 ## Your Task

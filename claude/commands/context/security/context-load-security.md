@@ -39,6 +39,13 @@ STEP 2: Security environment analysis
 
 Think harder about the optimal security context loading strategy based on cluster configuration and existing security implementations.
 
+**Extended Thinking Areas:**
+
+- Security architecture patterns and threat modeling approaches
+- Integration strategies for multi-provider secret management
+- Zero-trust network implementation considerations
+- Compliance framework alignment and audit requirements
+
 - ANALYZE current Kubernetes environment from Context section
 - DETERMINE specific security features and tools in use
 - IDENTIFY documentation priorities based on security needs

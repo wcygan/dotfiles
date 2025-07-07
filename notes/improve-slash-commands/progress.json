@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 77,
-  "inProgress": 7,
-  "lastUpdated": "2025-07-07T14:54:07.758Z",
+  "completed": 79,
+  "inProgress": 5,
+  "lastUpdated": "2025-07-07T14:54:33.352Z",
   "commands": [
     {
       "id": "001",
@@ -1643,18 +1643,19 @@
       "name": "context-load-cilium",
       "filepath": "claude/commands/context/k8s/context-load-cilium.md",
       "namespace": "context/k8s",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T14:51:04.798Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T14:54:33.351Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751899864798l49o7js11vq",
-        "timestamp": 1751899864
       }
     },
     {
@@ -1826,18 +1827,20 @@
       "name": "context-load-rust-web",
       "filepath": "claude/commands/context/rust/context-load-rust-web.md",
       "namespace": "context/rust",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T14:51:32.938Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T14:54:32.896Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751899892938t8wtfsq13ll",
-        "timestamp": 1751899892
       }
     },
     {

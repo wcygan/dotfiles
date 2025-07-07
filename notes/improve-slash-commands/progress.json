@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 51,
-  "inProgress": 14,
-  "lastUpdated": "2025-07-07T13:38:17.546Z",
+  "completed": 53,
+  "inProgress": 12,
+  "lastUpdated": "2025-07-07T13:38:52.549Z",
   "commands": [
     {
       "id": "001",
@@ -1054,18 +1054,21 @@
       "name": "deep-web-research",
       "filepath": "claude/commands/analyze/research/deep-web-research.md",
       "namespace": "analyze/research",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:28:39.434Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:38:46.165Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17518949194345dpwu8aa3z",
-        "timestamp": 1751894919
       }
     },
     {
@@ -1356,18 +1359,20 @@
       "name": "simplify",
       "filepath": "claude/commands/code/refactor/simplify.md",
       "namespace": "code/refactor",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:37:05.314Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:38:52.548Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17518954253149ye7hwqhtw",
-        "timestamp": 1751895425
       }
     },
     {

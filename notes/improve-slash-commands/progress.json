@@ -20,9 +20,51 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       }
+    },
+    {
+      "id": "089",
+      "name": "context-load-testing-rust",
+      "filepath": "claude/commands/context/testing/context-load-testing-rust.md",
+      "namespace": "context/testing",
+      "status": "completed",
+      "lastModified": "2025-07-07T15:01:45.2Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
+      "metrics": {
+        "hadFrontMatter": false,
+        "hadDynamicContext": false,
+        "hadProgrammaticStructure": false,
+        "hadStateManagement": false
+      }
+    },
+    {
+      "id": "088",
+      "name": "context-load-testing-java",
+      "filepath": "claude/commands/context/testing/context-load-testing-java.md",
+      "namespace": "context/testing",
+      "status": "completed",
+      "lastModified": "2025-07-07T15:05:00.0Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
+      "metrics": {
+        "hadFrontMatter": false,
+        "hadDynamicContext": false,
+        "hadProgrammaticStructure": false,
+        "hadStateManagement": false
+      }
     }
   ],
-  "completed": 84,
-  "inProgress": 15,
-  "lastUpdated": "2025-07-07T14:59:32.3NZ"
+  "completed": 86,
+  "inProgress": 13,
+  "lastUpdated": "2025-07-07T15:05:00.0Z"
 }

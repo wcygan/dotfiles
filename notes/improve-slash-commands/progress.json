@@ -62,9 +62,30 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       }
+    },
+    {
+      "id": "090",
+      "name": "context-load-fresh-connect-stack",
+      "filepath": "claude/commands/context/web/context-load-fresh-connect-stack.md",
+      "namespace": "context/web",
+      "status": "completed",
+      "lastModified": "2025-07-07T15:05:18.4Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
+      "metrics": {
+        "hadFrontMatter": false,
+        "hadDynamicContext": false,
+        "hadProgrammaticStructure": false,
+        "hadStateManagement": false
+      }
     }
   ],
-  "completed": 86,
-  "inProgress": 13,
-  "lastUpdated": "2025-07-07T15:05:00.0Z"
+  "completed": 87,
+  "inProgress": 12,
+  "lastUpdated": "2025-07-07T15:05:18.4Z"
 }

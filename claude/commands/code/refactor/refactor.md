@@ -5,15 +5,18 @@ description: Analyze code for refactoring opportunities with intelligent smell d
 
 ## Context
 
-- Session ID: !`gdate +%s%N`
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s000000000 2>/dev/null || echo "session-$(date +%s)000000000"`
 - Current directory: !`pwd`
 - Target: $ARGUMENTS
-- Project structure: !`fd . -t d -d 3 | head -15`
-- Code files: !`fd "\.(java|go|rs|py|ts|js|cpp|c)$" . | wc -l | tr -d ' ' || echo "0"`
+- Project structure: !`fd . -t d -d 3 | head -15 || echo "No directory structure detected"`
+- Code files: !`fd "\.(java|go|rs|py|ts|js|cpp|c|kt|scala|rb|php|cs|swift)$" . | wc -l | tr -d ' ' || echo "0"`
 - Test files: !`fd "(test|spec)" . -t f | wc -l | tr -d ' ' || echo "0"`
-- Technology stack: !`fd "(deno\.json|package\.json|Cargo\.toml|go\.mod|pom\.xml|build\.gradle)" . | head -5 || echo "No project files detected"`
+- Large files: !`fd "\.(java|go|rs|py|ts|js|cpp|c)$" . -x wc -l {} \; 2>/dev/null | awk '{if($1>500) count++} END {print count+0}' || echo "0"`
+- Technology stack: !`fd "(deno\.json|package\.json|Cargo\.toml|go\.mod|pom\.xml|build\.gradle|requirements\.txt|composer\.json)" . | head -5 || echo "No project files detected"`
+- Dependencies: !`rg "(import|require|use|include)" . --type java --type go --type rust --type python --type typescript | wc -l | tr -d ' ' || echo "0"`
 - Git status: !`git status --porcelain | head -5 || echo "Not a git repository"`
 - Current branch: !`git branch --show-current 2>/dev/null || echo "No git repository"`
+- Recent commits: !`git log --oneline -3 2>/dev/null || echo "No git history"`
 
 ## Your Task
 
@@ -39,27 +42,39 @@ STEP 1: Initialize refactoring session
 
 STEP 2: Determine analysis scope and approach
 
+Think harder about the optimal analysis strategy based on codebase complexity and architectural depth.
+
 IF $ARGUMENTS is directory AND contains >100 files:
 
 - USE sub-agent delegation for parallel analysis
 - SET scope to "comprehensive"
+- CREATE inter-agent communication files: `/tmp/refactor-agents-$SESSION_ID/`
   ELSE IF $ARGUMENTS is single large file (>1000 lines):
-- USE extended thinking for complex analysis
+- USE extended thinking for complex architectural analysis
 - SET scope to "deep"
+- ENABLE ultrathink mode for intricate dependency analysis
   ELSE:
 - PERFORM focused sequential analysis
 - SET scope to "targeted"
+- USE extended thinking for critical refactoring decisions
 
 STEP 3: Code smell detection and analysis
 
 FOR comprehensive scope:
 
-- DELEGATE to 5 parallel sub-agents:
+- DELEGATE to 5 parallel sub-agents with coordinated analysis:
   1. **Structure Analysis Agent**: Identify architectural issues, large classes/modules
+     - SAVE findings to: `/tmp/refactor-agents-$SESSION_ID/structure-analysis.json`
   2. **Duplication Detection Agent**: Find duplicate code blocks and patterns
+     - SAVE findings to: `/tmp/refactor-agents-$SESSION_ID/duplication-analysis.json`
   3. **Complexity Analysis Agent**: Analyze cyclomatic complexity and method lengths
+     - SAVE findings to: `/tmp/refactor-agents-$SESSION_ID/complexity-analysis.json`
   4. **Type Safety Agent**: Check for language-specific type issues
+     - SAVE findings to: `/tmp/refactor-agents-$SESSION_ID/type-safety-analysis.json`
   5. **Performance Analysis Agent**: Identify performance bottlenecks and anti-patterns
+     - SAVE findings to: `/tmp/refactor-agents-$SESSION_ID/performance-analysis.json`
+
+- COORDINATE agent findings through main synthesizer after completion
 
 FOR targeted scope:
 
@@ -447,3 +462,113 @@ GENERATE the following deliverables:
 - Static analysis improvement scores
 
 The refactoring process adapts to the detected programming language, project structure, and existing toolchain, providing targeted improvements that enhance code quality while maintaining functionality and test coverage.
+
+## Session State Management Schema
+
+**State Files Created:**
+
+- `/tmp/refactor-analysis-$SESSION_ID.json` - Main refactoring session state
+- `/tmp/refactor-plan-$SESSION_ID.md` - Incremental refactoring plan
+- `/tmp/refactor-metrics-$SESSION_ID.json` - Quality metrics and measurements
+- `/tmp/refactor-agents-$SESSION_ID/` - Inter-agent communication directory
+  - `structure-analysis.json` - Architectural findings
+  - `duplication-analysis.json` - Code duplication results
+  - `complexity-analysis.json` - Complexity metrics and hotspots
+  - `type-safety-analysis.json` - Type safety analysis results
+  - `performance-analysis.json` - Performance bottleneck findings
+
+**Enhanced State Schema:**
+
+```json
+{
+  "sessionId": "$SESSION_ID",
+  "timestamp": "ISO_8601_TIMESTAMP",
+  "target": "$ARGUMENTS",
+  "phase": "discovery|analysis|planning|refactoring|validation|complete",
+  "scope": "targeted|deep|comprehensive",
+  "language": "auto-detected_language",
+  "project_info": {
+    "total_files": "number",
+    "large_files_count": "number",
+    "test_coverage": "percentage",
+    "dependency_count": "number",
+    "git_status": "clean|dirty|not_repo"
+  },
+  "smells": [
+    {
+      "type": "god_class|duplicate_code|complex_method|type_safety|performance",
+      "severity": "low|medium|high|critical",
+      "location": "file_path:line_number",
+      "description": "specific_issue_description",
+      "impact_score": "calculated_priority_score",
+      "refactoring_technique": "recommended_approach",
+      "effort_estimate": "low|medium|high",
+      "risk_level": "low|medium|high"
+    }
+  ],
+  "refactorings": [
+    {
+      "id": "unique_refactoring_id",
+      "priority": "high|medium|low",
+      "status": "pending|in_progress|completed|failed",
+      "technique": "extract_method|replace_conditional|strategy_pattern",
+      "target_files": ["list_of_files"],
+      "estimated_effort": "hours_or_story_points",
+      "actual_effort": "time_taken",
+      "rollback_commit": "git_commit_hash",
+      "test_impact": "tests_affected_count",
+      "performance_impact": "before_after_metrics"
+    }
+  ],
+  "priority_order": ["ordered_refactoring_ids"],
+  "checkpoints": [
+    {
+      "checkpoint_id": "unique_identifier",
+      "timestamp": "ISO_8601_TIMESTAMP",
+      "git_commit": "commit_hash",
+      "test_status": "all_passing|some_failing|not_run",
+      "files_modified": ["list_of_modified_files"],
+      "rollback_procedure": "steps_to_undo_changes"
+    }
+  ],
+  "metrics": {
+    "before": {
+      "cyclomatic_complexity": "average_complexity",
+      "test_coverage": "percentage",
+      "code_duplication": "percentage",
+      "lines_of_code": "total_loc",
+      "technical_debt_hours": "estimated_hours"
+    },
+    "after": {
+      "cyclomatic_complexity": "improved_complexity",
+      "test_coverage": "maintained_or_improved",
+      "code_duplication": "reduced_percentage",
+      "lines_of_code": "refactored_loc",
+      "technical_debt_hours": "reduced_hours"
+    },
+    "improvement_percentage": "calculated_improvement"
+  },
+  "sub_agent_coordination": {
+    "agents_used": ["structure", "duplication", "complexity", "type_safety", "performance"],
+    "communication_files": ["/tmp/paths/to/agent/outputs"],
+    "synthesis_complete": "boolean",
+    "cross_cutting_concerns": ["shared_issues_across_agents"]
+  }
+}
+```
+
+**Resumability Features:**
+
+- Checkpoint-based recovery from any point in refactoring workflow
+- Individual refactoring rollback without affecting completed work
+- Sub-agent result preservation across session interruptions
+- Git branch and commit tracking for safe experimental refactoring
+- State validation and consistency checks before each major operation
+
+**Advanced Features:**
+
+- **Cross-Platform Session IDs**: Fallback `date` commands for non-GNU systems
+- **Inter-Agent Communication**: Structured JSON files for agent coordination
+- **Extended Thinking Integration**: Automatic thinking mode escalation for complex scenarios
+- **Quality Gate Validation**: Automated testing and static analysis after each refactoring
+- **Incremental Progress Tracking**: Granular checkpoint system with rollback capabilities

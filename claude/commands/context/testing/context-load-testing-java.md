@@ -10,7 +10,7 @@ description: Load comprehensive Java testing documentation with project-specific
 - Java projects detected: !`fd "(pom\.xml|build\.gradle|build\.gradle\.kts)$" . -d 3 | wc -l | tr -d ' ' || echo "0"`
 - Build tools: !`fd "(pom\.xml|build\.gradle|build\.gradle\.kts)$" . -d 3 | head -5 || echo "No build files found"`
 - Test directories: !`fd "test" . -t d | head -10 || echo "No test directories found"`
-- JUnit version indicators: !`rg "junit" . --type xml --type gradle --type kotlin | head -5 | cut -d: -f3 | sort -u || echo "No JUnit detected"`
+- JUnit version indicators: !`rg "junit" . --type xml --type gradle --type kotlin | wc -l | tr -d ' ' || echo "0"`
 - Spring Boot indicators: !`rg "@SpringBootTest|@WebMvcTest|@DataJpaTest" . --type java | wc -l | tr -d ' ' || echo "0"`
 - Quarkus indicators: !`rg "@QuarkusTest|quarkus" . --type java --type xml --type gradle | wc -l | tr -d ' ' || echo "0"`
 - Mockito usage: !`rg "@Mock|@MockBean|Mockito" . --type java | wc -l | tr -d ' ' || echo "0"`
@@ -65,6 +65,7 @@ WHEN "moderate":
 
 - SET complexity_level = "moderate"
 - USE focused documentation loading with extended thinking
+- Think harder about optimal testing strategies for detected Java framework
 - PRIORITIZE integration testing, mocking patterns, test organization
 
 WHEN "basic":

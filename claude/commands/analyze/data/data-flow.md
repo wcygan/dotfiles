@@ -1,489 +1,568 @@
-# /data-flow
+---
+allowed-tools: Read, Write, Bash(fd:*), Bash(rg:*), Bash(jq:*), Bash(git:*), Task
+description: Analyze and design data processing pipelines with automatic source detection and transformation logic
+---
 
-Analyze, design, and implement data processing pipelines with automatic source detection, transformation logic, and destination configuration.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Project structure: !`fd . -t d -d 3 | head -20`
+- Data-related files: !`fd -e json -e csv -e sql -e py -e rs -e go -e java . | rg "(data|etl|pipeline|stream|batch)" | head -10 || echo "No data processing files detected"`
+- Configuration files: !`fd "(config|\.env|docker-compose)" . -t f | head -5 || echo "No config files found"`
+- Database connections: !`rg -i "(database_url|db_host|mongodb|postgres|mysql|redis)" . | head -5 || echo "No database configs found"`
+- Git status: !`git status --porcelain | head -5 || echo "Not a git repository"`
 
-```
-/data-flow [source-type]
-/data-flow [source] to [destination]
-/data-flow
-```
+## Your Task
 
-## Context Detection
+Think deeply about the optimal data flow analysis approach for this project. Consider performance, scalability, and architectural patterns.
 
-**When no argument provided:**
+STEP 1: Initialize analysis session
 
-- Scans project for data sources (databases, APIs, files)
-- Discovers existing data processing code
-- Suggests common data flow patterns for detected tech stack
+- CREATE session state file: `/tmp/data-flow-analysis-$SESSION_ID.json`
+- SET initial state:
+  ```json
+  {
+    "sessionId": "$SESSION_ID",
+    "phase": "discovery",
+    "timestamp": "$CURRENT_TIME",
+    "sources": [],
+    "destinations": [],
+    "transformations": [],
+    "recommendations": []
+  }
+  ```
 
-**When source specified:**
+STEP 2: Determine analysis scope
 
-- Auto-detects source format and connection requirements
-- Suggests appropriate transformation patterns
-- Recommends compatible destinations
+IF $ARGUMENTS contains specific source/destination:
 
-**When source and destination specified:**
+- FOCUS on targeted pipeline analysis
+- SET scope to "targeted"
+  ELSE IF project size > 1000 files:
+- USE sub-agent delegation for parallel discovery
+- SET scope to "comprehensive"
+  ELSE:
+- PERFORM sequential analysis
+- SET scope to "standard"
 
-- Focuses on optimal transformation pipeline
-- Provides data format conversion strategies
-- Suggests monitoring and error handling
+STEP 3: Data source discovery
 
-## Data Source Discovery
+FOR comprehensive scope:
+
+- DELEGATE to 5 parallel sub-agents:
+  1. **Database Discovery Agent**: Analyze all database connections and schemas
+  2. **File Source Agent**: Catalog structured data files (CSV, JSON, Parquet, XML)
+  3. **API Source Agent**: Discover REST/GraphQL endpoints and streaming APIs
+  4. **Log Analysis Agent**: Identify log files and extraction patterns
+  5. **Stream Source Agent**: Find message queues and real-time data streams
+
+FOR standard scope:
+
+- EXECUTE sequential discovery:
+  - Scan database configuration files
+  - Inventory structured data files
+  - Check for API endpoint definitions
+  - Identify log file patterns
+
+STEP 4: Pipeline pattern analysis
+
+- ANALYZE existing data processing code:
+  - ETL vs ELT patterns
+  - Batch vs stream processing
+  - Error handling strategies
+  - Monitoring and observability
+
+- IDENTIFY transformation requirements:
+  - Data quality validation
+  - Schema transformation needs
+  - Aggregation patterns
+  - Business rule applications
+
+STEP 5: Architecture recommendations
+
+- EVALUATE current tech stack compatibility
+- SUGGEST optimal pipeline architecture:
+  - Processing framework recommendations
+  - Destination storage strategies
+  - Monitoring and alerting setup
+  - Scalability considerations
+
+STEP 6: Generate implementation artifacts
+
+TRY:
+
+- CREATE pipeline design document
+- GENERATE sample transformation code
+- PRODUCE monitoring configuration
+- BUILD deployment scripts
+  CATCH (missing dependencies):
+- DOCUMENT required framework installations
+- SUGGEST alternative implementations
+- PROVIDE fallback strategies
+
+STEP 7: State management and cleanup
+
+- UPDATE session state with final results
+- SAVE analysis artifacts to project directory
+- CHECKPOINT final recommendations
+- CLEAN UP temporary session files
+
+## Sub-Agent Delegation Pattern
+
+FOR large-scale codebases (>1000 files), delegate to parallel agents:
+
+### Database Discovery Agent
+
+- Scan for database connection strings and configurations
+- Analyze table schemas and relationships
+- Identify data volume and update patterns
+- Map existing database-to-database flows
+
+### File Source Agent
+
+- Catalog all structured data files by type and location
+- Sample file contents for schema inference
+- Identify file naming patterns and partitioning schemes
+- Assess data quality and completeness
+
+### API Source Agent
+
+- Discover REST endpoints through OpenAPI specs or code analysis
+- Analyze GraphQL schemas and query patterns
+- Identify authentication and rate limiting requirements
+- Map API data models and response structures
+
+### Log Analysis Agent
+
+- Find application and system log files
+- Identify log formats and parsing requirements
+- Analyze log volume and retention patterns
+- Suggest structured logging improvements
+
+### Stream Source Agent
+
+- Discover message queue configurations (Kafka, RabbitMQ, etc.)
+- Analyze stream schemas and partitioning strategies
+- Identify real-time processing requirements
+- Map event-driven architecture patterns
+
+## Data Source Discovery Patterns
 
 ### Database Sources
 
-**Relational Databases**
+**Relational Database Analysis**
 
 ```sql
--- PostgreSQL/MySQL discovery
-SELECT table_name, column_name, data_type 
+-- PostgreSQL/MySQL schema discovery
+SELECT 
+    table_name, 
+    column_name, 
+    data_type,
+    is_nullable,
+    column_default
 FROM information_schema.columns 
-WHERE table_schema = 'public';
+WHERE table_schema = 'public'
+ORDER BY table_name, ordinal_position;
 
--- Connection configuration detection
-grep -r "DATABASE_URL\|DB_HOST\|DB_NAME" .env* config/
+-- Table size and row count analysis
+SELECT 
+    schemaname,
+    tablename,
+    pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size,
+    pg_stat_user_tables.n_tup_ins + pg_stat_user_tables.n_tup_upd + pg_stat_user_tables.n_tup_del as total_changes
+FROM pg_tables 
+JOIN pg_stat_user_tables ON pg_tables.tablename = pg_stat_user_tables.relname;
 ```
 
-**NoSQL Databases**
+**NoSQL Database Analysis**
 
 ```javascript
 // MongoDB collection analysis
-db.getCollectionNames()
-db.[collection].findOne() // Sample document structure
+db.runCommand("listCollections").cursor.firstBatch.forEach(
+  function (collection) {
+    print("Collection: " + collection.name);
+    var sample = db[collection.name].findOne();
+    if (sample) {
+      print("Sample document schema:");
+      printjson(Object.keys(sample));
+    }
+  },
+);
 
-// Redis key pattern discovery  
-redis-cli --scan --pattern "*" | head -20
+// Redis key pattern analysis
+const redis = require("redis");
+const client = redis.createClient();
+client.keys("*", (err, keys) => {
+  const patterns = {};
+  keys.forEach((key) => {
+    const pattern = key.split(":")[0] || "unstructured";
+    patterns[pattern] = (patterns[pattern] || 0) + 1;
+  });
+  console.log("Key patterns:", patterns);
+});
 ```
 
 ### File-Based Sources
 
-**Structured Files**
+**Structured File Analysis**
 
-- CSV/TSV: Column analysis and data type inference
-- JSON/JSONL: Schema extraction and nested structure mapping
-- Parquet/Avro: Metadata inspection and column statistics
-- XML: XPath mapping and element hierarchy analysis
+- CSV/TSV: Column analysis, data type inference, delimiter detection
+- JSON/JSONL: Schema extraction, nested structure flattening
+- Parquet/Avro: Metadata inspection, compression analysis
+- XML: XPath mapping, namespace handling
 
-**Log Files**
+**Log File Processing**
 
-- Application logs: Pattern recognition and field extraction
-- Web server logs: Common log format parsing
-- System logs: Structured logging format detection
-- Custom formats: Regex pattern development
+- Application logs: Pattern recognition, field extraction
+- Web server logs: Access pattern analysis, error categorization
+- System logs: Event correlation, performance metrics
+- Custom formats: Regex development, parsing validation
 
-### API Sources
+### Stream Processing Patterns
 
-**REST APIs**
-
-```bash
-# API endpoint discovery
-curl -H "Accept: application/json" [endpoint] | jq '.' | head -20
-
-# Schema inspection
-curl -H "Accept: application/json" [endpoint]/schema
-curl -H "Accept: application/json" [endpoint]?_limit=1
-```
-
-**GraphQL APIs**
-
-```graphql
-# Schema introspection
-query IntrospectionQuery {
-  __schema {
-    types {
-      name
-      kind
-      fields {
-        name
-        type {
-          name
-        }
-      }
-    }
-  }
-}
-```
-
-### Stream Sources
-
-**Message Queues**
-
-- Kafka: Topic discovery and message schema analysis
-- RabbitMQ: Queue inspection and message format detection
-- Redis Streams: Stream key analysis and entry structure
-- Apache Pulsar: Namespace and topic enumeration
-
-**Real-time Streams**
-
-- WebSocket connections: Message format analysis
-- Server-Sent Events: Event type categorization
-- Apache Kafka Connect: Connector configuration discovery
-- Change Data Capture: Database event stream analysis
-
-## Data Transformation Patterns
-
-### Data Cleaning and Validation
-
-**Data Quality Assessment**
+**Real-time Data Flows**
 
 ```python
-# Missing value analysis
-data.isnull().sum()
-data.dtypes
-data.describe()
-
-# Duplicate detection
-data.duplicated().sum()
-data[data.duplicated()].head()
-
-# Outlier identification
-Q1 = data.quantile(0.25)
-Q3 = data.quantile(0.75)
-IQR = Q3 - Q1
-outliers = data[((data < (Q1 - 1.5 * IQR)) | (data > (Q3 + 1.5 * IQR))).any(axis=1)]
-```
-
-**Data Standardization**
-
-- Date/time format normalization
-- String case and encoding standardization
-- Numeric precision and scale alignment
-- Category value normalization
-
-### Schema Transformation
-
-**Structure Changes**
-
-- Column renaming and type conversion
-- Nested JSON flattening/nesting
-- Array/list processing and expansion
-- Pivot/unpivot operations
-
-**Data Enrichment**
-
-- Lookup table joins and enrichment
-- Calculated field generation
-- Data validation and flagging
-- Reference data integration
-
-### Aggregation and Summarization
-
-**Temporal Aggregations**
-
-```sql
--- Time-based grouping patterns
-SELECT 
-    DATE_TRUNC('hour', timestamp) as hour,
-    COUNT(*) as event_count,
-    AVG(value) as avg_value
-FROM events 
-GROUP BY DATE_TRUNC('hour', timestamp)
-ORDER BY hour;
-```
-
-**Dimensional Analysis**
-
-- Group-by operations with multiple dimensions
-- Rolling window calculations
-- Percentile and statistical computations
-- Custom business logic aggregations
-
-## Pipeline Architecture Patterns
-
-### Batch Processing
-
-**ETL (Extract, Transform, Load)**
-
-```python
-# Traditional ETL pattern
-def etl_pipeline():
-    # Extract
-    raw_data = extract_from_source(source_config)
-    
-    # Transform
-    cleaned_data = clean_and_validate(raw_data)
-    transformed_data = apply_business_rules(cleaned_data)
-    
-    # Load
-    load_to_destination(transformed_data, dest_config)
-```
-
-**ELT (Extract, Load, Transform)**
-
-```sql
--- ELT pattern using SQL transformations
-CREATE TABLE staging.raw_data AS 
-SELECT * FROM source_system.table;
-
-CREATE TABLE warehouse.processed_data AS
-SELECT 
-    id,
-    UPPER(name) as normalized_name,
-    CAST(amount AS DECIMAL(10,2)) as amount_decimal
-FROM staging.raw_data
-WHERE status = 'active';
-```
-
-### Stream Processing
-
-**Real-time Transformations**
-
-```python
-# Kafka Streams pattern
+# Kafka stream processing example
 from kafka import KafkaConsumer, KafkaProducer
+import json
 
-consumer = KafkaConsumer('input-topic')
-producer = KafkaProducer('output-topic')
-
-for message in consumer:
-    # Transform message
-    transformed = transform_data(message.value)
+def process_stream_data():
+    consumer = KafkaConsumer(
+        'input-topic',
+        bootstrap_servers=['localhost:9092'],
+        value_deserializer=lambda x: json.loads(x.decode('utf-8'))
+    )
     
-    # Send to output topic
-    producer.send('output-topic', transformed)
+    producer = KafkaProducer(
+        bootstrap_servers=['localhost:9092'],
+        value_serializer=lambda x: json.dumps(x).encode('utf-8')
+    )
+    
+    for message in consumer:
+        # Transform data
+        transformed = {
+            'timestamp': message.value.get('timestamp'),
+            'processed_at': time.time(),
+            'data': clean_and_validate(message.value)
+        }
+        
+        # Send to output topic
+        producer.send('processed-topic', transformed)
 ```
 
 **Micro-batch Processing**
 
-- Small batch windows for near real-time processing
-- Checkpoint and recovery mechanisms
-- Backpressure handling and flow control
-- State management for stateful operations
+```python
+# Structured Streaming with checkpoints
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
 
-### Hybrid Architectures
+spark = SparkSession.builder.appName("DataFlowAnalysis").getOrCreate()
 
-**Lambda Architecture**
+# Read streaming data
+stream_df = spark \
+    .readStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", "localhost:9092") \
+    .option("subscribe", "input-topic") \
+    .load()
 
-- Batch layer for comprehensive historical processing
-- Speed layer for real-time approximate results
-- Serving layer for unified query interface
+# Transform and aggregate
+processed_df = stream_df \
+    .select(from_json(col("value").cast("string"), schema).alias("data")) \
+    .select("data.*") \
+    .withWatermark("timestamp", "10 minutes") \
+    .groupBy(window(col("timestamp"), "5 minutes"), col("category")) \
+    .count()
 
-**Kappa Architecture**
-
-- Stream-first approach with reprocessing capabilities
-- Event sourcing and log-based data storage
-- Unified real-time and batch processing
-
-## Destination Configuration
-
-### Data Warehouses
-
-**Structured Storage**
-
-```sql
--- Table creation with appropriate types
-CREATE TABLE fact_sales (
-    sale_id BIGINT PRIMARY KEY,
-    customer_id INT REFERENCES dim_customer(customer_id),
-    product_id INT REFERENCES dim_product(product_id),
-    sale_date DATE,
-    amount DECIMAL(10,2),
-    quantity INT
-);
-
--- Partitioning for performance
-CREATE TABLE fact_sales_partitioned (
-    LIKE fact_sales
-) PARTITION BY RANGE (sale_date);
+# Output with checkpointing
+query = processed_df \
+    .writeStream \
+    .outputMode("append") \
+    .format("console") \
+    .option("checkpointLocation", "/tmp/checkpoint") \
+    .start()
 ```
 
-**Indexing Strategy**
+## Pipeline Architecture Patterns
 
-- Primary key and foreign key indexes
-- Query-specific composite indexes
-- Partial indexes for filtered queries
-- Full-text search indexes
+### ETL vs ELT Decision Matrix
 
-### Data Lakes
+**Use ETL when:**
 
-**File Organization**
+- Source systems have limited compute capacity
+- Data requires complex transformations before loading
+- Target system has strict schema requirements
+- Processing logic is stable and well-defined
 
-```
-data-lake/
-├── raw/
-│   ├── year=2024/month=01/day=15/
-│   └── source=api/format=json/
-├── processed/
-│   ├── year=2024/month=01/
-│   └── table=customers/
-└── curated/
-    ├── marts/
-    └── aggregations/
-```
+**Use ELT when:**
 
-**Format Selection**
+- Target system has powerful compute capabilities
+- Schema-on-read flexibility is required
+- Rapid prototyping and iteration needed
+- Multiple downstream consumers with different requirements
 
-- Parquet for analytical workloads
-- Avro for schema evolution
-- Delta Lake for ACID transactions
-- Iceberg for large-scale analytics
-
-### Operational Databases
-
-**Transactional Systems**
-
-- ACID compliance requirements
-- Connection pooling and retry logic
-- Batch insert optimization
-- Conflict resolution strategies
-
-**NoSQL Destinations**
-
-- Document structure optimization
-- Sharding and distribution strategies
-- Consistency level configuration
-- Index design for query patterns
-
-## Monitoring and Observability
-
-### Pipeline Health Monitoring
+### Monitoring and Observability
 
 **Data Quality Metrics**
 
 ```python
-# Data quality checks
-def validate_data_quality(df):
+def calculate_data_quality_metrics(df):
+    """Calculate comprehensive data quality scores"""
+    total_records = df.count()
+    
     metrics = {
-        'row_count': len(df),
-        'null_percentage': df.isnull().sum().sum() / (len(df) * len(df.columns)),
-        'duplicate_count': df.duplicated().sum(),
-        'schema_drift': detect_schema_changes(df)
+        'completeness': {
+            'total_records': total_records,
+            'null_percentage': df.select([
+                (count(when(col(c).isNull(), c))/total_records).alias(c) 
+                for c in df.columns
+            ]).collect()[0].asDict()
+        },
+        'uniqueness': {
+            'duplicate_count': total_records - df.dropDuplicates().count(),
+            'unique_percentage': df.dropDuplicates().count() / total_records
+        },
+        'consistency': {
+            'schema_compliance': validate_schema_compliance(df),
+            'business_rule_violations': check_business_rules(df)
+        },
+        'freshness': {
+            'latest_timestamp': df.agg(max('timestamp')).collect()[0][0],
+            'processing_lag': calculate_processing_lag(df)
+        }
     }
+    
     return metrics
 ```
 
 **Performance Monitoring**
 
-- Processing throughput and latency
-- Resource utilization (CPU, memory, I/O)
-- Error rates and retry patterns
-- Data freshness and staleness metrics
+```python
+# Pipeline performance tracking
+import time
+from functools import wraps
 
-### Alerting and Error Handling
+def monitor_performance(operation_name):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            start_time = time.time()
+            try:
+                result = func(*args, **kwargs)
+                execution_time = time.time() - start_time
+                
+                # Log metrics
+                log_metric({
+                    'operation': operation_name,
+                    'execution_time': execution_time,
+                    'status': 'success',
+                    'timestamp': time.time()
+                })
+                
+                return result
+            except Exception as e:
+                execution_time = time.time() - start_time
+                log_metric({
+                    'operation': operation_name,
+                    'execution_time': execution_time,
+                    'status': 'error',
+                    'error_message': str(e),
+                    'timestamp': time.time()
+                })
+                raise
+        return wrapper
+    return decorator
+```
 
-**Alert Conditions**
-
-- Data volume anomalies (too high/low)
-- Processing time threshold breaches
-- Data quality threshold violations
-- Pipeline failure and retry exhaustion
-
-**Error Recovery**
-
-- Dead letter queues for failed messages
-- Idempotent processing design
-- Checkpoint and restart capabilities
-- Manual intervention procedures
-
-## Framework-Specific Implementation
+## Framework-Specific Implementations
 
 ### Python Ecosystem
 
-**Pandas/Dask**
-
-```python
-import pandas as pd
-import dask.dataframe as dd
-
-# Large dataset processing
-df = dd.read_csv('large_file.csv')
-result = df.groupby('category').amount.sum().compute()
-```
-
-**Apache Airflow**
+**Apache Airflow DAG**
 
 ```python
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
+from airflow.operators.bash_operator import BashOperator
+from datetime import datetime, timedelta
 
-dag = DAG('data_pipeline', schedule_interval='@daily')
+default_args = {
+    'owner': 'data-engineering',
+    'depends_on_past': False,
+    'start_date': datetime(2024, 1, 1),
+    'email_on_failure': True,
+    'email_on_retry': False,
+    'retries': 2,
+    'retry_delay': timedelta(minutes=5)
+}
+
+dag = DAG(
+    'data_pipeline',
+    default_args=default_args,
+    description='Data processing pipeline',
+    schedule_interval='@daily',
+    catchup=False
+)
 
 extract_task = PythonOperator(
-    task_id='extract',
-    python_callable=extract_data,
+    task_id='extract_data',
+    python_callable=extract_from_sources,
+    dag=dag
+)
+
+validate_task = PythonOperator(
+    task_id='validate_data',
+    python_callable=validate_data_quality,
     dag=dag
 )
 
 transform_task = PythonOperator(
-    task_id='transform',
-    python_callable=transform_data,
+    task_id='transform_data', 
+    python_callable=apply_transformations,
     dag=dag
 )
 
-extract_task >> transform_task
+load_task = PythonOperator(
+    task_id='load_data',
+    python_callable=load_to_warehouse,
+    dag=dag
+)
+
+extract_task >> validate_task >> transform_task >> load_task
 ```
 
 ### JVM Ecosystem
 
-**Apache Spark**
+**Apache Spark Pipeline**
 
 ```scala
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SparkSession, DataFrame}
+import org.apache.spark.sql.functions._
 
-val spark = SparkSession.builder()
-  .appName("DataPipeline")
-  .getOrCreate()
+object DataPipeline {
+  def main(args: Array[String]): Unit = {
+    val spark = SparkSession.builder()
+      .appName("DataFlowAnalysis")
+      .config("spark.sql.adaptive.enabled", "true")
+      .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
+      .getOrCreate()
 
-val df = spark.read
-  .option("header", "true")
-  .csv("input.csv")
+    // Extract from multiple sources
+    val sources = Map(
+      "customers" -> spark.read.parquet("s3://data-lake/customers/"),
+      "orders" -> spark.read.parquet("s3://data-lake/orders/"),
+      "products" -> spark.read.parquet("s3://data-lake/products/")
+    )
 
-val result = df
-  .filter($"status" === "active")
-  .groupBy($"category")
-  .sum("amount")
+    // Transform and enrich
+    val enriched_orders = sources("orders")
+      .join(sources("customers"), "customer_id")
+      .join(sources("products"), "product_id")
+      .withColumn("order_value", col("quantity") * col("unit_price"))
+      .withColumn("processing_date", current_date())
 
-result.write
-  .mode("overwrite")
-  .parquet("output/")
+    // Aggregate and summarize
+    val daily_summary = enriched_orders
+      .groupBy(col("processing_date"), col("product_category"))
+      .agg(
+        sum("order_value").alias("total_revenue"),
+        count("order_id").alias("order_count"),
+        countDistinct("customer_id").alias("unique_customers")
+      )
+
+    // Load to destinations
+    daily_summary.write
+      .mode("overwrite")
+      .partitionBy("processing_date")
+      .parquet("s3://data-warehouse/daily-summary/")
+
+    spark.stop()
+  }
+}
 ```
 
-### Cloud-Native Solutions
+### Rust/Go High-Performance Processing
 
-**AWS**
+**Rust Data Processing**
 
-- Glue: Serverless ETL service
-- Kinesis: Real-time data streaming
-- Lambda: Event-driven processing
-- S3: Data lake storage
+```rust
+use polars::prelude::*;
+use tokio::fs::File;
+use std::error::Error;
 
-**GCP**
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    // Read from multiple sources concurrently
+    let (df1, df2) = tokio::try_join!(
+        read_parquet_async("data/source1.parquet"),
+        read_csv_async("data/source2.csv")
+    )?;
 
-- Dataflow: Unified stream and batch processing
-- Pub/Sub: Messaging and event ingestion
-- BigQuery: Data warehouse and analytics
-- Cloud Functions: Serverless processing
+    // Transform and join
+    let result = df1
+        .lazy()
+        .join(
+            df2.lazy(),
+            [col("id")],
+            [col("id")], 
+            JoinArgs::new(JoinType::Inner)
+        )
+        .with_columns([
+            (col("amount") * col("rate")).alias("calculated_value"),
+            lit(chrono::Utc::now().timestamp()).alias("processed_at")
+        ])
+        .filter(col("status").eq(lit("active")))
+        .groupby([col("category")])
+        .agg([
+            col("calculated_value").sum().alias("total_value"),
+            col("id").count().alias("record_count")
+        ])
+        .collect()?;
 
-**Azure**
+    // Write to destination
+    let mut file = File::create("output/processed_data.parquet").await?;
+    result.write_parquet(&mut file, CompressionOptions::Snappy)?;
 
-- Data Factory: Data integration service
-- Stream Analytics: Real-time analytics
-- Synapse: Analytics platform
-- Event Hubs: Big data streaming
+    Ok(())
+}
+```
 
-## Output and Recommendations
+## Output Artifacts
 
-**Pipeline Design Document**
+GENERATE the following artifacts based on analysis:
 
-- Source and destination specifications
-- Transformation logic and business rules
-- Error handling and monitoring strategy
+**1. Pipeline Design Document** (`/pipeline-design-$SESSION_ID.md`)
+
+- Source system specifications and connection details
+- Transformation logic and business rule definitions
+- Destination configuration and schema mappings
 - Performance optimization recommendations
+- Monitoring and alerting strategy
 
-**Implementation Code**
+**2. Implementation Code** (`/pipeline-implementation-$SESSION_ID/`)
 
-- Framework-specific pipeline code
-- Configuration files and connection strings
-- Testing framework and data validation
-- Deployment and orchestration scripts
+- Framework-specific pipeline code (Airflow, Spark, etc.)
+- Configuration files and environment variables
+- Data validation and quality check functions
+- Error handling and retry logic
+- Unit and integration test suites
 
-**Operational Runbook**
+**3. Operational Runbook** (`/operations-runbook-$SESSION_ID.md`)
 
-- Monitoring dashboard configuration
-- Alert threshold definitions
-- Troubleshooting procedures
-- Performance tuning guidelines
+- Deployment procedures and infrastructure requirements
+- Monitoring dashboard configurations
+- Alert threshold definitions and escalation procedures
+- Troubleshooting guides and common issue resolution
+- Performance tuning guidelines and capacity planning
 
-The command adapts its recommendations based on detected data sources, existing infrastructure, and performance requirements, providing a complete data flow solution tailored to the specific environment.
+**4. Data Quality Framework** (`/data-quality-$SESSION_ID.json`)
+
+- Schema validation rules and constraints
+- Business rule definitions and validation logic
+- Data profiling results and baseline metrics
+- Anomaly detection thresholds and alerting rules
+
+The analysis adapts recommendations based on detected data sources, existing infrastructure, performance requirements, and scalability needs, providing a comprehensive data flow solution tailored to the specific environment and use case.

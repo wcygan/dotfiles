@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 40,
-  "inProgress": 16,
-  "lastUpdated": "2025-07-07T13:30:19.771Z",
+  "completed": 43,
+  "inProgress": 13,
+  "lastUpdated": "2025-07-07T13:30:57.939Z",
   "commands": [
     {
       "id": "001",
@@ -928,18 +928,19 @@
       "name": "schema",
       "filepath": "claude/commands/analyze/code/schema.md",
       "namespace": "analyze/code",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:27:49.511Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:30:57.938Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17518948695118ghp5539dj",
-        "timestamp": 1751894869
       }
     },
     {
@@ -947,18 +948,21 @@
       "name": "data-flow",
       "filepath": "claude/commands/analyze/data/data-flow.md",
       "namespace": "analyze/data",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:28:30.137Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:30:35.537Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751894910137fazvxvu9m5",
-        "timestamp": 1751894910
       }
     },
     {
@@ -1061,18 +1065,21 @@
       "name": "investigate",
       "filepath": "claude/commands/analyze/research/investigate.md",
       "namespace": "analyze/research",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:28:40.629Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:30:38.176Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751894920629crvkjv6a85",
-        "timestamp": 1751894920
       }
     },
     {

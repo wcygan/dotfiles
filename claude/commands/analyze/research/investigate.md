@@ -1,6 +1,21 @@
+---
+allowed-tools: Task, WebFetch, Read, Grep, Bash(rg:*), Bash(fd:*), Bash(gdate:*), Bash(jq:*), Bash(git:status), Bash(git:branch), Bash(pwd:*)
+description: Conduct thorough investigation using codebase analysis and web research for optimal solutions
+---
+
 # /investigate
 
 Conduct thorough investigation of a topic, technology, or approach using codebase analysis and web research to determine optimal solutions with up-to-date information.
+
+## Context
+
+- Session ID: !`gdate +%s%N`
+- Investigation target: $ARGUMENTS
+- Current directory: !`pwd`
+- Project structure: !`fd . -t d -d 2 | head -10 || echo "No subdirectories"`
+- Technology stack: !`fd -e json -e toml -e xml -e txt . | rg "(deno\.json|package\.json|Cargo\.toml|pom\.xml|requirements\.txt|composer\.json)" | head -5 || echo "No technology files detected"`
+- Git repository: !`git status --porcelain | head -5 || echo "Not a git repository"`
+- Current branch: !`git branch --show-current 2>/dev/null || echo "No git repository"`
 
 ## Usage
 
@@ -8,92 +23,101 @@ Conduct thorough investigation of a topic, technology, or approach using codebas
 /investigate [topic or question]
 ```
 
-## Investigation Process
+## Your Task
 
-### Phase 1: Context Gathering
+STEP 1: Investigation Setup and Context Analysis
 
-1. **Understand the Question**
-   - Parse the investigation topic
-   - Identify key terms and concepts
-   - Determine investigation scope
+- Create session state file: /tmp/investigate-state-$SESSION_ID.json
+- Parse investigation topic: $ARGUMENTS
+- Identify key terms and concepts from the investigation target
+- Determine investigation scope and depth requirements
+- Save initial context to state file
 
-2. **Initial Codebase Scan**
-   ```bash
-   # Search for existing implementations
-   rg "[key terms]" --type-add 'code:*.{rs,go,java,ts,js,py}' -t code
+STEP 2: Codebase Discovery (Parallel Sub-Agent Approach)
 
-   # Find related configuration
-   rg "[key terms]" --type yaml --type json --type toml
+FOR complex investigations requiring extensive codebase analysis:
 
-   # Look for documentation
-   fd "README|ARCHITECTURE|DESIGN" --type f | xargs rg -l "[key terms]"
-   ```
+Launch 3-5 parallel sub-agents to explore:
 
-### Phase 2: Deep Analysis
+- Agent 1: Search for existing implementations and patterns
+- Agent 2: Analyze configuration files and dependencies
+- Agent 3: Review documentation and architectural decisions
+- Agent 4: Examine test coverage and validation approaches
+- Agent 5: Map component relationships and integration points
 
-#### Codebase Investigation
+ELSE (simple investigations):
 
-1. **Pattern Discovery**
-   ```bash
-   # Find implementation patterns
-   rg "impl.*[concept]|class.*[concept]|interface.*[concept]" -A 5 -B 2
+Execute sequential codebase analysis:
 
-   # Analyze dependencies
-   rg "[concept]" package.json Cargo.toml go.mod pom.xml requirements.txt
+- Search existing implementations: rg "$ARGUMENTS" --type-add 'code:*.{rs,go,java,ts,js,py}' -t code
+- Find related configuration: rg "$ARGUMENTS" --type yaml --type json --type toml
+- Look for documentation: fd "README|ARCHITECTURE|DESIGN" --type f | xargs rg -l "$ARGUMENTS"
 
-   # Check test coverage
-   fd "test|spec" --type f | xargs rg -l "[concept]"
-   ```
+STEP 3: Pattern Discovery and Architecture Analysis
 
-2. **Architecture Analysis**
-   - Map component relationships
-   - Identify integration points
-   - Document data flows
-   - Note design patterns
+TRY:
 
-#### Web Research
+- Find implementation patterns: rg "impl._$ARGUMENTS|class.*$ARGUMENTS|interface._$ARGUMENTS" -A 5 -B 2
+- Analyze dependencies: rg "$ARGUMENTS" package.json Cargo.toml go.mod pom.xml requirements.txt
+- Check test coverage: fd "test|spec" --type f | xargs rg -l "$ARGUMENTS"
+- Document architectural relationships and data flows
 
-1. **Current Best Practices**
-   - Search for "[topic] best practices in <current year>"
-   - Look for recent blog posts and articles
-   - Check official documentation updates
+CATCH (pattern_not_found):
 
-2. **Technology Comparison**
-   - Search for "[topic] vs alternatives"
-   - Find benchmark comparisons
-   - Review case studies
-   - Check GitHub star trends
+- Note absence of existing implementations
+- Document opportunity for greenfield implementation
+- Focus investigation on industry best practices
 
-3. **Community Insights**
-   - Search Stack Overflow for recent solutions
-   - Check Reddit discussions (r/programming, topic-specific subreddits)
-   - Review GitHub issues and discussions
-   - Analyze npm/crates.io download trends
+STEP 4: Web Research and Technology Comparison
 
-### Phase 3: Solution Synthesis
+Execute comprehensive web research:
 
-#### Evaluation Framework
+- Search for "$ARGUMENTS best practices 2025"
+- Find benchmark comparisons and case studies
+- Review GitHub trends and community adoption
+- Check Stack Overflow for recent solutions and common issues
+- Analyze Reddit discussions for real-world experiences
 
-1. **Technical Criteria**
-   - Performance characteristics
-   - Scalability potential
-   - Security considerations
-   - Maintenance burden
-   - Learning curve
+STEP 5: Solution Synthesis and Evaluation
 
-2. **Project Fit**
-   - Alignment with existing stack
-   - Team expertise requirements
-   - Migration complexity
-   - Cost implications
+Apply evaluation framework:
 
-3. **Future-Proofing**
-   - Technology maturity
-   - Community support
-   - Corporate backing
-   - Update frequency
+- Technical criteria: performance, scalability, security, maintenance
+- Project fit: stack alignment, team expertise, migration complexity
+- Future-proofing: maturity, community support, corporate backing
+- Cost-benefit analysis and risk assessment
 
-### Phase 4: Recommendation Formulation
+STEP 6: Recommendation Formulation and State Management
+
+Generate structured investigation report with:
+
+- Executive summary with key findings
+- Current state analysis from codebase exploration
+- Options evaluation with pros/cons for each approach
+- Final recommendation with implementation strategy
+- Risk mitigation strategies and next steps
+
+STEP 7: State Management and Session Cleanup
+
+TRY:
+
+- Update session state: /tmp/investigate-state-$SESSION_ID.json
+- Save investigation results for future reference
+- Create checkpoint for resumable investigations
+- Generate summary statistics and insights
+
+CATCH (investigation_incomplete):
+
+- Save partial results to state file
+- Document areas requiring additional research
+- Create resumption instructions for next session
+- Mark investigation as pending completion
+
+FINALLY:
+
+- Clean up temporary files: /tmp/investigate-temp-$SESSION_ID-*
+- Archive investigation artifacts if requested
+- Update session metrics and completion status
 
 #### Output Structure
 

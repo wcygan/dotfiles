@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 112,
-  "inProgress": 6,
-  "lastUpdated": "2025-07-07T15:16:21.044Z",
+  "completed": 113,
+  "inProgress": 5,
+  "lastUpdated": "2025-07-07T15:16:34.867Z",
   "commands": [
     {
       "id": "001",
@@ -2407,18 +2407,20 @@
       "name": "knowledge-extract",
       "filepath": "claude/commands/meta/extract/knowledge-extract.md",
       "namespace": "meta/extract",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:14:06.337Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:16:34.867Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751901246337uxqgwdubwz",
-        "timestamp": 1751901246
       }
     },
     {

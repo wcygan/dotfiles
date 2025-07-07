@@ -1,55 +1,255 @@
-# /context-load-tailwind
+---
+allowed-tools: WebFetch, Read, Bash(fd:*), Bash(rg:*), Bash(wc:*), mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+description: Load comprehensive Tailwind CSS documentation context with adaptive framework integration and project-specific optimization
+---
 
-Load comprehensive documentation context for Tailwind CSS utility-first styling framework.
+## Context
+
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Target: Tailwind CSS utility-first styling framework
+- Project type detection: !`fd "(package\.json|deno\.json|Cargo\.toml|pom\.xml|requirements\.txt)$" . -d 2 | head -3 || echo "No config files"`
+- Existing CSS/styling: !`fd "\.(css|scss|sass|less|styl)$" . | wc -l | tr -d ' ' || echo "0"`
+- Framework indicators: !`rg "(react|vue|fresh|svelte|angular)" . --type json | head -3 | cut -d: -f3 | sort -u || echo "No framework detected"`
+- Tailwind config exists: !`fd "tailwind\.config\.(js|ts|mjs|cjs)$" . | head -1 || echo "No Tailwind config found"`
+- CSS build tools: !`rg "(postcss|webpack|vite|rollup|esbuild)" . --type json | head -2 | cut -d: -f3 | sort -u || echo "No build tools detected"`
+- Fresh project: !`fd "fresh\.config\.(js|ts)$" . | head -1 || echo "Not a Fresh project"`
+
+## Your Task
+
+STEP 1: Initialize comprehensive documentation loading session
+
+- CREATE session state file: `/tmp/tailwind-context-$SESSION_ID.json`
+- SET initial state:
+  ```json
+  {
+    "sessionId": "$SESSION_ID",
+    "target": "tailwind-css",
+    "framework": "auto-detect",
+    "phase": "initialization",
+    "sources_loaded": [],
+    "integration_context": {},
+    "optimization_recommendations": []
+  }
+  ```
+
+STEP 2: Framework-specific context analysis
+
+TRY:
+
+IF Fresh project detected:
+
+- SET framework = "fresh"
+- FOCUS on Fresh 2.0 alpha integration patterns
+- PRIORITIZE CSS fallback strategies for plugin reliability
+- INCLUDE AppShell patterns and islands architecture
+
+ELSE IF React/Preact indicators found:
+
+- SET framework = "react"
+- FOCUS on component-based utility composition
+- PRIORITIZE conditional class application patterns
+- INCLUDE props-based styling strategies
+
+ELSE IF Vue indicators found:
+
+- SET framework = "vue"
+- FOCUS on SFC styling patterns
+- PRIORITIZE dynamic class binding
+- INCLUDE Vue-specific integration guides
+
+ELSE:
+
+- SET framework = "vanilla"
+- FOCUS on general utility-first principles
+- PRIORITIZE build tool integration
+- INCLUDE framework-agnostic patterns
+
+CATCH (detection_failed):
+
+- LOG detection issues to session state
+- CONTINUE with comprehensive general guidance
+- PROVIDE multi-framework compatibility recommendations
+
+STEP 3: Adaptive documentation loading strategy
+
+IF Context7 MCP server available:
+
+- USE mcp__context7__resolve-library-id with "tailwind-css"
+- LOAD structured documentation via mcp__context7__get-library-docs
+- FOCUS on framework-specific integration topics
+- EXTRACT build configuration and optimization guidance
+
+ELSE:
+
+- EXECUTE comprehensive WebFetch strategy for key sources:
+
+FOR EACH source IN core_documentation_urls:
+
+1. **Utility-First Principles**: `https://tailwindcss.com/docs/styling-with-utility-classes`
+   - EXTRACT: Design system approach, composition patterns, maintainability benefits
+   - SYNTHESIZE: Framework-specific application strategies
+
+2. **State Management**: `https://tailwindcss.com/docs/hover-focus-and-other-states`
+   - EXTRACT: Pseudo-class variants, interactive patterns, group/peer modifiers
+   - ANALYZE: Framework event handling integration
+
+3. **Responsive Design**: `https://tailwindcss.com/docs/responsive-design`
+   - EXTRACT: Mobile-first methodology, breakpoint strategies, responsive utilities
+   - CORRELATE: With detected framework's responsive patterns
+
+4. **Customization**: `https://tailwindcss.com/docs/adding-custom-styles`
+   - EXTRACT: Theme extension, arbitrary values, component extraction
+   - PRIORITIZE: Based on project complexity and requirements
+
+5. **Performance**: `https://tailwindcss.com/docs/optimizing-for-production`
+   - EXTRACT: Build optimization, purging strategies, JIT compilation
+   - INTEGRATE: With detected build tools and framework setup
+
+STEP 4: Framework integration synthesis
+
+CASE detected_framework:
+
+WHEN "fresh":
+
+- SYNTHESIZE Fresh 2.0 specific integration:
+  - JSR imports and plugin configuration
+  - CSS fallback implementation in `static/styles.css`
+  - Islands architecture styling patterns
+  - AppShell component integration
+  - Docker build optimization for assets
+
+WHEN "react":
+
+- SYNTHESIZE React ecosystem integration:
+  - Component library development patterns
+  - Props-based conditional styling
+  - TypeScript integration for class validation
+  - CSS-in-JS migration strategies
+  - Testing patterns for styled components
+
+WHEN "vue":
+
+- SYNTHESIZE Vue ecosystem integration:
+  - SFC styling best practices
+  - Dynamic class binding patterns
+  - Composition API integration
+  - Vuetify/Quasar migration strategies
+  - Component library development
+
+WHEN "vanilla":
+
+- SYNTHESIZE general web integration:
+  - PostCSS configuration patterns
+  - Build tool integration (Webpack, Vite, esbuild)
+  - Legacy browser support strategies
+  - Progressive enhancement patterns
+  - Performance monitoring setup
+
+STEP 5: Advanced optimization and best practices synthesis
+
+- COMPILE framework-specific performance recommendations:
+  - Bundle size optimization for detected build tools
+  - Runtime performance patterns for detected framework
+  - Development experience enhancements
+  - Production deployment strategies
+
+- GENERATE project-specific implementation guidance:
+  - Setup instructions for detected environment
+  - Migration strategies from existing CSS
+  - Integration with detected styling approach
+  - Testing and quality assurance patterns
+
+STEP 6: State management and artifact creation
+
+- UPDATE session state with loaded documentation sources
+- CREATE framework-specific integration guide: `/tmp/tailwind-context-$SESSION_ID/integration-guide.md`
+- GENERATE optimization checklist: `/tmp/tailwind-context-$SESSION_ID/optimization-checklist.md`
+- SAVE configuration templates: `/tmp/tailwind-context-$SESSION_ID/config-templates/`
+- DOCUMENT best practices: `/tmp/tailwind-context-$SESSION_ID/best-practices.md`
+
+STEP 7: Quality assurance and validation
+
+TRY:
+
+- VALIDATE documentation source accessibility and currency
+- VERIFY framework integration recommendations for compatibility
+- CHECK configuration examples for syntax correctness
+- ENSURE optimization strategies align with detected tooling
+
+CATCH (validation_issues):
+
+- LOG validation problems to session state
+- PROVIDE alternative documentation sources
+- INCLUDE troubleshooting guidance for common setup issues
+
+FINALLY:
+
+- UPDATE session state: phase = "complete"
+- GENERATE comprehensive context summary
+- ARCHIVE session artifacts for future reference
+- CLEAN UP temporary processing files
 
 ## Instructions for Claude
 
 When this command is executed, you MUST:
 
-1. **Use the Context7 MCP server** (if available) to fetch and load context from the URLs below
-2. **Use WebFetch tool** to gather information from these key sources:
+1. **FOLLOW the programmatic task structure above** with proper error handling and state management
+2. **ADAPT documentation loading** based on detected project framework and tooling
+3. **USE Context7 MCP server** (if available) OR WebFetch tool for comprehensive source gathering:
    - **Core Concepts**: `https://tailwindcss.com/docs/styling-with-utility-classes`
-     - Focus on: utility-first principles, design system approach, composition patterns
+     - EXTRACT: utility-first principles, design system approach, composition patterns
+     - CORRELATE: with detected framework component patterns
    - **State Management**: `https://tailwindcss.com/docs/hover-focus-and-other-states`
-     - Focus on: pseudo-class variants, interactive states, group/peer modifiers
+     - EXTRACT: pseudo-class variants, interactive states, group/peer modifiers
+     - INTEGRATE: with framework event handling patterns
    - **Responsive Design**: `https://tailwindcss.com/docs/responsive-design`
-     - Focus on: mobile-first approach, breakpoints, responsive utilities
+     - EXTRACT: mobile-first approach, breakpoints, responsive utilities
+     - OPTIMIZE: for detected viewport and device targeting
    - **Color System**: `https://tailwindcss.com/docs/colors`
-     - Focus on: color palettes, opacity modifiers, dark mode variants
+     - EXTRACT: color palettes, opacity modifiers, dark mode variants
+     - ALIGN: with design system requirements and accessibility standards
    - **Customization**: `https://tailwindcss.com/docs/adding-custom-styles`
-     - Focus on: theme customization, arbitrary values, component extraction
+     - EXTRACT: theme customization, arbitrary values, component extraction
+     - ADAPT: for project-specific design requirements
    - **Functions & Directives**: `https://tailwindcss.com/docs/functions-and-directives`
-     - Focus on: @theme, @utility, @apply directives, CSS integration
+     - EXTRACT: @theme, @utility, @apply directives, CSS integration
+     - OPTIMIZE: for build tool compatibility and performance
    - **Layout System**: `https://tailwindcss.com/docs/aspect-ratio`
-     - Focus on: aspect ratios, grid, flexbox, positioning
+     - EXTRACT: aspect ratios, grid, flexbox, positioning
+     - INTEGRATE: with responsive design and framework layout patterns
    - **Spacing & Sizing**: `https://tailwindcss.com/docs/padding`
-     - Focus on: spacing scale, sizing utilities, responsive spacing
+     - EXTRACT: spacing scale, sizing utilities, responsive spacing
+     - STANDARDIZE: with design system and typography scale
    - **Typography**: `https://tailwindcss.com/docs/font-family`
-     - Focus on: font system, text sizing, line height, letter spacing
+     - EXTRACT: font system, text sizing, line height, letter spacing
+     - OPTIMIZE: for readability and performance across devices
    - **Borders & Effects**: `https://tailwindcss.com/docs/border-radius`
-     - Focus on: borders, shadows, effects, transforms
+     - EXTRACT: borders, shadows, effects, transforms
+     - ENHANCE: with animation and interaction patterns
    - **Preflight CSS Reset**: `https://tailwindcss.com/docs/preflight`
-     - Focus on: CSS normalization, browser consistency, base layer styling
+     - EXTRACT: CSS normalization, browser consistency, base layer styling
+     - LEVERAGE: as foundation for intentional design system implementation
 
-3. **Key documentation sections to prioritize**:
-   - Utility-first methodology and benefits
-   - Complete class reference and naming patterns
-   - State variants and pseudo-class handling
-   - Responsive design patterns and breakpoints
-   - Color system and palette organization
-   - Customization strategies and theme extension
-   - Performance optimization and purging
-   - Integration with frameworks and build tools
+4. **PRIORITIZE documentation sections** based on project analysis:
+   - Framework-specific integration patterns for detected environment
+   - Build tool optimization for detected tooling stack
+   - Performance strategies for identified deployment target
+   - Accessibility implementation for detected UI framework
+   - Migration strategies from existing styling approach
+   - Component library patterns for detected architecture
+   - State management integration with framework patterns
+   - Testing strategies for styling and responsive behavior
 
-4. **Focus areas for this stack**:
-   - Rapid prototyping with utility classes
-   - Component composition patterns
-   - Responsive design implementation
-   - State management through variants
-   - Color system and design tokens
-   - Custom styling integration
-   - Performance optimization
-   - Accessibility considerations
+5. **FOCUS synthesis on project-specific implementation**:
+   - Setup and configuration for detected environment
+   - Performance optimization for identified constraints
+   - Development workflow integration with existing tooling
+   - Component architecture patterns for detected framework
+   - Design system implementation with brand requirements
+   - Accessibility compliance with framework best practices
+   - Migration and adoption strategies for existing codebase
+   - Quality assurance and testing integration patterns
 
 ## Expected Outcome
 

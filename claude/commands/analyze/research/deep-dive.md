@@ -1,283 +1,330 @@
+---
+allowed-tools: Read, Task, Bash(fd:*), Bash(rg:*), Bash(git:*), Bash(wc:*), Bash(sort:*), Bash(head:*), Bash(jq:*), Bash(gdate:*), Bash(npm:*), Bash(cargo:*), Bash(go:*), Bash(strace:*), Bash(perf:*), Bash(time:*)
+description: Systematic multi-perspective investigation with extended thinking and state management
+---
+
 # /deep-dive
 
-Perform systematic, multi-perspective exploration of a topic, codebase, or concept to build comprehensive understanding through structured investigation.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Investigation target: $ARGUMENTS
+- Project structure: !`fd . -t d -d 3 | head -15 || echo "No directories found"`
+- File overview: !`fd . -t f | wc -l | tr -d ' '` files total
+- Technology indicators: !`fd -e json -e toml -e xml -e txt . | rg "(package\.json|Cargo\.toml|go\.mod|requirements\.txt|pom\.xml)" | head -5 || echo "No technology files detected"`
+- Git repository: !`git status --porcelain | wc -l | tr -d ' '` changes, branch: !`git branch --show-current 2>/dev/null || echo "No git repository"`
+- Recent activity: !`git log --oneline -5 2>/dev/null || echo "No git history"`
+- Code patterns: !`rg "func|function|def|class|interface|struct" . | wc -l | tr -d ' '` definitions found
 
+## Your Task
+
+Execute systematic multi-perspective exploration of $ARGUMENTS to build comprehensive understanding through structured investigation using extended thinking and state management.
+
+STEP 1: Initialize Investigation Session
+
+- Create session state file: /tmp/deep-dive-$SESSION_ID.json
+- Initialize investigation scope and boundaries
+- Set exploration objectives based on $ARGUMENTS
+- Create checkpoint: investigation_initialized
+
+```json
+// /tmp/deep-dive-$SESSION_ID.json
+{
+  "sessionId": "$SESSION_ID",
+  "target": "$ARGUMENTS",
+  "phase": "initialization",
+  "scope": "defined_from_arguments",
+  "objectives": [],
+  "findings": {
+    "technical": {},
+    "business": {},
+    "operational": {}
+  },
+  "checkpoints": {
+    "last_checkpoint": "investigation_initialized",
+    "next_milestone": "contextual_foundation",
+    "rollback_point": "session_start"
+  }
+}
 ```
-/deep-dive [topic, concept, or codebase area]
-```
 
-## Deep Dive Process
+STEP 2: Contextual Foundation Analysis
 
-### Phase 1: Contextual Foundation
+Think deeply about the investigation scope and establish baseline understanding.
 
-**Establish Baseline Understanding**
+TRY:
 
-- Define scope and boundaries of investigation
-- Identify key stakeholders and use cases
-- Map existing knowledge and assumptions
-- Set exploration objectives and success criteria
+- Analyze project structure and identify key stakeholders
+- Map existing knowledge and document assumptions
+- Perform initial reconnaissance of codebase/system
+- Execute discovery commands:
+  - Structure analysis: `fd . --type f | head -20`
+  - Issue identification: `rg "TODO|FIXME|HACK|BUG" -n | head -10`
+  - Dependency overview: `rg "import|require|use|from" -n | head -15`
+- Update state with baseline findings
+- Save checkpoint: contextual_foundation_complete
 
-**Initial Reconnaissance**
+CATCH (insufficient_context):
+
+- Expand search scope and parameters
+- Look for additional documentation or configuration files
+- Use extended thinking to analyze partial information
+- Document context gaps for focused investigation
+
+STEP 3: Multi-Dimensional Analysis Execution
+
+FOR EACH dimension IN [technical, business, operational]:
+
+Think harder about the specific dimension and launch focused analysis:
+
+**Technical Dimension Investigation:**
+
+- Architecture patterns: `rg "pattern|strategy|factory|observer|singleton" -i -A 2`
+- Performance analysis: `rg "performance|optimization|bottleneck|slow" -i -A 1`
+- Security review: `rg "security|auth|token|password|encrypt" -i -A 1`
+- Testing coverage: `rg "test|spec|mock|stub" --files | head -10`
+
+**Business Dimension Investigation:**
+
+- User needs analysis: `rg "user|customer|client|requirement" -i -A 1`
+- Business rules: `rg "rule|policy|constraint|validation" -i -A 1`
+- Value propositions: `rg "value|benefit|feature|capability" -i -A 1`
+
+**Operational Dimension Investigation:**
+
+- Deployment patterns: `rg "deploy|docker|kubernetes|config" -i --files`
+- Monitoring setup: `rg "monitor|metric|alert|log" -i -A 1`
+- Scalability indicators: `rg "scale|performance|load|concurrent" -i -A 1`
+
+Update state with dimension-specific findings after each analysis.
+
+STEP 4: Deep Investigation Techniques
+
+Think deeply about investigation approaches and execute systematic code archaeology:
+
+**Code Evolution Analysis:**
 
 ```bash
-# Codebase structure analysis
-fd . --type f | head -20  # Get file layout overview
-rg "TODO|FIXME|HACK" -n   # Find known issues
-rg "import|require|use" -n | head -10  # Understand dependencies
-```
-
-### Phase 2: Multi-Dimensional Analysis
-
-**Technical Dimension**
-
-- Architecture patterns and design decisions
-- Implementation approaches and trade-offs
-- Performance characteristics and bottlenecks
-- Security considerations and vulnerabilities
-- Testing coverage and quality metrics
-
-**Business Dimension**
-
-- User needs and value propositions
-- Business rules and constraints
-- Market context and competitive landscape
-- Compliance and regulatory requirements
-- Cost implications and resource constraints
-
-**Operational Dimension**
-
-- Deployment and infrastructure requirements
-- Monitoring and observability needs
-- Maintenance and support considerations
-- Scalability and growth planning
-- Risk assessment and mitigation strategies
-
-### Phase 3: Deep Investigation Techniques
-
-**Code Archaeology**
-
-```bash
-# Understand evolution and history
+# Understand historical context
 git log --oneline --graph -20
-git blame [key-file] | head -10
+git blame [key-files] | head -10  
 git show --stat HEAD~5..HEAD
-
-# Find patterns and conventions
-rg "func|function|def|class" -A 1 | head -20
-rg "test|spec" --files | head -10
-rg "config|setting|option" -i -A 2
 ```
 
-**Dependency Mapping**
+**Pattern Recognition:**
+
+```bash
+# Find architectural patterns
+rg "func|function|def|class" -A 1 | head -20
+rg "config|setting|option|parameter" -i -A 2
+```
+
+**Dependency Mapping:**
 
 ```bash
 # External dependencies
-rg "package.json|Cargo.toml|go.mod|requirements.txt" --files
+fd "package.json|Cargo.toml|go.mod|requirements.txt" --type f
 rg "import.*from|require\(|use " -n | head -15
 
-# Internal coupling analysis  
+# Internal coupling analysis
 rg "\.\/|\.\.\/|@\/" -n | head -10
 fd "index|mod|lib" --type f
 ```
 
-**Data Flow Tracing**
+**Data Flow Tracing:**
 
 ```bash
 # Follow data transformations
 rg "map|transform|convert|parse|serialize" -A 2 -B 1
-rg "input|output|request|response" -A 1 -B 1
+rg "input|output|request|response|data" -A 1 -B 1
 rg "store|save|persist|cache|fetch|load" -A 1
-
-# State management patterns
-rg "state|store|reducer|action|event" -A 2
-rg "useState|createStore|dispatch" -A 1
 ```
 
-### Phase 4: Knowledge Synthesis
+Update investigation state with technical findings.
 
-**Pattern Recognition**
+STEP 5: Knowledge Synthesis and Pattern Recognition
 
-- Common design patterns and anti-patterns
-- Recurring implementation strategies
-- Consistent naming and organization conventions
-- Shared mental models and abstractions
+Use extended thinking to synthesize findings and identify patterns:
 
-**Gap Analysis**
+Think harder about:
+
+- Common design patterns and anti-patterns observed
+- Recurring implementation strategies across the codebase
+- Hidden dependencies and implicit constraints
+- Non-obvious connections and system behaviors
+
+Execute gap analysis:
 
 - Missing functionality or incomplete features
 - Technical debt and refactoring opportunities
 - Documentation gaps and knowledge silos
 - Testing blind spots and quality issues
 
-**Insight Generation**
+Generate insights on:
 
-- Non-obvious connections and relationships
-- Emergent properties and system behaviors
-- Hidden assumptions and implicit constraints
 - Optimization opportunities and quick wins
+- Emergent properties and system behaviors
+- Risk factors and mitigation strategies
 
-### Phase 5: Structured Documentation
+Update state with synthesized knowledge and insights.
 
-**Executive Summary**
+STEP 6: Structured Documentation Generation
+
+Create comprehensive investigation report:
+
+**Executive Summary Generation:**
 
 ```markdown
-# Deep Dive: [Topic]
+# Deep Dive Investigation: $ARGUMENTS
 
 ## Key Findings
 
-- [3-5 most important discoveries]
-- [Critical insights for decision making]
-- [Urgent issues requiring attention]
+- [3-5 critical discoveries from analysis]
+- [Strategic insights for decision making]
+- [Urgent issues requiring immediate attention]
 
 ## Strategic Implications
 
-- [Impact on project roadmap]
+- [Impact on project roadmap and priorities]
 - [Resource allocation recommendations]
-- [Risk mitigation priorities]
+- [Risk mitigation priorities and timelines]
 ```
 
-**Technical Deep Dive**
+**Technical Deep Dive Documentation:**
 
 ```markdown
 ## Architecture Analysis
 
-### Current State
+### Current State Assessment
 
-- [Detailed system description]
-- [Component responsibilities and interactions]
-- [Technology stack evaluation]
+- [Detailed system architecture description]
+- [Component responsibilities and interaction patterns]
+- [Technology stack evaluation and assessment]
 
-### Design Patterns
+### Design Pattern Analysis
 
-- [Patterns in use and their effectiveness]
-- [Anti-patterns and technical debt]
-- [Architectural evolution opportunities]
+- [Effective patterns in use across codebase]
+- [Anti-patterns and technical debt identification]
+- [Architecture evolution opportunities and recommendations]
 
 ### Performance Profile
 
-- [Bottlenecks and optimization targets]
-- [Scalability characteristics]
-- [Resource utilization patterns]
+- [Identified bottlenecks and optimization targets]
+- [Scalability characteristics and limitations]
+- [Resource utilization patterns and efficiency]
 ```
 
-**Knowledge Map**
+STEP 7: Actionable Insights and Recommendations
 
-```markdown
-## Domain Model
+Generate prioritized action items based on investigation findings:
 
-- [Core entities and relationships]
-- [Business rules and constraints]
-- [Workflow processes and state transitions]
+**Immediate Actions (Next 1-2 weeks):**
 
-## Integration Points
+- [ ] Critical security fixes or vulnerabilities
+- [ ] Performance bottlenecks with high impact
+- [ ] Documentation of key architectural decisions
 
-- [External system dependencies]
-- [API contracts and protocols]
-- [Data exchange patterns]
+**Short-term Improvements (Next 1-3 months):**
 
-## Operational Considerations
+- [ ] Refactoring high-complexity areas identified
+- [ ] Adding test coverage for critical paths
+- [ ] Infrastructure optimizations and improvements
 
-- [Deployment requirements]
-- [Monitoring and alerting needs]
-- [Backup and recovery procedures]
-```
+**Long-term Evolution (3-12 months):**
 
-### Phase 6: Actionable Insights
+- [ ] Major architectural improvements and modernization
+- [ ] Technology upgrades or migration planning
+- [ ] Process automation and tooling enhancements
 
-**Immediate Actions (Next 1-2 weeks)**
+STEP 8: State Management and Session Completion
 
-- [ ] Critical fixes or security issues
-- [ ] Quick wins and low-hanging fruit
-- [ ] Documentation of key findings
+TRY:
 
-**Short-term Improvements (Next 1-3 months)**
+- Generate final investigation summary and insights
+- Create knowledge map with discovered relationships
+- Document all findings in structured format
+- Save comprehensive state with all discoveries
+- Create investigation artifact archive
+- Save checkpoint: investigation_complete
 
-- [ ] Refactoring high-impact areas
-- [ ] Adding missing test coverage
-- [ ] Infrastructure optimizations
+CATCH (incomplete_analysis):
 
-**Long-term Evolution (3-12 months)**
+- Document partial findings and gaps
+- Create continuation plan for next session
+- Save investigation progress to state file
+- Generate interim report with current insights
 
-- [ ] Architectural improvements
-- [ ] Technology upgrades or migrations
-- [ ] Process and tooling enhancements
+CATCH (session_timeout OR resource_exhaustion):
 
-## Deep Dive Methodologies
+- Save current investigation state to /tmp/deep-dive-$SESSION_ID.json
+- Create resumption instructions for follow-up session
+- Document completed phases and next steps
+- Archive partial findings for reference
 
-### Code-First Investigation
+FINALLY:
 
-- Start with entry points and trace execution flows
-- Map data structures and their transformations
-- Analyze error handling and edge cases
-- Document performance-critical paths
+- Update investigation session state and progress tracking
+- Clean up temporary analysis files: /tmp/deep-dive-temp-$SESSION_ID-*
+- Generate comprehensive investigation summary
+- Create maintenance recommendations and follow-up actions
+- Archive session artifacts for future reference
 
-### Problem-First Investigation
+## Investigation Methodologies
 
-- Begin with user pain points or business needs
-- Trace backwards to root causes
-- Identify all contributing factors
-- Evaluate solution alternatives
+### Code-First Investigation Pattern
 
-### Architecture-First Investigation
+- Start with entry points and trace execution flows systematically
+- Map data structures and their transformation pipelines
+- Analyze error handling patterns and edge case coverage
+- Document performance-critical execution paths
 
-- Start with high-level system design
-- Drill down into component implementations
-- Analyze cross-cutting concerns
-- Evaluate design pattern effectiveness
+### Problem-First Investigation Pattern
 
-### Data-First Investigation
+- Begin with user pain points or business need analysis
+- Trace backwards through system to identify root causes
+- Map all contributing factors and system dependencies
+- Evaluate and compare solution alternatives
 
-- Begin with data models and schemas
-- Trace data lifecycle and transformations
-- Analyze data quality and consistency
-- Evaluate storage and access patterns
+### Architecture-First Investigation Pattern
 
-## Investigation Tools and Techniques
+- Start with high-level system design and component analysis
+- Drill down systematically into implementation details
+- Analyze cross-cutting concerns and shared dependencies
+- Evaluate design pattern effectiveness and consistency
 
-**Static Analysis**
+### Data-First Investigation Pattern
 
-```bash
-# Code complexity and quality metrics
-fd "*.rs" | xargs wc -l | sort -n
-rg "match|if|for|while" -c # Complexity indicators
-rg "unwrap|panic|todo|unreachable" -n # Risk indicators
-```
+- Begin with data models, schemas, and structure analysis
+- Trace complete data lifecycle and transformation processes
+- Analyze data quality, consistency, and integrity patterns
+- Evaluate storage strategies and access pattern efficiency
 
-**Dynamic Analysis**
+## Extended Thinking Integration
 
-```bash
-# Runtime behavior investigation
-strace -c [command] 2>&1 | head -20  # System call analysis
-perf stat [command]  # Performance profiling
-time [command]  # Execution timing
-```
+This command leverages extended thinking capabilities for:
 
-**Dependency Analysis**
+- **Complex Analysis**: Use "think harder" for multi-layered system understanding
+- **Pattern Recognition**: Deep thinking about architectural patterns and anti-patterns
+- **Strategic Planning**: Extended analysis of long-term implications and trade-offs
+- **Risk Assessment**: Comprehensive evaluation of system vulnerabilities and mitigation strategies
 
-```bash
-# Dependency tree visualization  
-npm ls --depth=2  # Node.js dependencies
-cargo tree  # Rust dependencies
-go mod graph | head -20  # Go module graph
-```
+## Sub-Agent Integration Opportunities
 
-## Output Guidelines
+For large-scale investigations, consider delegating to parallel sub-agents:
 
-- **Multi-perspective**: Address technical, business, and operational angles
-- **Evidence-based**: Support conclusions with concrete examples and data
-- **Actionable**: Provide clear next steps and recommendations
-- **Comprehensive**: Cover breadth while maintaining useful depth
-- **Accessible**: Make insights understandable to different audiences
-- **Future-focused**: Consider evolution and long-term implications
+1. **Technical Analysis Agent**: Focus on code quality, architecture, and performance
+2. **Security Assessment Agent**: Dedicated security vulnerability and compliance analysis
+3. **Documentation Agent**: Generate comprehensive technical documentation
+4. **Testing Analysis Agent**: Evaluate test coverage and quality assurance processes
+5. **Dependency Mapping Agent**: Create detailed dependency graphs and relationship analysis
 
 ## Integration with Other Commands
 
 - Use after `/investigate` for deeper exploration of specific findings
-- Combine with `/options` to explore alternative approaches discovered
-- Follow with `/plan` to organize implementation of improvements
-- Use `/dependencies` to map discovered relationships
-- Apply `/monitor` to track key metrics identified during investigation
+- Combine with `/options` to explore alternative approaches discovered during analysis
+- Follow with `/plan` to organize implementation of identified improvements
+- Use `/dependencies` to map discovered relationships and system connections
+- Apply `/monitor` to track key metrics and patterns identified during investigation
 
-The goal is to develop expert-level understanding that enables confident decision-making and effective action planning.
+The goal is developing expert-level understanding that enables confident decision-making and effective strategic action planning.

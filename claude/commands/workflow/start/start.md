@@ -1,122 +1,469 @@
-Begin working on the highest priority task identified by next-steps analysis or start a specific task.
+---
+allowed-tools: TodoWrite, TodoRead, Bash(git:*), Bash(deno:task:*), Bash(jq:*), Bash(gdate:*), Read, Write, Task, Grep, Glob, Edit, MultiEdit
+description: Intelligent workflow orchestration with state management, error recovery, and sub-agent coordination
+---
 
-## Usage
+## Context
 
-```bash
-# Start working on the highest priority task from next-steps
-/project:start
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
+- Target task: $ARGUMENTS
+- Current git status: !`git status --porcelain 2>/dev/null || echo "No git repository"`
+- Current branch: !`git branch --show-current 2>/dev/null || echo "unknown"`
+- Active todos: !`jq -r '.[] | select(.status == "in_progress") | "\(.id): \(.content)"' ~/.claude/todos.json 2>/dev/null | head -5 || echo "No active todos"`
+- Available todos: !`jq -r '.[] | select(.status == "pending") | "\(.priority): \(.content)"' ~/.claude/todos.json 2>/dev/null | head -3 || echo "No pending todos"`
+- Project environment: !`deno task --quiet 2>/dev/null | head -5 || echo "No deno.json tasks found"`
+- Recent commits: !`git log --oneline -3 2>/dev/null || echo "No git history"`
+- Uncommitted changes: !`git diff --name-only HEAD 2>/dev/null | wc -l | tr -d ' '` files
 
-# Start working on a specific task
-/project:start "implement user authentication"
+## Your Task
 
-# Start with focus on quick wins
-/project:start --quick-wins
+STEP 1: Initialize intelligent workflow session and analyze project state
 
-# Start but skip certain types of tasks
-/project:start --skip=documentation
-```
-
-## Arguments
-
-$ARGUMENTS
-
-## Workflow
-
-1. **Task Selection**:
-   - If no arguments: Run next-steps analysis and pick the top priority task
-   - If task specified: Find and start that specific task
-   - If --quick-wins: Focus on tasks marked as "Quick" effort
-
-2. **Pre-work Setup**:
-   - Check current git status and branch
-   - Set up any required environment
-   - Run preliminary tests to ensure clean state
-   - Use TodoWrite to track the active task
-
-3. **Execution Process**:
-   - Read all relevant files and context
-   - Plan the implementation approach
-   - Make incremental changes with verification
-   - Run tests after each significant change
-   - Commit completed work with clear messages
-
-4. **Progress Tracking**:
-   - Update task status in TodoWrite
-   - Create progress entries if significant milestones reached
-   - Note any blockers or issues discovered
-   - Track follow-up tasks identified during work
-
-5. **Completion**:
-   - Run full test suite
-   - Run lint and type checking
-   - Stage and commit only modified files
-   - Push changes to current branch
-   - Mark task as completed in TodoWrite
-   - Suggest next task to work on
-
-## Integration with Next-Steps
-
-This command is designed to work seamlessly with `/project:next-steps`:
+- CREATE session state file: `/tmp/start-session-$SESSION_ID.json`
+- ANALYZE current project state from Context section
+- DETERMINE workflow complexity (simple task vs. complex feature implementation)
+- VALIDATE environment and dependencies
 
 ```bash
-# Typical workflow
-/project:next-steps              # Analyze what needs to be done
-/project:start                    # Begin the top priority task
-
-# Or in one command with specific focus
-/project:next-steps "performance"
-/project:start "optimize database queries"
+# Initialize workflow session state
+echo '{
+  "sessionId": "'$SESSION_ID'",
+  "targetTask": "'$ARGUMENTS'",
+  "state": "initializing",
+  "startTime": "'$(gdate -Iseconds 2>/dev/null || date -Iseconds)'",
+  "checkpoints": [],
+  "filesModified": [],
+  "commitsCreated": 0,
+  "testsStatus": "unknown",
+  "priority": "auto-detect",
+  "blockers": []
+}' > /tmp/start-session-$SESSION_ID.json
 ```
 
-## Task Selection Priority
+STEP 2: Intelligent task selection and priority analysis
 
-When no specific task is given, select based on:
+CASE task_specification:
+WHEN "user_specified":
 
-1. **Blockers first**: Tasks blocking other work
-2. **High priority**: Critical functionality or bugs
-3. **Quick wins**: If --quick-wins flag is set
-4. **Dependencies**: Tasks that enable other work
-5. **User preference**: If specified in arguments
+- PARSE $ARGUMENTS for specific task details
+- VALIDATE task exists in TodoWrite system
+- UPDATE session state with task details
 
-## Execution Principles
+WHEN "auto_select":
 
-- **Incremental progress**: Make small, verifiable changes
-- **Test frequently**: Verify work doesn't break existing functionality
-- **Clear commits**: Each commit should have a clear purpose
-- **Document decisions**: Note why certain approaches were chosen
-- **Leave clean**: Code should be in working state if interrupted
+IF available_todos > 0:
 
-## Exit Conditions
+LAUNCH parallel sub-agents for comprehensive task analysis:
 
-Work stops when:
+- **Agent 1: Priority Analysis**: Analyze all pending todos for priority, dependencies, and effort estimation
+  - Focus: Task dependencies, blocking relationships, effort vs. impact scoring
+  - Tools: TodoRead for task analysis, project file analysis for context
+  - Output: Prioritized task list with detailed scoring and reasoning
 
-- Task is completed successfully
-- A blocker is encountered that requires user input
-- Tests are failing and need investigation
-- User interrupts with new instructions
+- **Agent 2: Environment Assessment**: Evaluate current project state and readiness for work
+  - Focus: Git status, test state, dependency health, development environment
+  - Tools: git commands, project-specific build tools, test runners
+  - Output: Environment readiness report with any setup requirements
 
-## Example Flow
+- **Agent 3: Code Analysis**: Analyze codebase for related work and potential conflicts
+  - Focus: Recent changes, related files, potential merge conflicts, ongoing work
+  - Tools: Grep, git log analysis, file dependency mapping
+  - Output: Code context report with conflict warnings and related work identification
+
+ELSE:
+
+- EXECUTE intelligent project discovery to identify potential tasks
+- CREATE new todo items based on code analysis findings
+- SUGGEST task creation workflow
+
+STEP 3: Pre-work setup with checkpoint creation
+
+TRY:
+
+**Environment Validation and Setup:**
 
 ```bash
-# Start working on highest priority task
-/project:start
+# Validate clean working state
+echo "🔍 Validating development environment..."
 
-# Output:
-Starting task: "Fix authentication token expiry"
-- Priority: High
-- Estimated effort: Moderate
-- Current branch: main
-- Running initial tests... ✓
+# Check for uncommitted changes
+uncommitted_files=$(git diff --name-only HEAD 2>/dev/null | wc -l | tr -d ' ')
+if [ "$uncommitted_files" -gt 0 ]; then
+  echo "⚠️ Found $uncommitted_files uncommitted files"
+  echo "📋 Uncommitted files:"
+  git diff --name-only HEAD | head -5
+  echo "💾 Creating pre-work checkpoint..."
+  git stash push -m "Pre-work checkpoint for session $SESSION_ID"
+fi
 
-Beginning implementation...
-[... work progresses ...]
+# Validate test state
+echo "🧪 Checking current test status..."
+if command -v deno >/dev/null && [ -f "deno.json" ]; then
+  deno task test >/tmp/pre-work-tests-$SESSION_ID.log 2>&1
+  test_exit_code=$?
+elif command -v cargo >/dev/null && [ -f "Cargo.toml" ]; then
+  cargo test >/tmp/pre-work-tests-$SESSION_ID.log 2>&1
+  test_exit_code=$?
+elif command -v go >/dev/null && [ -f "go.mod" ]; then
+  go test ./... >/tmp/pre-work-tests-$SESSION_ID.log 2>&1
+  test_exit_code=$?
+else
+  echo "No recognized test framework found"
+  test_exit_code=0
+fi
 
-Task completed successfully!
-- 5 files changed
-- All tests passing
-- 3 commits created
-- Changes pushed to main
-
-Suggested next task: "Add token refresh endpoint"
-Run /project:start to continue with next task.
+# Update session state with test results
+jq --arg status "$([ $test_exit_code -eq 0 ] && echo 'passing' || echo 'failing')" \
+   '.testsStatus = $status | .state = "setup_complete"' \
+   /tmp/start-session-$SESSION_ID.json > /tmp/start-session-$SESSION_ID.tmp && \
+mv /tmp/start-session-$SESSION_ID.tmp /tmp/start-session-$SESSION_ID.json
 ```
+
+**TodoWrite Integration and Task Activation:**
+
+```bash
+# Load and activate selected task
+selected_task="$ARGUMENTS"
+if [ -z "$selected_task" ]; then
+  # Auto-select highest priority task from TodoRead
+  TodoRead
+  # Parse TodoRead output to get highest priority pending task
+  # This would be implemented based on TodoRead output format
+fi
+
+# Mark task as in-progress
+TodoWrite --update-task "$selected_task" --status "in_progress" --session-id "$SESSION_ID"
+
+# Create progress subtasks for complex work
+if [[ "$selected_task" == *"implement"* ]] || [[ "$selected_task" == *"add"* ]]; then
+  TodoWrite --create-subtask "$selected_task" "Planning and design" --priority "high"
+  TodoWrite --create-subtask "$selected_task" "Implementation" --priority "high"
+  TodoWrite --create-subtask "$selected_task" "Testing and validation" --priority "high"
+  TodoWrite --create-subtask "$selected_task" "Documentation" --priority "medium"
+fi
+```
+
+CATCH (environment_setup_failed):
+
+- LOG error details to session state
+- PROVIDE specific remediation steps
+- AWAIT user intervention before proceeding
+
+```bash
+echo "❌ Environment setup failed. Check:"
+echo "  1. Git repository status and conflicts"
+echo "  2. Test suite failures requiring attention"
+echo "  3. Missing dependencies or build tools"
+echo "  4. Configuration issues"
+echo "📊 Session state saved: /tmp/start-session-$SESSION_ID.json"
+echo "🔄 Run /start again after resolving issues"
+```
+
+STEP 4: Intelligent execution with incremental progress and state management
+
+CASE task_complexity:
+WHEN "simple_change":
+
+**Direct Implementation with Continuous Validation:**
+
+```bash
+# Execute focused implementation workflow
+echo "⚡ Executing simple task with direct implementation..."
+
+# 1. Analyze files to modify
+# 2. Make incremental changes with validation
+# 3. Run tests after each significant change
+# 4. Update progress in TodoWrite and session state
+```
+
+WHEN "complex_feature":
+
+**Multi-Phase Implementation with Sub-Agent Coordination:**
+
+LAUNCH parallel sub-agents for comprehensive feature implementation:
+
+- **Agent 1: Planning & Architecture**: Design implementation approach and identify required changes
+  - Focus: Code architecture, file organization, integration points, testing strategy
+  - Tools: Read, Grep, Glob for codebase analysis, architectural pattern identification
+  - Output: Implementation plan with file modifications, testing requirements, integration steps
+
+- **Agent 2: Core Implementation**: Execute primary code changes based on planning agent output
+  - Focus: Main functionality implementation, following established patterns
+  - Tools: Edit, MultiEdit for code changes, maintaining existing code style
+  - Output: Core feature implementation with proper error handling
+
+- **Agent 3: Testing Implementation**: Create comprehensive tests for new functionality
+  - Focus: Unit tests, integration tests, edge case coverage
+  - Tools: Write, Edit for test file creation, following project testing patterns
+  - Output: Complete test suite for new functionality
+
+- **Agent 4: Documentation & Integration**: Update documentation and ensure proper integration
+  - Focus: API documentation, README updates, configuration changes
+  - Tools: Edit for documentation files, ensuring consistency
+  - Output: Updated documentation and integration verification
+
+**Sub-Agent Coordination and Progress Tracking:**
+
+```bash
+# Each phase reports to session state
+echo "🚀 Launching multi-agent feature implementation..."
+echo "📊 Progress tracking: /tmp/start-session-$SESSION_ID.json"
+echo "🔄 Coordination through session state and TodoWrite"
+```
+
+STEP 5: Continuous validation and checkpoint management
+
+**Incremental Testing and Validation:**
+
+```bash
+# After each significant change, validate progress
+validate_progress() {
+  echo "🔍 Validating progress for session $SESSION_ID..."
+  
+  # Run relevant tests
+  if command -v deno >/dev/null && [ -f "deno.json" ]; then
+    deno task test --filter="$(echo $selected_task | head -c 20)" 2>/tmp/validation-$SESSION_ID.log
+  elif command -v cargo >/dev/null && [ -f "Cargo.toml" ]; then
+    cargo test 2>/tmp/validation-$SESSION_ID.log
+  elif command -v npm >/dev/null && [ -f "package.json" ]; then
+    npm test 2>/tmp/validation-$SESSION_ID.log
+  fi
+  
+  validation_status=$?
+  
+  # Update session state with validation results
+  jq --arg status "$([ $validation_status -eq 0 ] && echo 'passing' || echo 'failing')" \
+     --arg timestamp "$(gdate -Iseconds 2>/dev/null || date -Iseconds)" \
+     '.lastValidation = {"timestamp": $timestamp, "status": $status} | .checkpoints += [$timestamp]' \
+     /tmp/start-session-$SESSION_ID.json > /tmp/start-session-$SESSION_ID.tmp && \
+  mv /tmp/start-session-$SESSION_ID.tmp /tmp/start-session-$SESSION_ID.json
+  
+  return $validation_status
+}
+```
+
+**Progress Checkpointing:**
+
+```bash
+# Create checkpoint after major milestones
+create_checkpoint() {
+  local checkpoint_name="$1"
+  echo "💾 Creating checkpoint: $checkpoint_name"
+  
+  # Git checkpoint
+  git add -A
+  git commit -m "checkpoint($SESSION_ID): $checkpoint_name" || true
+  
+  # Update session state
+  jq --arg checkpoint "$checkpoint_name" \
+     --arg timestamp "$(gdate -Iseconds 2>/dev/null || date -Iseconds)" \
+     '.checkpoints += [{"name": $checkpoint, "timestamp": $timestamp}]' \
+     /tmp/start-session-$SESSION_ID.json > /tmp/start-session-$SESSION_ID.tmp && \
+  mv /tmp/start-session-$SESSION_ID.tmp /tmp/start-session-$SESSION_ID.json
+  
+  # Update TodoWrite with progress
+  TodoWrite --update-task "$selected_task" --progress "checkpoint: $checkpoint_name"
+}
+```
+
+STEP 6: Error handling and recovery mechanisms
+
+TRY:
+
+**Execution Monitoring:**
+
+```bash
+# Monitor execution and handle errors gracefully
+while [ "$(jq -r '.state' /tmp/start-session-$SESSION_ID.json)" != "completed" ]; do
+  current_state=$(jq -r '.state' /tmp/start-session-$SESSION_ID.json)
+  
+  case "$current_state" in
+    "executing")
+      # Continue with current implementation
+      validate_progress
+      if [ $? -ne 0 ]; then
+        echo "⚠️ Validation failed, entering error recovery mode"
+        jq '.state = "error_recovery"' /tmp/start-session-$SESSION_ID.json > /tmp/start-session-$SESSION_ID.tmp && \
+        mv /tmp/start-session-$SESSION_ID.tmp /tmp/start-session-$SESSION_ID.json
+      fi
+      ;;
+    "error_recovery")
+      echo "🔧 Entering error recovery mode..."
+      # Attempt automated recovery or await user intervention
+      break
+      ;;
+  esac
+done
+```
+
+CATCH (test_failure):
+
+- SAVE current progress to checkpoint
+- ANALYZE test failures for root cause
+- PROVIDE specific remediation guidance
+- AWAIT user decision on how to proceed
+
+```bash
+echo "❌ Test failures detected during task execution"
+echo "📊 Session: $SESSION_ID"
+echo "💾 Progress saved to checkpoint"
+echo "📋 Test results: /tmp/validation-$SESSION_ID.log"
+echo "🔄 Options:"
+echo "  1. Fix failing tests and resume: /start --resume $SESSION_ID"
+echo "  2. Rollback to last checkpoint: /start --rollback $SESSION_ID"
+echo "  3. Debug test failures manually"
+```
+
+CATCH (git_conflict):
+
+- CREATE conflict resolution checkpoint
+- ATTEMPT automated merge resolution
+- IF failed: PROVIDE conflict resolution guidance
+
+```bash
+echo "⚠️ Git conflicts detected"
+echo "📊 Session: $SESSION_ID"
+echo "🔧 Attempting automated resolution..."
+git status --porcelain | grep "^UU" | while read -r conflict_file; do
+  echo "  Conflict in: $conflict_file"
+done
+echo "🔄 Manual resolution required if automation fails"
+```
+
+STEP 7: Completion workflow with comprehensive cleanup
+
+**Final Validation and Commit:**
+
+```bash
+# Execute final validation before completion
+final_validation() {
+  echo "🏁 Executing final validation for task completion..."
+  
+  # Run full test suite
+  echo "🧪 Running full test suite..."
+  if command -v deno >/dev/null && [ -f "deno.json" ]; then
+    deno task test
+  elif command -v cargo >/dev/null && [ -f "Cargo.toml" ]; then
+    cargo test
+  elif command -v go >/dev/null && [ -f "go.mod" ]; then
+    go test ./...
+  elif command -v npm >/dev/null && [ -f "package.json" ]; then
+    npm test
+  fi
+  
+  if [ $? -eq 0 ]; then
+    echo "✅ All tests passing"
+  else
+    echo "❌ Test failures prevent task completion"
+    return 1
+  fi
+  
+  # Run linting if available
+  if command -v deno >/dev/null && [ -f "deno.json" ]; then
+    deno task lint && deno task fmt
+  elif command -v cargo >/dev/null && [ -f "Cargo.toml" ]; then
+    cargo clippy && cargo fmt
+  fi
+  
+  echo "✅ Final validation complete"
+  return 0
+}
+```
+
+**Task Completion and State Cleanup:**
+
+```bash
+# Complete task and update all tracking systems
+complete_task() {
+  echo "🎉 Completing task: $selected_task"
+  
+  # Create final commit
+  git add -A
+  git commit -m "feat($SESSION_ID): complete $selected_task
+  
+- Implemented core functionality
+- Added comprehensive tests
+- Updated documentation
+- All validation checks passing
+  
+Session: $SESSION_ID"
+  
+  # Update TodoWrite
+  TodoWrite --complete-task "$selected_task" --session-id "$SESSION_ID"
+  
+  # Update session state
+  jq --arg timestamp "$(gdate -Iseconds 2>/dev/null || date -Iseconds)" \
+     '.state = "completed" | .completedAt = $timestamp | .commitsCreated += 1' \
+     /tmp/start-session-$SESSION_ID.json > /tmp/start-session-$SESSION_ID.tmp && \
+  mv /tmp/start-session-$SESSION_ID.tmp /tmp/start-session-$SESSION_ID.json
+  
+  echo "✅ Task completed successfully"
+}
+```
+
+STEP 8: Next task suggestion and workflow continuation
+
+**Intelligent Next Task Analysis:**
+
+```bash
+# Analyze project state and suggest next high-priority task
+suggest_next_task() {
+  echo "🎯 Analyzing next high-priority tasks..."
+  
+  # Load current todos and analyze dependencies
+  TodoRead
+  
+  # Suggest logical next task based on:
+  # 1. Tasks unblocked by current completion
+  # 2. Related functionality expansion
+  # 3. Critical path dependencies
+  
+  echo "💡 Suggested next tasks:"
+  # This would integrate with TodoRead output to suggest specific tasks
+  echo "  - Run '/start' for auto-selected next task"
+  echo "  - Use TodoRead to review all available tasks"
+}
+```
+
+FINALLY:
+
+- SAVE session state for potential resume operations
+- PROVIDE comprehensive completion summary
+- SUGGEST workflow continuation options
+
+**Workflow Session Summary:**
+
+```bash
+echo "✅ Workflow session completed successfully"
+echo "📊 Session: $SESSION_ID"
+echo "🎯 Task: $selected_task"
+echo "⏱️ Duration: $(jq -r '.completedAt' /tmp/start-session-$SESSION_ID.json | xargs -I {} bash -c 'echo $(( $(gdate -d {} +%s) - $(gdate -d "$(jq -r .startTime /tmp/start-session-$SESSION_ID.json)" +%s) ))') seconds"
+echo "📁 Files modified: $(jq -r '.filesModified | length' /tmp/start-session-$SESSION_ID.json)"
+echo "🏆 Commits created: $(jq -r '.commitsCreated' /tmp/start-session-$SESSION_ID.json)"
+echo "🧪 Final test status: $(jq -r '.testsStatus' /tmp/start-session-$SESSION_ID.json)"
+echo "💾 Session data: /tmp/start-session-$SESSION_ID.json"
+echo ""
+echo "🚀 Ready for next task - run '/start' to continue development workflow"
+```
+
+## Session Management Commands
+
+**Resume Interrupted Session:**
+
+```bash
+/start --resume SESSION_ID
+```
+
+**Rollback to Checkpoint:**
+
+```bash
+/start --rollback SESSION_ID CHECKPOINT_NAME
+```
+
+**Session Status Check:**
+
+```bash
+/start --status SESSION_ID
+```
+
+This intelligent workflow orchestration command provides deterministic execution, comprehensive state management, error recovery capabilities, and seamless integration with TodoWrite for robust development workflow automation.

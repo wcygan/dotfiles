@@ -1,88 +1,173 @@
-Map out the high-level strategy, goals, and checkpoints for the initiative: $ARGUMENTS
+---
+allowed-tools: Write, Read, Bash(gdate:*), Bash(date:*), Bash(pwd:*), Bash(fd:*), Bash(rg:*)
+description: Generate strategic roadmap for initiatives with session-based state management
+---
 
-## Analysis Steps:
+## Context
 
-1. **Understand the Initiative**
-   - Parse the provided description or context
-   - Identify the core problem being solved
-   - Determine the target audience/users
-   - Assess the scope and constraints
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N`
+- Current directory: !`pwd`
+- Existing planning files: !`fd -t f -e md . | rg -i "plan|roadmap|strategy" | head -5 || echo "No existing planning files found"`
+- Initiative: $ARGUMENTS
 
-2. **Define Strategic Goals**
-   - Break down the initiative into 3-5 major strategic goals
-   - Ensure goals are SMART (Specific, Measurable, Achievable, Relevant, Time-bound)
-   - Prioritize goals by impact and dependencies
+## Your task
 
-3. **Create Milestone Checkpoints**
-   - Define clear, measurable checkpoints for each goal
-   - Establish success criteria for each checkpoint
-   - Set realistic timelines with buffer for unknowns
-   - Identify dependencies between checkpoints
+Generate a comprehensive strategic roadmap for the given initiative using a systematic, programmatic approach.
 
-4. **Risk Assessment**
-   - Identify potential blockers or risks
-   - Plan mitigation strategies
-   - Define fallback approaches
+STEP 1: Initialize planning session
 
-5. **Resource Planning**
-   - Estimate effort required for each checkpoint
-   - Identify skills/tools needed
-   - Note any external dependencies
+- Create session ID for state tracking
+- Parse initiative description from $ARGUMENTS
+- Validate input completeness and clarity
+- Set up state file: /tmp/strategic-planning-state-$SESSION_ID.json
 
-## Output Format:
+STEP 2: Analyze initiative scope
 
-Create a structured roadmap in Markdown with:
+IF $ARGUMENTS is vague or incomplete:
+
+- Request clarification on specific aspects
+- Identify missing context or requirements
+- Suggest refinements to initiative description
+
+ELSE:
+
+- Extract core problem statement
+- Identify target audience and stakeholders
+- Determine scope boundaries and constraints
+- Assess complexity and resource requirements
+
+STEP 3: Generate strategic goals
+
+FOR EACH major aspect of the initiative:
+
+- Create 3-5 SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound)
+- Establish success metrics and KPIs
+- Define dependencies between goals
+- Assign priority levels (High/Medium/Low)
+
+STEP 4: Create milestone checkpoints
+
+FOR EACH strategic goal:
+
+- Break down into 3-7 actionable milestones
+- Define clear deliverables and acceptance criteria
+- Establish realistic timelines with buffer periods
+- Identify resource requirements and skill dependencies
+- Map inter-milestone dependencies
+
+STEP 5: Perform risk assessment
+
+- Identify potential blockers and risks (technical, resource, external)
+- Assess impact and probability for each risk
+- Develop mitigation strategies and contingency plans
+- Create fallback approaches for critical paths
+
+STEP 6: Generate structured roadmap
+
+TRY:
+
+- Compile all analysis into standardized roadmap format
+- Create markdown file with consistent structure
+- Include visual timeline and dependency mapping
+- Add resource allocation and effort estimates
+
+CATCH (formatting errors):
+
+- Validate markdown structure
+- Fix any formatting inconsistencies
+- Ensure all sections are properly organized
+
+STEP 7: Save and track session
+
+- Write roadmap to file: `{initiative-name}-roadmap-{SESSION_ID}.md`
+- Save session state for potential refinement
+- Generate summary of next steps and immediate actions
+
+## Roadmap Template Structure
 
 ```markdown
-# Initiative: [Name]
+# Initiative: {Initiative Name}
 
-## Overview
+## Executive Summary
 
-[Brief description of the initiative and its purpose]
+{One-paragraph overview of initiative and expected outcomes}
 
 ## Strategic Goals
 
-### Goal 1: [Name]
+### Goal 1: {Goal Name}
 
-- **Objective**: [What we're trying to achieve]
-- **Success Metrics**: [How we'll measure success]
-- **Timeline**: [Estimated completion]
+- **Objective**: {Clear statement of what we're achieving}
+- **Success Metrics**: {Quantifiable measures of success}
+- **Timeline**: {Estimated completion timeframe}
+- **Priority**: {High/Medium/Low}
 
-### Goal 2: [Name]
-
-...
-
-## Roadmap & Checkpoints
-
-### Phase 1: [Name] (Timeline)
-
-**Checkpoint 1.1**: [Name]
-
-- [ ] Deliverable/Task
-- [ ] Success Criteria
-- **Dependencies**: [List any]
-- **Estimated Effort**: [Time/resources]
-
-### Phase 2: [Name] (Timeline)
+### Goal 2: {Goal Name}
 
 ...
 
-## Risk Matrix
+## Implementation Roadmap
 
-| Risk     | Impact          | Probability     | Mitigation |
-| -------- | --------------- | --------------- | ---------- |
-| [Risk 1] | High/Medium/Low | High/Medium/Low | [Strategy] |
+### Phase 1: {Phase Name} ({Timeline})
 
-## Dependencies & Requirements
+**Milestone 1.1**: {Milestone Name}
 
-- [List key dependencies]
-- [Required tools/resources]
+- [ ] {Deliverable/Task}
+- [ ] {Success Criteria}
+- **Dependencies**: {List any blocking items}
+- **Estimated Effort**: {Time/resource estimate}
+- **Owner**: {Responsible party}
+
+**Milestone 1.2**: {Milestone Name}
+...
+
+### Phase 2: {Phase Name} ({Timeline})
+
+...
+
+## Risk Analysis
+
+| Risk Category | Description        | Impact       | Probability  | Mitigation Strategy   |
+| ------------- | ------------------ | ------------ | ------------ | --------------------- |
+| Technical     | {Risk description} | High/Med/Low | High/Med/Low | {Mitigation approach} |
+| Resource      | {Risk description} | High/Med/Low | High/Med/Low | {Mitigation approach} |
+| External      | {Risk description} | High/Med/Low | High/Med/Low | {Mitigation approach} |
+
+## Resource Requirements
+
+- **Human Resources**: {Skills and roles needed}
+- **Technical Resources**: {Tools, infrastructure, licenses}
+- **Budget**: {Estimated costs by category}
+- **Timeline**: {Overall project duration}
+
+## Success Criteria
+
+- [ ] {Measurable outcome 1}
+- [ ] {Measurable outcome 2}
+- [ ] {Measurable outcome 3}
 
 ## Next Steps
 
-1. [Immediate action items]
-2. [Who needs to be involved]
-3. [First checkpoint target]
+1. {Immediate action item with owner}
+2. {Next priority with timeline}
+3. {Follow-up milestone target}
 ```
 
-Focus on creating a clear, actionable roadmap that can guide the initiative from conception to completion.
+## State Management
+
+IF previous planning session exists:
+
+- Load previous state from /tmp/strategic-planning-state-*.json
+- Offer to continue/refine existing roadmap
+- Preserve session history and iterations
+
+ELSE:
+
+- Start fresh planning session
+- Initialize new state tracking
+- Create baseline roadmap structure
+
+FINALLY:
+
+- Save session state for resumability
+- Update progress tracking
+- Clean up temporary files if session complete

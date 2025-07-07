@@ -1,339 +1,832 @@
-# /epic
+---
+allowed-tools: Task, Read, Write, Edit, MultiEdit, Bash(git:*), Bash(gh:*), Bash(fd:*), Bash(rg:*), Bash(eza:*), Bash(jq:*), Bash(gdate:*), Bash(docker:*), Bash(kubectl:*)
+description: Orchestrates large-scale, cross-repository architectural epics with parallel coordination and dependency management
+---
 
-Manages large-scale, cross-repository refactoring epics.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
+- Epic target: $ARGUMENTS
+- Current directory: !`pwd`
+- Git repository info: !`git remote get-url origin 2>/dev/null || echo "No remote origin"`
+- Branch status: !`git branch --show-current 2>/dev/null || echo "Not a git repository"`
+- Worktree list: !`git worktree list 2>/dev/null | head -5 || echo "No worktrees found"`
+- Organization repositories: !`gh repo list --limit 10 --json name,description 2>/dev/null | jq -r '.[] | "\(.name): \(.description // \"No description\")"' | head -5 || echo "GitHub CLI not configured"`
+- Docker containers: !`docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}" 2>/dev/null | head -3 || echo "Docker not available"`
+- Kubernetes context: !`kubectl config current-context 2>/dev/null || echo "No kubernetes context"`
 
+## Your Task
+
+STEP 1: Initialize epic orchestration session and analyze scope
+
+- CREATE epic session state: `/tmp/epic-session-$SESSION_ID.json`
+- ANALYZE target scope from $ARGUMENTS
+- DETERMINE epic type: migration, refactoring, feature-rollout, infrastructure
+- IDENTIFY affected repositories and services from Context section
+
+```bash
+# Initialize epic orchestration session
+echo '{
+  "sessionId": "'$SESSION_ID'",
+  "epicTarget": "'$ARGUMENTS'",
+  "epicType": "auto-detect",
+  "affectedRepositories": [],
+  "estimatedComplexity": "unknown",
+  "coordinationStrategy": "parallel"
+}' > /tmp/epic-session-$SESSION_ID.json
 ```
-/epic <description>
-/epic status
-/epic continue
-/epic rollback
-```
 
-## Description
+STEP 2: Comprehensive epic scope analysis with parallel sub-agent coordination
 
-This command orchestrates complex, multi-repository architectural changes that are impossible for single-repo agents to handle. It creates master plans, coordinates parallel work, and manages dependencies between repositories.
+TRY:
 
-### What it does:
+IF epic_complexity == "enterprise" OR affected_repositories > 5:
 
-#### 1. Epic Scope Analysis
+LAUNCH parallel sub-agents for comprehensive scope analysis:
 
-Analyzes the scope of large-scale changes across multiple repositories:
+- **Agent 1: Repository Discovery**: Scan and catalog all affected repositories
+  - Focus: Monorepo subdirectories, organization repositories, dependency relationships
+  - Tools: gh repo list, fd for service discovery, git submodule analysis
+  - Output: Complete repository manifest with metadata and dependencies
+
+- **Agent 2: Service Architecture Analysis**: Map service interactions and dependencies
+  - Focus: API dependencies, database relationships, shared libraries, communication patterns
+  - Tools: rg for import analysis, configuration file examination, API endpoint discovery
+  - Output: Service dependency graph and impact assessment
+
+- **Agent 3: Infrastructure Impact Assessment**: Evaluate infrastructure and deployment requirements
+  - Focus: Kubernetes manifests, Docker configurations, CI/CD pipelines, deployment patterns
+  - Tools: kubectl for cluster analysis, docker for container assessment
+  - Output: Infrastructure change requirements and deployment strategy
+
+- **Agent 4: Timeline & Resource Estimation**: Calculate effort and resource requirements
+  - Focus: Code complexity analysis, team capacity, historical velocity, risk assessment
+  - Tools: git log for velocity analysis, code metrics, team availability
+  - Output: Realistic timeline with phases and resource allocation
+
+ELSE:
+
+EXECUTE streamlined scope analysis for focused epics:
 
 **Repository Discovery:**
 
-- Scans monorepo subdirectories for independent services
-- Identifies related repositories in the same organization
-- Analyzes dependency graphs between services
-- Detects shared libraries and common dependencies
-
-**Impact Assessment:**
-
 ```bash
-# Generated analysis
-Repositories affected: 12
-├── Core Services (4)
-│   ├── user-service (Go)
-│   ├── auth-service (Rust) 
-│   ├── payment-service (Java)
-│   └── notification-service (Deno)
-├── Supporting Services (6)
-│   ├── analytics-service
-│   ├── audit-service
-│   ├── rate-limiter
-│   ├── config-service
-│   ├── health-checker
-│   └── metrics-collector
-└── Infrastructure (2)
-    ├── k8s-manifests
-    └── terraform-configs
+# Scan current repository structure
+echo "📁 Analyzing repository structure..."
+fd . -t d -d 2 | head -10
 
-Estimated effort: 8-12 weeks
-Critical path: auth-service → user-service → payment-service
+# Check for monorepo services
+if fd "(package\.json|Cargo\.toml|go\.mod|pom\.xml)" . -d 3 | wc -l | grep -v "^[01]$" >/dev/null; then
+  echo "🔍 Monorepo structure detected - multiple services found"
+else
+  echo "📦 Single repository detected"
+fi
 ```
 
-#### 2. Master Plan Generation
+**Epic Impact Assessment:**
 
-Creates a comprehensive `EPIC.md` that outlines the entire transformation:
+```bash
+# Generate comprehensive impact analysis
+echo "📊 Epic Impact Analysis:"
+echo "Repositories affected: $(jq '.affectedRepositories | length' /tmp/epic-session-$SESSION_ID.json)"
+echo "Epic type: $(jq -r '.epicType' /tmp/epic-session-$SESSION_ID.json)"
+echo "Estimated complexity: $(jq -r '.estimatedComplexity' /tmp/epic-session-$SESSION_ID.json)"
+echo "Coordination strategy: $(jq -r '.coordinationStrategy' /tmp/epic-session-$SESSION_ID.json)"
 
-**Epic Master Plan Example:**
+# Technology stack analysis
+echo "🔧 Technology stack:"
+fd "(package\.json|Cargo\.toml|go\.mod|pom\.xml|deno\.json)" . | \
+  rg -o "(package\.json|Cargo\.toml|go\.mod|pom\.xml|deno\.json)" | \
+  sort | uniq -c
+```
+
+STEP 3: Master epic plan generation with programmatic structure
+
+CASE epic_type:
+WHEN "migration":
+
+**Technology Migration Epic Template:**
 
 ```markdown
-# Epic: Migrate All Services from REST to gRPC
+# Epic: $ARGUMENTS
 
 ## Overview
 
-**Goal**: Migrate all microservices from REST APIs to gRPC for improved performance, type safety, and streaming capabilities.
+**Session ID**: $SESSION_ID
+**Epic Type**: Technology Migration
+**Initiated**: $(gdate -Iseconds 2>/dev/null || date -Iseconds)
+**Coordinator**: $(git config user.name 2>/dev/null || echo "Unknown")
 
-**Timeline**: 12 weeks
-**Team Size**: 8 engineers
-**Risk Level**: High (involves all production services)
+**Goal**: $ARGUMENTS
+
+**Scope Analysis**:
+
+- Affected repositories: $(jq '.affectedRepositories | length' /tmp/epic-session-$SESSION_ID.json)
+- Technology stack: Multi-language ($(fd "(package\.json|Cargo\.toml|go\.mod)" . | wc -l | tr -d ' ') services)
+- Deployment target: $(kubectl config current-context 2>/dev/null || echo "Traditional deployment")
+
+**Estimated Timeline**: $(jq -r '.estimatedComplexity' /tmp/epic-session-$SESSION_ID.json) complexity
+**Risk Level**: High (involves production services)
+```
 
 ## Success Criteria
 
-- [ ] All service-to-service communication uses gRPC
-- [ ] Public APIs maintain REST compatibility via gRPC-Gateway
-- [ ] Performance improves by 30% (p95 latency)
-- [ ] Zero downtime migration completed
-- [ ] All teams trained on gRPC best practices
+- [ ] Epic target achieved: $ARGUMENTS
+- [ ] Zero production incidents during implementation
+- [ ] All affected services successfully migrated
+- [ ] Performance metrics meet or exceed baseline
+- [ ] Complete documentation and team training
+- [ ] Rollback procedures tested and documented
+- [ ] Post-epic monitoring and alerting operational
 
 ## Epic Phases
 
-### Phase 1: Foundation (Weeks 1-2)
+### Phase 1: Foundation and Planning (Week 1)
 
-**Goal**: Establish gRPC infrastructure and tooling
+**Goal**: Establish epic infrastructure and detailed planning
 
-**Repositories**: `shared-protos`, `grpc-gateway`, `k8s-manifests`
+**Coordination Strategy**: Parallel preparation across all repositories
 
 **Tasks**:
 
-- [ ] Create shared protocol definitions repository
-- [ ] Set up Buf Schema Registry for proto management
-- [ ] Implement gRPC-Gateway for REST compatibility
-- [ ] Create gRPC middleware (auth, logging, metrics)
-- [ ] Update CI/CD for proto generation
+- [ ] Create epic coordination workspace with git worktrees
+- [ ] Generate repository-specific PLAN.md files for all affected services
+- [ ] Set up shared infrastructure (CI/CD, monitoring, rollback mechanisms)
+- [ ] Establish communication channels and status reporting
+- [ ] Create epic dashboard for progress tracking
+
+**Sub-Agent Delegation for Repository Planning**:
+
+LAUNCH parallel sub-agents to create repository-specific plans:
+
+FOR EACH repository IN affected_repositories:
+
+- **Planning Agent {repository}**: Create detailed implementation plan
+  - Focus: Repository-specific migration strategy, dependencies, testing approach
+  - Tools: Read existing code, analyze patterns, create PLAN.md
+  - Output: Comprehensive repository migration plan with checkpoints
 
 **Success Criteria**:
 
-- [ ] Proto definitions build and generate code
-- [ ] gRPC-Gateway routes REST to gRPC successfully
-- [ ] All repos can generate client code from protos
+- [ ] All repositories have detailed PLAN.md files
+- [ ] Epic coordination infrastructure operational
+- [ ] Git worktrees created for parallel development
+- [ ] Team assignments and responsibilities documented
 
 **Dependencies**: None (foundation work)
 
-### Phase 2: Authentication Service (Weeks 3-4)
+### Phase 2: Critical Path Implementation (Weeks 2-4)
 
-**Goal**: Migrate auth service as it's a dependency for all others
+**Goal**: Implement changes in dependency-critical services first
 
-**Repositories**: `auth-service`, `shared-protos`
+**Coordination Strategy**: Sequential implementation respecting dependencies
 
-**Tasks**:
+**Critical Path Analysis**:
 
-- [ ] Design auth service gRPC API
-- [ ] Implement gRPC server alongside existing REST API
-- [ ] Create gRPC client SDK for other services
-- [ ] Deploy with feature flag for gradual rollout
+```bash
+# Identify critical path through dependency analysis
+echo "🎯 Critical path services (implement first):"
+jq -r '.criticalPath[]?' /tmp/epic-session-$SESSION_ID.json 2>/dev/null || echo "  - Auto-detecting from dependencies..."
+```
+
+**Parallel Implementation Workflow**:
+
+FOR EACH critical_service IN critical_path:
+
+- **Implementation Team {service}**: Dedicated git worktree and development team
+  - Repository: `../epic-{service}-$SESSION_ID`
+  - Branch: `epic/$EPIC_ID`
+  - Lead: Assigned team member
+  - Focus: Core migration with comprehensive testing
+
+**Tasks (Per Service)**:
+
+- [ ] Create dedicated worktree: `git worktree add ../epic-{service}-$SESSION_ID epic/$EPIC_ID`
+- [ ] Follow repository-specific PLAN.md implementation steps
+- [ ] Implement with feature flags for gradual rollout
+- [ ] Create comprehensive test suite (unit, integration, e2e)
 - [ ] Performance testing and optimization
+- [ ] Documentation and runbook updates
 
 **Success Criteria**:
 
-- [ ] Auth gRPC API handles 100% production traffic
-- [ ] Client SDK integrated in at least 2 downstream services
-- [ ] Performance metrics meet or exceed REST baseline
+- [ ] All critical path services successfully migrated
+- [ ] Feature flags enable safe traffic migration
+- [ ] Performance metrics meet baseline requirements
+- [ ] Zero production incidents during implementation
 
 **Dependencies**: Phase 1 completion
 
-### Phase 3: Core Services Migration (Weeks 5-8)
+### Phase 3: Parallel Service Migration (Weeks 5-8)
 
-**Goal**: Migrate user, payment, and notification services in parallel
+**Goal**: Migrate remaining services using true parallel execution
 
-**Repositories**: `user-service`, `payment-service`, `notification-service`
+**Coordination Strategy**: Maximum parallelism with git worktree isolation
 
-**Parallel Work Streams**:
+**Parallel Worktree Architecture**:
 
-#### Stream A: User Service (Lead: @alice)
-
-- [ ] Design user management gRPC API
-- [ ] Implement bidirectional streaming for real-time updates
-- [ ] Migrate database operations to use gRPC transactions
-- [ ] Update frontend to use gRPC-Web
-
-#### Stream B: Payment Service (Lead: @bob)
-
-- [ ] Design payment processing gRPC API
-- [ ] Implement secure payment streaming with deadlines
-- [ ] Integrate with external payment gateways via gRPC
-- [ ] Implement idempotency and retry mechanisms
-
-#### Stream C: Notification Service (Lead: @charlie)
-
-- [ ] Design real-time notification streaming API
-- [ ] Implement server-side streaming for live updates
-- [ ] Migrate WebSocket connections to gRPC streaming
-- [ ] Performance test high-throughput scenarios
-
-**Coordination Points**:
-
-- Week 6: Integration testing between all three services
-- Week 7: End-to-end testing with auth service
-- Week 8: Production rollout with monitoring
-
-### Phase 4: Supporting Services (Weeks 9-11)
-
-**Goal**: Migrate remaining services that depend on core services
-
-**Repositories**: `analytics-service`, `audit-service`, `rate-limiter`, `config-service`
-
-**Batch Migration Strategy**:
-
-- Group services by criticality and dependencies
-- Migrate 2 services per week with overlapping rollouts
-- Focus on services with high inter-service communication
-
-### Phase 5: Cleanup and Optimization (Week 12)
-
-**Goal**: Remove REST endpoints and optimize gRPC performance
-
-**Tasks**:
-
-- [ ] Remove deprecated REST endpoints
-- [ ] Optimize proto definitions for performance
-- [ ] Implement advanced gRPC features (compression, connection pooling)
-- [ ] Update documentation and runbooks
-- [ ] Conduct post-migration performance analysis
-
-## Risk Mitigation
-
-### High-Risk Items
-
-1. **Data Consistency**: During dual-write period
-   - **Mitigation**: Implement transaction coordination
-   - **Rollback**: Keep REST APIs until data consistency verified
-
-2. **Performance Regression**: gRPC overhead
-   - **Mitigation**: Extensive performance testing
-   - **Rollback**: Feature flags for instant REST fallback
-
-3. **Client Breaking Changes**: API compatibility
-   - **Mitigation**: gRPC-Gateway maintains REST compatibility
-   - **Rollback**: Version all APIs, maintain backward compatibility
-
-### Rollback Strategy
-
-- Phase-level rollback capability
-- Feature flags for instant traffic switching
-- Database migration rollback scripts
-- Automated rollback triggers based on error rates
-
-## Resource Requirements
-
-### Team Allocation
-
-- **Tech Lead**: Epic coordination and architecture (@dave)
-- **Backend Engineers**: Service migrations (6 engineers)
-- **DevOps Engineer**: Infrastructure and deployment (@eve)
-- **QA Engineer**: Testing strategy and automation (@frank)
-
-### Infrastructure
-
-- Additional staging environments for parallel testing
-- Performance testing infrastructure
-- Enhanced monitoring and alerting
-- Proto registry and code generation pipeline
-
-## Communication Plan
-
-### Weekly Sync
-
-- **When**: Fridays 10 AM PST
-- **Duration**: 1 hour
-- **Attendees**: All epic contributors
-- **Format**: Progress review, blocker resolution, next week planning
-
-### Status Updates
-
-- Daily updates in #epic-grpc-migration Slack channel
-- Weekly progress reports to stakeholders
-- Bi-weekly demo sessions with users/customers
-
-### Documentation
-
-- Epic progress tracked in this document
-- Technical decisions recorded in ADR format
-- Service-specific migration guides in each repository
-
-## Dependencies and Blockers
-
-### External Dependencies
-
-- [ ] Legal approval for new proto license terms
-- [ ] Security review of gRPC implementation
-- [ ] Customer communication for API changes
-
-### Cross-Team Dependencies
-
-- [ ] Frontend team: gRPC-Web implementation
-- [ ] Data team: Analytics pipeline updates
-- [ ] Support team: New debugging procedures
-
-## Success Metrics
-
-### Performance Targets
-
-- 30% improvement in p95 latency
-- 20% reduction in bandwidth usage
-- 50% reduction in serialization overhead
-
-### Quality Targets
-
-- Zero production incidents during migration
-- 100% test coverage for new gRPC endpoints
-- Complete documentation for all APIs
-
-### Business Targets
-
-- No customer-facing API breaking changes
-- Improved developer experience for API consumers
-- Foundation for future streaming features
+```bash
+# Create isolated worktrees for each service team
+FOR service IN remaining_services:
+  git worktree add ../epic-$service-$SESSION_ID epic/$EPIC_ID-$service
+  echo "🌿 Worktree created: ../epic-$service-$SESSION_ID"
+done
 ```
 
-#### 3. Repository-Specific Plan Generation
+**Sub-Agent Service Migration Coordination**:
 
-For each affected repository, generates tailored `PLAN.md` files:
+LAUNCH parallel implementation sub-agents:
 
-**Example Service Plan:**
+- **Agent {Service A}**: Complete service migration in dedicated worktree
+  - Worktree: `../epic-service-a-$SESSION_ID`
+  - Focus: Follow PLAN.md, implement tests, performance optimization
+  - Coordination: Update shared status in `/tmp/epic-coordination-$SESSION_ID.json`
 
-```markdown
-# User Service gRPC Migration Plan
+- **Agent {Service B}**: Complete service migration in dedicated worktree
+  - Worktree: `../epic-service-b-$SESSION_ID`
+  - Focus: Follow PLAN.md, implement tests, performance optimization
+  - Coordination: Update shared status in `/tmp/epic-coordination-$SESSION_ID.json`
 
-## Service Overview
+- **Agent {Service C}**: Complete service migration in dedicated worktree
+  - Worktree: `../epic-service-c-$SESSION_ID`
+  - Focus: Follow PLAN.md, implement tests, performance optimization
+  - Coordination: Update shared status in `/tmp/epic-coordination-$SESSION_ID.json`
 
-- **Current State**: REST API with Express.js (Node.js)
-- **Target State**: gRPC API with Connect-Node
-- **Dependencies**: auth-service (gRPC), postgres-db
-- **Downstream Consumers**: frontend-app, mobile-app, analytics-service
+**Coordination Checkpoints**:
 
-## Migration Steps
+- Week 6: All services complete individual implementation
+- Week 7: Cross-service integration testing
+- Week 8: Coordinated production rollout with monitoring
 
-### Step 1: Proto Definition
+### Phase 4: Supporting Services & Integration (Weeks 9-11)
 
-- [ ] Design user.proto with all current REST endpoints
-- [ ] Add streaming endpoints for real-time user updates
-- [ ] Define error codes and status mappings
-- [ ] Generate TypeScript client code
+**Goal**: Complete remaining services and comprehensive integration testing
 
-### Step 2: Dual Implementation
+**Batch Processing with Parallel Execution**:
 
-- [ ] Implement gRPC server alongside REST
-- [ ] Share business logic between REST and gRPC handlers
-- [ ] Add gRPC middleware (auth, logging, metrics)
-- [ ] Create integration tests for both APIs
-
-### Step 3: Client Migration
-
-- [ ] Update frontend to use gRPC-Web
-- [ ] Migrate analytics-service to use gRPC client
-- [ ] Update mobile apps to use gRPC (where supported)
-- [ ] Implement fallback mechanisms
-
-### Step 4: Traffic Migration
-
-- [ ] Deploy with feature flag (0% gRPC traffic)
-- [ ] Gradually increase gRPC traffic (1%, 5%, 25%, 50%, 100%)
-- [ ] Monitor performance and error rates
-- [ ] Rollback capability at each step
-
-### Step 5: Cleanup
-
-- [ ] Remove REST endpoints
-- [ ] Update documentation
-- [ ] Performance optimization
+```bash
+# Group supporting services by dependency clusters
+echo "📦 Supporting service migration batches:"
+jq -r '.supportingServices[]?' /tmp/epic-session-$SESSION_ID.json 2>/dev/null || echo "  - Auto-detecting supporting services..."
 ```
 
-#### 4. Cross-Repository Coordination
+**Parallel Batch Migration Strategy**:
 
-Manages complex dependencies and coordination between teams:
+FOR EACH service_batch IN supporting_service_batches:
+LAUNCH parallel sub-agents for batch processing:
 
-**Coordination File (`/tmp/epic-coordination.json`):**
-`json\n{\n  \"epic_id\": \"grpc-migration-2024\",\n  \"status\": \"in_progress\",\n  \"current_phase\": \"phase_2\",\n  \"repositories\": {\n    \"auth-service\": {\n      \"status\": \"completed\",\n      \"branch\": \"epic/grpc-migration\",\n      \"pr\": \"https://github.com/org/auth-service/pull/42\",\n      \"lead\": \"@alice\",\n      \"completion_date\": \"2024-06-15\"\n    },\n    \"user-service\": {\n      \"status\": \"in_progress\", \n      \"branch\": \"epic/grpc-migration\",\n      \"progress\": 65,\n      \"lead\": \"@bob\",\n      \"blockers\": [\"waiting for auth-service deployment\"]\n    },\n    \"payment-service\": {\n      \"status\": \"pending\",\n      \"dependencies\": [\"user-service\"],\n      \"lead\": \"@charlie\"\n    }\n  },\n  \"milestones\": {\n    \"phase_1_complete\": \"2024-06-01\",\n    \"phase_2_complete\": \"2024-06-15\",\n    \"phase_3_target\": \"2024-07-15\"\n  },\n  \"risks\": [\n    {\n      \"description\": \"Payment service integration complexity\",\n      \"probability\": \"medium\",\n      \"impact\": \"high\",\n      \"mitigation\": \"Additional testing environment allocated\"\n    }\n  ]\n}\n`\n\n#### 5. Orchestration and Automation\nProvides master scripts and coordination commands:\n\n**Epic Management Script:**\n`bash\n#!/bin/bash\n# epic-orchestrator.sh\n\nEPIC_ID=\"grpc-migration-2024\"\nCOORD_FILE=\"/tmp/epic-coordination.json\"\n\ncase \"$1\" in\n  \"status\")\n    echo \"Epic Status: $(jq -r '.status' $COORD_FILE)\"\n    echo \"Current Phase: $(jq -r '.current_phase' $COORD_FILE)\"\n    jq -r '.repositories | to_entries[] | \"\\(.key): \\(.value.status)\"' $COORD_FILE\n    ;;\n    \n  \"start-phase\")\n    PHASE=$2\n    echo \"Starting Phase $PHASE\"\n    \n    # Get repositories for this phase\n    REPOS=$(jq -r '.phases[\"'$PHASE'\"].repositories[]' epic-plan.json)\n    \n    for repo in $REPOS; do\n      echo \"Setting up $repo...\"\n      cd ../$repo\n      git checkout -b epic/$EPIC_ID\n      /claude plan --epic-id $EPIC_ID\n      cd -\n    done\n    ;;\n    \n  \"check-dependencies\")\n    # Verify all dependencies are completed before starting next phase\n    jq -r '.repositories | to_entries[] | select(.value.status != \"completed\") | .key' $COORD_FILE\n    ;;\n    \n  \"create-prs\")\n    # Create PRs for all repositories in current phase\n    CURRENT_PHASE=$(jq -r '.current_phase' $COORD_FILE)\n    REPOS=$(jq -r '.phases[\"'$CURRENT_PHASE'\"].repositories[]' epic-plan.json)\n    \n    for repo in $REPOS; do\n      cd ../$repo\n      /claude pr --epic-id $EPIC_ID\n      cd -\n    done\n    ;;\nesac\n`\n\n### 6. Progress Tracking and Reporting\nGenerates comprehensive progress reports:\n\n**Epic Dashboard (`epic-dashboard.md`):**\n`markdown\n# Epic Progress Dashboard\n\n## Overall Progress: 45% Complete\n\n### Phase Status\n- ✅ Phase 1: Foundation (100% - Completed)\n- 🟡 Phase 2: Authentication Service (75% - In Progress)\n- ⏳ Phase 3: Core Services (0% - Pending)\n- ⏳ Phase 4: Supporting Services (0% - Pending)\n- ⏳ Phase 5: Cleanup (0% - Pending)\n\n### Repository Status\n| Repository | Status | Progress | Lead | PR | Notes |\n|------------|--------|----------|------|-------|-------|\n| shared-protos | ✅ Complete | 100% | @alice | [#12](link) | Proto registry live |\n| auth-service | 🟡 In Progress | 85% | @bob | [#34](link) | gRPC server deployed |\n| user-service | ⏳ Blocked | 0% | @charlie | - | Waiting for auth |\n| payment-service | ⏳ Not Started | 0% | @dave | - | Scheduled Week 5 |\n\n### Blockers\n- **Auth Service**: Performance testing taking longer than expected\n- **Infrastructure**: Additional staging environment approval pending\n\n### Risks\n- 🟡 **Medium Risk**: Timeline slippage due to auth service complexity\n- 🟢 **Low Risk**: Team availability during summer vacation period\n\n### Next Actions\n- Complete auth service performance optimization (Due: Friday)\n- Begin user service proto design (Starting: Monday)\n- Schedule infrastructure capacity planning meeting\n`\n\n## Examples\n\n### Start a new epic:\n`\n/epic \"Migrate all services from REST to gRPC\"\n`\n\n### Check epic status:\n`\n/epic status\n`\n\n### Continue epic work:\n`\n/epic continue\n`\n\n### Emergency rollback:\n`\n/epic rollback --to-phase 1\n`\n\n## Advanced Features\n\n### Git Worktree Integration\nAutomatically manages separate working directories:\n`bash\n# Creates parallel working environments\ngit worktree add ../auth-service-epic epic/grpc-migration\ngit worktree add ../user-service-epic epic/grpc-migration\ngit worktree add ../payment-service-epic epic/grpc-migration\n`\n\n### Dependency Graph Visualization\nGenerates Mermaid diagrams of epic dependencies:\n`mermaid\ngraph TD\n    A[shared-protos] --> B[auth-service]\n    B --> C[user-service]\n    B --> D[payment-service]\n    C --> E[analytics-service]\n    D --> E\n    C --> F[notification-service]\n`\n\n### Automated Testing Coordination\nCoordinates testing across multiple repositories:\n`yaml\n# .github/workflows/epic-integration-test.yml\nname: Epic Integration Test\n\non:\n  workflow_dispatch:\n    inputs:\n      epic_id:\n        description: 'Epic ID'\n        required: true\n\njobs:\n  test-epic:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        service: [auth, user, payment]\n    \n    steps:\n    - name: Check out epic branches\n      run: |\n        git clone --branch epic/${{ github.event.inputs.epic_id }} \\\n          https://github.com/org/${{ matrix.service }}-service.git\n    \n    - name: Run integration tests\n      run: |\n        docker-compose -f epic-test-compose.yml up --abort-on-container-exit\n`\n\n## Integration with Other Commands\n- Uses `/plan` to generate repository-specific plans\n- Integrates with `/pr` for coordinated pull request creation\n- Combines with `/deploy` for phased deployment strategies\n- Uses `/coordinate` for team synchronization
+- **Batch Implementation Agent**: Migrate service batch in parallel
+  - Focus: 2-3 services per batch, shared dependency optimization
+  - Tools: Git worktrees for isolation, shared coordination state
+  - Output: Completed service migrations with integration testing
+
+**Integration Testing Coordination**:
+
+- **Integration Test Agent**: Comprehensive end-to-end testing
+  - Focus: Cross-service compatibility, performance regression testing
+  - Tools: Docker Compose for local testing, Kubernetes for staging
+  - Output: Integration test results and performance benchmarks
+
+### Phase 5: Cleanup and Epic Consolidation (Week 12)
+
+**Goal**: Finalize epic and consolidate all changes
+
+**Epic Consolidation Strategy**:
+
+```bash
+# Consolidate all worktree changes back to main repositories
+echo "🔄 Consolidating epic changes..."
+FOR worktree IN epic_worktrees:
+  cd $worktree
+  git push origin epic/$EPIC_ID
+  gh pr create --title "Epic: $ARGUMENTS - $service" --body "Epic implementation for $service"
+  cd -
+done
+```
+
+**Final Epic Tasks**:
+
+- [ ] Consolidate all git worktree changes via pull requests
+- [ ] Remove deprecated implementation patterns
+- [ ] Optimize performance across all affected services
+- [ ] Update comprehensive documentation and runbooks
+- [ ] Conduct post-epic performance analysis and retrospective
+- [ ] Clean up epic coordination infrastructure
+- [ ] Archive epic session state and lessons learned
+
+CATCH (epic_implementation_failed):
+
+- LOG comprehensive error details to epic session state
+- TRIGGER automatic rollback procedures for affected services
+- PRESERVE work in progress via git worktrees
+- GENERATE post-mortem analysis and lessons learned
+
+## Risk Mitigation & Rollback Strategy
+
+### High-Risk Items with Automated Handling
+
+1. **Coordination Complexity**: Multiple teams and repositories
+   - **Mitigation**: Git worktrees provide complete isolation
+   - **Rollback**: Each worktree can be rolled back independently
+   - **Automation**: `/tmp/epic-coordination-$SESSION_ID.json` tracks all states
+
+2. **Integration Conflicts**: Cross-service compatibility
+   - **Mitigation**: Comprehensive integration testing in Phase 4
+   - **Rollback**: Feature flags enable instant traffic switching
+   - **Automation**: Automated rollback triggers based on error rates
+
+3. **Performance Regression**: Epic implementation overhead
+   - **Mitigation**: Parallel performance testing throughout implementation
+   - **Rollback**: Git worktrees enable rapid reversion
+   - **Automation**: Performance monitoring with automatic alerts
+
+### Epic Rollback Coordination
+
+```bash
+# Epic-wide rollback procedure
+echo "🚨 Initiating epic rollback..."
+echo "Rollback target: $1" # phase number or 'full'
+
+# Rollback all worktrees to specified checkpoint
+FOR worktree IN $(git worktree list | grep epic-$SESSION_ID | cut -f1 -d' '):
+  cd $worktree
+  git reset --hard epic-checkpoint-$1
+  cd -
+done
+
+# Update epic coordination state
+jq '.status = "rollback" | .rollbackTarget = "'$1'"' /tmp/epic-coordination-$SESSION_ID.json > /tmp/epic-coordination-$SESSION_ID.tmp
+mv /tmp/epic-coordination-$SESSION_ID.tmp /tmp/epic-coordination-$SESSION_ID.json
+```
+
+STEP 4: Resource allocation and team coordination setup
+
+### Git Worktree Team Allocation
+
+```bash
+# Automatic team assignment based on repository analysis
+echo "👥 Team allocation strategy:"
+echo "Epic Coordinator: $(git config user.name)"
+echo "Session ID: $SESSION_ID"
+echo "Affected repositories: $(jq '.affectedRepositories | length' /tmp/epic-session-$SESSION_ID.json)"
+
+# Create team assignment in coordination state
+jq '.teamAllocation = {
+  "epicCoordinator": "'$(git config user.name)'",
+  "sessionId": "'$SESSION_ID'",
+  "worktreeStrategy": "parallel-isolation",
+  "coordinationMethod": "shared-state-files"
+}' /tmp/epic-session-$SESSION_ID.json > /tmp/epic-session-$SESSION_ID.tmp
+mv /tmp/epic-session-$SESSION_ID.tmp /tmp/epic-session-$SESSION_ID.json
+```
+
+### Infrastructure Requirements
+
+- **Git worktrees**: Parallel development isolation for each service
+- **Shared coordination state**: `/tmp/epic-coordination-$SESSION_ID.json`
+- **Performance testing**: Automated benchmarking in each worktree
+- **Monitoring integration**: Real-time epic progress tracking
+
+## Communication & Coordination
+
+### Automated Status Tracking
+
+```bash
+# Real-time epic status command
+/epic status
+# Displays:
+# - Current phase and completion percentage
+# - Worktree status for each service
+# - Integration test results
+# - Performance benchmarks
+# - Risk assessment and blockers
+```
+
+### Shared State Coordination
+
+- **Epic coordination**: `/tmp/epic-coordination-$SESSION_ID.json`
+- **Progress tracking**: Real-time updates from all worktrees
+- **Status reporting**: Automated generation from shared state
+- **Documentation**: Auto-generated from implementation progress
+
+### Git Worktree Communication Pattern
+
+```bash
+# Each worktree updates shared coordination state
+echo "📊 Updating epic coordination state..."
+jq '.repositories["'$CURRENT_SERVICE'"] = {
+  "status": "'$STATUS'",
+  "worktree": "'$PWD'",
+  "progress": '$PROGRESS',
+  "lastUpdate": "'$(gdate -Iseconds)'"
+}' /tmp/epic-coordination-$SESSION_ID.json > /tmp/epic-coordination-$SESSION_ID.tmp
+mv /tmp/epic-coordination-$SESSION_ID.tmp /tmp/epic-coordination-$SESSION_ID.json
+```
+
+STEP 5: Epic execution and coordination management
+
+### Dependency Management
+
+```bash
+# Automated dependency checking
+echo "🔗 Checking epic dependencies..."
+jq -r '.dependencies[]?' /tmp/epic-session-$SESSION_ID.json 2>/dev/null || echo "  - Dependencies auto-detected from repository analysis"
+
+# Cross-service dependency validation
+FOR service IN affected_services:
+  echo "Validating $service dependencies..."
+  # Check if dependent services are ready
+done
+```
+
+### Automated Blocker Detection
+
+```bash
+# Real-time blocker identification
+echo "⚠️ Epic blockers analysis:"
+jq -r '.blockers[]?' /tmp/epic-coordination-$SESSION_ID.json 2>/dev/null || echo "  - No blockers detected"
+
+# Performance regression detection
+echo "📈 Performance regression monitoring active"
+```
+
+## Success Metrics & Validation
+
+### Automated Performance Validation
+
+```bash
+# Epic performance metrics collection
+echo "📊 Epic performance metrics:"
+echo "Baseline metrics: $(jq -r '.performanceBaseline' /tmp/epic-session-$SESSION_ID.json 2>/dev/null || echo 'Collecting...')"
+echo "Current metrics: $(jq -r '.currentPerformance' /tmp/epic-coordination-$SESSION_ID.json 2>/dev/null || echo 'Monitoring...')"
+```
+
+### Quality Assurance Targets
+
+- Zero production incidents during epic implementation
+- 100% test coverage across all affected services
+- Complete documentation auto-generated from implementation
+- Comprehensive performance benchmarking
+
+### Epic Success Validation
+
+```bash
+# Automated success criteria validation
+echo "✅ Epic success validation:"
+echo "Target achieved: $ARGUMENTS"
+echo "All services migrated: $(jq -r '.allServicesMigrated' /tmp/epic-coordination-$SESSION_ID.json)"
+echo "Performance targets met: $(jq -r '.performanceTargetsMet' /tmp/epic-coordination-$SESSION_ID.json)"
+echo "Zero incidents: $(jq -r '.zeroIncidents' /tmp/epic-coordination-$SESSION_ID.json)"
+```
+
+STEP 6: Repository-specific plan generation with sub-agent delegation
+
+LAUNCH parallel sub-agents for repository-specific planning:
+
+FOR EACH repository IN affected_repositories:
+
+- **Repository Planning Agent {repository}**: Generate tailored PLAN.md
+  - Focus: Repository-specific implementation strategy, testing approach, deployment plan
+  - Tools: Read existing code, analyze patterns, create comprehensive PLAN.md
+  - Output: Complete repository migration plan with git worktree integration
+
+**Example Generated Service Plan Template:**
+
+````markdown
+# {Service} Epic Implementation Plan
+
+## Epic Integration
+
+- **Epic Session ID**: $SESSION_ID
+- **Epic Target**: $ARGUMENTS
+- **Service Worktree**: ../epic-{service}-$SESSION_ID
+- **Coordination State**: /tmp/epic-coordination-$SESSION_ID.json
+
+## Implementation Strategy
+
+### STEP 1: Worktree Setup and Isolation
+
+```bash
+# Create dedicated worktree for this service
+git worktree add ../epic-{service}-$SESSION_ID epic/$EPIC_ID-{service}
+cd ../epic-{service}-$SESSION_ID
+
+# Update coordination state
+jq '.repositories["{service}"] = {
+  "status": "worktree-created",
+  "worktree": "'$PWD'",
+  "startTime": "'$(gdate -Iseconds)'"
+}' /tmp/epic-coordination-$SESSION_ID.json > /tmp/epic-coordination-$SESSION_ID.tmp
+```
+````
+
+### STEP 2: Implementation Following Epic Guidelines
+
+- [ ] Implement epic target: $ARGUMENTS
+- [ ] Follow service-specific patterns and requirements
+- [ ] Create comprehensive test suite
+- [ ] Update coordination state after each major step
+
+### STEP 3: Integration with Epic Coordination
+
+- [ ] Regular status updates to shared coordination state
+- [ ] Integration testing with other epic services
+- [ ] Performance validation and benchmarking
+- [ ] Documentation and runbook updates
+
+### STEP 4: Epic Consolidation
+
+- [ ] Create pull request for epic implementation
+- [ ] Coordinate merge with other epic services
+- [ ] Clean up worktree after successful integration
+
+````
+STEP 7: Cross-repository coordination with shared state management
+
+**Epic Coordination State Management:**
+
+```bash
+# Initialize comprehensive coordination state
+echo '{
+  "epicId": "epic-'$SESSION_ID'",
+  "epicTarget": "'$ARGUMENTS'",
+  "status": "in_progress",
+  "currentPhase": "phase_1",
+  "sessionId": "'$SESSION_ID'",
+  "initiatedBy": "'$(git config user.name)'",
+  "startTime": "'$(gdate -Iseconds)'",
+  "repositories": {},
+  "worktrees": {},
+  "milestones": {
+    "phase_1_target": "'$(gdate -d '+1 week' -Iseconds 2>/dev/null || date -d '+1 week' -Iseconds 2>/dev/null || echo 'Week 1')'",
+    "phase_2_target": "'$(gdate -d '+3 weeks' -Iseconds 2>/dev/null || date -d '+3 weeks' -Iseconds 2>/dev/null || echo 'Week 3')'",
+    "epic_completion_target": "'$(gdate -d '+12 weeks' -Iseconds 2>/dev/null || date -d '+12 weeks' -Iseconds 2>/dev/null || echo 'Week 12')'"
+  },
+  "performanceBaseline": {},
+  "risks": [],
+  "blockers": []
+}' > /tmp/epic-coordination-$SESSION_ID.json
+````
+
+**Real-time Coordination Monitoring:**
+
+```bash
+# Epic status command for real-time monitoring
+alias epic-status='jq -r "Epic: \(.epicTarget) | Status: \(.status) | Phase: \(.currentPhase) | Repositories: \(.repositories | length)" /tmp/epic-coordination-$SESSION_ID.json'
+
+# Repository status summary
+alias epic-repos='jq -r ".repositories | to_entries[] | \"\(.key): \(.value.status) (\(.value.progress // 0)%)\"" /tmp/epic-coordination-$SESSION_ID.json'
+```
+
+STEP 8: Epic orchestration and automation with modern tooling
+
+**Epic Management Commands:**
+
+```bash
+# Epic orchestration functions
+epic_status() {
+  echo "📊 Epic Status: $(jq -r '.status' /tmp/epic-coordination-$SESSION_ID.json)"
+  echo "🎯 Current Phase: $(jq -r '.currentPhase' /tmp/epic-coordination-$SESSION_ID.json)"
+  echo "📁 Repositories: $(jq -r '.repositories | length' /tmp/epic-coordination-$SESSION_ID.json)"
+  echo "🌿 Worktrees: $(jq -r '.worktrees | length' /tmp/epic-coordination-$SESSION_ID.json)"
+  
+  echo "\n📋 Repository Status:"
+  jq -r '.repositories | to_entries[] | "  \(.key): \(.value.status)"' /tmp/epic-coordination-$SESSION_ID.json
+}
+
+epic_start_phase() {
+  local PHASE=$1
+  echo "🚀 Starting Epic Phase $PHASE"
+  
+  # Update coordination state
+  jq '.currentPhase = "phase_'$PHASE'" | .phases["phase_'$PHASE'"].startTime = "'$(gdate -Iseconds)'"' \
+    /tmp/epic-coordination-$SESSION_ID.json > /tmp/epic-coordination-$SESSION_ID.tmp
+  mv /tmp/epic-coordination-$SESSION_ID.tmp /tmp/epic-coordination-$SESSION_ID.json
+  
+  # Launch sub-agents for parallel phase execution
+  echo "🔄 Launching parallel sub-agents for phase $PHASE..."
+}
+
+epic_create_worktrees() {
+  echo "🌿 Creating git worktrees for parallel development..."
+  
+  jq -r '.repositories | keys[]' /tmp/epic-coordination-$SESSION_ID.json | while read repo; do
+    local worktree_path="../epic-$repo-$SESSION_ID"
+    git worktree add $worktree_path epic/$SESSION_ID-$repo
+    
+    # Update coordination state with worktree info
+    jq '.worktrees["'$repo'"] = {
+      "path": "'$worktree_path'",
+      "branch": "epic/'$SESSION_ID'-'$repo'",
+      "createdAt": "'$(gdate -Iseconds)'"
+    }' /tmp/epic-coordination-$SESSION_ID.json > /tmp/epic-coordination-$SESSION_ID.tmp
+    mv /tmp/epic-coordination-$SESSION_ID.tmp /tmp/epic-coordination-$SESSION_ID.json
+    
+    echo "  ✅ Created worktree: $worktree_path"
+  done
+}
+
+epic_create_prs() {
+  echo "🔄 Creating pull requests for all epic services..."
+  
+  jq -r '.worktrees | to_entries[]' /tmp/epic-coordination-$SESSION_ID.json | while read worktree_info; do
+    local repo=$(echo $worktree_info | jq -r '.key')
+    local path=$(echo $worktree_info | jq -r '.value.path')
+    
+    cd $path
+    gh pr create --title "Epic: $ARGUMENTS - $repo" --body "$(cat <<'EOF'
+## Epic Implementation
+
+- Epic Session: $SESSION_ID
+- Epic Target: $ARGUMENTS
+- Repository: $repo
+
+## Changes
+
+- Implemented epic target for $repo
+- Following epic coordination strategy
+- Comprehensive testing and validation
+
+## Epic Coordination
+
+- Coordination state: `/tmp/epic-coordination-$SESSION_ID.json`
+- Worktree path: $path
+- Integration tested with other epic services
+EOF
+)"
+    cd -
+  done
+}
+```
+
+STEP 9: Automated progress tracking and epic dashboard generation
+
+**Real-time Epic Dashboard Generation:**
+
+```bash
+# Generate epic dashboard from coordination state
+epic_generate_dashboard() {
+  local epic_target=$(jq -r '.epicTarget' /tmp/epic-coordination-$SESSION_ID.json)
+  local current_phase=$(jq -r '.currentPhase' /tmp/epic-coordination-$SESSION_ID.json)
+  local session_id=$(jq -r '.sessionId' /tmp/epic-coordination-$SESSION_ID.json)
+  
+  cat > epic-dashboard-$SESSION_ID.md <<EOF
+# Epic Progress Dashboard: $epic_target
+
+## Epic Overview
+- **Session ID**: $session_id
+- **Epic Target**: $epic_target
+- **Current Phase**: $current_phase
+- **Started**: $(jq -r '.startTime' /tmp/epic-coordination-$SESSION_ID.json)
+- **Coordinator**: $(jq -r '.initiatedBy' /tmp/epic-coordination-$SESSION_ID.json)
+
+## Repository Status
+$(jq -r '.repositories | to_entries[] | "- **\(.key)**: \(.value.status) (\(.value.progress // 0)%)"' /tmp/epic-coordination-$SESSION_ID.json)
+
+## Worktree Status
+$(jq -r '.worktrees | to_entries[] | "- **\(.key)**: \(.value.path) (\(.value.branch))"' /tmp/epic-coordination-$SESSION_ID.json)
+
+## Current Blockers
+$(jq -r '.blockers[]?' /tmp/epic-coordination-$SESSION_ID.json 2>/dev/null | sed 's/^/- /' || echo "- No blockers detected")
+
+## Performance Metrics
+- **Baseline**: $(jq -r '.performanceBaseline // "Collecting..."' /tmp/epic-coordination-$SESSION_ID.json)
+- **Current**: $(jq -r '.currentPerformance // "Monitoring..."' /tmp/epic-coordination-$SESSION_ID.json)
+
+## Next Actions
+- Continue current phase implementation
+- Monitor worktree progress
+- Update coordination state regularly
+
+---
+*Auto-generated from epic coordination state at $(gdate)*
+EOF
+
+  echo "📊 Epic dashboard generated: epic-dashboard-$SESSION_ID.md"
+}
+```
+
+**Automated Progress Reporting:**
+
+```bash
+# Real-time progress updates
+epic_update_progress() {
+  local repo=$1
+  local status=$2
+  local progress=$3
+  
+  jq '.repositories["'$repo'"].status = "'$status'" |
+      .repositories["'$repo'"].progress = '$progress' |
+      .repositories["'$repo'"].lastUpdate = "'$(gdate -Iseconds)'"' \
+    /tmp/epic-coordination-$SESSION_ID.json > /tmp/epic-coordination-$SESSION_ID.tmp
+  mv /tmp/epic-coordination-$SESSION_ID.tmp /tmp/epic-coordination-$SESSION_ID.json
+  
+  echo "📈 Updated $repo: $status ($progress%)"
+}
+```
+
+FINALLY:
+
+- SAVE epic session state for resumability
+- GENERATE comprehensive epic plan and coordination infrastructure
+- PROVIDE epic management commands for ongoing coordination
+- ENSURE all git worktrees are properly configured for parallel development
+
+## Epic Command Usage Examples
+
+### Start a new epic:
+
+```
+/epic "Migrate all services from REST to gRPC"
+```
+
+### Check epic status:
+
+```
+/epic status
+# Real-time status from coordination state
+```
+
+### Continue epic work:
+
+```
+/epic continue
+# Resumes from saved session state
+```
+
+### Emergency rollback:
+
+```
+/epic rollback --to-phase 1
+# Rolls back all worktrees to specified phase
+```
+
+### Generate epic dashboard:
+
+```
+/epic dashboard
+# Creates epic-dashboard-$SESSION_ID.md
+```
+
+## Advanced Epic Coordination Features
+
+### Automatic Git Worktree Management
+
+```bash
+# Epic automatically creates isolated development environments
+echo "🌿 Creating epic worktree infrastructure..."
+FOR service IN affected_services:
+  git worktree add ../epic-$service-$SESSION_ID epic/$SESSION_ID-$service
+  echo "  ✅ Worktree: ../epic-$service-$SESSION_ID"
+done
+```
+
+### Epic Dependency Graph Generation
+
+```bash
+# Generate dependency visualization
+epic_generate_dependency_graph() {
+  echo "📊 Generating epic dependency graph..."
+  
+  cat > epic-dependencies-$SESSION_ID.mermaid <<EOF
+graph TD
+$(jq -r '.repositories | to_entries[] | "    \(.key)[\(.key)]"' /tmp/epic-coordination-$SESSION_ID.json)
+$(jq -r '.dependencies[]?' /tmp/epic-coordination-$SESSION_ID.json 2>/dev/null | sed 's/^/    /' || echo "    # Dependencies auto-detected")
+EOF
+
+  echo "📈 Dependency graph: epic-dependencies-$SESSION_ID.mermaid"
+}
+```
+
+### Epic Integration Testing Coordination
+
+```bash
+# Coordinated testing across all epic worktrees
+epic_run_integration_tests() {
+  echo "🧪 Running epic integration tests..."
+  
+  # Test each worktree in parallel
+  jq -r '.worktrees | to_entries[]' /tmp/epic-coordination-$SESSION_ID.json | while read worktree_info; do
+    local repo=$(echo $worktree_info | jq -r '.key')
+    local path=$(echo $worktree_info | jq -r '.value.path')
+    
+    (
+      cd $path
+      echo "Testing $repo in worktree $path..."
+      # Run repository-specific tests
+      deno task test 2>/dev/null || npm test 2>/dev/null || cargo test 2>/dev/null || mvn test 2>/dev/null || echo "No test command found for $repo"
+    ) &
+  done
+  
+  wait # Wait for all parallel tests to complete
+  echo "✅ Epic integration testing completed"
+}
+```
+
+### Epic Command Integration
+
+- **Epic Planning**: Uses parallel sub-agents to generate repository-specific PLAN.md files
+- **Epic Coordination**: Integrates with git worktrees for true parallel development
+- **Epic Testing**: Coordinates testing across all affected repositories
+- **Epic Deployment**: Manages phased deployment with rollback capabilities
+- **Epic Monitoring**: Real-time progress tracking and performance monitoring

@@ -1,544 +1,389 @@
-# /docs-add
+---
+allowed-tools: Read, Write, Edit, Bash(fd:*), Bash(rg:*), Bash(jq:*), Bash(gdate:*), WebFetch, Task
+description: Generate comprehensive documentation with intelligent content organization and Docusaurus integration
+---
+
+## Context
+
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Target: $ARGUMENTS
+- Project structure: !`fd . -t d -d 2 | head -10 || echo "No subdirectories found"`
+- Docusaurus indicators: !`fd "docusaurus.config.js" . -d 3 | head -3 || echo "No Docusaurus config found"`
+- Existing docs: !`fd "docs" . -t d -d 2 | head -5 || echo "No docs directories found"`
+- Documentation files: !`fd "\.(md|mdx)$" docs/ 2>/dev/null | wc -l | tr -d ' ' || echo "0"`
+- Sidebar config: !`fd "sidebars.js" . -d 3 | head -1 || echo "No sidebar config found"`
+- Technology stack: !`fd "(package\.json|deno\.json|Cargo\.toml|go\.mod)" . -d 2 | head -3 || echo "Unknown stack"`
+- Git status: !`git status --porcelain docs/ 2>/dev/null | wc -l | tr -d ' ' || echo "0"` docs changes
+
+## Your task
+
+STEP 1: Initialize documentation generation session
+
+- CREATE session state file: `/tmp/docs-add-state-$SESSION_ID.json`
+- SET initial state:
+  ```json
+  {
+    "sessionId": "$SESSION_ID",
+    "timestamp": "ISO_8601_TIMESTAMP",
+    "phase": "initialization",
+    "target_content": "$ARGUMENTS",
+    "project_analysis": {
+      "has_docusaurus": false,
+      "docs_directory": null,
+      "existing_structure": {},
+      "technology_stack": [],
+      "content_type": "unknown"
+    },
+    "generation_plan": {
+      "content_type": null,
+      "placement_strategy": null,
+      "template_selection": null,
+      "sidebar_updates": false
+    },
+    "checkpoints": {},
+    "artifacts": {
+      "generated_files": [],
+      "updated_configs": [],
+      "validation_results": {}
+    }
+  }
+  ```
+- CREATE documentation workspace: `/tmp/docs-add-workspace-$SESSION_ID/`
 
-Adds new documentation pages, sections, or content to an existing Docusaurus site with intelligent content generation and organization.
+STEP 2: Analyze existing documentation structure and requirements
 
-## Usage
+Think deeply about optimal documentation organization strategy based on detected project characteristics and existing structure.
 
-```bash
-/docs-add [$ARGUMENTS]
-```
+TRY:
 
-## Context-Aware Behavior
+- ANALYZE project structure from Context section
+- DETECT documentation framework and existing organization
+- DETERMINE content type from $ARGUMENTS:
 
-The command intelligently analyzes existing documentation structure and determines the best placement and type:
+  IF $ARGUMENTS contains "guide":
+  - SET content_type = "guide"
+  - SET template = "step-by-step-guide"
 
-- **No arguments**: Creates general documentation page with inferred title from current directory
-- **No `/docs` folder**: Suggests running `/docs-init` first
-- **Existing structure**: Analyzes current organization (guides/, api/, tutorials/, etc.)
-- **Smart placement**: Automatically determines appropriate category and location
-- **Content inference**: Detects content type from `$ARGUMENTS` keywords (guide, api, tutorial, diagram, etc.)
-- **Title extraction**: Uses `$ARGUMENTS` as title if no type keyword detected
+  ELSE IF $ARGUMENTS contains "api":
+  - SET content_type = "api"
+  - SET template = "api-reference"
 
-## Description
+  ELSE IF $ARGUMENTS contains "tutorial":
+  - SET content_type = "tutorial"
+  - SET template = "progressive-tutorial"
 
-Creates new documentation content with intelligent structure, examples, and integration into the existing Docusaurus site. The command provides templates and wizards to ensure consistent, high-quality documentation across your project.
+  ELSE IF $ARGUMENTS contains "diagram":
+  - SET content_type = "diagram"
+  - SET template = "mermaid-diagram"
 
-### Content Type Details
+  ELSE IF $ARGUMENTS contains "troubleshooting":
+  - SET content_type = "troubleshooting"
+  - SET template = "problem-solution"
 
-#### 1. Guides (`guide`)
+  ELSE:
+  - SET content_type = "general"
+  - SET template = "basic-documentation"
 
-**Purpose:** How-to documentation that walks users through specific tasks or workflows.
+- UPDATE session state with analysis results
 
-**Generated Structure:**
+CATCH (analysis_failed):
 
-```markdown
-# {TITLE}
+- LOG error details to session state
+- SET content_type = "general" as fallback
+- CONTINUE with basic documentation generation
 
-## Overview
+STEP 3: Determine optimal placement and generation strategy
 
-Brief description of what this guide covers and who it's for.
+Think harder about content organization, cross-referencing, and integration with existing documentation architecture.
 
-## Prerequisites
+IF no docs/ directory exists:
 
-- List of requirements
-- Dependencies needed
-- Prior knowledge assumed
+- RECOMMEND running `/docs-init` first
+- EXIT with setup instructions
 
-## Step-by-Step Instructions
+ELSE:
 
-### Step 1: Initial Setup
+- ANALYZE existing sidebar structure
+- DETERMINE appropriate category placement
+- IDENTIFY cross-reference opportunities
+- PLAN sidebar integration strategy
 
-Detailed instructions with code examples.
+IF content is complex (multiple sections OR >1000 words expected):
 
-### Step 2: Configuration
+- Consider using Task tool for parallel content generation:
+  - **Content Structure Agent**: Outline and organization
+  - **Examples Generator Agent**: Code examples and samples
+  - **Cross-Reference Agent**: Links and related content
+  - **Template Customization Agent**: Project-specific adaptations
 
-Continue with logical progression.
+STEP 4: Generate documentation content using intelligent templates
 
-### Step 3: Verification
+TRY:
 
-How to confirm everything is working.
+CASE content_type:
+WHEN "guide":
 
-## Troubleshooting
+- GENERATE step-by-step guide structure:
+  ```markdown
+  # {TITLE}
 
-Common issues and solutions.
+  ## Overview
 
-## Next Steps
+  Brief description and scope
 
-Links to related documentation or advanced topics.
-```
+  ## Prerequisites
 
-**Example Output:**
+  - Required knowledge
+  - Dependencies needed
 
-````markdown
-# Setting Up Authentication
+  ## Step-by-Step Instructions
 
-## Overview
+  ### Step 1: {Action}
 
-This guide shows how to implement user authentication using JWT tokens in your application.
+  Detailed instructions with examples
 
-## Prerequisites
+  ## Troubleshooting
 
-- Node.js 16+ installed
-- Basic knowledge of Express.js
-- A running database instance
+  Common issues and solutions
 
-## Step 1: Install Dependencies
+  ## Next Steps
 
-```bash
-npm install jsonwebtoken bcryptjs express-rate-limit
-```
-````
+  Related documentation
+  ```
 
-## Step 2: Create Authentication Middleware
+WHEN "api":
 
-```javascript
-const jwt = require("jsonwebtoken");
+- GENERATE API reference structure:
+  ```markdown
+  # {TITLE} API Reference
 
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  ## Overview
 
-  if (token == null) return res.sendStatus(401);
+  API purpose and base URL
 
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-}
-```
+  ## Authentication
 
-````
-#### 2. Reference Documentation (`reference`)
+  Security requirements
 
-**Purpose:** Comprehensive technical documentation for APIs, functions, or system components.
+  ## Endpoints
 
-**Generated Structure:**
-```markdown
-# {TITLE} Reference
+  ### GET /endpoint
 
-## Overview
-Brief description and scope of the reference.
+  - **Description**: Functionality
+  - **Parameters**: Input requirements
+  - **Response**: Output format
+  - **Examples**: Sample requests/responses
 
-## Quick Reference
-Summary table or list of key items.
+  ## Error Handling
 
-## Detailed Documentation
+  Status codes and error responses
+  ```
 
-### Function/Method Name
-- **Description:** What it does
-- **Parameters:** Input parameters with types
-- **Returns:** Return value and type
-- **Examples:** Code examples
-- **See Also:** Related functions or concepts
+WHEN "tutorial":
 
-## Error Codes
-Common errors and their meanings.
+- GENERATE progressive tutorial structure:
+  ```markdown
+  # {TITLE} Tutorial
 
-## Migration Notes
-Changes between versions if applicable.
-````
+  ## What You'll Learn
 
-#### 3. Tutorials (`tutorial`)
+  Learning objectives
 
-**Purpose:** Step-by-step learning experiences that build understanding progressively.
+  ## What You'll Build
 
-**Generated Structure:**
+  End result description
 
-```markdown
-# {TITLE} Tutorial
+  ## Tutorial Steps
 
-## What You'll Learn
+  ### Part 1: Foundation
 
-Clear learning objectives.
+  Basic concepts and setup
 
-## What You'll Build
+  ### Part 2: Implementation
 
-Description of the end result.
+  Core functionality
 
-## Prerequisites
+  ### Part 3: Enhancement
 
-Required knowledge and setup.
+  Advanced features
 
-## Tutorial Steps
+  ## Summary and Next Steps
 
-### Part 1: Foundation
+  Recap and further reading
+  ```
 
-Basic concepts and setup.
+WHEN "diagram":
 
-### Part 2: Core Implementation
+- GENERATE Mermaid diagram structure:
+  ````markdown
+  # {TITLE}
 
-Main functionality development.
+  ## Overview
 
-### Part 3: Advanced Features
+  Context and purpose
 
-Extended capabilities.
+  ```mermaid
+  graph TD
+      A[Component A] --> B[Component B]
+      B --> C[Component C]
+  ```
+  ````
 
-### Part 4: Testing & Deployment
+  ## Components
+  Description of diagram elements
 
-Quality assurance and going live.
+  ## Related Documentation
+  Links to detailed docs
+  ```
+  ```
 
-## Summary
+WHEN "troubleshooting":
 
-Recap of what was accomplished.
+- GENERATE problem-solution structure:
+  ```markdown
+  # {TITLE} Troubleshooting
 
-## Further Reading
+  ## Common Issues
 
-Next steps and advanced topics.
-```
+  ### Issue: {Problem Description}
 
-#### 4. Troubleshooting (`troubleshooting`)
+  **Symptoms**: What users experience
+  **Cause**: Root cause explanation\
+  **Solution**: Step-by-step fix
+  **Prevention**: Avoiding recurrence
 
-**Purpose:** Problem-solving documentation for common issues and error resolution.
+  ## Diagnostic Tools
 
-**Generated Structure:**
+  Investigation commands and techniques
 
-```markdown
-# {TITLE} Troubleshooting
+  ## Getting Help
 
-## Common Issues
+  Escalation procedures
+  ```
 
-### Issue: Error Message or Symptom
+DEFAULT:
 
-**Symptoms:** What the user experiences
-**Cause:** Why this happens
-**Solution:** Step-by-step fix
-**Prevention:** How to avoid in the future
+- GENERATE basic documentation structure with project-appropriate examples
 
-## Diagnostic Tools
+- CUSTOMIZE content with technology-specific examples from detected stack
+- SAVE generated content to workspace
+- UPDATE session state with generation results
 
-Commands and techniques for investigating problems.
+CATCH (content_generation_failed):
 
-## Getting Help
+- LOG error details and attempted template
+- GENERATE minimal fallback content
+- MARK session state with partial completion
 
-When and how to escalate issues.
-```
+STEP 5: Update Docusaurus configuration and sidebar integration
 
-#### 5. Diagram Pages (`diagram`)
+TRY:
 
-**Purpose:** Visual documentation using Mermaid diagrams for architecture, flows, and relationships.
+IF sidebar config exists:
 
-**Mermaid Integration:**
+- READ current sidebars.js configuration
+- DETERMINE appropriate category for new content
+- UPDATE sidebar with new documentation entry
+- MAINTAIN existing organization and ordering
+- ADD cross-references to related existing content
 
-- Automatically configured when Docusaurus is initialized with diagram support
-- Supports all Mermaid diagram types (flowcharts, sequence diagrams, Gantt charts, etc.)
-- Renders directly in documentation without external dependencies
+- VALIDATE sidebar syntax and structure
+- BACKUP original configuration before changes
 
-**Available Templates:**
+CATCH (sidebar_update_failed):
 
-- `architecture` - System architecture diagrams
-- `flow` - Process and workflow diagrams
-- `sequence` - Sequence and interaction diagrams
-- `database` - Database schema and relationships
-- `deployment` - Deployment and infrastructure diagrams
+- LOG configuration errors to session state
+- PROVIDE manual integration instructions
+- SAVE suggested sidebar updates to workspace
 
-**Generated Structure:**
+STEP 6: Content validation and formatting
 
-````markdown
-# {TITLE}
+- RUN content validation checks:
+  - Markdown syntax validation
+  - Internal link verification
+  - Code example syntax checking
+  - Mermaid diagram validation (if applicable)
 
-## Overview
+- FORMAT content according to project standards:
+  - Apply consistent heading structure
+  - Standardize code block languages
+  - Ensure proper cross-reference formatting
 
-Context and purpose of the diagram.
+- CREATE final documentation file in appropriate location
+- UPDATE session state with completion status
 
-```mermaid
-graph TD
-    A[User Request] --> B[Load Balancer]
-    B --> C[Web Server]
-    C --> D[Application Server]
-    D --> E[Database]
-    E --> D
-    D --> C
-    C --> B
-    B --> A
-```
-````
+STEP 7: Session completion and artifact management
 
-## Components
+- FINALIZE session state with generation summary
+- CREATE documentation generation report: `/tmp/docs-add-report-$SESSION_ID.md`
+- LIST generated files and configuration changes
+- PROVIDE post-generation workflow recommendations:
+  - Review and customize generated content
+  - Test documentation in local development server
+  - Validate cross-references and examples
+  - Commit changes following documentation standards
 
-### Component Name
+FINALLY:
 
-Description of each major component shown in the diagram.
+- ARCHIVE session data for reference: `/tmp/docs-add-archive-$SESSION_ID.json`
+- CLEAN UP temporary workspace files
+- LOG completion timestamp and performance metrics
 
-## Data Flow
+## Content Templates Reference
 
-Explanation of how data moves through the system.
+### Available Templates by Type
 
-## Related Documentation
+1. **Guide Templates**: Step-by-step instructions with prerequisites and troubleshooting
+2. **API Reference**: Comprehensive endpoint documentation with examples
+3. **Tutorial Templates**: Progressive learning experiences with clear outcomes
+4. **Diagram Templates**: Mermaid-powered visual documentation
+5. **Troubleshooting**: Problem-solution format with diagnostic guidance
+6. **General Documentation**: Flexible structure for various content types
 
-Links to detailed documentation for each component.
+### Smart Content Enhancement
 
-````
-**Example Mermaid Diagrams:**
+- **Technology Detection**: Automatically includes relevant code examples
+- **Cross-Reference Generation**: Links to related existing documentation
+- **Sidebar Integration**: Maintains logical organization and navigation
+- **Template Customization**: Adapts to project-specific patterns and conventions
 
-Architecture Diagram:
-```mermaid
-graph TB
-    subgraph "Client Layer"
-        Web[Web App]
-        Mobile[Mobile App]
-        CLI[CLI Tool]
-    end
-    
-    subgraph "API Gateway"
-        Gateway[API Gateway]
-        Auth[Authentication]
-        Rate[Rate Limiting]
-    end
-    
-    subgraph "Services"
-        UserSvc[User Service]
-        DataSvc[Data Service]
-        NotifSvc[Notification Service]
-    end
-    
-    subgraph "Data Layer"
-        DB[(Database)]
-        Cache[(Cache)]
-        Queue[(Message Queue)]
-    end
-    
-    Web --> Gateway
-    Mobile --> Gateway
-    CLI --> Gateway
-    
-    Gateway --> Auth
-    Gateway --> Rate
-    Gateway --> UserSvc
-    Gateway --> DataSvc
-    Gateway --> NotifSvc
-    
-    UserSvc --> DB
-    DataSvc --> DB
-    NotifSvc --> Queue
-    UserSvc --> Cache
-````
+### Examples
 
-Sequence Diagram:
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API
-    participant Auth
-    participant DB
-    
-    Client->>API: POST /auth/login
-    API->>Auth: Validate credentials
-    Auth->>DB: Query user
-    DB-->>Auth: User data
-    Auth-->>API: JWT token
-    API-->>Client: 200 OK + token
-```
-
-#### 6. API Documentation (`api`)
-
-**Purpose:** Structured API documentation with endpoints, schemas, and examples.
-
-**Generated Structure:**
-
-```markdown
-# {TITLE} API
-
-## Overview
-
-API purpose and base URL.
-
-## Authentication
-
-How to authenticate requests.
-
-## Endpoints
-
-### GET /endpoint
-
-- **Description:** What this endpoint does
-- **Parameters:** Query and path parameters
-- **Request Example:** Sample request
-- **Response Example:** Sample response
-- **Error Codes:** Possible error responses
-
-## SDKs and Libraries
-
-Available client libraries.
-
-## Rate Limiting
-
-Usage limits and policies.
-```
-
-### Smart Content Integration
-
-**Automatic Sidebar Updates:**
-
-- Detects appropriate category placement
-- Maintains logical ordering
-- Updates `sidebars.js` configuration
-- Preserves existing custom organization
-
-**Cross-Reference Generation:**
-
-- Links to related existing documentation
-- Suggests connections between new and existing content
-- Updates "See Also" sections automatically
-- Maintains documentation graph integrity
-
-**Content Templates:**
-
-- Uses project-specific patterns and styles
-- Maintains consistent formatting and structure
-- Incorporates existing terminology and conventions
-- Adapts to project's documentation standards
-
-### Advanced Features
-
-#### Automatic Enhancement Detection
-
-**Language-Aware Generation:**
-
-- Analyzes project structure to determine primary languages
-- Generates examples in appropriate syntax (TypeScript, Go, Rust, Java)
-- Uses project's existing code patterns and conventions
-- Includes proper imports and dependencies from `$ARGUMENTS` context
-
-**OpenAPI Integration:**
-
-- Automatically detects `openapi.yaml` or `swagger.json` files
-- Generates comprehensive API documentation when "api" in `$ARGUMENTS`
-- Creates request/response examples with proper schemas
-- Includes authentication requirements and error responses
-
-**Mermaid Diagram Support:**
-
-- Automatically detects when "diagram" keyword is in `$ARGUMENTS`
-- Creates appropriate Mermaid syntax based on diagram type
-- Supports flowcharts, sequence diagrams, class diagrams, and more
-- Integrates seamlessly with Docusaurus Mermaid theme
-
-## Examples
-
-### Create documentation with auto-detection:
-
-```bash
-/docs-add
-```
-
-### Create a guide with auto-detected placement:
+**Create guide with auto-placement:**
 
 ```bash
 /docs-add guide Quick Start
 ```
 
-### Add API documentation:
+**Add API documentation:**
 
 ```bash
-/docs-add api REST API
+/docs-add api REST API Reference
 ```
 
-### Create tutorial with smart organization:
+**Generate system diagram:**
 
 ```bash
-/docs-add tutorial Building Your First Widget
+/docs-add diagram System Architecture
 ```
 
-### Add a system diagram:
-
-```bash
-/docs-add diagram System Overview
-```
-
-### Create troubleshooting page:
+**Create troubleshooting guide:**
 
 ```bash
 /docs-add troubleshooting Common Issues
 ```
 
-### Simple title-based creation:
-
-```bash
-/docs-add Getting Started with Authentication
-```
-
-## File Organization
-
-**Generated Files:**
-
-```
-docs/
-├── guides/
-│   └── quick-start-guide.md
-├── reference/
-│   └── rest-api.md
-├── tutorials/
-│   └── building-your-first-widget.md
-├── troubleshooting/
-│   └── common-deployment-issues.md
-├── diagrams/
-│   └── system-overview.md
-└── configuration/
-    └── environment-setup.md
-```
-
-**Sidebar Integration:**
-
-```javascript
-// sidebars.js automatically updated
-module.exports = {
-  docsSidebar: [
-    "intro",
-    {
-      type: "category",
-      label: "Guides",
-      items: ["guides/quick-start-guide"],
-    },
-    {
-      type: "category",
-      label: "API Reference",
-      items: ["reference/rest-api"],
-    },
-    {
-      type: "category",
-      label: "Tutorials",
-      items: ["tutorials/building-your-first-widget"],
-    },
-    // ... other categories
-  ],
-};
-```
-
-## Integration with Other Commands
-
-- Use after `/docs-init` to build out documentation structure
-- Combine with `/docs-update` to refresh auto-generated content
-- Integrate with `/diagram` for standalone diagram creation
-- Use with `/api-docs` for comprehensive API documentation
-
 ## Prerequisites
 
-- Existing `/docs` folder with Docusaurus installation
-- Valid `sidebars.js` configuration file
+- Existing Docusaurus installation with docs/ directory
+- Valid sidebars.js configuration file
 - Write permissions to documentation directory
+- Git repository for change tracking (recommended)
 
-## Post-Creation Workflow
+## Integration
 
-After creating new documentation:
-
-1. **Review and Edit:**
-   - Customize generated content for your specific needs
-   - Add project-specific examples and details
-   - Verify links and cross-references
-
-2. **Preview Changes:**
-   ```bash
-   deno task docs
-   ```
-
-3. **Update Related Documentation:**
-   ```bash
-   /docs-update --sidebar
-   ```
-
-4. **Validate Content:**
-   ```bash
-   /docs-update --validate
-   ```
+- Use after `/docs-init` to build out documentation structure
+- Combine with `/api-docs` for comprehensive API documentation
+- Integrate with project-specific documentation workflows
+- Supports multi-agent coordination for large documentation projects

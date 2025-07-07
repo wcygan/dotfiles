@@ -1,1019 +1,434 @@
-# /data-viz
+---
+allowed-tools: Read, Write, Edit, MultiEdit, Task, Bash(fd:*), Bash(rg:*), Bash(jq:*), Bash(gdate:*), Bash(wc:*)
+description: Generate interactive data visualizations and dashboards with intelligent chart selection and real-time updates
+---
 
-Generate interactive data visualizations and dashboards for $ARGUMENT with intelligent chart selection, real-time updates, and deployment-ready interfaces.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Data files: !`fd "\.(csv|json|xlsx|parquet|tsv|xml)$" --max-depth 3 | head -10 || echo "No data files found"`
+- Database configs: !`fd "(knex|prisma|typeorm|sequelize|deno\.json|package\.json)" --max-depth 2 | head -5 || echo "No database configs found"`
+- API endpoints: !`rg "/(api|data|metrics|analytics)/" --type js --type ts --type go --type rust | head -10 || echo "No API endpoints found"`
+- Technology stack: !`fd "(deno\.json|package\.json|Cargo\.toml|go\.mod)" --max-depth 2 | head -5 || echo "No framework files detected"`
+- Existing dashboards: !`rg "(dashboard|chart|visualization|d3|chartjs)" --type js --type ts | head -5 || echo "No existing dashboards found"`
+- Analytics tools: !`fd "(grafana|kibana|metabase|analytics)" --type d | head -5 || echo "No analytics tools found"`
+- Data volume estimate: !`fd "\.(csv|json|xlsx)$" --max-depth 3 -x wc -l {} \; 2>/dev/null | head -5 || echo "No data volume info"`
 
-```
-/data-viz [data-source]
-/data-viz [csv-file]
-/data-viz [api-endpoint]
-/data-viz
-```
+## Your Task
 
-## Context Detection
+Generate interactive data visualizations and dashboards for: **$ARGUMENTS**
 
-**When no argument provided:**
+STEP 1: Session Initialization and State Management
 
-- Scans project for data sources (CSV, JSON, databases)
-- Detects API endpoints returning data
-- Analyzes existing monitoring/metrics systems
-- Provides interactive data source selection
+- Initialize session state file: /tmp/data-viz-state-$SESSION_ID.json
+- Create temporary workspace: /tmp/data-viz-workspace-$SESSION_ID/
+- Set up analysis tracking and progress monitoring
 
-**When data source provided:**
-
-- Analyzes data structure and types
-- Suggests appropriate visualization types
-- Creates responsive dashboard layouts
-- Configures real-time data updates
-
-**When file provided:**
-
-- Parses CSV, JSON, or Excel files
-- Infers data relationships and patterns
-- Generates static and interactive visualizations
-- Creates data exploration interfaces
-
-## Data Source Detection
-
-**File-based Data Sources:**
-
-```bash
-# Detect data files
-fd "\.(csv|json|xlsx|parquet|tsv)$" --max-depth 3
-
-# Analyze database connections
-rg "(DATABASE_URL|POSTGRES|MYSQL|MONGODB)" --type env
-fd "(knex|prisma|typeorm|sequelize).(js|ts|config)" --max-depth 2
-
-# Check for existing analytics
-rg "(analytics|metrics|dashboard)" --type js --type ts --type py
-fd "(grafana|kibana|metabase)" --type d
-```
-
-**API Data Sources:**
-
-```bash
-# Detect API endpoints with data
-rg "/(api|data|metrics|analytics)/" --type js --type ts --type go --type rust -A 2
-
-# Check for time-series data
-rg "(timestamp|created_at|time|date)" --type js --type ts --type sql
-
-# Identify metrics endpoints
-rg "/(metrics|stats|analytics|dashboard)" --type js --type ts -A 3
+```json
+// /tmp/data-viz-state-$SESSION_ID.json
+{
+  "sessionId": "$SESSION_ID",
+  "timestamp": "ISO_8601_TIMESTAMP",
+  "target": "$ARGUMENTS",
+  "phase": "initialization",
+  "discovery": {
+    "dataFiles": [],
+    "apiEndpoints": [],
+    "databaseSchemas": [],
+    "existingDashboards": []
+  },
+  "analysis": {
+    "dataTypes": {},
+    "chartRecommendations": [],
+    "frameworkChoice": null,
+    "complexity": "simple|moderate|complex"
+  },
+  "generation": {
+    "components": [],
+    "assets": [],
+    "configurations": []
+  },
+  "checkpoints": {
+    "discovery_complete": false,
+    "analysis_complete": false,
+    "generation_complete": false,
+    "validation_complete": false,
+    "deployment_ready": false
+  }
+}
 ```
 
-## Visualization Generation Strategies
+STEP 2: Data Discovery and Schema Analysis
 
-### 1. Data Analysis and Chart Recommendation
+IF $ARGUMENTS provided:
 
-**Automatic Chart Type Selection:**
+- Analyze specified data source (file, URL, or description)
+- Skip comprehensive discovery and focus on target analysis
+  ELSE:
+- Execute comprehensive data source discovery
+
+Think deeply about optimal data discovery strategies and visualization opportunities for this project.
+
+Use parallel sub-agents for comprehensive data discovery:
+
+- **Agent 1**: File Data Discovery and Schema Analysis
+  - Analyze CSV, JSON, Excel files for structure and content
+  - Determine data types, ranges, and relationships
+  - Identify temporal patterns and categorical distributions
+  - Extract sample data for chart recommendations
+
+- **Agent 2**: API Data Discovery and Integration Analysis
+  - Discover REST/GraphQL endpoints returning data
+  - Test endpoint schemas and response formats
+  - Analyze real-time data capabilities and update frequencies
+  - Document authentication and access requirements
+
+- **Agent 3**: Database Schema Analysis
+  - Detect database configurations and connection strings
+  - Analyze table schemas and relationship mappings
+  - Identify time-series tables and aggregation opportunities
+  - Evaluate query performance and optimization needs
+
+- **Agent 4**: Existing Analytics Infrastructure Assessment
+  - Find existing dashboards, charts, and visualization tools
+  - Analyze current visualization libraries and frameworks
+  - Identify integration opportunities and migration paths
+  - Assess team preferences and technical constraints
+
+TRY:
+
+- Execute parallel data discovery across all available sources
+- Consolidate findings into comprehensive data inventory
+- Update state: discovery_complete = true, phase = "analysis"
+  CATCH (no_data_sources_found):
+- Generate sample datasets for demonstration purposes
+- Create mock API endpoints for prototype development
+- Document ideal data source requirements
+- Update state with fallback data generation plan
+
+STEP 3: Intelligent Chart Recommendation and Framework Selection
+
+Think harder about visualization design principles and optimal chart selection strategies for the discovered data patterns.
+
+PROCEDURE analyze_data_characteristics():
+
+- FOR EACH discovered data source:
+  - Classify data types: numerical, categorical, temporal, geographical, hierarchical
+  - Calculate data volumes and update frequencies
+  - Identify key relationships and correlation opportunities
+  - Determine aggregation levels and drill-down possibilities
+
+PROCEDURE recommend_visualizations():
+
+- FOR EACH data characteristic pattern:
+
+  **Temporal Data Patterns**:
+  - IF time_series_data: RECOMMEND line charts, area charts, time heatmaps
+  - IF seasonal_patterns: RECOMMEND calendar heatmaps, cycle plots
+  - IF real_time_streams: RECOMMEND live updating dashboards
+
+  **Categorical Data Patterns**:
+  - IF few_categories (<=10): RECOMMEND bar charts, pie charts, treemaps
+  - IF many_categories (>10): RECOMMEND horizontal bars, word clouds, sunburst
+  - IF hierarchical_categories: RECOMMEND treemaps, sankey diagrams
+
+  **Numerical Data Patterns**:
+  - IF distributions: RECOMMEND histograms, box plots, violin plots
+  - IF correlations: RECOMMEND scatter plots, correlation matrices
+  - IF multi_dimensional: RECOMMEND parallel coordinates, radar charts
+
+  **Geographical Data Patterns**:
+  - IF coordinates: RECOMMEND scatter maps, choropleth maps
+  - IF regions: RECOMMEND filled maps, symbol maps
+  - IF movement: RECOMMEND flow maps, animated paths
+
+PROCEDURE select_optimal_framework():
+
+- Detect project technology stack from context
+- Evaluate framework compatibility and capabilities
+- Consider team expertise and maintenance requirements
+
+CASE technology_stack:
+WHEN "deno/fresh":
+
+- PRIMARY: D3.js + Preact components + Islands architecture
+- FALLBACK: Chart.js + vanilla JavaScript integration
+- FEATURES: SSR visualization, interactive islands, real-time updates
+
+WHEN "react/next":
+
+- PRIMARY: Recharts + Chart.js + D3.js for complex visualizations
+- FALLBACK: Victory charts for lightweight needs
+- FEATURES: Component composition, server-side rendering, TypeScript support
+
+WHEN "vue/nuxt":
+
+- PRIMARY: Vue-ChartJS + Chart.js + D3.js integration
+- FALLBACK: ApexCharts Vue wrapper
+- FEATURES: Reactive data binding, component lifecycle hooks
+
+WHEN "static_site":
+
+- PRIMARY: Chart.js + D3.js + vanilla JavaScript
+- FALLBACK: Plotly.js for scientific visualizations
+- FEATURES: No build dependencies, direct HTML integration
+
+DEFAULT:
+
+- UNIVERSAL: Chart.js as foundation with D3.js for advanced needs
+- APPROACH: Framework-agnostic web components
+- DEPLOYMENT: Static assets with CDN integration
+
+- Update state: analysis_complete = true, phase = "generation"
+
+STEP 4: Dashboard Architecture and Component Generation
+
+Think deeply about dashboard architecture patterns, user experience design, and progressive enhancement strategies.
+
+PROCEDURE design_dashboard_architecture():
+
+- Create responsive grid layout system
+- Design component hierarchy and data flow
+- Plan real-time update mechanisms and state management
+- Implement progressive loading and error boundaries
+
+PROCEDURE generate_core_components():
+
+**1. Data Processing Pipeline**:
 
 ```typescript
-// Intelligent chart type recommendation engine
-interface DataColumn {
-  name: string;
-  type: "categorical" | "numerical" | "temporal" | "boolean";
-  unique_values: number;
-  sample_values: any[];
-  null_percentage: number;
+// Generated data transformation engine
+interface DataProcessor {
+  transform(rawData: any[]): ProcessedData[];
+  aggregate(data: ProcessedData[], method: string): AggregatedData;
+  filter(data: ProcessedData[], criteria: FilterCriteria): ProcessedData[];
 }
 
-interface ChartRecommendation {
+class UniversalDataProcessor implements DataProcessor {
+  transform(rawData: any[]): ProcessedData[] {
+    return rawData.map((row) => ({
+      ...row,
+      timestamp: this.parseTimestamp(row.timestamp || row.date || row.time),
+      numerical: this.extractNumerical(row),
+      categorical: this.extractCategorical(row),
+    }));
+  }
+}
+```
+
+**2. Chart Component Factory**:
+
+```typescript
+// Generated chart component system
+interface ChartComponent {
   type: string;
-  priority: number;
-  columns: string[];
-  description: string;
-  use_case: string;
+  render(container: string, data: any[], options?: any): void;
+  update(newData: any[]): void;
+  destroy(): void;
 }
 
-class ChartRecommendationEngine {
-  analyzeData(data: any[]): DataColumn[] {
-    if (!data.length) return [];
-
-    const columns: DataColumn[] = [];
-    const keys = Object.keys(data[0]);
-
-    for (const key of keys) {
-      const values = data.map((row) => row[key]).filter((v) => v != null);
-      const unique_values = new Set(values).size;
-      const sample_values = values.slice(0, 5);
-
-      let type: DataColumn["type"] = "categorical";
-
-      // Type inference
-      if (values.every((v) => typeof v === "number")) {
-        type = "numerical";
-      } else if (values.every((v) => !isNaN(Date.parse(v)))) {
-        type = "temporal";
-      } else if (values.every((v) => typeof v === "boolean")) {
-        type = "boolean";
-      }
-
-      columns.push({
-        name: key,
-        type,
-        unique_values,
-        sample_values,
-        null_percentage: (data.length - values.length) / data.length,
-      });
-    }
-
-    return columns;
-  }
-
-  recommendCharts(columns: DataColumn[]): ChartRecommendation[] {
-    const recommendations: ChartRecommendation[] = [];
-
-    const numerical = columns.filter((c) => c.type === "numerical");
-    const categorical = columns.filter((c) => c.type === "categorical");
-    const temporal = columns.filter((c) => c.type === "temporal");
-
-    // Time series recommendations
-    if (temporal.length > 0 && numerical.length > 0) {
-      recommendations.push({
-        type: "line",
-        priority: 10,
-        columns: [temporal[0].name, numerical[0].name],
-        description: "Line chart showing trends over time",
-        use_case: "Time series analysis, trend visualization",
-      });
-    }
-
-    // Distribution recommendations
-    if (numerical.length >= 1) {
-      recommendations.push({
-        type: "histogram",
-        priority: 8,
-        columns: [numerical[0].name],
-        description: "Histogram showing data distribution",
-        use_case: "Understanding data distribution and outliers",
-      });
-    }
-
-    // Comparison recommendations
-    if (categorical.length > 0 && numerical.length > 0) {
-      if (categorical[0].unique_values <= 10) {
-        recommendations.push({
-          type: "bar",
-          priority: 9,
-          columns: [categorical[0].name, numerical[0].name],
-          description: "Bar chart comparing categories",
-          use_case: "Comparing values across categories",
-        });
-      }
-    }
-
-    // Correlation recommendations
-    if (numerical.length >= 2) {
-      recommendations.push({
-        type: "scatter",
-        priority: 7,
-        columns: [numerical[0].name, numerical[1].name],
-        description: "Scatter plot showing correlation",
-        use_case: "Exploring relationships between variables",
-      });
-    }
-
-    // Composition recommendations
-    if (categorical.length > 0 && numerical.length > 0) {
-      if (categorical[0].unique_values <= 8) {
-        recommendations.push({
-          type: "pie",
-          priority: 6,
-          columns: [categorical[0].name, numerical[0].name],
-          description: "Pie chart showing composition",
-          use_case: "Understanding proportional relationships",
-        });
-      }
-    }
-
-    return recommendations.sort((a, b) => b.priority - a.priority);
-  }
-}
-```
-
-### 2. D3.js Interactive Visualizations
-
-**Responsive Line Chart with Real-time Updates:**
-
-```typescript
-// Generated D3.js visualization component
-import * as d3 from "d3";
-
-interface DataPoint {
-  timestamp: Date;
-  value: number;
-  category?: string;
-}
-
-class InteractiveLineChart {
-  private svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>;
-  private width: number;
-  private height: number;
-  private margin = { top: 20, right: 80, bottom: 30, left: 50 };
-  private xScale: d3.ScaleTime<number, number>;
-  private yScale: d3.ScaleLinear<number, number>;
-  private line: d3.Line<DataPoint>;
-  private data: DataPoint[] = [];
-
-  constructor(container: string, width: number = 800, height: number = 400) {
-    this.width = width - this.margin.left - this.margin.right;
-    this.height = height - this.margin.top - this.margin.bottom;
-
-    this.svg = d3.select(container)
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height)
-      .append("g")
-      .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
-
-    this.initializeScales();
-    this.initializeAxes();
-    this.initializeInteractions();
-  }
-
-  private initializeScales(): void {
-    this.xScale = d3.scaleTime()
-      .range([0, this.width]);
-
-    this.yScale = d3.scaleLinear()
-      .range([this.height, 0]);
-
-    this.line = d3.line<DataPoint>()
-      .x((d) => this.xScale(d.timestamp))
-      .y((d) => this.yScale(d.value))
-      .curve(d3.curveMonotoneX);
-  }
-
-  private initializeAxes(): void {
-    // X-axis
-    this.svg.append("g")
-      .attr("class", "x-axis")
-      .attr("transform", `translate(0,${this.height})`);
-
-    // Y-axis
-    this.svg.append("g")
-      .attr("class", "y-axis");
-
-    // Grid lines
-    this.svg.append("g")
-      .attr("class", "grid")
-      .attr("transform", `translate(0,${this.height})`)
-      .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3);
-
-    this.svg.append("g")
-      .attr("class", "grid")
-      .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3);
-  }
-
-  private initializeInteractions(): void {
-    // Tooltip
-    const tooltip = d3.select("body")
-      .append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0)
-      .style("position", "absolute")
-      .style("background", "rgba(0, 0, 0, 0.8)")
-      .style("color", "white")
-      .style("padding", "8px")
-      .style("border-radius", "4px")
-      .style("font-size", "12px");
-
-    // Zoom behavior
-    const zoom = d3.zoom<SVGGElement, unknown>()
-      .scaleExtent([1, 10])
-      .on("zoom", (event) => {
-        const newXScale = event.transform.rescaleX(this.xScale);
-        this.updateChart(this.data, newXScale);
-      });
-
-    this.svg.call(zoom);
-
-    // Brush for selection
-    const brush = d3.brushX()
-      .extent([[0, 0], [this.width, this.height]])
-      .on("end", (event) => {
-        if (event.selection) {
-          const [x0, x1] = event.selection.map(this.xScale.invert);
-          this.filterData(x0, x1);
-        }
-      });
-
-    this.svg.append("g")
-      .attr("class", "brush")
-      .call(brush);
-  }
-
-  updateData(newData: DataPoint[]): void {
-    this.data = newData;
-
-    // Update scales
-    this.xScale.domain(d3.extent(newData, (d) => d.timestamp) as [Date, Date]);
-    this.yScale.domain(d3.extent(newData, (d) => d.value) as [number, number]);
-
-    this.updateChart(newData);
-  }
-
-  private updateChart(data: DataPoint[], customXScale?: d3.ScaleTime<number, number>): void {
-    const xScale = customXScale || this.xScale;
-
-    // Update axes
-    this.svg.select(".x-axis")
-      .transition()
-      .duration(750)
-      .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat("%H:%M")));
-
-    this.svg.select(".y-axis")
-      .transition()
-      .duration(750)
-      .call(d3.axisLeft(this.yScale));
-
-    // Update grid
-    this.svg.select(".grid")
-      .selectAll("line")
-      .data(xScale.ticks())
-      .join("line")
-      .attr("x1", (d) => xScale(d))
-      .attr("x2", (d) => xScale(d))
-      .attr("y1", 0)
-      .attr("y2", -this.height);
-
-    // Update line
-    const path = this.svg.selectAll(".line")
-      .data([data]);
-
-    path.enter()
-      .append("path")
-      .attr("class", "line")
-      .style("fill", "none")
-      .style("stroke", "#007bff")
-      .style("stroke-width", 2)
-      .merge(path)
-      .transition()
-      .duration(750)
-      .attr("d", this.line);
-
-    // Update data points
-    const circles = this.svg.selectAll(".dot")
-      .data(data);
-
-    circles.enter()
-      .append("circle")
-      .attr("class", "dot")
-      .style("fill", "#007bff")
-      .merge(circles)
-      .transition()
-      .duration(750)
-      .attr("cx", (d) => xScale(d.timestamp))
-      .attr("cy", (d) => this.yScale(d.value))
-      .attr("r", 3);
-
-    circles.exit().remove();
-  }
-
-  private filterData(startDate: Date, endDate: Date): void {
-    const filteredData = this.data.filter(
-      (d) => d.timestamp >= startDate && d.timestamp <= endDate,
-    );
-    this.updateChart(filteredData);
-  }
-
-  // Real-time data updates
-  startRealTimeUpdates(endpoint: string, interval: number = 5000): void {
-    setInterval(async () => {
-      try {
-        const response = await fetch(endpoint);
-        const newData = await response.json();
-        this.updateData(newData);
-      } catch (error) {
-        console.error("Failed to fetch real-time data:", error);
-      }
-    }, interval);
-  }
-}
-
-// Usage example
-const chart = new InteractiveLineChart("#chart-container");
-chart.updateData(initialData);
-chart.startRealTimeUpdates("/api/metrics/realtime");
-```
-
-### 3. Chart.js Dashboard Components
-
-**Multi-Chart Dashboard:**
-
-```typescript
-// Generated Chart.js dashboard
-import {
-  ArcElement,
-  BarController,
-  BarElement,
-  CategoryScale,
-  Chart,
-  ChartConfiguration,
-  DoughnutController,
-  Legend,
-  LinearScale,
-  LineController,
-  LineElement,
-  PointElement,
-  TimeScale,
-  Title,
-  Tooltip,
-} from "chart.js";
-import "chartjs-adapter-date-fns";
-
-Chart.register(
-  LineController,
-  BarController,
-  DoughnutController,
-  LineElement,
-  BarElement,
-  ArcElement,
-  CategoryScale,
-  LinearScale,
-  TimeScale,
-  PointElement,
-  Tooltip,
-  Legend,
-  Title,
-);
-
-interface DashboardConfig {
-  container: string;
-  title: string;
-  refreshInterval?: number;
-  charts: ChartConfig[];
-}
-
-interface ChartConfig {
-  id: string;
-  type: "line" | "bar" | "doughnut" | "scatter";
-  title: string;
-  dataSource: string;
-  width?: string;
-  height?: string;
-  options?: any;
-}
-
-class DataVisualizationDashboard {
-  private charts: Map<string, Chart> = new Map();
-  private config: DashboardConfig;
-  private refreshTimer?: number;
-
-  constructor(config: DashboardConfig) {
-    this.config = config;
-    this.initializeDashboard();
-
-    if (config.refreshInterval) {
-      this.startAutoRefresh();
-    }
-  }
-
-  private initializeDashboard(): void {
-    const container = document.querySelector(this.config.container);
-    if (!container) return;
-
-    // Create dashboard layout
-    container.innerHTML = `
-      <div class="dashboard-header">
-        <h1>${this.config.title}</h1>
-        <div class="dashboard-controls">
-          <button id="refresh-btn">Refresh</button>
-          <button id="export-btn">Export</button>
-          <select id="time-range">
-            <option value="1h">Last Hour</option>
-            <option value="24h">Last 24 Hours</option>
-            <option value="7d">Last 7 Days</option>
-            <option value="30d">Last 30 Days</option>
-          </select>
-        </div>
-      </div>
-      <div class="dashboard-grid">
-        ${
-      this.config.charts.map((chart) => `
-          <div class="chart-container" style="width: ${chart.width || "50%"}; height: ${
-        chart.height || "400px"
-      }">
-            <h3>${chart.title}</h3>
-            <canvas id="${chart.id}"></canvas>
-          </div>
-        `).join("")
-    }
-      </div>
-    `;
-
-    // Initialize charts
-    this.config.charts.forEach((chartConfig) => {
-      this.createChart(chartConfig);
-    });
-
-    // Add event listeners
-    this.addEventListeners();
-  }
-
-  private createChart(config: ChartConfig): void {
-    const canvas = document.getElementById(config.id) as HTMLCanvasElement;
-    if (!canvas) return;
-
-    const chartConfig: ChartConfiguration = {
-      type: config.type,
-      data: {
-        labels: [],
-        datasets: [],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: config.title,
-          },
-          legend: {
-            display: true,
-            position: "top",
-          },
-          tooltip: {
-            mode: "index",
-            intersect: false,
-            callbacks: {
-              title: (context) => {
-                return context[0].label;
-              },
-              label: (context) => {
-                return `${context.dataset.label}: ${context.formattedValue}`;
-              },
-            },
-          },
-        },
-        scales: this.getScaleConfig(config.type),
-        ...config.options,
-      },
-    };
-
-    const chart = new Chart(canvas, chartConfig);
-    this.charts.set(config.id, chart);
-
-    // Load initial data
-    this.loadChartData(config.id, config.dataSource);
-  }
-
-  private getScaleConfig(type: string): any {
+class ChartFactory {
+  static create(type: string, framework: string): ChartComponent {
     switch (type) {
       case "line":
-        return {
-          x: {
-            type: "time",
-            time: {
-              displayFormats: {
-                minute: "HH:mm",
-                hour: "HH:mm",
-                day: "MMM dd",
-              },
-            },
-          },
-          y: {
-            beginAtZero: true,
-          },
-        };
+        return new LineChartComponent(framework);
       case "bar":
-        return {
-          y: {
-            beginAtZero: true,
-          },
-        };
-      default:
-        return {};
+        return new BarChartComponent(framework);
+      case "scatter":
+        return new ScatterChartComponent(framework);
+        // ... additional chart types
     }
-  }
-
-  private async loadChartData(chartId: string, dataSource: string): Promise<void> {
-    try {
-      const response = await fetch(dataSource);
-      const data = await response.json();
-
-      const chart = this.charts.get(chartId);
-      if (!chart) return;
-
-      // Transform data based on chart type
-      const transformedData = this.transformDataForChart(data, chart.config.type);
-
-      chart.data = transformedData;
-      chart.update();
-    } catch (error) {
-      console.error(`Failed to load data for chart ${chartId}:`, error);
-    }
-  }
-
-  private transformDataForChart(data: any[], chartType: string): any {
-    switch (chartType) {
-      case "line":
-        return {
-          labels: data.map((d) => new Date(d.timestamp)),
-          datasets: [{
-            label: "Value",
-            data: data.map((d) => ({ x: new Date(d.timestamp), y: d.value })),
-            borderColor: "rgb(75, 192, 192)",
-            backgroundColor: "rgba(75, 192, 192, 0.1)",
-            tension: 0.1,
-          }],
-        };
-
-      case "bar":
-        return {
-          labels: data.map((d) => d.category),
-          datasets: [{
-            label: "Count",
-            data: data.map((d) => d.count),
-            backgroundColor: [
-              "rgba(255, 99, 132, 0.8)",
-              "rgba(54, 162, 235, 0.8)",
-              "rgba(255, 205, 86, 0.8)",
-              "rgba(75, 192, 192, 0.8)",
-              "rgba(153, 102, 255, 0.8)",
-            ],
-          }],
-        };
-
-      case "doughnut":
-        return {
-          labels: data.map((d) => d.label),
-          datasets: [{
-            data: data.map((d) => d.value),
-            backgroundColor: [
-              "#FF6384",
-              "#36A2EB",
-              "#FFCE56",
-              "#4BC0C0",
-              "#9966FF",
-              "#FF9F40",
-            ],
-          }],
-        };
-
-      default:
-        return { labels: [], datasets: [] };
-    }
-  }
-
-  private addEventListeners(): void {
-    // Refresh button
-    document.getElementById("refresh-btn")?.addEventListener("click", () => {
-      this.refreshAllCharts();
-    });
-
-    // Export button
-    document.getElementById("export-btn")?.addEventListener("click", () => {
-      this.exportDashboard();
-    });
-
-    // Time range selector
-    document.getElementById("time-range")?.addEventListener("change", (e) => {
-      const target = e.target as HTMLSelectElement;
-      this.updateTimeRange(target.value);
-    });
-  }
-
-  private refreshAllCharts(): void {
-    this.config.charts.forEach((chartConfig) => {
-      this.loadChartData(chartConfig.id, chartConfig.dataSource);
-    });
-  }
-
-  private updateTimeRange(range: string): void {
-    // Update data sources with time range parameter
-    this.config.charts.forEach((chartConfig) => {
-      const dataSource = `${chartConfig.dataSource}?range=${range}`;
-      this.loadChartData(chartConfig.id, dataSource);
-    });
-  }
-
-  private exportDashboard(): void {
-    const dashboardElement = document.querySelector(this.config.container);
-    if (!dashboardElement) return;
-
-    // Generate export data
-    const exportData = {
-      title: this.config.title,
-      timestamp: new Date().toISOString(),
-      charts: Array.from(this.charts.entries()).map(([id, chart]) => ({
-        id,
-        type: chart.config.type,
-        data: chart.data,
-      })),
-    };
-
-    // Download as JSON
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `dashboard-export-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private startAutoRefresh(): void {
-    this.refreshTimer = window.setInterval(() => {
-      this.refreshAllCharts();
-    }, this.config.refreshInterval);
-  }
-
-  destroy(): void {
-    if (this.refreshTimer) {
-      clearInterval(this.refreshTimer);
-    }
-
-    this.charts.forEach((chart) => chart.destroy());
-    this.charts.clear();
   }
 }
-
-// Example usage
-const dashboard = new DataVisualizationDashboard({
-  container: "#dashboard",
-  title: "Application Metrics Dashboard",
-  refreshInterval: 30000, // 30 seconds
-  charts: [
-    {
-      id: "response-times",
-      type: "line",
-      title: "Response Times",
-      dataSource: "/api/metrics/response-times",
-      width: "50%",
-      height: "300px",
-    },
-    {
-      id: "error-rates",
-      type: "bar",
-      title: "Error Rates by Endpoint",
-      dataSource: "/api/metrics/errors",
-      width: "50%",
-      height: "300px",
-    },
-    {
-      id: "user-activity",
-      type: "doughnut",
-      title: "User Activity Distribution",
-      dataSource: "/api/metrics/user-activity",
-      width: "100%",
-      height: "400px",
-    },
-  ],
-});
 ```
 
-### 4. Static Site Generation
-
-**Generated Static Dashboard:**
-
-```html
-<!-- Generated static dashboard HTML -->
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Visualization Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-    <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        margin: 0;
-        padding: 20px;
-        background: #f5f5f5;
-      }
-
-      .dashboard-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        padding: 20px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-
-      .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        gap: 20px;
-      }
-
-      .chart-container {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-
-      .chart-container h3 {
-        margin: 0 0 20px 0;
-        color: #333;
-        font-size: 18px;
-      }
-
-      .controls {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-      }
-
-      button {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 4px;
-        background: #007bff;
-        color: white;
-        cursor: pointer;
-        font-size: 14px;
-      }
-
-      button:hover {
-        background: #0056b3;
-      }
-
-      select {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-      }
-
-      .tooltip {
-        position: absolute;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 8px 12px;
-        border-radius: 4px;
-        font-size: 12px;
-        pointer-events: none;
-        z-index: 1000;
-      }
-
-      .loading {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 200px;
-        color: #666;
-      }
-
-      @media (max-width: 768px) {
-        .dashboard-header {
-          flex-direction: column;
-          gap: 20px;
-        }
-
-        .dashboard-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="dashboard">
-      <div class="dashboard-header">
-        <h1>Data Visualization Dashboard</h1>
-        <div class="controls">
-          <button id="refresh-btn">Refresh</button>
-          <button id="export-btn">Export</button>
-          <select id="time-range">
-            <option value="1h">Last Hour</option>
-            <option value="24h">Last 24 Hours</option>
-            <option value="7d">Last 7 Days</option>
-            <option value="30d">Last 30 Days</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="dashboard-grid">
-        <!-- Charts will be dynamically generated here -->
-      </div>
-    </div>
-
-    <script>
-      // Dashboard initialization and management code
-      // (Generated TypeScript/JavaScript code goes here)
-    </script>
-  </body>
-</html>
-```
-
-## Framework Integration
-
-**Deno Fresh Dashboard Route:**
+**3. Real-time Data Integration**:
 
 ```typescript
-// Generated Fresh route for dashboard
-import { Handlers, PageProps } from "$fresh/server.ts";
-import DashboardComponent from "../components/Dashboard.tsx";
+// Generated real-time data system
+class RealTimeDataManager {
+  private websocket?: WebSocket;
+  private pollingInterval?: number;
 
-interface DashboardData {
-  metrics: any[];
-  config: DashboardConfig;
+  startRealTimeUpdates(endpoint: string, updateCallback: (data: any) => void): void {
+    // WebSocket implementation for real-time data
+    // Polling fallback for REST APIs
+    // Error handling and reconnection logic
+  }
 }
+```
 
-export const handler: Handlers<DashboardData> = {
-  async GET(req, ctx) {
-    // Load dashboard configuration
-    const config = await loadDashboardConfig();
+TRY:
 
-    // Fetch initial metrics data
-    const metrics = await Promise.all(
-      config.charts.map((chart) => fetchChartData(chart.dataSource)),
-    );
+- Generate complete dashboard codebase with all components
+- Create responsive CSS framework for cross-device compatibility
+- Implement accessibility features (ARIA labels, keyboard navigation)
+- Add export functionality (PDF, PNG, CSV, JSON)
+- Update state: generation_complete = true
 
-    return ctx.render({ metrics, config });
+CATCH (complex_visualization_requirements):
+
+- Use extended thinking to design sophisticated visualization strategies
+- Break down complex requirements into manageable component hierarchy
+- Implement progressive disclosure and drill-down capabilities
+- Create modular architecture for future extensibility
+
+CATCH (performance_optimization_needed):
+
+- Implement virtual scrolling for large datasets
+- Add data sampling and aggregation strategies
+- Use web workers for heavy data processing
+- Implement lazy loading and progressive rendering
+
+STEP 5: Testing, Validation, and Quality Assurance
+
+PROCEDURE validate_dashboard_functionality():
+
+- Test responsive design across device sizes
+- Validate data accuracy and chart rendering
+- Test real-time updates and error handling
+- Verify accessibility compliance (WCAG 2.1)
+- Performance testing with large datasets
+
+TRY:
+
+- Execute comprehensive testing suite
+- Validate cross-browser compatibility
+- Test data source integrations and error scenarios
+- Verify export functionality and data integrity
+- Update state: validation_complete = true
+
+CATCH (validation_failures):
+
+- Document failing test cases and root causes
+- Implement fixes for critical validation issues
+- Create fallback options for non-critical failures
+- Update testing strategy for edge cases
+
+STEP 6: Deployment Configuration and Documentation
+
+PROCEDURE generate_deployment_assets():
+
+- Create production-ready build configuration
+- Generate CI/CD pipeline for automated updates
+- Set up monitoring and analytics for dashboard usage
+- Create comprehensive documentation and user guides
+
+FOR EACH deployment_target IN ["static", "serverless", "containerized"]:
+
+- Generate appropriate deployment configuration
+- Create environment-specific optimizations
+- Document scaling and maintenance procedures
+- Set up monitoring and alerting systems
+
+TRY:
+
+- Generate complete deployment package
+- Create automated deployment scripts
+- Set up performance monitoring and user analytics
+- Generate comprehensive documentation
+- Update state: deployment_ready = true, phase = "complete"
+
+CATCH (deployment_complexity):
+
+- Provide multiple deployment options
+- Create simplified deployment for basic use cases
+- Document manual deployment procedures
+- Provide troubleshooting guides
+
+STEP 7: Final Report Generation and Session Cleanup
+
+```json
+// /tmp/data-viz-final-report-$SESSION_ID.json
+{
+  "sessionId": "$SESSION_ID",
+  "completionTime": "ISO_8601_TIMESTAMP",
+  "target": "$ARGUMENTS",
+  "summary": {
+    "dataSourcesAnalyzed": "count",
+    "chartsGenerated": "count",
+    "dashboardsCreated": "count",
+    "frameworkSelected": "framework_name",
+    "deploymentReady": "boolean"
   },
-};
-
-export default function DashboardPage({ data }: PageProps<DashboardData>) {
-  return (
-    <div class="min-h-screen bg-gray-100">
-      <DashboardComponent
-        config={data.config}
-        initialData={data.metrics}
-      />
-    </div>
-  );
+  "generated_assets": {
+    "components": [],
+    "stylesheets": [],
+    "configurations": [],
+    "documentation": []
+  },
+  "performance_metrics": {
+    "loadTime": "milliseconds",
+    "renderTime": "milliseconds",
+    "dataProcessingTime": "milliseconds",
+    "memoryUsage": "mb"
+  },
+  "recommendations": {
+    "optimization_opportunities": [],
+    "scaling_considerations": [],
+    "maintenance_schedule": [],
+    "future_enhancements": []
+  }
 }
 ```
 
-## CI/CD Integration
+FINALLY:
 
-**Automated Dashboard Deployment:**
+- Archive session artifacts: /tmp/data-viz-archive-$SESSION_ID/
+- Generate executive summary with key metrics
+- Clean up temporary workspace files
+- Provide next steps and maintenance recommendations
+- Update session state: phase = "archived"
 
-```yaml
-# GitHub Actions for dashboard deployment
-name: Deploy Data Visualization Dashboard
+## Advanced Visualization Patterns
 
-on:
-  push:
-    branches: [main]
-    paths: ["data/**", "dashboards/**"]
+### For Complex Data Relationships:
 
-jobs:
-  build-dashboard:
-    runs-on: ubuntu-latest
+- **Network Visualizations**: Node-link diagrams, force-directed layouts
+- **Hierarchical Data**: Treemaps, sunburst charts, icicle plots
+- **Multi-dimensional Analysis**: Parallel coordinates, radar charts, small multiples
 
-    steps:
-      - uses: actions/checkout@v4
+### For Real-time Monitoring:
 
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.x
+- **Live Dashboards**: WebSocket integration, streaming data processing
+- **Alert Visualizations**: Threshold monitoring, anomaly detection
+- **Historical Comparisons**: Time-shifted overlays, period-over-period analysis
 
-      - name: Process data sources
-        run: |
-          deno run --allow-all scripts/process-data.ts
+### For Interactive Exploration:
 
-      - name: Generate visualizations
-        run: |
-          deno run --allow-all scripts/generate-charts.ts
+- **Drill-down Capabilities**: Progressive disclosure, detail-on-demand
+- **Cross-filtering**: Linked visualizations, brushing and linking
+- **Dynamic Aggregation**: User-controlled grouping and summarization
 
-      - name: Build static dashboard
-        run: |
-          deno run --allow-all scripts/build-dashboard.ts
+## Integration Patterns
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+### Data Source Integration:
 
-      - name: Update dashboard URL in README
-        run: |
-          echo "Dashboard: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> README.md
-```
+- **File-based**: CSV, JSON, Excel parsing with validation
+- **API Integration**: REST, GraphQL, WebSocket real-time feeds
+- **Database Connectivity**: SQL queries, NoSQL aggregations
+- **Cloud Services**: AWS, GCP, Azure data lake integration
 
-## Output
+### Framework-Specific Implementations:
 
-The command generates:
+- **Fresh/Deno**: Islands architecture with SSR visualization
+- **React/Next.js**: Component composition with server-side rendering
+- **Vue/Nuxt**: Reactive data binding with composition API
+- **Static Sites**: CDN-optimized assets with progressive enhancement
 
-1. **Interactive Dashboards**: Responsive web interfaces with real-time updates
-2. **Chart Components**: Reusable visualization components for various data types
-3. **Data Processing**: Scripts for data analysis and transformation
-4. **Static Sites**: Deployment-ready dashboard websites
-5. **API Integration**: Real-time data fetching and updates
-6. **Export Functionality**: Data and visualization export capabilities
+## Session State Schema
 
-## Integration with Other Commands
+**State Files Created:**
 
-- Use with `/api-docs` for API endpoint visualization
-- Combine with `/monitor` for system metrics dashboards
-- Integrate with `/ci-gen` for automated dashboard deployment
-- Follow with `/deploy` for production dashboard hosting
-- Use with `/load-test` for performance metrics visualization
+- `/tmp/data-viz-state-$SESSION_ID.json` - Main session state
+- `/tmp/data-viz-workspace-$SESSION_ID/` - Temporary workspace
+- `/tmp/data-viz-final-report-$SESSION_ID.json` - Completion report
+- `/tmp/data-viz-archive-$SESSION_ID/` - Archived artifacts
 
-The data visualization system automatically detects data sources, recommends appropriate chart types, and generates production-ready dashboards with real-time updates and responsive design.
+**Resumability Features:**
+
+- Checkpoint-based progress tracking
+- Partial generation recovery
+- State validation and consistency checks
+- Cross-session artifact preservation

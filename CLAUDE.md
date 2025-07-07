@@ -57,6 +57,10 @@ deno run --allow-all scripts/pre-commit-check.ts # Pre-commit validation
     - `workflow/` - Workflow management
     - `meta/` - Meta commands and utilities
     - `tool/` - Tool-specific commands
+- `.claude/` - Hidden directory for project-specific Claude Code metadata
+  - `.claude/commands/` - Project-specific slash commands (e.g., `/improve-slash-commands`)
+  - `.claude/settings.local.json` - Local Claude Code settings overrides
+  - This directory contains sensitive or project-specific configurations not meant for distribution
 - `cursor/`, `vscode/`, `zed/` - Editor-specific configurations with keybindings
 - `tools/` - User-installable scripts copied to ~/.tools during installation
 - Shell dotfiles are dynamically generated during installation
@@ -338,6 +342,449 @@ Example output:
 - **File References**: Use `@file/path` to include file contents
 - **Extended Thinking**: Commands can trigger deep analysis with thinking keywords (e.g., think, think deeply, think harder, ultrathink)
 - **Namespacing**: Organize in subdirectories for logical grouping
+
+## Sub-Agent Integration in Slash Commands
+
+Based on insights from Claude Code sub-agent architecture, slash commands can leverage parallel execution for enhanced performance and capabilities.
+
+### When to Use Sub-Agents in Slash Commands
+
+**Ideal Use Cases:**
+
+1. **Large-scale Code Analysis** - Exploring multiple files/directories in parallel
+2. **Independent Research Tasks** - Gathering information from different sources simultaneously
+3. **Multi-aspect Analysis** - Analyzing code quality, security, performance in parallel
+4. **Documentation Generation** - Creating docs for multiple components concurrently
+
+**Not Recommended For:**
+
+1. **Sequential Operations** - Tasks with dependencies between steps
+2. **Simple Single-file Operations** - Overhead outweighs benefits
+3. **State-modifying Operations** - Risk of conflicts with parallel writes
+
+### Sub-Agent Slash Command Template
+
+```yaml
+---
+allowed-tools: Task, Bash(find:*), Bash(rg:*), Read
+description: Analyze codebase architecture using parallel sub-agents
+---
+
+## Context
+
+- Project structure: !`fd . -t d -d 3`
+- File count by type: !`fd . -e js -e ts -e py | wc -l`
+
+## Your task
+
+Analyze this codebase using parallel sub-agents to understand:
+
+1. **Architecture Agent**: Analyze overall project structure and design patterns
+2. **Dependencies Agent**: Map out all dependencies and their relationships  
+3. **Security Agent**: Identify potential security vulnerabilities
+4. **Performance Agent**: Find performance bottlenecks and optimization opportunities
+5. **Test Coverage Agent**: Analyze test coverage and testing patterns
+
+Launch these 5 agents in parallel to explore the codebase. Each agent should:
+- Focus only on their specific domain
+- Create a summary report
+- Identify key findings and recommendations
+
+Synthesize all findings into a comprehensive architecture report.
+```
+
+### Implementation Patterns
+
+**1. Discovery Pattern** - Multiple agents explore different aspects:
+
+```yaml
+## Your task
+
+Use 4 parallel agents to discover:
+  - Agent 1: All API endpoints in the codebase
+  - Agent 2: Database schema and models
+  - Agent 3: Authentication and authorization flows
+  - Agent 4: External service integrations
+```
+
+**2. Analysis Pattern** - Deep dive into specific areas:
+
+```yaml
+## Your task
+
+Analyze the authentication system using 3 parallel agents:
+  - Agent 1: Review security implementation
+  - Agent 2: Check test coverage
+  - Agent 3: Document current flows
+```
+
+**3. Generation Pattern** - Create multiple artifacts:
+
+```yaml
+## Your task
+
+Generate documentation using 5 parallel agents:
+  - Agent 1: API documentation
+  - Agent 2: Component documentation
+  - Agent 3: Configuration guide
+  - Agent 4: Deployment instructions
+  - Agent 5: Troubleshooting guide
+```
+
+### Best Practices for Sub-Agent Commands
+
+1. **Let Claude Code Manage Parallelism**
+   - Don't specify exact parallelism levels
+   - System automatically optimizes based on task complexity
+
+2. **Clear Task Boundaries**
+   - Each sub-agent should have a well-defined, independent scope
+   - Avoid overlapping responsibilities
+
+3. **Token Efficiency**
+   - Be aware that each sub-agent consumes its own token budget
+   - Use for high-value tasks where parallel execution provides significant benefits
+
+4. **Context Preservation**
+   - Main agent synthesizes findings from all sub-agents
+   - Use structured output formats for easier aggregation
+
+5. **Error Handling**
+   - Design tasks to be resilient to partial failures
+   - Main agent should handle missing or incomplete sub-agent results
+
+### Example Sub-Agent Commands
+
+**Code Quality Analysis** (`/analyze-code-quality`):
+
+```yaml
+---
+allowed-tools: Task, Read, Grep, Bash(rg:*)
+description: Comprehensive code quality analysis using parallel agents
+---
+
+## Your task
+
+Perform comprehensive code quality analysis using multiple agents:
+
+1. **Complexity Analysis**: Identify complex functions and modules
+2. **Duplication Detection**: Find duplicate code patterns
+3. **Style Consistency**: Check coding standards adherence
+4. **Documentation Coverage**: Assess documentation completeness
+5. **Dead Code Detection**: Find unused code
+6. **Type Safety**: Analyze type coverage and safety
+
+Each agent works independently. Compile findings into actionable recommendations.
+```
+
+**Migration Planning** (`/plan-migration`):
+
+```yaml
+---
+allowed-tools: Task, Read, Grep
+description: Plan technology migration using parallel analysis
+---
+
+## Your task
+
+Plan migration from $ARGUMENTS using parallel agents to analyze:
+
+1. **Current Implementation**: Map existing usage patterns
+2. **Dependencies**: Identify all dependent code
+3. **Risk Assessment**: Evaluate migration risks
+4. **Migration Strategy**: Design phased approach
+5. **Testing Requirements**: Define test scenarios
+
+Synthesize into a comprehensive migration plan with timeline and risk mitigation.
+```
+
+### Performance Considerations
+
+- **Token Usage**: Sub-agents multiply token consumption
+- **Execution Time**: Parallel execution reduces wall-clock time significantly
+- **Queue Management**: System handles up to 10 parallel tasks, queues additional
+- **Context Windows**: Each sub-agent gets fresh context, enabling larger codebases
+
+### Integration with Existing Features
+
+Sub-agents work seamlessly with other slash command features:
+
+- **Dynamic Context**: Use `!` commands to provide context to all agents
+- **File References**: Share file contents across sub-agents with `@file`
+- **Extended Thinking**: Combine with thinking modes for complex analysis
+- **Arguments**: Pass user input to customize agent behavior
+
+## Prompts as Code: Programming Slash Commands
+
+Based on insights from treating prompts as executable programs, slash commands should be designed as deterministic, reproducible workflows rather than conversational interfaces.
+
+### Core Philosophy
+
+Think of LLMs as "extremely slow, unreliable computers programmed with natural language." This fundamental shift transforms slash commands from "requests" into "programs" with:
+
+- Clear inputs and outputs
+- Defined state management
+- Explicit control flow
+- Error handling capabilities
+
+### Programming Constructs in Slash Commands
+
+**1. Sequential Execution**
+
+```yaml
+## Your task
+STEP 1: Analyze current implementation
+STEP 2: Identify improvement opportunities
+STEP 3: Generate refactoring plan
+STEP 4: Apply changes systematically
+```
+
+**2. Conditional Logic**
+
+```yaml
+## Your task
+IF the project uses TypeScript:
+  - Validate type definitions
+  - Check for any types
+  - Suggest stricter typing
+ELSE IF the project uses JavaScript:
+  - Propose TypeScript migration
+  - Add JSDoc annotations
+  - Create type definition files
+```
+
+**3. Iteration and Loops**
+
+```yaml
+## Your task
+FOR EACH component in the directory:
+  - Analyze complexity
+  - Check test coverage
+  - Identify missing documentation
+  - Generate improvement report
+```
+
+**4. State Management**
+
+```yaml
+## Context
+- Session ID: !`gdate +%s%N`
+- Previous state: @/tmp/analysis-state-$SESSION_ID.json
+- Iteration count: !`jq .iteration < /tmp/state-$SESSION_ID.json`
+
+## Your task
+1. Load current state or initialize
+2. Process next batch of files
+3. Update state with progress
+4. Save checkpoint for resumability
+```
+
+**5. Error Handling**
+
+```yaml
+## Your task
+TRY:
+  - Execute primary analysis
+  - Generate recommendations
+CATCH (missing dependencies):
+  - Document missing requirements
+  - Suggest installation steps
+  - Save partial results
+FINALLY:
+  - Update state file
+  - Report completion status
+```
+
+### Slash Command Programming Patterns
+
+**State Machine Pattern**
+
+```yaml
+---
+allowed-tools: Read, Write, Bash(jq:*), Bash(gdate:*)
+description: Workflow with state transitions
+---
+
+## Context
+- Session ID: !`gdate +%s%N`
+- State file: /tmp/workflow-state-$SESSION_ID.json
+
+## State Definition
+- States: [initializing, analyzing, validating, implementing, complete]
+- Current: !`jq .state < /tmp/workflow-state-$SESSION_ID.json`
+
+## Your task
+CASE current_state:
+  WHEN "initializing":
+    - Set up workspace
+    - Transition to "analyzing"
+  WHEN "analyzing":
+    - Perform analysis
+    - Transition to "validating"
+  WHEN "validating":
+    - AWAIT user confirmation
+    - Transition to "implementing" or "analyzing"
+```
+
+**Pipeline Pattern**
+
+```yaml
+## Pipeline Definition
+Input: $ARGUMENTS
+  |
+  v
+Stage 1: Parse and validate input
+  | Output: validated-input.json
+  v
+Stage 2: Process data
+  | Output: processed-data.json
+  v
+Stage 3: Generate artifacts
+  | Output: final-results/
+```
+
+**Checkpoint Pattern**
+
+```yaml
+## Context
+- Session ID: !`gdate +%s%N`
+
+## Your task
+1. CHECKPOINT: Save current progress to /tmp/checkpoint-$SESSION_ID.json
+2. Execute potentially long operation
+3. IF interrupted:
+   - User can resume from checkpoint
+4. ELSE:
+   - Continue to next phase
+```
+
+### Best Practices for Programmable Commands
+
+**1. Deterministic Behavior**
+
+- Same inputs should produce same outputs
+- Avoid randomness or time-dependent logic
+- Use explicit state files for variability
+
+**2. Minimize Context Window Usage**
+
+- Serialize state to disk between operations
+- Use precise tools (jq, rg) for data extraction
+- Reference files instead of embedding content
+
+**3. Unique Temporary File Names**
+
+- **CRITICAL**: Always use nanosecond precision timestamps to prevent file conflicts
+- **GOOD**: `/tmp/state-$(gdate +%s%N).json` → `/tmp/state-1751703298807183000.json`
+- **BAD**: `/tmp/state.json` (will cause conflicts with concurrent sessions)
+- **Platform Note**: Use `gdate` on macOS (from coreutils), `date` on Linux
+
+```yaml
+## Context
+- Session ID: !`gdate +%s%N`
+- State file: @/tmp/workflow-state-$SESSION_ID.json
+- Checkpoint: @/tmp/checkpoint-$SESSION_ID.json
+
+## Your task
+1. Initialize unique session files
+2. Process data with session isolation
+3. Clean up session-specific files on completion
+```
+
+**4. Human-in-the-Loop Checkpoints**
+
+```yaml
+## Your task
+1. Analyze system
+2. Generate plan
+3. CHECKPOINT: Present plan for approval
+4. IF approved:
+   - Execute plan
+5. ELSE:
+   - Revise based on feedback
+   - GOTO step 3
+```
+
+**5. Modular Design**
+
+```yaml
+## Your task
+CALL analyze_module($ARGUMENTS)
+CALL validate_results()
+CALL generate_report()
+CALL cleanup_temp_files()
+```
+
+### Example: Complex Workflow as Program
+
+```yaml
+---
+allowed-tools: Task, Read, Write, Bash(jq:*), Bash(rg:*), Bash(gdate:*)
+description: Automated refactoring workflow with checkpoints
+---
+
+## Context
+- Session ID: !`gdate +%s%N`
+
+## Program Definition
+INPUT: target_directory = $ARGUMENTS
+STATE_FILE: /tmp/refactor-state-$SESSION_ID.json
+CHECKPOINT_DIR: /tmp/refactor-checkpoints-$SESSION_ID/
+
+## Main Program
+PROCEDURE main():
+  state = load_or_initialize_state()
+  
+  WHILE state.phase != "complete":
+    CASE state.phase:
+      WHEN "scanning":
+        candidates = scan_for_refactoring_targets()
+        state.candidates = candidates
+        state.phase = "planning"
+        save_state(state)
+        
+      WHEN "planning":
+        plan = generate_refactoring_plan(state.candidates)
+        write_file(CHECKPOINT_DIR + "plan.md", plan)
+        PRINT "Review plan at: " + CHECKPOINT_DIR + "plan.md"
+        state.phase = "awaiting_approval"
+        save_state(state)
+        
+      WHEN "awaiting_approval":
+        PRINT "Awaiting user approval. Run with --approve to continue"
+        BREAK
+        
+      WHEN "executing":
+        FOR EACH change IN state.approved_changes:
+          apply_refactoring(change)
+          state.completed.push(change)
+          save_state(state)
+        state.phase = "complete"
+        
+  generate_summary_report()
+  cleanup_temp_files()
+```
+
+### Benefits of Programming Approach
+
+1. **Reproducibility**: Identical execution paths for same inputs
+2. **Resumability**: Interrupted workflows continue from checkpoints
+3. **Debuggability**: Clear execution flow and state transitions
+4. **Composability**: Commands can call other commands as subroutines
+5. **Testability**: Predictable behavior enables testing
+
+### Integration Guidelines
+
+When creating slash commands:
+
+1. Think "program" not "conversation"
+2. Define clear inputs, outputs, and state
+3. Use control flow constructs explicitly
+4. Implement checkpoint/resume capabilities
+5. Handle errors gracefully
+6. Minimize token usage through state serialization
+
+This programming paradigm transforms slash commands from simple automations into robust, production-ready workflows.
 
 ## Parallel Claude Code Sessions with Git Worktrees
 

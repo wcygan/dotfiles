@@ -1,241 +1,436 @@
-Extract and document domain knowledge, business logic, and architectural patterns from $ARGUMENTS.
+---
+allowed-tools: Task, Read, Write, Bash(fd:*), Bash(rg:*), Bash(jq:*), Bash(gdate:*), Bash(eza:*), Bash(bat:*)
+description: Extract comprehensive domain knowledge and architectural patterns using parallel analysis
+---
 
-Steps:
+## Context
 
-1. **Codebase Analysis:**
-   - Scan project structure to understand organization
-   - Identify main modules, packages, and entry points
-   - Map data flow and component relationships
-   - Locate configuration and environment files
+- Session ID: !`gdate +%s%N`
+- Target project: $ARGUMENTS
+- Project structure: !`fd . -t d -d 3 | head -10 || echo "No directories found"`
+- Build system detection: !`fd "(deno\.json|package\.json|Cargo\.toml|go\.mod|pom\.xml|build\.gradle)" . -d 3 | head -5 || echo "No build files detected"`
+- Documentation exists: !`fd "(README|ARCHITECTURE|DESIGN|DOCS)" . -t f -d 2 | head -3 || echo "No docs found"`
+- Code languages: !`fd "\.(rs|go|java|ts|js|py|rb)$" . | head -5 | sed 's/.*\.//' | sort -u | tr '\n' ' ' || echo "No code files"`
+- Repository size: !`eza -la . | head -3 || ls -la . | head -3`
 
-2. **Domain Model Discovery:**
+## Your Task
 
-   **Core Entities and Types:**
-   ```bash
-   # Find domain models and entities
-   rg "struct|class|interface|type.*=" --type rust --type go --type java --type ts
-   rg "enum|const.*=" --type rust --type go --type java --type ts
+STEP 1: Initialize knowledge extraction session with state management
 
-   # Look for data transfer objects
-   rg "DTO|Request|Response|Model|Entity" --type-add 'config:*.{rs,go,java,ts,js}'
-   ```
+- CREATE session state file: `/tmp/knowledge-extract-state-$SESSION_ID.json`
+- INITIALIZE extraction scope and project boundaries
+- DETERMINE primary technology stacks and architectural complexity
+- ASSESS existing documentation completeness and quality gaps
 
-   **Business Logic Patterns:**
-   ```bash
-   # Find service layers and business logic
-   rg "Service|Handler|Controller|Manager|Repository" -A 3 -B 1
-   rg "impl.*for|func.*\(|public.*class" -A 5
+```bash
+echo '{' > /tmp/knowledge-extract-state-$SESSION_ID.json
+echo '  "sessionId": "'$SESSION_ID'",' >> /tmp/knowledge-extract-state-$SESSION_ID.json
+echo '  "timestamp": "'$(gdate -Iseconds 2>/dev/null || date -Iseconds)'",' >> /tmp/knowledge-extract-state-$SESSION_ID.json
+echo '  "project": "'$ARGUMENTS'",' >> /tmp/knowledge-extract-state-$SESSION_ID.json
+echo '  "phase": "initialization",' >> /tmp/knowledge-extract-state-$SESSION_ID.json
+echo '  "completed_phases": [],' >> /tmp/knowledge-extract-state-$SESSION_ID.json
+echo '  "discovered_domains": [],' >> /tmp/knowledge-extract-state-$SESSION_ID.json
+echo '  "architectural_patterns": [],' >> /tmp/knowledge-extract-state-$SESSION_ID.json
+echo '  "knowledge_artifacts": []' >> /tmp/knowledge-extract-state-$SESSION_ID.json
+echo '}' >> /tmp/knowledge-extract-state-$SESSION_ID.json
+```
 
-   # Identify validation rules and constraints
-   rg "validate|verify|check|ensure|require" -A 2 -B 1
-   ```
+STEP 2: Parallel domain discovery using strategic sub-agent delegation
 
-3. **API and Interface Documentation:**
+TRY:
 
-   **REST Endpoints:**
-   ```bash
-   # Find HTTP routes and handlers
-   rg "GET|POST|PUT|DELETE|PATCH" --type rust --type go --type java --type ts
-   rg "Route|Path|Endpoint|@.*Mapping" -A 2 -B 1
+- LAUNCH 8 parallel sub-agents for comprehensive codebase analysis
+- EACH sub-agent focuses on specific architectural aspect
+- COORDINATE findings through session state management
+- SYNTHESIZE results for architectural understanding
 
-   # Look for OpenAPI/Swagger definitions
-   fd "openapi|swagger" --type f
-   rg "openapi|swagger" --type yaml --type json
-   ```
+**Parallel Sub-Agent Knowledge Extraction:**
 
-   **RPC and Internal APIs:**
-   ```bash
-   # Find gRPC/ConnectRPC services (preferred)
-   rg "service|rpc|proto" --type proto
-   fd "*.proto" --type f
+LAUNCH parallel sub-agents for simultaneous domain analysis:
 
-   # Find internal service interfaces
-   rg "trait|interface.*Service|interface.*Handler" -A 5
-   ```
+- **Agent 1: Domain Model Discovery**: Analyze core business entities, data models, and domain types
+  - Focus: struct/class/interface definitions, enums, data transfer objects
+  - Extract: Business terminology, entity relationships, data constraints
+  - Save findings: Domain entities, business rules, validation logic
 
-4. **Data Architecture:**
+- **Agent 2: Service Architecture Analysis**: Map service layers, handlers, and business logic patterns
+  - Focus: Service implementations, controllers, handlers, repositories
+  - Extract: Service boundaries, dependency patterns, integration points
+  - Save findings: Service interfaces, business workflows, architectural layers
 
-   **Database Schema:**
-   ```bash
-   # Find migration files and schema definitions
-   fd "migration|schema" --type f
-   rg "CREATE TABLE|ALTER TABLE|DROP TABLE" --type sql
-   rg "Migration|migration" -A 3 -B 1
+- **Agent 3: API & Interface Documentation**: Discover all external and internal APIs
+  - Focus: REST endpoints, RPC services, GraphQL schemas, OpenAPI specs
+  - Extract: API contracts, request/response patterns, authentication flows
+  - Save findings: Endpoint inventory, API documentation, integration guides
 
-   # Look for ORM models and queries
-   rg "Model|Entity|@Table|@Column" -A 2
-   rg "SELECT|INSERT|UPDATE|DELETE" --type sql --type rust --type go
-   ```
+- **Agent 4: Data Architecture Mapping**: Analyze database schemas, migrations, and data flow
+  - Focus: Migration files, ORM models, SQL queries, data transformations
+  - Extract: Schema evolution, data relationships, query patterns
+  - Save findings: Database design, data flow diagrams, migration strategies
 
-   **Data Flow Patterns:**
-   ```bash
-   # Find data transformation and mapping
-   rg "map|transform|convert|serialize|deserialize" -A 2 -B 1
-   rg "From.*Into|TryFrom|AsRef" --type rust
-   rg "json:|yaml:|toml:" --type rust --type go
-   ```
+- **Agent 5: Business Logic & Workflow Analysis**: Identify state machines, business rules, and processes
+  - Focus: State management, workflow engines, business calculations, validation rules
+  - Extract: Business processes, state transitions, rule engines
+  - Save findings: Workflow documentation, business rule catalog, process maps
 
-5. **Business Rules and Workflows:**
+- **Agent 6: Configuration & Infrastructure Discovery**: Map deployment, configuration, and operational patterns
+  - Focus: Config files, environment variables, deployment manifests, infrastructure as code
+  - Extract: Deployment patterns, configuration management, operational procedures
+  - Save findings: Deployment guides, configuration documentation, operational runbooks
 
-   **State Machines and Workflows:**
-   ```bash
-   # Find state management and transitions
-   rg "State|Status|Phase|Stage" -A 3 -B 1
-   rg "match.*{|switch.*{|if.*state" -A 5
+- **Agent 7: Error Handling & Monitoring Analysis**: Document error patterns, logging, and observability
+  - Focus: Error definitions, logging patterns, metrics, monitoring, alerting
+  - Extract: Error handling strategies, observability patterns, debugging guides
+  - Save findings: Error catalogs, monitoring documentation, troubleshooting guides
 
-   # Look for workflow engines or state machines
-   rg "workflow|state.*machine|transition|step" -A 2
-   ```
+- **Agent 8: Testing & Quality Patterns**: Analyze testing strategies, coverage, and quality patterns
+  - Focus: Test structure, mock patterns, integration tests, quality gates
+  - Extract: Testing methodologies, quality standards, coverage patterns
+  - Save findings: Testing guides, quality documentation, best practices
 
-   **Business Logic Patterns:**
-   ```bash
-   # Find domain-specific calculations and rules
-   rg "calculate|compute|process|apply|execute" -A 3 -B 1
-   rg "business|domain|rule|policy|strategy" -A 2 -B 1
+**Sub-Agent Coordination Protocol:**
 
-   # Look for feature flags and conditional logic
-   rg "feature.*flag|toggle|enable|disable" -A 2
-   ```
+- Each sub-agent executes independently using Task tool
+- Results saved to session state under respective domains
+- Parallel execution provides 6-8x performance improvement
+- Failed agents report gracefully without blocking others
+- Main agent synthesizes findings across all domains
 
-6. **Configuration and Environment:**
+CATCH (analysis_failed):
 
-   **Application Configuration:**
-   ```bash
-   # Find configuration structures and defaults
-   rg "Config|Settings|Options" -A 5 -B 1
-   rg "default|DefaultConfig|default.*=" -A 3
+- LOG error details to session state
+- CONTINUE with available analysis results
+- DOCUMENT gaps and limitations in final report
 
-   # Look for environment variable usage
-   rg "env|ENV|getenv|std::env" -A 1 -B 1
-   fd ".env*" --type f
-   ```
+STEP 3: Architectural synthesis and pattern identification
 
-   **Infrastructure Configuration:**
-   ```bash
-   # Find deployment and infrastructure configs
-   fd "docker|k8s|kubernetes|terraform" --type d
-   fd "Dockerfile|docker-compose|*.yaml|*.yml" --type f
-   rg "image:|port:|volume:|secret:" --type yaml
-   ```
+TRY:
 
-7. **Error Handling and Monitoring:**
+- AGGREGATE findings from all sub-agents
+- IDENTIFY cross-cutting architectural patterns
+- MAP domain relationships and dependencies
+- EXTRACT recurring design patterns and conventions
+- SYNTHESIZE into coherent architectural understanding
 
-   **Error Patterns:**
-   ```bash
-   # Find error definitions and handling
-   rg "Error|Exception|Err|Result" -A 2 -B 1
-   rg "try|catch|unwrap|expect|panic" -A 1 -B 1
+**Pattern Recognition Process:**
 
-   # Look for error codes and messages
-   rg "error.*code|error.*message|status.*code" -A 1
-   ```
+FOR EACH architectural aspect:
 
-   **Logging and Observability:**
-   ```bash
-   # Find logging and metrics
-   rg "log|info|warn|error|debug|trace" -A 1
-   rg "metric|counter|gauge|histogram" -A 1
-   rg "span|trace|opentelemetry" -A 1
-   ```
+```bash
+# Cross-cutting pattern analysis
+echo "Identifying recurring architectural patterns..."
 
-8. **Testing Patterns and Examples:**
+# Service layer patterns
+pattern_count=$(rg "Service|Handler|Controller|Repository" . | wc -l | tr -d ' ')
+echo "Service layer implementations: $pattern_count"
 
-   **Test Structure:**
-   ```bash
-   # Find test patterns and examples
-   fd "test|spec" --type d
-   rg "test|Test|spec|Spec" --type rust --type go --type java --type ts -A 2
+# Domain modeling patterns  
+entity_count=$(rg "struct|class|interface|enum" --type rust --type go --type java --type ts | wc -l | tr -d ' ')
+echo "Domain entities discovered: $entity_count"
 
-   # Look for test data and fixtures
-   fd "fixture|mock|stub|testdata" --type f
-   rg "mock|stub|fake|test.*data" -A 1
-   ```
+# Error handling patterns
+error_count=$(rg "Error|Exception|Result|Option" --type rust --type go --type java --type ts | wc -l | tr -d ' ')
+echo "Error handling patterns: $error_count"
 
-   **Integration Examples:**
-   ```bash
-   # Find integration and end-to-end tests
-   rg "integration|e2e|end.*to.*end" -A 3
-   rg "client|api.*test|http.*test" -A 2
-   ```
+# Update session state with pattern metrics
+jq '.architectural_patterns += [{
+  "serviceLayerCount": '$pattern_count',
+  "domainEntityCount": '$entity_count',
+  "errorHandlingCount": '$error_count',
+  "timestamp": "'$(gdate -Iseconds 2>/dev/null || date -Iseconds)'"
+}]' /tmp/knowledge-extract-state-$SESSION_ID.json > /tmp/temp-state.json
+mv /tmp/temp-state.json /tmp/knowledge-extract-state-$SESSION_ID.json
+```
 
-9. **Documentation Synthesis:**
+**Architectural Understanding Development:**
 
-   **Generate Architecture Overview:**
-   ```markdown
-   # Architecture Overview
+- ANALYZE service decomposition and modularity patterns
+- IDENTIFY data flow and integration architectures
+- MAP component dependencies and coupling patterns
+- EXTRACT configuration and deployment strategies
+- DOCUMENT security and authentication patterns
 
-   ## Core Domains
+STEP 4: Knowledge artifact generation with structured documentation
 
-   - [List main business domains and entities]
+TRY:
 
-   ## Service Architecture
+- SYNTHESIZE all sub-agent findings into comprehensive documentation
+- CREATE structured knowledge artifacts for different audiences
+- GENERATE actionable documentation with examples and usage patterns
+- ESTABLISH knowledge maintenance and update processes
 
-   - [Describe service layers and boundaries]
+**Knowledge Artifact Creation Workflow:**
 
-   ## Data Flow
+FOR EACH documentation artifact:
 
-   - [Document how data moves through the system]
+```bash
+echo "Generating comprehensive knowledge documentation..."
 
-   ## Key Patterns
+# Create documentation directory structure
+mkdir -p docs/extracted-knowledge/{architecture,domain,api,deployment,testing}
 
-   - [Identify recurring design patterns]
-   ```
+# Generate timestamp for artifact tracking
+doc_timestamp=$(gdate -Iseconds 2>/dev/null || date -Iseconds)
 
-   **Create Developer Guide:**
-   ```markdown
-   # Developer Guide
+# Update session state with artifact generation
+jq '.phase = "artifact_generation" | .knowledge_artifacts += [{
+  "type": "documentation_suite",
+  "timestamp": "'$doc_timestamp'",
+  "location": "docs/extracted-knowledge/",
+  "status": "generating"
+}]' /tmp/knowledge-extract-state-$SESSION_ID.json > /tmp/temp-state.json
+mv /tmp/temp-state.json /tmp/knowledge-extract-state-$SESSION_ID.json
+```
 
-   ## Getting Started
+**1. Architecture Overview (docs/extracted-knowledge/architecture/system-overview.md):**
 
-   - [Key entry points and main files]
+```markdown
+# System Architecture Overview
 
-   ## Domain Concepts
+## Executive Summary
 
-   - [Business terminology and concepts]
+- [High-level system purpose and scope]
+- [Key architectural decisions and trade-offs]
+- [Technology stack and infrastructure choices]
 
-   ## Common Operations
+## Core Architectural Patterns
 
-   - [Typical development tasks and workflows]
+- [Service decomposition strategy]
+- [Data architecture and persistence patterns]
+- [Integration and communication patterns]
+- [Security and authentication approaches]
 
-   ## Testing Strategy
+## System Boundaries and Context
 
-   - [How to write and run tests]
-   ```
+- [External dependencies and integrations]
+- [Internal service boundaries and responsibilities]
+- [Data flow and processing pipelines]
 
-10. **Knowledge Artifacts:**
+## Quality Attributes
 
-    **Generate Documentation Files:**
-    - `docs/architecture.md` - High-level system design
-    - `docs/domain-model.md` - Business entities and relationships
-    - `docs/api-reference.md` - API endpoints and usage
-    - `docs/development-guide.md` - Developer workflows and patterns
-    - `docs/deployment.md` - Infrastructure and deployment processes
+- [Performance characteristics and requirements]
+- [Scalability and reliability patterns]
+- [Security and compliance considerations]
+```
 
-    **Create Decision Records:**
-    - Document architectural decisions (ADRs)
-    - Explain technology choices and trade-offs
-    - Record domain modeling decisions
+**2. Domain Model Documentation (docs/extracted-knowledge/domain/business-model.md):**
 
-    **Extract Code Examples:**
-    - Common usage patterns and idioms
-    - Integration examples and recipes
-    - Error handling best practices
+```markdown
+# Business Domain Model
 
-**Output Deliverables:**
+## Core Business Entities
 
-- Comprehensive domain model documentation
-- API reference with examples
-- Architecture diagrams and explanations
-- Developer onboarding guide
-- Business logic and workflow documentation
-- Configuration and deployment guides
-- Testing patterns and examples
-- Troubleshooting and debugging guides
+- [Primary domain objects and their responsibilities]
+- [Entity relationships and dependencies]
+- [Business rules and constraints]
 
-**Follow-up Actions:**
+## Domain Services and Workflows
 
-- Review extracted knowledge with domain experts
-- Update documentation based on feedback
-- Create knowledge sharing sessions
-- Set up documentation maintenance processes
-- Integrate with onboarding workflow (`/project:onboard`)
+- [Business process flows and state machines]
+- [Domain service responsibilities and boundaries]
+- [Business rule implementation patterns]
+
+## Ubiquitous Language
+
+- [Domain terminology and definitions]
+- [Business concepts and their technical representations]
+- [Communication patterns between domains]
+```
+
+**3. API Reference Documentation (docs/extracted-knowledge/api/api-reference.md):**
+
+```markdown
+# API Reference Guide
+
+## REST API Endpoints
+
+- [Complete endpoint inventory with methods and paths]
+- [Request/response schemas and examples]
+- [Authentication and authorization patterns]
+
+## Internal Service APIs
+
+- [Service interface definitions and contracts]
+- [Inter-service communication patterns]
+- [RPC/gRPC service documentation (if applicable)]
+
+## Integration Patterns
+
+- [External API integrations and client patterns]
+- [Event-driven communication and messaging]
+- [Data synchronization and consistency patterns]
+```
+
+**4. Developer Operations Guide (docs/extracted-knowledge/deployment/operations-guide.md):**
+
+```markdown
+# Operations and Deployment Guide
+
+## Development Environment Setup
+
+- [Local development requirements and setup]
+- [Configuration management and environment variables]
+- [Development workflow and debugging approaches]
+
+## Deployment Strategies
+
+- [Infrastructure architecture and deployment patterns]
+- [CI/CD pipeline configuration and processes]
+- [Environment promotion and release procedures]
+
+## Monitoring and Observability
+
+- [Logging patterns and log aggregation]
+- [Metrics collection and alerting]
+- [Distributed tracing and performance monitoring]
+
+## Troubleshooting and Maintenance
+
+- [Common issues and resolution procedures]
+- [Performance tuning and optimization strategies]
+- [Backup and disaster recovery procedures]
+```
+
+**5. Testing and Quality Assurance Guide (docs/extracted-knowledge/testing/testing-strategy.md):**
+
+```markdown
+# Testing Strategy and Quality Patterns
+
+## Testing Architecture
+
+- [Test organization and structure patterns]
+- [Unit testing strategies and frameworks]
+- [Integration testing approaches and tools]
+
+## Quality Assurance Processes
+
+- [Code review and quality gate procedures]
+- [Static analysis and linting configurations]
+- [Performance testing and benchmarking]
+
+## Test Data and Fixtures
+
+- [Test data management and generation]
+- [Mock and stub patterns for external dependencies]
+- [Test environment setup and teardown procedures]
+```
+
+CATCH (documentation_generation_failed):
+
+- LOG specific generation failures to session state
+- CONTINUE with successful artifact generation
+- DOCUMENT incomplete sections for future completion
+- PROVIDE guidance on manual completion steps
+
+STEP 5: Knowledge validation and quality assurance
+
+TRY:
+
+- VALIDATE generated documentation for completeness and accuracy
+- CROSS-REFERENCE findings with actual codebase implementation
+- IDENTIFY knowledge gaps and areas requiring domain expert input
+- ESTABLISH documentation maintenance and update procedures
+
+**Validation Workflow:**
+
+```bash
+echo "Validating extracted knowledge artifacts..."
+
+# Check documentation completeness
+doc_files=$(fd "\.md$" docs/extracted-knowledge | wc -l | tr -d ' ')
+echo "Generated documentation files: $doc_files"
+
+# Validate cross-references and links
+broken_links=$(rg "\[.*\]\(.*\)" docs/extracted-knowledge --type md | wc -l | tr -d ' ')
+echo "Internal references found: $broken_links"
+
+# Update final session state
+jq '.phase = "completed" | .completed_phases += ["initialization", "discovery", "synthesis", "documentation", "validation"] | .knowledge_artifacts[-1].status = "completed"' /tmp/knowledge-extract-state-$SESSION_ID.json > /tmp/temp-state.json
+mv /tmp/temp-state.json /tmp/knowledge-extract-state-$SESSION_ID.json
+```
+
+STEP 6: Generate comprehensive summary and next actions
+
+FINALLY:
+
+- COMPILE comprehensive knowledge extraction summary
+- PROVIDE actionable next steps for knowledge utilization
+- ESTABLISH documentation maintenance and evolution procedures
+- INTEGRATE with existing development and onboarding workflows
+
+**Knowledge Extraction Summary Report:**
+
+```markdown
+# Knowledge Extraction Session Summary
+
+## Session Overview
+
+- **Project**: $ARGUMENTS
+- **Session ID**: $SESSION_ID
+- **Extraction Date**: $(gdate -Iseconds 2>/dev/null || date -Iseconds)
+- **Analysis Scope**: [Comprehensive architectural and domain analysis]
+
+## Discovered Knowledge Assets
+
+- **Architecture Documentation**: System design and component relationships
+- **Domain Model**: Business entities, rules, and workflows
+- **API Reference**: Service interfaces and integration patterns
+- **Operational Guide**: Deployment, monitoring, and maintenance procedures
+- **Testing Strategy**: Quality assurance and testing methodologies
+
+## Key Architectural Insights
+
+- [Primary architectural patterns and design decisions]
+- [Technology stack and infrastructure choices]
+- [Service boundaries and integration strategies]
+- [Data architecture and persistence patterns]
+
+## Recommendations and Next Steps
+
+### Immediate Actions
+
+1. **Review Documentation**: Validate extracted knowledge with domain experts
+2. **Fill Knowledge Gaps**: Identify and document missing domain information
+3. **Integrate with Onboarding**: Use `/onboard` command with generated documentation
+4. **Establish Maintenance**: Set up documentation update processes
+
+### Long-term Knowledge Management
+
+1. **Living Documentation**: Integrate documentation into development workflow
+2. **Knowledge Sharing**: Schedule team knowledge transfer sessions
+3. **Continuous Evolution**: Establish documentation review and update cycles
+4. **Architecture Decision Records**: Document future architectural decisions
+
+## Documentation Artifacts
+
+- `docs/extracted-knowledge/architecture/system-overview.md`
+- `docs/extracted-knowledge/domain/business-model.md`
+- `docs/extracted-knowledge/api/api-reference.md`
+- `docs/extracted-knowledge/deployment/operations-guide.md`
+- `docs/extracted-knowledge/testing/testing-strategy.md`
+
+## Session State
+
+- **Status**: ✅ Completed successfully
+- **Artifacts Generated**: 5 comprehensive documentation files
+- **Knowledge Coverage**: Architecture, Domain, API, Operations, Testing
+- **Quality Assurance**: Validation and cross-referencing completed
+```
+
+**Knowledge Integration Workflow:**
+
+- CONNECT extracted knowledge with existing project documentation
+- PROVIDE integration guidance for development team adoption
+- ESTABLISH feedback loops for continuous knowledge refinement
+- CREATE pathways for knowledge application in development workflows
+
+**Clean up session artifacts:**
+
+```bash
+# Archive session state for future reference
+mv /tmp/knowledge-extract-state-$SESSION_ID.json docs/extracted-knowledge/session-state-$(gdate +%Y%m%d-%H%M%S).json 2>/dev/null || mv /tmp/knowledge-extract-state-$SESSION_ID.json docs/extracted-knowledge/session-state-$(date +%Y%m%d-%H%M%S).json
+
+echo "✅ Knowledge extraction completed successfully"
+echo "📚 Documentation available in: docs/extracted-knowledge/"
+echo "🔄 Next: Review and validate extracted knowledge with domain experts"
+```

@@ -1,37 +1,98 @@
-# Quick Web Research
+---
+allowed-tools: WebSearch, WebFetch, Write, Bash(gdate:*)
+description: Perform fast web research with structured analysis and result synthesis
+---
 
-Performs fast web research using WebSearch to find relevant information quickly.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N`
+- Research query: $ARGUMENTS
+- Results directory: /tmp/research-results-$SESSION_ID/
+- Current timestamp: !`gdate '+%Y-%m-%d %H:%M:%S'`
+- Working directory: !`pwd`
 
-```bash
-/quick-web-research <query>
-```
+## Your Task
 
-## Description
+Execute a systematic web research workflow for the query: "$ARGUMENTS"
 
-This command performs a quick web research session by:
+STEP 1: Initialize Research Session
 
-1. Using WebSearch to find relevant results for your query
-2. Fetching content from the top 2-3 most relevant sources using WebFetch
-3. Providing a concise summary of findings
+- Create session state file: /tmp/research-state-$SESSION_ID.json
+- Initialize results directory: /tmp/research-results-$SESSION_ID/
+- Log research parameters and timestamp
 
-Perfect for getting quick answers to development questions, finding current documentation, or checking the latest information on a topic.
+STEP 2: Primary Web Search
 
-## Examples
+- Execute WebSearch with query: "$ARGUMENTS"
+- Analyze search results for relevance and authority
+- Identify top 3-5 most relevant sources
+- Filter for development-related, current, and authoritative content
 
-```bash
-/quick-web-research "Next.js 15 new features"
-/quick-web-research "Python asyncio best practices 2024"
-/quick-web-research "Docker security vulnerabilities"
-```
+STEP 3: Content Extraction
 
-## Implementation
+FOR EACH selected source:
 
-The command will:
+- Use WebFetch to extract detailed content
+- Focus on technical documentation, best practices, and current information
+- Save individual source analysis to /tmp/research-results-$SESSION_ID/source-N.md
+- Rate content quality and relevance (1-10 scale)
 
-- Execute a WebSearch with your query
-- Identify the most relevant 2-3 results
-- Use WebFetch to extract detailed content from those sources
-- Synthesize findings into a concise, actionable summary
-- Focus on development-related information and current best practices
+STEP 4: Synthesis and Analysis
+
+- Combine findings from all sources
+- Identify common patterns and recommendations
+- Highlight conflicting information or outdated practices
+- Create comprehensive summary with actionable insights
+
+STEP 5: Structured Output
+
+Generate final research report containing:
+
+- Executive summary (2-3 sentences)
+- Key findings (bulleted list)
+- Recommended actions or next steps
+- Source quality assessment
+- Confidence level in findings
+
+STEP 6: Session Cleanup
+
+- Save final report to /tmp/research-results-$SESSION_ID/final-report.md
+- Update session state with completion status
+- Provide file locations for future reference
+
+## Error Handling
+
+TRY:
+
+- Execute primary research workflow
+  CATCH (WebSearch failures):
+- Log error and attempt alternative search terms
+- Provide partial results if any sources were successfully fetched
+  CATCH (WebFetch failures):
+- Skip failed sources and continue with available content
+- Note limitations in final report
+  FINALLY:
+- Ensure session state is updated
+- Clean up temporary files if requested
+
+## Quality Assurance
+
+- Verify all sources are accessible and current
+- Cross-reference information across multiple sources
+- Flag potentially outdated or unreliable information
+- Provide confidence indicators for each finding
+
+## Research Examples
+
+**Technology Research:**
+
+- "Next.js 15 new features" → Focus on official docs, release notes, migration guides
+- "Python asyncio best practices 2024" → Prioritize recent articles, official Python docs
+- "Docker security vulnerabilities" → Emphasize security advisories, CVE databases
+
+**Development Focus:**
+
+- Prioritize official documentation over blog posts
+- Favor recent content (last 12 months) for rapidly evolving technologies
+- Include practical examples and implementation guidance
+- Verify information against multiple authoritative sources

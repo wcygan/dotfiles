@@ -1,29 +1,136 @@
-# context-load-gh-cli
+---
+allowed-tools: Read, Write, Bash(gh:*), Bash(git:*), Bash(jq:*), Bash(gdate:*)
+description: Load comprehensive GitHub CLI context with dynamic repository analysis and workflow optimization
+---
 
-Loads comprehensive GitHub CLI (`gh`) instructions for agent use in pull requests, issues, comments, and reviews.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Git repository: !`git rev-parse --is-inside-work-tree 2>/dev/null && echo "Yes" || echo "No"`
+- Repository info: !`gh repo view --json owner,name,url 2>/dev/null | jq -r '.owner.login + "/" + .name + " (" + .url + ")' 2>/dev/null || echo "Not in GitHub repository"`
+- GitHub CLI status: !`gh auth status 2>/dev/null | head -1 || echo "Not authenticated"`
+- Current branch: !`git branch --show-current 2>/dev/null || echo "No git repository"`
+- Open PRs: !`gh pr list --json number,title --limit 3 2>/dev/null | jq -r '.[] | "#" + (.number | tostring) + ": " + .title' 2>/dev/null || echo "No open PRs or no access"`
+- Open issues: !`gh issue list --json number,title --limit 3 2>/dev/null | jq -r '.[] | "#" + (.number | tostring) + ": " + .title' 2>/dev/null || echo "No open issues or no access"`
+- Recent commits: !`git log --oneline -5 2>/dev/null || echo "No git history"`
+- Git status: !`git status --porcelain 2>/dev/null || echo "No git repository"`
+- Recent activity: !`gh api user/events --limit 3 2>/dev/null | jq -r '.[0:2][] | .type + ": " + .repo.name + " (" + (.created_at | split("T")[0]) + ")' 2>/dev/null || echo "No recent activity or no access"`
 
-```bash
-/context-load-gh-cli
-```
+## Your Task
 
-## Description
+STEP 1: Initialize GitHub CLI context analysis session
 
-This command loads a comprehensive guide for leveraging the GitHub CLI to:
+- CREATE session state file: `/tmp/gh-cli-context-$SESSION_ID.json`
+- SET initial state:
+  ```json
+  {
+    "sessionId": "$SESSION_ID",
+    "timestamp": "$(date -Iseconds)",
+    "repositoryContext": {
+      "isGitRepo": "auto-detect",
+      "repoInfo": "auto-detect",
+      "currentBranch": "auto-detect",
+      "hasOpenPRs": "auto-detect",
+      "hasOpenIssues": "auto-detect"
+    },
+    "githubCliStatus": {
+      "isInstalled": "auto-detect",
+      "isAuthenticated": "auto-detect",
+      "authenticatedUser": "auto-detect"
+    },
+    "loadedSections": [],
+    "contextualExamples": {},
+    "workflowPatterns": []
+  }
+  ```
+- ANALYZE current GitHub and repository context from Context section
 
-- Create and manage pull requests
-- Create and manage issues
-- Add comments to PRs and issues
-- Create and view reviews
-- Use the API for advanced operations
-- Work around current CLI limitations
+STEP 2: GitHub CLI environment validation and setup
 
-Perfect for when you need an agent to help with GitHub operations using the command line.
+TRY:
 
-## Implementation
+- VERIFY GitHub CLI installation and authentication status
+- DETECT current repository context and permissions
+- IDENTIFY available GitHub operations based on authentication level
+- ASSESS repository-specific workflow patterns
 
-# GitHub CLI (`gh`) Agent Instructions Guide
+CATCH (github_cli_not_available):
+
+- LOG GitHub CLI installation status to session state
+- PROVIDE installation guidance for missing CLI
+- INCLUDE authentication setup instructions
+- SAVE fallback web-based GitHub operation guidance
+
+STEP 3: Dynamic context-aware GitHub CLI guidance loading
+
+IF isAuthenticated AND isGitRepo:
+
+- LOAD repository-specific GitHub CLI patterns
+- GENERATE contextual examples for current repository
+- INCLUDE workflow optimizations for detected repository patterns
+- ADD current PR/issue context for immediate operations
+
+ELSE IF isAuthenticated AND NOT isGitRepo:
+
+- LOAD general GitHub CLI operations guidance
+- FOCUS on repository discovery and organization management
+- INCLUDE authentication and organization-level operations
+- PROVIDE repository creation and cloning patterns
+
+ELSE IF NOT isAuthenticated:
+
+- LOAD basic GitHub CLI authentication guidance
+- PROVIDE setup and configuration instructions
+- INCLUDE authentication troubleshooting and alternatives
+- ADD web-based GitHub operation fallbacks
+
+STEP 4: Comprehensive GitHub CLI knowledge synthesis
+
+FOR EACH workflow_category IN ["pull-requests", "issues", "reviews", "api-operations", "authentication"]:
+
+- LOAD category-specific command patterns and best practices
+- GENERATE contextual examples based on current repository state
+- INCLUDE advanced operations and troubleshooting guidance
+- ADD workflow optimization recommendations
+- SAVE category knowledge to session state
+
+STEP 5: Repository-specific workflow analysis and recommendations
+
+IF repository detected AND has_open_issues_or_prs:
+
+Think deeply about optimal GitHub workflow patterns for this repository based on current activity, open PRs, and issue patterns.
+
+- ANALYZE current PR and issue patterns for workflow optimization
+- IDENTIFY common operations that could be automated or streamlined
+- GENERATE repository-specific GitHub CLI command templates
+- PROVIDE workflow efficiency recommendations
+
+STEP 6: Extended thinking integration for complex scenarios
+
+IF complex_repository_patterns_detected:
+
+- Enable extended thinking for complex GitHub workflow optimization
+- Consider multi-repository coordination scenarios
+- Analyze enterprise GitHub patterns and governance requirements
+- Provide advanced automation and integration strategies
+
+STEP 7: Session state management and artifact creation
+
+- UPDATE session state with loaded knowledge and contextual examples
+- SAVE repository-specific GitHub CLI templates: `/tmp/gh-cli-context-$SESSION_ID/repo-templates.md`
+- CREATE workflow optimization guide: `/tmp/gh-cli-context-$SESSION_ID/workflow-optimization.md`
+- GENERATE session summary with key recommendations and next steps
+
+FINALLY:
+
+- CLEAN UP temporary processing files
+- ARCHIVE session artifacts for future reference
+- REPORT comprehensive GitHub CLI context loading completion
+
+## GitHub CLI (`gh`) Comprehensive Knowledge Base
+
+### Core GitHub CLI Operations Framework
 
 ## Overview
 

@@ -1,171 +1,418 @@
-# /monitor
+---
+allowed-tools: Task, Bash(kubectl:*), Bash(docker:*), Bash(helm:*), Bash(rg:*), Bash(fd:*), Bash(jq:*), Bash(gdate:*), Bash(curl:*), Bash(nc:*), Read, Write, Edit
+description: Comprehensive monitoring and observability orchestrator with parallel deployment automation
+---
 
-Set up comprehensive monitoring, observability, and alerting systems for $ARGUMENT with modern tooling and intelligent metric collection.
+## Context
 
-## Monitoring Strategy Framework
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
+- Target system: $ARGUMENTS
+- Current directory: !`pwd`
+- Infrastructure type: !`kubectl cluster-info 2>/dev/null | head -1 || docker info --format '{{.ServerVersion}}' 2>/dev/null | head -1 || echo "Local development"`
+- Existing monitoring: !`kubectl get pods -A | rg "(prometheus|grafana|jaeger|loki)" 2>/dev/null | wc -l | tr -d ' ' || echo "0"`
+- Available storage classes: !`kubectl get storageclass 2>/dev/null | tail -n +2 | head -3 || echo "No Kubernetes detected"`
+- Helm repositories: !`helm repo list 2>/dev/null | wc -l | tr -d ' ' || echo "0"`
+- System resources: !`docker stats --no-stream --format "{{.Container}}: {{.CPUPerc}} CPU, {{.MemUsage}}" 2>/dev/null | head -3 || echo "No containers running"`
 
-### Phase 1: Observability Foundation
+## Your Task
 
-**The Three Pillars**
+STEP 1: Initialize comprehensive monitoring deployment session
 
-- **Metrics**: Quantitative measurements over time
-- **Logs**: Discrete events with timestamps and context
-- **Traces**: Request flows through distributed systems
+TRY:
 
-**Modern Stack (Preferred)**
-
-```yaml
-# Observability Stack
-metrics:
-  collection: Prometheus + OpenTelemetry
-  storage: Prometheus + Thanos (long-term)
-  visualization: Grafana
-
-logs:
-  collection: Vector + OpenTelemetry
-  storage: Loki + S3
-  visualization: Grafana
-
-traces:
-  collection: OpenTelemetry Collector
-  storage: Jaeger + S3
-  visualization: Jaeger UI + Grafana
-
-# Alternative: All-in-one solutions
-observability:
-  - Grafana Cloud (SaaS)
-  - DataDog (SaaS)
-  - New Relic (SaaS)
-  - Honeycomb (SaaS)
-```
-
-### Phase 2: Application Monitoring
-
-**Golden Signals (SRE)**
-
-```yaml
-# The Four Golden Signals
-latency:
-  description: "Time to serve requests"
-  metrics:
-    - response_time_p50
-    - response_time_p95
-    - response_time_p99
-  alerts:
-    - p95 > 500ms for 5 minutes
-    - p99 > 2s for 2 minutes
-
-traffic:
-  description: "Demand on the system"
-  metrics:
-    - requests_per_second
-    - concurrent_users
-    - throughput
-  alerts:
-    - RPS drops 50% below baseline
-    - Traffic spike >200% of capacity
-
-errors:
-  description: "Rate of failed requests"
-  metrics:
-    - error_rate_percentage
-    - 4xx_error_rate
-    - 5xx_error_rate
-  alerts:
-    - Error rate >1% for 5 minutes
-    - 5xx errors >0.1% for 2 minutes
-
-saturation:
-  description: "How full the service is"
-  metrics:
-    - cpu_utilization
-    - memory_utilization
-    - disk_utilization
-    - connection_pool_usage
-  alerts:
-    - CPU >80% for 10 minutes
-    - Memory >85% for 5 minutes
-```
-
-**Application-Specific Metrics**
+- CREATE monitoring deployment session state: `/tmp/monitoring-deployment-$SESSION_ID.json`
+- ANALYZE current infrastructure from Context section
+- DETERMINE optimal monitoring architecture based on environment
+- VALIDATE prerequisite tools and access permissions
 
 ```bash
-# Business Logic Metrics
-user_registrations_total
-orders_processed_total
-payment_failures_total
-user_session_duration_seconds
-
-# Performance Metrics
-database_query_duration_seconds
-cache_hit_ratio
-queue_size_current
-background_job_duration_seconds
-
-# Resource Metrics
-goroutines_current  # Go
-heap_size_bytes     # Memory usage
-gc_duration_seconds # Garbage collection
+# Initialize monitoring deployment session
+echo '{
+  "sessionId": "'$SESSION_ID'",
+  "targetSystem": "'$ARGUMENTS'",
+  "infrastructureType": "auto-detect",
+  "monitoringStack": {
+    "metrics": "prometheus",
+    "logs": "loki",
+    "traces": "jaeger",
+    "visualization": "grafana"
+  },
+  "deploymentPhase": "initialization",
+  "components": [],
+  "healthChecks": []
+}' > /tmp/monitoring-deployment-$SESSION_ID.json
 ```
 
-### Phase 3: Infrastructure Monitoring
+STEP 2: Adaptive monitoring architecture selection with intelligent deployment
 
-**System Metrics (USE Method)**
+CASE infrastructure_type:
 
-- **Utilization**: Percentage of time the resource is busy
-- **Saturation**: Amount of queued work
-- **Errors**: Count of error events
+WHEN "kubernetes":
+
+- EXECUTE cloud-native monitoring stack deployment
+- USE Helm charts for production-ready configurations
+- IMPLEMENT operator-based management
+- ENABLE auto-scaling and high availability
+
+WHEN "docker_compose":
+
+- DEPLOY containerized monitoring stack
+- USE Docker Compose orchestration
+- CONFIGURE volume mounts for persistence
+- ENABLE service discovery
+
+WHEN "local_development":
+
+- SETUP lightweight monitoring for development
+- USE single-node configurations
+- MINIMIZE resource requirements
+- ENABLE quick iteration cycles
+
+**Cloud-Native Monitoring Stack (Kubernetes):**
 
 ```yaml
-# Infrastructure Monitoring
-compute:
-  cpu:
-    - cpu_utilization_percent
-    - load_average_1m
-    - context_switches_per_second
-  memory:
-    - memory_utilization_percent
-    - memory_available_bytes
-    - swap_usage_percent
-  disk:
-    - disk_utilization_percent
-    - disk_io_read_bytes_per_second
-    - disk_io_write_bytes_per_second
+# Production-Ready Observability Stack
+metrics:
+  collection: Prometheus Operator + OpenTelemetry
+  storage: Prometheus + Thanos (long-term retention)
+  visualization: Grafana with unified dashboards
+  alerting: AlertManager with multi-channel routing
 
-network:
-  - network_io_bytes_per_second
-  - network_connections_active
-  - network_errors_per_second
+logs:
+  collection: Vector + Fluent Bit (lightweight)
+  storage: Loki + S3-compatible object storage
+  visualization: Grafana with log correlation
+  retention: 30d hot, 1y cold storage
 
-containers:
-  - container_cpu_usage_percent
-  - container_memory_usage_bytes
-  - container_restart_count
+traces:
+  collection: OpenTelemetry Collector (distributed)
+  storage: Jaeger + Elasticsearch/S3
+  visualization: Jaeger UI + Grafana tracing panels
+  sampling: Adaptive sampling for high-throughput
 
-kubernetes:
-  - pod_status
-  - node_ready_status
-  - persistent_volume_usage_percent
+infrastructure:
+  node_monitoring: Node Exporter DaemonSet
+  kubernetes_monitoring: kube-state-metrics
+  service_discovery: Prometheus ServiceMonitor CRDs
+  ingress_monitoring: NGINX/Istio metrics integration
 ```
 
-**Service Discovery Integration**
+**Alternative SaaS Solutions:**
 
 ```yaml
-# Prometheus Service Discovery
+# Managed Observability Options
+saas_options:
+  grafana_cloud:
+    benefits: "Fully managed, integrated stack"
+    use_case: "Teams wanting zero ops overhead"
+    cost_model: "Usage-based pricing"
+
+  datadog:
+    benefits: "Enterprise APM, ML-powered insights"
+    use_case: "Large-scale applications, advanced analytics"
+    cost_model: "Per-host pricing"
+
+  new_relic:
+    benefits: "Full-stack observability, AI insights"
+    use_case: "Modern applications, developer-focused"
+    cost_model: "Data ingestion pricing"
+
+  honeycomb:
+    benefits: "High-cardinality observability"
+    use_case: "Complex distributed systems, debugging"
+    cost_model: "Event-based pricing"
+```
+
+STEP 3: Parallel monitoring component deployment using sub-agent architecture
+
+IF infrastructure_complexity > "simple" OR component_count > 5:
+
+LAUNCH parallel sub-agents for simultaneous monitoring stack deployment:
+
+- **Agent 1: Metrics Infrastructure**: Deploy Prometheus ecosystem with storage and alerting
+  - Focus: Prometheus Operator, AlertManager, Thanos for long-term storage
+  - Tools: Helm charts, Kubernetes manifests, storage configuration
+  - Output: Metrics collection infrastructure ready for instrumentation
+
+- **Agent 2: Logging Pipeline**: Deploy centralized logging with Loki and Vector
+  - Focus: Log aggregation, parsing, storage, and retention policies
+  - Tools: Vector configuration, Loki deployment, S3 integration
+  - Output: Centralized logging pipeline with structured log processing
+
+- **Agent 3: Distributed Tracing**: Deploy Jaeger with OpenTelemetry collectors
+  - Focus: Trace collection, sampling, storage, and correlation
+  - Tools: OpenTelemetry Operator, Jaeger deployment, trace backends
+  - Output: Distributed tracing infrastructure for request flow analysis
+
+- **Agent 4: Visualization Platform**: Deploy Grafana with comprehensive dashboards
+  - Focus: Dashboard provisioning, data source configuration, alerting UI
+  - Tools: Grafana Helm chart, dashboard-as-code, plugin management
+  - Output: Unified visualization platform with pre-configured dashboards
+
+- **Agent 5: Infrastructure Monitoring**: Deploy node and Kubernetes monitoring
+  - Focus: Node Exporter, kube-state-metrics, service discovery
+  - Tools: DaemonSets, ServiceMonitors, Prometheus rules
+  - Output: Complete infrastructure visibility with automated discovery
+
+**Sub-Agent Coordination:**
+
+- Each agent deploys independently with proper dependencies
+- Results aggregated in monitoring session state
+- Parallel execution provides 5-10x faster deployment
+- Failed components isolated without blocking others
+
+STEP 4: Application monitoring instrumentation with Golden Signals implementation
+
+**SRE Golden Signals Automation:**
+
+```yaml
+# Automated Golden Signals Implementation
+latency_monitoring:
+  metrics:
+    - histogram: http_request_duration_seconds
+    - labels: [method, route, status_code]
+  sli_targets:
+    - p50_latency: "< 100ms"
+    - p95_latency: "< 500ms"
+    - p99_latency: "< 2s"
+  alert_rules:
+    - name: "HighLatencyP95"
+      expr: "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5"
+      for: "10m"
+      severity: "P2_HIGH"
+
+traffic_monitoring:
+  metrics:
+    - counter: http_requests_total
+    - rate: rate(http_requests_total[5m])
+  sli_targets:
+    - baseline_rps: "auto-detect from 7d average"
+    - capacity_threshold: "80% of max observed"
+  alert_rules:
+    - name: "TrafficDrop"
+      expr: "rate(http_requests_total[5m]) < (avg_over_time(rate(http_requests_total[5m])[7d]) * 0.5)"
+      for: "5m"
+      severity: "P2_HIGH"
+
+error_monitoring:
+  metrics:
+    - counter: http_requests_total{status=~"4..|5.."}
+    - rate: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])
+  sli_targets:
+    - error_budget: "99.9% (0.1% error rate)"
+    - client_error_threshold: "5% 4xx rate"
+  alert_rules:
+    - name: "HighErrorRate"
+      expr: 'rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.01'
+      for: "5m"
+      severity: "P1_CRITICAL"
+
+saturation_monitoring:
+  infrastructure:
+    - cpu: node_cpu_usage_percent
+    - memory: node_memory_usage_percent
+    - disk: node_disk_usage_percent
+  application:
+    - connection_pool: db_connections_active / db_connections_max
+    - queue_depth: queue_size_current
+    - worker_utilization: active_workers / max_workers
+  alert_rules:
+    - name: "HighResourceUsage"
+      expr: "node_cpu_usage_percent > 80 or node_memory_usage_percent > 85"
+      for: "15m"
+      severity: "P3_MEDIUM"
+```
+
+**Intelligent Application Metrics with Auto-Discovery:**
+
+```bash
+# Business Logic Metrics (Auto-Generated)
+user_registrations_total{source="api", method="POST"}
+orders_processed_total{status="completed", payment_method="*"}
+payment_failures_total{error_type="*", gateway="*"}
+user_session_duration_seconds{user_type="*", device="*"}
+
+# Performance Metrics (Language-Specific)
+database_query_duration_seconds{query_type="*", table="*"}  # All languages
+cache_hit_ratio{cache_type="redis|memcached", operation="*"}   # Distributed caches
+queue_size_current{queue_name="*", priority="*"}              # Background jobs
+background_job_duration_seconds{job_type="*", worker_id="*"}  # Async processing
+
+# Language-Specific Resource Metrics
+# Go Applications
+goroutines_current{service="*"}
+go_gc_duration_seconds{service="*", quantile="*"}
+go_memstats_heap_inuse_bytes{service="*"}
+
+# Rust Applications  
+rust_memory_usage_bytes{service="*", allocator="*"}
+rust_task_count_current{service="*", executor="*"}
+rust_panic_total{service="*", location="*"}
+
+# Java Applications
+jvm_memory_used_bytes{service="*", area="heap|nonheap"}
+jvm_gc_collection_seconds{service="*", gc="*"}
+jvm_threads_current{service="*", state="*"}
+
+# Node.js Applications
+nodejs_heap_size_used_bytes{service="*"}
+nodejs_event_loop_lag_seconds{service="*"}
+nodejs_active_handles{service="*", type="*"}
+```
+
+STEP 5: Infrastructure monitoring deployment with USE method implementation
+
+**Automated USE Method Implementation:**
+
+```yaml
+# Infrastructure Monitoring with Automated Discovery
+compute_monitoring:
+  utilization:
+    - metric: node_cpu_seconds_total
+    - calculation: rate(node_cpu_seconds_total{mode!="idle"}[5m])
+    - alert_threshold: "> 80% for 15m"
+    - auto_scaling_trigger: "> 70% for 10m"
+
+  saturation:
+    - metric: node_load1
+    - calculation: node_load1 / node_cpu_count
+    - alert_threshold: "> 1.5 for 10m"
+    - context: "CPU queue depth indicator"
+
+  errors:
+    - metric: node_cpu_guest_seconds_total
+    - calculation: rate(node_cpu_guest_seconds_total[5m])
+    - alert_threshold: "unexpected spikes"
+
+memory_monitoring:
+  utilization:
+    - metric: node_memory_MemAvailable_bytes
+    - calculation: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100
+    - alert_threshold: "> 85% for 10m"
+    - oom_protection: "Enable swap monitoring"
+
+  saturation:
+    - metric: node_vmstat_pswpin, node_vmstat_pswpout
+    - calculation: rate(node_vmstat_pswpin[5m]) + rate(node_vmstat_pswpout[5m])
+    - alert_threshold: "> 0 (swap activity)"
+
+  errors:
+    - metric: node_vmstat_oom_kill
+    - calculation: increase(node_vmstat_oom_kill[5m])
+    - alert_threshold: "> 0 (OOM kills)"
+
+storage_monitoring:
+  utilization:
+    - metric: node_filesystem_avail_bytes
+    - calculation: (1 - node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100
+    - alert_threshold: "> 80% for disk, > 90% for critical paths"
+
+  saturation:
+    - metric: node_disk_io_time_seconds_total
+    - calculation: rate(node_disk_io_time_seconds_total[5m])
+    - alert_threshold: "> 0.8 (80% IO utilization)"
+
+  errors:
+    - metric: node_disk_read_errors_total, node_disk_write_errors_total
+    - calculation: rate(node_disk_read_errors_total[5m]) + rate(node_disk_write_errors_total[5m])
+    - alert_threshold: "> 0 (any disk errors)"
+
+network_monitoring:
+  utilization:
+    - metric: node_network_receive_bytes_total, node_network_transmit_bytes_total
+    - calculation: rate(node_network_receive_bytes_total[5m]) + rate(node_network_transmit_bytes_total[5m])
+    - bandwidth_alerting: "Auto-detect interface capacity"
+
+  saturation:
+    - metric: node_network_receive_drop_total, node_network_transmit_drop_total
+    - calculation: rate(node_network_receive_drop_total[5m]) + rate(node_network_transmit_drop_total[5m])
+    - alert_threshold: "> 0 (packet drops)"
+
+  errors:
+    - metric: node_network_receive_errs_total, node_network_transmit_errs_total
+    - calculation: rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m])
+    - alert_threshold: "> 0 (network errors)"
+
+kubernetes_monitoring:
+  pod_health:
+    - metric: kube_pod_status_phase
+    - alert_conditions: "Pod not Running for > 5m"
+    - restart_monitoring: kube_pod_container_status_restarts_total
+
+  node_health:
+    - metric: kube_node_status_condition
+    - alert_conditions: "Node NotReady for > 2m"
+    - capacity_monitoring: kube_node_status_capacity
+
+  workload_health:
+    - metric: kube_deployment_status_replicas_available
+    - alert_conditions: "Available < Desired for > 5m"
+    - scaling_metrics: kube_horizontalpodautoscaler_status_current_replicas
+```
+
+STEP 6: Intelligent service discovery and auto-instrumentation
+
+**Advanced Service Discovery with Auto-Configuration:**
+
+```yaml
+# Prometheus Service Discovery with Intelligent Filtering
 prometheus_config:
   scrape_configs:
     - job_name: "kubernetes-pods"
       kubernetes_sd_configs:
         - role: pod
       relabel_configs:
+        # Auto-discover pods with monitoring annotations
         - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
           action: keep
           regex: true
+
+        # Dynamic port discovery
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+          action: replace
+          target_label: __address__
+          regex: (.+)
+          replacement: ${1}
+
+        # Service name from labels
+        - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+          target_label: service
+
+        # Environment detection
+        - source_labels: [__meta_kubernetes_namespace]
+          target_label: environment
+          regex: (.+)-.*
+          replacement: ${1}
+
+    - job_name: "kubernetes-services"
+      kubernetes_sd_configs:
+        - role: service
+      relabel_configs:
+        # Service-level metrics discovery
+        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+          action: keep
+          regex: true
+
+    - job_name: "docker-containers"
+      docker_sd_configs:
+        - host: "unix:///var/run/docker.sock"
+          port: 9090
+      relabel_configs:
+        # Docker container auto-discovery
+        - source_labels: [__meta_docker_container_label_monitoring_enable]
+          action: keep
+          regex: true
+
+        # Container name mapping
+        - source_labels: [__meta_docker_container_name]
+          target_label: container_name
+          regex: /(.*)
+          replacement: ${1}
 ```
 
-### Phase 4: Distributed Tracing
+STEP 7: Advanced distributed tracing with OpenTelemetry implementation
 
-**OpenTelemetry Implementation**
+**Language-Agnostic Tracing Instrumentation:**
 
 ```rust
 // Rust example with axum + tracing
@@ -212,86 +459,191 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 }
 ```
 
-### Phase 5: Alerting Strategy
+STEP 8: Intelligent alerting strategy with ML-powered anomaly detection
 
-**Alert Levels and Escalation**
+**Multi-Tier Alerting with Smart Escalation:**
 
 ```yaml
-alert_levels:
+# Intelligent Alert Classification System
+alert_classification:
   P1_CRITICAL:
     description: "System down or critical business impact"
     response_time: "< 15 minutes"
-    escalation: "Immediate PagerDuty + Phone"
+    escalation_channels:
+      - "PagerDuty with phone escalation"
+      - "Slack critical-alerts channel"
+      - "SMS to on-call rotation"
+      - "Auto-trigger incident response"
+    auto_actions:
+      - "Scale up infrastructure if auto-scaling enabled"
+      - "Enable circuit breakers for dependent services"
+      - "Capture diagnostic snapshots"
     examples:
-      - "Service completely unavailable"
-      - "Database down"
-      - "Security breach detected"
+      - "Service completely unavailable (0% success rate)"
+      - "Database primary down with no failover"
+      - "Security breach detected in authentication system"
+      - "Payment processing completely failed"
 
   P2_HIGH:
-    description: "Significant degradation or risk"
+    description: "Significant degradation affecting user experience"
     response_time: "< 1 hour"
-    escalation: "PagerDuty during business hours"
+    escalation_channels:
+      - "PagerDuty during business hours"
+      - "Slack ops-alerts channel"
+      - "Email to engineering team"
+    auto_actions:
+      - "Increase monitoring frequency"
+      - "Prepare rollback procedures"
+      - "Alert business stakeholders"
     examples:
-      - "Error rate >5%"
-      - "Response time >2s"
-      - "High memory usage >90%"
+      - "Error rate >5% for user-facing services"
+      - "Response time p95 >2s sustained for 10m"
+      - "Memory usage >90% with growing trend"
+      - "Payment success rate <95%"
 
   P3_MEDIUM:
-    description: "Performance issues or warnings"
+    description: "Performance degradation or capacity concerns"
     response_time: "< 4 hours"
-    escalation: "Slack notification"
+    escalation_channels:
+      - "Slack engineering channel"
+      - "Email digest to team leads"
+    auto_actions:
+      - "Create JIRA ticket for investigation"
+      - "Schedule capacity planning review"
     examples:
-      - "Disk usage >80%"
-      - "Unusual traffic patterns"
+      - "Disk usage >80% with growing trend"
+      - "Unusual traffic patterns detected"
       - "Certificate expiring in 7 days"
+      - "Background job queue growing"
 
   P4_LOW:
-    description: "Informational or minor issues"
+    description: "Informational alerts and optimization opportunities"
     response_time: "Next business day"
-    escalation: "Email or dashboard"
+    escalation_channels:
+      - "Email daily digest"
+      - "Dashboard notifications"
+    auto_actions:
+      - "Add to optimization backlog"
+      - "Generate cost optimization report"
     examples:
       - "Scheduled maintenance reminder"
-      - "Resource optimization opportunity"
+      - "Resource optimization opportunity detected"
+      - "Performance baseline shifted (not critical)"
+      - "New service dependency discovered"
+
+# ML-Powered Anomaly Detection
+anomalous_behavior_detection:
+  baseline_learning:
+    - "7-day rolling average for traffic patterns"
+    - "Seasonal adjustments for business cycles"
+    - "Dependency correlation analysis"
+
+  anomaly_algorithms:
+    - "Statistical deviation (z-score > 3)"
+    - "Isolation Forest for multivariate anomalies"
+    - "LSTM for time-series prediction"
+
+  adaptive_thresholds:
+    - "Dynamic thresholds based on historical patterns"
+    - "Context-aware alerting (maintenance windows, deployments)"
+    - "Multi-dimensional correlation (not just single metrics)"
 ```
 
-**Smart Alerting Rules**
+**Advanced Alerting Rules with Context Awareness:**
 
 ```yaml
-# Prometheus Alert Rules
+# Context-Aware Prometheus Alert Rules
 groups:
   - name: application.rules
     rules:
       - alert: HighErrorRate
-        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) > 0.01
+        expr: |
+          (
+            rate(http_requests_total{status=~"5.."}[5m]) /
+            rate(http_requests_total[5m])
+          ) > 0.01
+          and
+          rate(http_requests_total[5m]) > 1  # Minimum traffic threshold
         for: 5m
         labels:
           severity: P2_HIGH
+          team: "{{ $labels.team | default \"platform\" }}"
+          service: "{{ $labels.service }}"
         annotations:
-          summary: "High error rate detected"
-          description: "{{ $labels.service }} has error rate of {{ $value | humanizePercentage }}"
+          summary: "High error rate detected in {{ $labels.service }}"
+          description: |
+            Service {{ $labels.service }} has error rate of {{ $value | humanizePercentage }}
+            Current RPS: {{ query "rate(http_requests_total{service='" + $labels.service + "'}[5m])" | first | value | printf "%.2f" }}
+            Error count: {{ query "rate(http_requests_total{service='" + $labels.service + "',status=~'5..'}[5m])" | first | value | printf "%.2f" }}
+          runbook_url: "https://runbooks.company.com/alerts/high-error-rate"
+          dashboard_url: "https://grafana.company.com/d/service-overview?var-service={{ $labels.service }}"
 
-      - alert: HighLatency
-        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+      - alert: HighLatencyWithContext
+        expr: |
+          histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+          and
+          (
+            histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) /
+            histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[1h] offset 24h))
+          ) > 1.5  # 50% worse than same time yesterday
         for: 10m
         labels:
           severity: P2_HIGH
+          impact: "user_experience"
         annotations:
-          summary: "High latency detected"
-          description: "95th percentile latency is {{ $value }}s"
+          summary: "Significant latency increase in {{ $labels.service }}"
+          description: |
+            95th percentile latency is {{ $value }}s ({{ printf "%.1f" (query "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))/histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[1h] offset 24h))" | first | value) }}x yesterday)
+            Current p50: {{ query "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{service='" + $labels.service + "'}[5m]))" | first | value | printf "%.3f" }}s
+            Current p99: {{ query "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{service='" + $labels.service + "'}[5m]))" | first | value | printf "%.3f" }}s
 
-      # Alert fatigue prevention
-      - alert: DatabaseConnectionPool
-        expr: database_connections_active / database_connections_max > 0.8
+      # Intelligent alert fatigue prevention
+      - alert: DatabaseConnectionPoolSaturation
+        expr: |
+          (
+            database_connections_active / database_connections_max > 0.8
+          )
+          and
+          (
+            increase(database_connections_active[15m]) > 0  # Growing trend
+          )
         for: 15m # Longer duration to avoid flapping
         labels:
           severity: P3_MEDIUM
+          component: "database"
         annotations:
-          runbook_url: "https://docs.company.com/runbooks/database-connections"
+          summary: "Database connection pool approaching saturation"
+          description: |
+            Connection pool usage: {{ $value | humanizePercentage }}
+            Active connections: {{ query "database_connections_active" | first | value }}
+            Max connections: {{ query "database_connections_max" | first | value }}
+            Growth rate: {{ query "increase(database_connections_active[15m])" | first | value | printf "%.0f" }} connections in 15m
+          runbook_url: "https://runbooks.company.com/database/connection-pool"
+          suggested_actions: |
+            1. Check for connection leaks in application code
+            2. Review slow queries causing long-held connections
+            3. Consider increasing pool size if legitimate growth
+
+      # Business impact correlation
+      - alert: BusinessMetricAnomaly
+        expr: |
+          (
+            abs(rate(business_revenue_total[1h]) - avg_over_time(rate(business_revenue_total[1h])[7d:1h])) /
+            avg_over_time(rate(business_revenue_total[1h])[7d:1h])
+          ) > 0.3  # 30% deviation from weekly average
+        for: 30m
+        labels:
+          severity: P1_CRITICAL
+          category: "business_impact"
+        annotations:
+          summary: "Significant business metric deviation detected"
+          description: "Revenue rate is {{ $value | humanizePercentage }} different from expected baseline"
+          correlation_check: "Review technical metrics for service degradation"
 ```
 
-### Phase 6: Dashboard Strategy
+STEP 9: Intelligent dashboard generation with role-based access
 
-**Hierarchical Dashboard Design**
+**Auto-Generated Hierarchical Dashboard Architecture:**
 
 ```yaml
 dashboard_hierarchy:
@@ -353,9 +705,9 @@ dashboard_hierarchy:
 }
 ```
 
-### Phase 7: Log Management
+STEP 10: Advanced log management with intelligent parsing and correlation
 
-**Structured Logging Best Practices**
+**Intelligent Structured Logging Pipeline:**
 
 ```rust
 // Rust structured logging with tracing
@@ -409,9 +761,9 @@ sinks:
       level: "{{ level }}"
 ```
 
-### Phase 8: Business Metrics Monitoring
+STEP 11: Business intelligence integration with automated KPI tracking
 
-**Key Business Indicators**
+**Automated Business Metrics Collection:**
 
 ```yaml
 business_metrics:
@@ -436,9 +788,9 @@ business_metrics:
     - mean_time_to_recovery
 ```
 
-### Phase 9: Security Monitoring
+STEP 12: Security monitoring integration with threat detection
 
-**Security Event Detection**
+**Intelligent Security Event Correlation:**
 
 ```yaml
 security_monitoring:
@@ -458,49 +810,146 @@ security_monitoring:
     - network_anomalies
 ```
 
-## Implementation Checklist
+CATCH (deployment_failed):
 
-### Phase 1: Foundation (Week 1-2)
+- LOG deployment errors to session state
+- PROVIDE rollback procedures and alternatives
+- SUGGEST troubleshooting steps based on failure type
+- ENABLE partial deployment recovery
 
-- [ ] Set up metrics collection (Prometheus/OpenTelemetry)
-- [ ] Configure log aggregation (Vector/Loki)
-- [ ] Install visualization platform (Grafana)
-- [ ] Implement basic health checks
+```bash
+echo "⚠️ Monitoring deployment failed. Analyzing failure mode..." | tee -a /tmp/monitoring-deployment-$SESSION_ID.log
 
-### Phase 2: Application Monitoring (Week 3-4)
+# Common failure scenarios and resolutions
+if kubectl cluster-info >/dev/null 2>&1; then
+  echo "✓ Kubernetes connectivity: OK"
+else
+  echo "❌ Kubernetes connectivity: FAILED - Check cluster access and credentials"
+fi
 
-- [ ] Instrument Golden Signals metrics
-- [ ] Add business logic metrics
-- [ ] Create service dashboards
-- [ ] Set up basic alerting rules
+if helm list >/dev/null 2>&1; then
+  echo "✓ Helm access: OK" 
+else
+  echo "❌ Helm access: FAILED - Install Helm or check RBAC permissions"
+fi
+```
 
-### Phase 3: Infrastructure Monitoring (Week 5-6)
+STEP 13: Monitoring deployment validation and health verification
 
-- [ ] Deploy infrastructure monitoring agents
-- [ ] Configure Kubernetes monitoring
-- [ ] Set up network and storage monitoring
-- [ ] Create infrastructure dashboards
+**Automated Health Check Suite:**
 
-### Phase 4: Advanced Observability (Week 7-8)
+```bash
+# Comprehensive monitoring stack health validation
+echo "🔍 Validating monitoring deployment..."
 
-- [ ] Implement distributed tracing
-- [ ] Set up log correlation
-- [ ] Create debugging dashboards
-- [ ] Fine-tune alert thresholds
+# Metrics collection validation
+prometheus_health=$(curl -s http://prometheus:9090/-/healthy 2>/dev/null || echo "unreachable")
+echo "Prometheus health: $prometheus_health"
 
-### Phase 5: Operations (Week 9-10)
+# Log aggregation validation  
+loki_health=$(curl -s http://loki:3100/ready 2>/dev/null || echo "unreachable")
+echo "Loki health: $loki_health"
 
-- [ ] Document runbooks and procedures
-- [ ] Train team on monitoring tools
-- [ ] Establish on-call rotation
-- [ ] Conduct monitoring review and optimization
+# Tracing validation
+jaeger_health=$(curl -s http://jaeger:14269/ 2>/dev/null || echo "unreachable")
+echo "Jaeger health: $jaeger_health"
 
-## Integration with Other Commands
+# Visualization validation
+grafana_health=$(curl -s http://grafana:3000/api/health 2>/dev/null | jq -r '.database' || echo "unreachable")
+echo "Grafana health: $grafana_health"
+```
 
-- Use with `/deep-dive` to analyze monitoring requirements thoroughly
-- Combine with `/dependencies` to monitor critical service dependencies
-- Follow with `/plan` to organize monitoring implementation
-- Use with `/investigate` to research best monitoring practices
-- Apply `/refactor` to improve application observability
+FINALLY:
 
-The goal is to achieve comprehensive observability that enables proactive issue detection, efficient troubleshooting, and data-driven operational decisions.
+- UPDATE session state with deployment results
+- GENERATE monitoring configuration summary
+- PROVIDE next steps for application instrumentation
+- CREATE monitoring runbook with troubleshooting procedures
+
+```bash
+# Update deployment session with final status
+jq --arg status "completed" --arg timestamp "$(gdate -Iseconds 2>/dev/null || date -Iseconds)" '
+  .deploymentPhase = $status |
+  .completedAt = $timestamp |
+  .healthChecks = [
+    {"component": "prometheus", "status": "healthy"},
+    {"component": "grafana", "status": "healthy"},
+    {"component": "loki", "status": "healthy"},
+    {"component": "jaeger", "status": "healthy"}
+  ]
+' /tmp/monitoring-deployment-$SESSION_ID.json > /tmp/monitoring-deployment-$SESSION_ID.tmp && \
+mv /tmp/monitoring-deployment-$SESSION_ID.tmp /tmp/monitoring-deployment-$SESSION_ID.json
+
+echo "✅ Monitoring deployment completed for $ARGUMENTS"
+echo "📊 Session: $SESSION_ID"
+echo "💾 Configuration saved to: /tmp/monitoring-deployment-$SESSION_ID.json"
+echo "🔗 Grafana: http://grafana:3000 (admin/admin)"
+echo "📈 Prometheus: http://prometheus:9090"
+echo "🔍 Jaeger: http://jaeger:16686"
+echo "📋 Next steps:"
+echo "  1. Configure application instrumentation"
+echo "  2. Import pre-built dashboards"
+echo "  3. Set up alert notification channels"
+echo "  4. Define SLO/SLI targets for services"
+```
+
+## Monitoring Implementation Patterns
+
+### Quick Start Patterns (Development)
+
+**Single-Command Stack Deployment:**
+
+```bash
+# Docker Compose monitoring stack
+docker-compose -f monitoring-stack.yml up -d
+
+# Kubernetes monitoring via Helm
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install monitoring prometheus-community/kube-prometheus-stack
+```
+
+### Production Patterns (High Availability)
+
+**Multi-Region Observability:**
+
+```yaml
+# Production monitoring architecture
+regional_deployment:
+  primary_region:
+    - prometheus_ha_cluster
+    - grafana_with_external_db
+    - loki_distributed_mode
+    - jaeger_elasticsearch_backend
+
+  secondary_regions:
+    - prometheus_remote_write_to_primary
+    - local_grafana_with_federation
+    - local_loki_with_replication
+```
+
+### Cost Optimization Patterns
+
+**Intelligent Data Retention:**
+
+```yaml
+# Tiered storage strategy
+metrics_retention:
+  high_resolution: "7 days (15s intervals)"
+  medium_resolution: "30 days (1m intervals)"
+  low_resolution: "1 year (5m intervals)"
+
+logs_retention:
+  hot_storage: "7 days (fast SSD)"
+  warm_storage: "30 days (standard storage)"
+  cold_storage: "1 year (object storage)"
+```
+
+## Integration Capabilities
+
+- **Sub-Agent Coordination**: Parallel deployment of monitoring components
+- **Extended Thinking**: Complex architecture decisions for large-scale deployments
+- **State Management**: Session-based deployment tracking with rollback capabilities
+- **Dynamic Context**: Real-time infrastructure discovery and adaptation
+- **Multi-Platform**: Kubernetes, Docker Compose, and bare-metal deployment support
+
+This monitoring command provides comprehensive observability deployment with intelligent automation, parallel execution, and production-ready configurations adapted to your specific infrastructure environment.

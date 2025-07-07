@@ -1,368 +1,800 @@
-# /prototype
+---
+allowed-tools: Task, Write, Edit, MultiEdit, Bash(mkdir:*), Bash(cd:*), Bash(deno:*), Bash(cargo:*), Bash(go:*), Bash(npm:*), Bash(fd:*), Bash(rg:*), Bash(gdate:*), Bash(jq:*), Bash(git:*)
+description: Intelligent prototyping orchestrator with technology detection, rapid scaffolding, and validation automation
+---
 
-Quickly create a working proof-of-concept implementation to validate ideas, test hypotheses, or demonstrate functionality.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
+- Prototype target: $ARGUMENTS
+- Current directory: !`pwd`
+- Existing projects: !`fd "(package\.json|Cargo\.toml|go\.mod|deno\.json|pom\.xml|build\.gradle)" . -d 2 | head -5 || echo "No existing projects detected"`
+- Technology stack hints: !`echo "$ARGUMENTS" | rg -o "(rust|go|deno|node|react|vue|api|cli|web|frontend|backend)" | head -3 || echo "No technology hints in description"`
+- Available tools: !`echo "deno: $(which deno >/dev/null && echo ✓ || echo ✗) | cargo: $(which cargo >/dev/null && echo ✓ || echo ✗) | go: $(which go >/dev/null && echo ✓ || echo ✗) | node: $(which node >/dev/null && echo ✓ || echo ✗)"`
 
-```
-/prototype [feature or concept description]
-```
+## Your Task
 
-## Prototyping Process
+STEP 1: Initialize intelligent prototyping session with technology detection
 
-### 1. Rapid Setup
+- CREATE session state file: `/tmp/prototype-session-$SESSION_ID.json`
+- ANALYZE prototype requirements from $ARGUMENTS
+- DETECT optimal technology stack based on description and available tools
+- DETERMINE prototype complexity (simple proof-of-concept vs. multi-component system)
 
 ```bash
-# Create isolated prototype environment
-mkdir prototype-${FEATURE_NAME}
-cd prototype-${FEATURE_NAME}
-
-# Initialize based on requirements
-deno init  # For Deno projects
-cargo init # For Rust projects
-go mod init prototype # For Go projects
+# Initialize prototyping session state
+echo '{
+  "sessionId": "'$SESSION_ID'",
+  "prototypeTarget": "'$ARGUMENTS'",
+  "detectedTechnology": "auto-detect",
+  "complexity": "simple",
+  "components": [],
+  "timeEstimate": "2-4 hours",
+  "validationCriteria": []
+}' > /tmp/prototype-session-$SESSION_ID.json
 ```
 
-### 2. Prototype Templates
+STEP 2: Intelligent technology stack selection and project scaffolding
 
-#### Web API Prototype (Deno Fresh)
+TRY:
 
-```typescript
-// main.ts - Minimal API prototype
-import { serve } from "@std/http/server.ts";
+**Technology Detection Algorithm:**
 
-const handler = async (req: Request): Promise<Response> => {
-  const url = new URL(req.url);
+```bash
+# Analyze requirements and select optimal stack
+determine_tech_stack() {
+  local description="$ARGUMENTS"
+  
+  case "$description" in
+    *"api"*|*"backend"*|*"service"*)
+      if command -v deno >/dev/null; then
+        echo "deno-fresh-api"
+      elif command -v cargo >/dev/null; then
+        echo "rust-axum"
+      elif command -v go >/dev/null; then
+        echo "go-connectrpc"
+      else
+        echo "node-express"
+      fi
+      ;;
+    *"cli"*|*"tool"*|*"command"*)
+      if command -v cargo >/dev/null; then
+        echo "rust-clap"
+      elif command -v deno >/dev/null; then
+        echo "deno-cli"
+      elif command -v go >/dev/null; then
+        echo "go-cobra"
+      else
+        echo "node-commander"
+      fi
+      ;;
+    *"web"*|*"frontend"*|*"ui"*)
+      if command -v deno >/dev/null; then
+        echo "deno-fresh"
+      else
+        echo "react-vite"
+      fi
+      ;;
+    *"data"*|*"pipeline"*|*"processing"*)
+      if command -v deno >/dev/null; then
+        echo "deno-streams"
+      elif command -v cargo >/dev/null; then
+        echo "rust-tokio"
+      else
+        echo "node-streams"
+      fi
+      ;;
+    *)
+      echo "deno-general"
+      ;;
+  esac
+}
+```
 
-  if (url.pathname === "/api/demo" && req.method === "POST") {
-    const data = await req.json();
-    // Prototype logic here
-    return Response.json({
-      success: true,
-      processed: data,
-      timestamp: new Date().toISOString(),
-    });
+**Rapid Project Scaffolding:**
+
+CASE detected_technology:
+WHEN "deno-fresh-api":
+
+```bash
+# Deno Fresh API Prototype
+mkdir -p prototype-$SESSION_ID/routes/api
+cd prototype-$SESSION_ID
+
+# Initialize Deno project
+deno init --lib
+
+# Create minimal API prototype
+cat > routes/api/demo.ts << 'EOF'
+import { FreshContext } from "$fresh/server.ts";
+
+interface DemoRequest {
+  action: string;
+  data?: any;
+}
+
+interface DemoResponse {
+  success: boolean;
+  result: any;
+  timestamp: string;
+  prototype: boolean;
+}
+
+export const handler = {
+  async POST(req: Request, _ctx: FreshContext): Promise<Response> {
+    try {
+      const body: DemoRequest = await req.json();
+      
+      // Prototype logic implementation
+      const result = await processPrototypeRequest(body);
+      
+      const response: DemoResponse = {
+        success: true,
+        result,
+        timestamp: new Date().toISOString(),
+        prototype: true
+      };
+      
+      return Response.json(response);
+    } catch (error) {
+      return Response.json({
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        prototype: true
+      }, { status: 400 });
+    }
   }
-
-  return new Response("Prototype API", { status: 200 });
 };
 
-console.log("Prototype running on http://localhost:8000");
-await serve(handler);
+async function processPrototypeRequest(request: DemoRequest): Promise<any> {
+  // Mock implementation for rapid prototyping
+  await new Promise(resolve => setTimeout(resolve, 100)); // Simulate processing
+  
+  return {
+    processed: request.data,
+    action: request.action,
+    metrics: {
+      processingTimeMs: 100,
+      itemsProcessed: Array.isArray(request.data) ? request.data.length : 1
+    }
+  };
+}
+EOF
+
+# Create deno.json with prototype tasks
+cat > deno.json << 'EOF'
+{
+  "imports": {
+    "$fresh/": "jsr:@fresh/core@^2.0.0-alpha.22/"
+  },
+  "tasks": {
+    "dev": "deno run --allow-all --watch main.ts",
+    "test": "deno test --allow-all",
+    "proto-test": "curl -X POST http://localhost:8000/api/demo -H 'Content-Type: application/json' -d '{\"action\":\"test\",\"data\":[1,2,3]}'"
+  }
+}
+EOF
+
+# Create main server file
+cat > main.ts << 'EOF'
+import { serve } from "$fresh/server.ts";
+
+console.log("🚀 API Prototype running on http://localhost:8000");
+console.log("📊 Test endpoint: POST /api/demo");
+console.log("🧪 Run tests: deno task proto-test");
+
+await serve();
+EOF
 ```
 
-#### CLI Tool Prototype (Rust)
+WHEN "rust-clap":
 
-```rust
-// src/main.rs - Quick CLI prototype
-use clap::Parser;
-use anyhow::Result;
+```bash
+# Rust CLI Prototype
+mkdir -p prototype-$SESSION_ID/src
+cd prototype-$SESSION_ID
+
+# Initialize Cargo project
+cargo init --name prototype-cli
+
+# Create CLI prototype with Clap
+cat > src/main.rs << 'EOF'
+use clap::{Parser, Subcommand};
+use anyhow::{Result, Context};
+use std::fs;
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(name = "prototype")]
-#[command(about = "A prototype CLI tool")]
-struct Args {
-    /// Input file to process
-    #[arg(short, long)]
-    input: String,
+#[command(about = "A prototype CLI tool for testing concepts")]
+#[command(version)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
     
     /// Enable verbose output
     #[arg(short, long)]
     verbose: bool,
 }
 
+#[derive(Subcommand)]
+enum Commands {
+    /// Process input file
+    Process {
+        /// Input file path
+        #[arg(short, long)]
+        input: PathBuf,
+        
+        /// Output format
+        #[arg(short, long, default_value = "json")]
+        format: String,
+    },
+    /// Generate sample data
+    Generate {
+        /// Number of items to generate
+        #[arg(short, long, default_value = "10")]
+        count: usize,
+    },
+}
+
 fn main() -> Result<()> {
-    let args = Args::parse();
+    let cli = Cli::parse();
     
-    println!("Processing: {}", args.input);
+    match cli.command {
+        Commands::Process { input, format } => {
+            process_file(&input, &format, cli.verbose)
+                .context("Failed to process file")?;
+        }
+        Commands::Generate { count } => {
+            generate_data(count, cli.verbose)
+                .context("Failed to generate data")?;
+        }
+    }
     
-    // Prototype logic here
-    let result = process_file(&args.input)?;
-    
-    println!("Result: {:?}", result);
     Ok(())
 }
 
-fn process_file(path: &str) -> Result<String> {
-    // Mock implementation
-    Ok(format!("Processed {}", path))
-}
-```
-
-#### Data Pipeline Prototype (Python/Deno)
-
-```typescript
-// pipeline.ts - Stream processing prototype
-import { readLines } from "@std/io/read_lines.ts";
-
-async function* processStream(input: AsyncIterable<string>) {
-  for await (const line of input) {
-    // Transform logic
-    const processed = line.toUpperCase().trim();
-    if (processed.length > 0) {
-      yield {
-        original: line,
-        processed,
-        timestamp: Date.now(),
-      };
+fn process_file(path: &PathBuf, format: &str, verbose: bool) -> Result<()> {
+    if verbose {
+        println!("📂 Processing file: {}", path.display());
     }
-  }
+    
+    let content = fs::read_to_string(path)
+        .context("Failed to read input file")?;
+    
+    // Prototype processing logic
+    let lines: Vec<&str> = content.lines().collect();
+    let word_count: usize = lines.iter()
+        .map(|line| line.split_whitespace().count())
+        .sum();
+    
+    match format.as_str() {
+        "json" => {
+            println!("{{");
+            println!("  \"lines\": {},", lines.len());
+            println!("  \"words\": {},", word_count);
+            println!("  \"chars\": {},", content.len());
+            println!("  \"prototype\": true");
+            println!("}}");
+        }
+        "text" => {
+            println!("Lines: {}", lines.len());
+            println!("Words: {}", word_count);
+            println!("Characters: {}", content.len());
+        }
+        _ => anyhow::bail!("Unsupported format: {}", format),
+    }
+    
+    Ok(())
 }
 
-// Usage
-const file = await Deno.open("input.txt");
-const lines = readLines(file);
-
-for await (const result of processStream(lines)) {
-  console.log(JSON.stringify(result));
+fn generate_data(count: usize, verbose: bool) -> Result<()> {
+    if verbose {
+        println!("🎲 Generating {} sample items", count);
+    }
+    
+    println!("[");
+    for i in 0..count {
+        println!("  {{");
+        println!("    \"id\": {},", i + 1);
+        println!("    \"name\": \"Item {}\",", i + 1);
+        println!("    \"value\": {},", (i + 1) * 10);
+        println!("    \"timestamp\": \"{}\"", chrono::Utc::now().to_rfc3339());
+        println!("  }}{}", if i < count - 1 { "," } else { "" });
+    }
+    println!("]");
+    
+    Ok(())
 }
+EOF
+
+# Update Cargo.toml with dependencies
+cat > Cargo.toml << 'EOF'
+[package]
+name = "prototype-cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "prototype"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+EOF
 ```
 
-### 3. Quick Integration Prototypes
+WHEN "go-connectrpc":
 
-#### Database Connection
+```bash
+# Go ConnectRPC Service Prototype
+mkdir -p prototype-$SESSION_ID/{cmd/server,internal/handler,proto}
+cd prototype-$SESSION_ID
 
-```typescript
-// Quick PostgreSQL prototype
-import { Client } from "https://deno.land/x/postgres/mod.ts";
+# Initialize Go module
+go mod init prototype-service
 
-const client = new Client({
-  user: "prototype",
-  database: "prototype_db",
-  hostname: "localhost",
-  port: 5432,
-});
+# Create protobuf definition
+cat > proto/demo.proto << 'EOF'
+syntax = "proto3";
 
-await client.connect();
+package demo.v1;
 
-// Test query
-const result = await client.queryObject`
-  SELECT * FROM users WHERE active = true LIMIT 5
-`;
+option go_package = "prototype-service/internal/gen/demo/v1;demov1";
 
-console.log("Sample data:", result.rows);
-```
+service DemoService {
+  rpc ProcessData(ProcessDataRequest) returns (ProcessDataResponse) {}
+  rpc GetHealth(GetHealthRequest) returns (GetHealthResponse) {}
+}
 
-#### Message Queue
+message ProcessDataRequest {
+  string action = 1;
+  bytes data = 2;
+  map<string, string> metadata = 3;
+}
 
-```go
-// Quick Redis Pub/Sub prototype
+message ProcessDataResponse {
+  bool success = 1;
+  bytes result = 2;
+  int64 processing_time_ms = 3;
+  string timestamp = 4;
+}
+
+message GetHealthRequest {}
+
+message GetHealthResponse {
+  string status = 1;
+  string version = 2;
+  int64 uptime_seconds = 3;
+}
+EOF
+
+# Create service handler
+cat > internal/handler/demo.go << 'EOF'
+package handler
+
+import (
+    "context"
+    "encoding/json"
+    "time"
+    
+    "connectrpc.com/connect"
+    demov1 "prototype-service/internal/gen/demo/v1"
+)
+
+type DemoHandler struct {
+    startTime time.Time
+}
+
+func NewDemoHandler() *DemoHandler {
+    return &DemoHandler{
+        startTime: time.Now(),
+    }
+}
+
+func (h *DemoHandler) ProcessData(
+    ctx context.Context,
+    req *connect.Request[demov1.ProcessDataRequest],
+) (*connect.Response[demov1.ProcessDataResponse], error) {
+    start := time.Now()
+    
+    // Prototype processing logic
+    var data interface{}
+    if err := json.Unmarshal(req.Msg.Data, &data); err != nil {
+        return nil, connect.NewError(connect.CodeInvalidArgument, err)
+    }
+    
+    // Mock processing
+    result := map[string]interface{}{
+        "action": req.Msg.Action,
+        "processed": data,
+        "metadata": req.Msg.Metadata,
+        "prototype": true,
+    }
+    
+    resultBytes, _ := json.Marshal(result)
+    
+    resp := &demov1.ProcessDataResponse{
+        Success:          true,
+        Result:           resultBytes,
+        ProcessingTimeMs: time.Since(start).Milliseconds(),
+        Timestamp:        time.Now().UTC().Format(time.RFC3339),
+    }
+    
+    return connect.NewResponse(resp), nil
+}
+
+func (h *DemoHandler) GetHealth(
+    ctx context.Context,
+    req *connect.Request[demov1.GetHealthRequest],
+) (*connect.Response[demov1.GetHealthResponse], error) {
+    resp := &demov1.GetHealthResponse{
+        Status:        "healthy",
+        Version:       "prototype-v0.1.0",
+        UptimeSeconds: int64(time.Since(h.startTime).Seconds()),
+    }
+    
+    return connect.NewResponse(resp), nil
+}
+EOF
+
+# Create server main
+cat > cmd/server/main.go << 'EOF'
 package main
 
 import (
     "fmt"
-    "github.com/redis/go-redis/v9"
-    "context"
+    "log"
+    "net/http"
+    
+    "connectrpc.com/connect"
+    "golang.org/x/net/http2"
+    "golang.org/x/net/http2/h2c"
+    
+    "prototype-service/internal/handler"
+    demov1 "prototype-service/internal/gen/demo/v1"
+    "prototype-service/internal/gen/demo/v1/demov1connect"
 )
 
 func main() {
-    ctx := context.Background()
-    rdb := redis.NewClient(&redis.Options{
-        Addr: "localhost:6379",
-    })
-
-    // Publisher prototype
-    go func() {
-        for i := 0; i < 10; i++ {
-            rdb.Publish(ctx, "prototype-channel", fmt.Sprintf("Message %d", i))
-            time.Sleep(time.Second)
-        }
-    }()
-
-    // Subscriber prototype
-    sub := rdb.Subscribe(ctx, "prototype-channel")
-    for msg := range sub.Channel() {
-        fmt.Printf("Received: %s\n", msg.Payload)
-    }
+    demoHandler := handler.NewDemoHandler()
+    
+    mux := http.NewServeMux()
+    path, handler := demov1connect.NewDemoServiceHandler(demoHandler)
+    mux.Handle(path, handler)
+    
+    fmt.Println("🚀 ConnectRPC Prototype Service running on :8080")
+    fmt.Println("🔗 Service endpoints:")
+    fmt.Println("  - POST /demo.v1.DemoService/ProcessData")
+    fmt.Println("  - POST /demo.v1.DemoService/GetHealth")
+    
+    log.Fatal(http.ListenAndServe(
+        ":8080",
+        h2c.NewHandler(mux, &http2.Server{}),
+    ))
 }
+EOF
 ```
 
-### 4. UI Prototypes
+STEP 3: Prototype validation and testing infrastructure
 
-#### React Component (Quick)
-
-```jsx
-// PrototypeComponent.jsx
-export default function PrototypeFeature({ data }) {
-  const [state, setState] = useState(data);
-  const [loading, setLoading] = useState(false);
-
-  const handleAction = async () => {
-    setLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setState((prev) => ({ ...prev, updated: Date.now() }));
-    setLoading(false);
-  };
-
-  return (
-    <div style={{ padding: 20, border: "1px solid #ccc" }}>
-      <h3>Prototype: {state.name}</h3>
-      <pre>{JSON.stringify(state, null, 2)}</pre>
-      <button onClick={handleAction} disabled={loading}>
-        {loading ? "Processing..." : "Test Action"}
-      </button>
-    </div>
-  );
-}
-```
-
-### 5. Algorithm Prototypes
-
-```typescript
-// algorithm-prototype.ts
-function prototypeAlgorithm(input: number[]): {
-  result: number[];
-  metrics: {
-    iterations: number;
-    comparisons: number;
-    timeMs: number;
-  };
-} {
-  const start = performance.now();
-  let iterations = 0;
-  let comparisons = 0;
-
-  // Prototype algorithm implementation
-  const result = [...input];
-
-  for (let i = 0; i < result.length; i++) {
-    iterations++;
-    for (let j = i + 1; j < result.length; j++) {
-      comparisons++;
-      if (result[i] > result[j]) {
-        [result[i], result[j]] = [result[j], result[i]];
-      }
-    }
-  }
-
-  return {
-    result,
-    metrics: {
-      iterations,
-      comparisons,
-      timeMs: performance.now() - start,
-    },
-  };
-}
-
-// Test with sample data
-const testData = Array.from({ length: 100 }, () => Math.random() * 1000);
-const output = prototypeAlgorithm(testData);
-console.log("Metrics:", output.metrics);
-```
-
-### 6. Validation & Metrics
-
-```typescript
-// prototype-test.ts
-Deno.test("Prototype validation", async (t) => {
-  await t.step("performance baseline", () => {
-    const start = performance.now();
-    const result = prototypeFunction(testInput);
-    const duration = performance.now() - start;
-
-    assert(duration < 100, `Too slow: ${duration}ms`);
-    assertEquals(result.length, expectedLength);
-  });
-
-  await t.step("edge cases", () => {
-    assertDoesNotThrow(() => prototypeFunction([]));
-    assertDoesNotThrow(() => prototypeFunction(null));
-  });
-});
-```
-
-## Output Format
-
-````markdown
-## Prototype: [Feature Name]
-
-**Status:** Working Prototype
-**Time to Build:** X minutes
-**Dependencies:** [List key dependencies]
-
-### What Works:
-
-- ✅ Core functionality implemented
-- ✅ Basic error handling
-- ✅ Sample data processing
-
-### Limitations:
-
-- ⚠️ No authentication
-- ⚠️ In-memory storage only
-- ⚠️ Limited error handling
-
-### Performance Metrics:
-
-- Throughput: X ops/second
-- Memory usage: Y MB
-- Response time: Z ms
-
-### How to Run:
+**Automated Testing Setup:**
 
 ```bash
-# Clone and setup
-git clone [prototype-repo]
-cd prototype-dir
+# Create comprehensive test suite for prototype
+create_test_suite() {
+  case "$detected_technology" in
+    "deno-"*)
+      cat > test_prototype.ts << 'EOF'
+import { assertEquals, assertExists } from "@std/assert";
 
-# Install and run
-[package manager] install
-[run command]
+Deno.test("Prototype API functionality", async (t) => {
+  await t.step("health check", async () => {
+    const response = await fetch("http://localhost:8000/api/demo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "health", data: null })
+    });
+    
+    assertEquals(response.status, 200);
+    const data = await response.json();
+    assertEquals(data.success, true);
+    assertExists(data.timestamp);
+  });
+  
+  await t.step("data processing", async () => {
+    const testData = [1, 2, 3, 4, 5];
+    const response = await fetch("http://localhost:8000/api/demo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "process", data: testData })
+    });
+    
+    const result = await response.json();
+    assertEquals(result.success, true);
+    assertEquals(result.result.processed, testData);
+  });
+});
+EOF
+      ;;
+    "rust-"*)
+      cat > tests/integration.rs << 'EOF'
+use assert_cmd::Command;
+use predicates::prelude::*;
+use std::fs;
+use tempfile::NamedTempFile;
 
-# Test endpoints
-curl -X POST http://localhost:8000/api/demo \
+#[test]
+fn test_process_command() {
+    let mut file = NamedTempFile::new().unwrap();
+    writeln!(file, "Hello world\nThis is a test").unwrap();
+    
+    let mut cmd = Command::cargo_bin("prototype").unwrap();
+    cmd.args(&["process", "--input", file.path().to_str().unwrap()])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("lines"))
+        .stdout(predicate::str::contains("words"));
+}
+
+#[test]
+fn test_generate_command() {
+    let mut cmd = Command::cargo_bin("prototype").unwrap();
+    cmd.args(&["generate", "--count", "3"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\"id\": 1"))
+        .stdout(predicate::str::contains("\"id\": 3"));
+}
+EOF
+      ;;
+  esac
+}
+```
+
+STEP 4: Performance metrics and validation criteria
+
+**Prototype Benchmarking:**
+
+```bash
+# Create performance measurement tools
+create_benchmark_suite() {
+  echo "⚡ Setting up performance benchmarks..."
+  
+  # API endpoint benchmarking
+  if [[ "$detected_technology" == *"api"* ]]; then
+    cat > benchmark_api.sh << 'EOF'
+#!/bin/bash
+echo "🔥 API Performance Benchmark"
+echo "Testing endpoint: http://localhost:8000/api/demo"
+
+# Warmup
+curl -s -X POST http://localhost:8000/api/demo \
   -H "Content-Type: application/json" \
-  -d '{"test": "data"}'
+  -d '{"action":"warmup","data":null}' > /dev/null
+
+# Benchmark
+echo "📊 Running 100 requests..."
+start_time=$(date +%s%N)
+
+for i in {1..100}; do
+  curl -s -X POST http://localhost:8000/api/demo \
+    -H "Content-Type: application/json" \
+    -d "{\"action\":\"test\",\"data\":$i}" > /dev/null
+done
+
+end_time=$(date +%s%N)
+total_time_ms=$(( (end_time - start_time) / 1000000 ))
+avg_time_ms=$(( total_time_ms / 100 ))
+
+echo "✅ Results:"
+echo "  Total time: ${total_time_ms}ms"
+echo "  Average response time: ${avg_time_ms}ms"
+echo "  Requests per second: $(( 100000 / avg_time_ms ))"
+EOF
+    chmod +x benchmark_api.sh
+  fi
+}
 ```
-````
 
-### Next Steps:
+STEP 5: Documentation and usage guide generation
 
-1. Add authentication layer
-2. Implement persistent storage
-3. Add comprehensive error handling
-4. Create production configuration
-5. Add monitoring/logging
+**Automated Documentation:**
 
-### Key Code:
+```bash
+# Generate comprehensive prototype documentation
+cat > PROTOTYPE.md << EOF
+# Prototype: $ARGUMENTS
 
-[Include 1-2 most important code snippets]
+**Status:** ✅ Working Prototype  
+**Technology Stack:** \$detected_technology  
+**Build Time:** \$(date -Iseconds)  
+**Session ID:** $SESSION_ID
 
-### Learnings:
+## Quick Start
 
-- [Technical insight 1]
-- [Technical insight 2]
-- [Risk or concern discovered]
+\`\`\`bash
+# Clone prototype
+git clone [prototype-repo] prototype-$SESSION_ID
+cd prototype-$SESSION_ID
 
+# Install dependencies and run
+\$installation_commands
+
+# Test functionality
+\$test_commands
+\`\`\`
+
+## What Works
+
+- ✅ Core functionality implemented
+- ✅ Basic error handling and validation
+- ✅ Automated testing suite
+- ✅ Performance benchmarking
+- ✅ API documentation (if applicable)
+
+## Current Limitations
+
+- ⚠️ Prototype-level error handling only
+- ⚠️ In-memory storage (no persistence)
+- ⚠️ Limited input validation
+- ⚠️ No authentication/authorization
+- ⚠️ Basic logging implementation
+
+## Performance Metrics
+
+- **Response Time:** < 100ms (average)
+- **Throughput:** 1000+ requests/second
+- **Memory Usage:** < 50MB
+- **Build Time:** < 30 seconds
+
+## Architecture Decisions
+
+- **Chosen Stack:** Optimized for rapid development and testing
+- **Trade-offs:** Prioritized speed over production-readiness
+- **Dependencies:** Minimal external dependencies for reliability
+
+## Next Steps for Production
+
+1. **Add Authentication:** Implement JWT or OAuth2
+2. **Add Persistence:** Database integration and migrations
+3. **Error Handling:** Comprehensive error handling and recovery
+4. **Monitoring:** Structured logging, metrics, and alerting
+5. **Security:** Input validation, rate limiting, HTTPS
+6. **Documentation:** API documentation and user guides
+7. **Testing:** Comprehensive unit, integration, and e2e tests
+8. **Deployment:** Container packaging and orchestration
+
+## Key Learnings
+
+- **Technical Insights:** [Discovered during implementation]
+- **Performance Characteristics:** [Measured bottlenecks and optimizations]
+- **Architecture Patterns:** [Effective patterns for this use case]
+- **Risk Assessment:** [Potential production challenges identified]
+
+## Prototype Validation
+
+\`\`\`bash
+# Run validation suite
+\$validation_commands
+
+# Expected output:
+# ✅ All core features functional
+# ✅ Performance targets met
+# ✅ Error handling working
+# ⚠️ Production readiness: 40%
+\`\`\`
+
+EOF
 ```
-## Prototype Strategies
 
-1. **Time-boxed**: Limit to 2-4 hours max
-2. **Feature-focused**: One core feature only
-3. **Mock external dependencies**: Use in-memory/fake services
-4. **Hardcode config**: No complex configuration
-5. **Skip edge cases**: Happy path only
-6. **Document assumptions**: List what's not handled
+CATCH (prototype_creation_failed):
 
-## Common Prototypes
+- LOG detailed error information to session state
+- PROVIDE alternative technology stacks
+- SUGGEST manual prototype creation steps
+- SAVE partial progress for continuation
 
-- API endpoint with mock data
-- CLI tool with basic functionality  
-- Data processing pipeline
-- Authentication flow
-- Real-time websocket connection
-- Background job processor
-- Integration with third-party service
-
-## Guidelines
-
-- Start with the smallest possible implementation
-- Use familiar tools for speed
-- Copy/paste liberally from docs
-- Don't worry about code quality initially
-- Focus on proving the concept
-- Measure key metrics early
-- Document limitations clearly
+```bash
+echo "❌ Prototype creation encountered issues. Troubleshooting:"
+echo "  1. Verify required tools are installed and accessible"
+echo "  2. Check internet connectivity for dependency downloads"
+echo "  3. Ensure sufficient disk space for project creation"
+echo "  4. Review error logs in session state file"
+echo "💡 Alternative approaches:"
+echo "  - Try different technology stack"
+echo "  - Create minimal manual prototype"
+echo "  - Use online prototype platforms"
 ```
+
+STEP 6: Session state management and completion reporting
+
+**Finalize Prototype Session:**
+
+```bash
+# Update session state with results
+jq --arg timestamp "$(gdate -Iseconds 2>/dev/null || date -Iseconds)" \
+   --arg tech "$detected_technology" \
+   --arg status "completed" '
+  .completedAt = $timestamp |
+  .selectedTechnology = $tech |
+  .status = $status |
+  .deliverables = [
+    "Working prototype application",
+    "Automated test suite", 
+    "Performance benchmarks",
+    "Documentation and usage guide",
+    "Next steps roadmap"
+  ]
+' /tmp/prototype-session-$SESSION_ID.json > /tmp/prototype-session-$SESSION_ID.tmp && \
+mv /tmp/prototype-session-$SESSION_ID.tmp /tmp/prototype-session-$SESSION_ID.json
+```
+
+FINALLY:
+
+- SAVE all prototype artifacts to organized directory structure
+- PROVIDE clear instructions for testing and validation
+- GENERATE production roadmap with concrete next steps
+- ARCHIVE session state for future reference
+
+**Prototype Session Summary:**
+
+```bash
+echo "🎉 Prototype completed successfully!"
+echo "📦 Project: $ARGUMENTS"
+echo "🛠️ Technology: $detected_technology"
+echo "📂 Location: prototype-$SESSION_ID/"
+echo "⏱️ Session: $SESSION_ID"
+echo ""
+echo "🚀 Quick Start Commands:"
+echo "  cd prototype-$SESSION_ID"
+echo "  $start_command"
+echo ""
+echo "🧪 Validation:"
+echo "  $test_command"
+echo ""
+echo "📊 Performance:"
+echo "  $benchmark_command"
+echo ""
+echo "📋 Next Steps:"
+echo "  1. Review PROTOTYPE.md for detailed information"
+echo "  2. Run validation tests to verify functionality"
+echo "  3. Use prototype to validate hypotheses"
+echo "  4. Plan production implementation roadmap"
+```
+
+## Prototype Strategy Framework
+
+### Time-Boxed Development
+
+- **Duration:** 2-4 hours maximum
+- **Focus:** Single core feature or concept validation
+- **Scope:** Happy path implementation only
+- **Quality:** Functional over perfect
+
+### Technology Selection Criteria
+
+1. **Developer Familiarity:** Use known tools for speed
+2. **Tool Availability:** Leverage installed development environment
+3. **Iteration Speed:** Prioritize fast feedback loops
+4. **Concept Alignment:** Match technology to problem domain
+
+### Validation Methodology
+
+- **Functional Testing:** Core feature works end-to-end
+- **Performance Testing:** Basic performance characteristics
+- **Usability Testing:** Interface is intuitive and responsive
+- **Technical Feasibility:** No major implementation blockers
+
+### Success Metrics
+
+- ✅ **Proof of Concept:** Core hypothesis validated
+- ✅ **Technical Feasibility:** Implementation path clear
+- ✅ **Performance Baseline:** Acceptable response times
+- ✅ **User Experience:** Basic workflow functional
+- ✅ **Learning Objectives:** Key insights captured
+
+This intelligent prototyping command adapts to your requirements, automatically selects optimal technology stacks, provides comprehensive validation, and delivers production-ready roadmaps for successful concept validation.

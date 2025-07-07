@@ -1,304 +1,382 @@
 ---
-allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(rg:*), Bash(fd:*), Bash(jq:*), Bash(bat:*), Bash(eza:*), TodoWrite
-description: Automatically detect and load comprehensive project context based on environment
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(rg:*), Bash(fd:*), Bash(jq:*), Bash(bat:*), Bash(eza:*), Bash(gdate:*), TodoWrite, Task
+description: Automatically detect and load comprehensive project context with intelligent environment analysis
 ---
 
-# /context:project:auto
+## Context
 
-Automatically detects and loads the most relevant project context based on the current directory, branch name, project type, and available coordination files. This command is designed to quickly orient Claude to any project without requiring manual specification.
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Git branch: !`git branch --show-current 2>/dev/null || echo "Not a git repository"`
+- Project name: !`basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"`
+- Recent commits: !`git log --oneline -5 2>/dev/null || echo "No git history"`
+- Uncommitted changes: !`git status --porcelain 2>/dev/null | wc -l | tr -d ' ' || echo "0"`
+- Active worktrees: !`git worktree list 2>/dev/null | wc -l | tr -d ' ' || echo "0"`
+- Language detected: !`if [ -f "deno.json" ] || [ -f "deno.jsonc" ]; then echo "Deno/TypeScript"; elif [ -f "package.json" ]; then echo "Node.js"; elif [ -f "Cargo.toml" ]; then echo "Rust"; elif [ -f "go.mod" ]; then echo "Go"; elif [ -f "pom.xml" ]; then echo "Java/Maven"; elif [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then echo "Python"; else echo "Unknown"; fi`
+- Framework detected: !`if [ -f "deno.json" ] && rg -q "@fresh/core" deno.json 2>/dev/null; then echo "Fresh"; elif [ -f "package.json" ] && rg -q "next" package.json 2>/dev/null; then echo "Next.js"; elif [ -f "Cargo.toml" ] && rg -q "axum" Cargo.toml 2>/dev/null; then echo "Axum"; elif [ -f "go.mod" ] && rg -q "connect-go" go.mod 2>/dev/null; then echo "ConnectRPC"; else echo "See dependencies"; fi`
+- Issue context available: !`BRANCH=$(git branch --show-current 2>/dev/null); PROJECT=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd)); if [ -f "/tmp/$PROJECT/$BRANCH-issue-context.md" ]; then echo "✓ Available"; else echo "✗ None"; fi`
+- PLAN.md exists: !`if [ -f "PLAN.md" ]; then echo "✓ Available"; else echo "✗ None"; fi`
+- CLAUDE.md exists: !`if [ -f "CLAUDE.md" ]; then echo "✓ Project-specific"; elif [ -f "$HOME/.claude/CLAUDE.md" ]; then echo "✓ Global only"; else echo "✗ None"; fi`
 
-## Live Repository Context
+## Your Task
 
-- **Current directory**: !`pwd`
-- **Git branch**: !`git branch --show-current 2>/dev/null || echo "Not a git repository"`
-- **Project name**: !`basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"`
-- **Recent commits**: !`git log --oneline -5 2>/dev/null || echo "No git history"`
-- **Uncommitted changes**: !`git status --porcelain 2>/dev/null | wc -l | xargs -I {} echo "{} files with changes"`
-- **Active worktrees**: !`git worktree list 2>/dev/null | wc -l | xargs -I {} echo "{} worktrees"`
+Automatically detect and load comprehensive project context for: **$ARGUMENTS** (optional focus area)
 
-## Project Detection
+STEP 1: Initialize context loading session
 
-- **Language**: !`if [ -f "deno.json" ] || [ -f "deno.jsonc" ]; then echo "Deno/TypeScript"; elif [ -f "package.json" ]; then echo "Node.js"; elif [ -f "Cargo.toml" ]; then echo "Rust"; elif [ -f "go.mod" ]; then echo "Go"; elif [ -f "pom.xml" ]; then echo "Java/Maven"; elif [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]; then echo "Java/Gradle"; elif [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then echo "Python"; else echo "Unknown"; fi`
-- **Framework**: !`if [ -f "deno.json" ] && grep -q "@fresh/core" deno.json 2>/dev/null; then echo "Fresh"; elif [ -f "package.json" ] && grep -q "next" package.json 2>/dev/null; then echo "Next.js"; elif [ -f "package.json" ] && grep -q "react" package.json 2>/dev/null; then echo "React"; elif [ -f "Cargo.toml" ] && grep -q "axum" Cargo.toml 2>/dev/null; then echo "Axum"; elif [ -f "Cargo.toml" ] && grep -q "actix-web" Cargo.toml 2>/dev/null; then echo "Actix Web"; elif [ -f "go.mod" ] && grep -q "connect-go" go.mod 2>/dev/null; then echo "ConnectRPC"; elif [ -f "go.mod" ] && grep -q "gin-gonic" go.mod 2>/dev/null; then echo "Gin"; elif [ -f "pom.xml" ] && grep -q "spring-boot" pom.xml 2>/dev/null; then echo "Spring Boot"; else echo "See dependencies"; fi`
-- **Testing**: !`if [ -f "deno.json" ] && grep -q "test" deno.json 2>/dev/null; then echo "Deno test"; elif [ -f "package.json" ] && grep -q "jest" package.json 2>/dev/null; then echo "Jest"; elif [ -f "package.json" ] && grep -q "vitest" package.json 2>/dev/null; then echo "Vitest"; elif [ -f "Cargo.toml" ]; then echo "cargo test"; elif [ -f "go.mod" ]; then echo "go test"; else echo "Unknown"; fi`
+- CREATE session state file: `/tmp/auto-context-$SESSION_ID.json`
+- INITIALIZE project analysis workspace: `/tmp/auto-context-workspace-$SESSION_ID/`
+- SET UP context discovery tracking
 
-## Context Sources Available
-
-- **Issue context**: !`BRANCH=$(git branch --show-current 2>/dev/null); PROJECT=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd)); if [ -f "/tmp/$PROJECT/$BRANCH-issue-context.md" ]; then echo "✓ Available"; else echo "✗ None"; fi`
-- **Coordination files**: !`PROJECT=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd)); if [ -d "/tmp/$PROJECT" ]; then ls -1 /tmp/$PROJECT 2>/dev/null | wc -l | xargs -I {} echo "{} files found"; else echo "None"; fi`
-- **PLAN.md**: !`if [ -f "PLAN.md" ]; then echo "✓ Available"; else echo "✗ None"; fi`
-- **CLAUDE.md**: !`if [ -f "CLAUDE.md" ]; then echo "✓ Project-specific"; elif [ -f "$HOME/.claude/CLAUDE.md" ]; then echo "✓ Global only"; else echo "✗ None"; fi`
-
-## Usage
-
-```bash
-# Automatically load all relevant context
-/context:project:auto
-
-# The command will intelligently:
-# 1. Detect project type and framework
-# 2. Load issue context if available
-# 3. Parse coordination files
-# 4. Extract development commands
-# 5. Identify testing strategies
-# 6. Create initial todo list
+```json
+// /tmp/auto-context-$SESSION_ID.json
+{
+  "sessionId": "$SESSION_ID",
+  "timestamp": "ISO_8601_TIMESTAMP",
+  "project": {
+    "name": "detected_project_name",
+    "path": "absolute_project_path",
+    "language": "detected_language",
+    "framework": "detected_framework",
+    "type": "standalone|worktree|submodule|monorepo"
+  },
+  "context_sources": {
+    "issue_context": "path_or_null",
+    "plan_md": "boolean",
+    "claude_md": "path_or_null",
+    "coordination_files": ["list_of_files"],
+    "documentation": ["discovered_docs"]
+  },
+  "loaded_context": {},
+  "todos_generated": [],
+  "phase": "initialization"
+}
 ```
 
-## Arguments
+STEP 2: Project environment analysis and classification
 
-$ARGUMENTS
+Think deeply about the optimal context loading strategy based on project complexity and development workflow patterns.
 
-## Context Loading Strategy
+PROCEDURE analyze_project_environment():
 
-### 1. Branch-Based Context Detection
+- EXTRACT project metadata from Context section
+- DETERMINE project classification and development workflow
+- IDENTIFY primary development tasks and coordination needs
+- ASSESS context loading priorities
 
-```bash
-BRANCH=$(git branch --show-current 2>/dev/null)
-PROJECT=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
+CASE project_context:
+WHEN "issue_branch_detected":
 
-# Check for issue-based branch patterns
-if [[ "$BRANCH" =~ (feature|bugfix|issue|fix)/([0-9]+)- ]]; then
-  ISSUE_NUMBER="${BASH_REMATCH[2]}"
-  ISSUE_CONTEXT="/tmp/$PROJECT/$BRANCH-issue-context.md"
-  
-  if [ -f "$ISSUE_CONTEXT" ]; then
-    echo "📋 Loading issue #$ISSUE_NUMBER context..."
-  fi
-fi
+- PRIORITIZE: Issue context loading, acceptance criteria extraction
+- FOCUS: Branch-specific development tasks and requirements
+- EXTRACT: Issue labels, related PRs, acceptance criteria
 
-# Check for worktree coordination
-WORKTREE_JSON="/tmp/$PROJECT/worktrees.json"
-if [ -f "$WORKTREE_JSON" ]; then
-  echo "🌿 Loading worktree coordination data..."
-fi
-```
+WHEN "main_branch_development":
 
-### 2. Documentation Priority
+- PRIORITIZE: PLAN.md coordination, recent commits analysis
+- FOCUS: General development workflow and project overview
+- EXTRACT: Development commands, testing strategies, documentation
 
-1. **Project CLAUDE.md** - Highest priority for project-specific instructions
-2. **PLAN.md** - Multi-agent coordination and task breakdown
-3. **README.md** - General project overview
-4. **docs/** directory - Additional documentation
-5. **.claude/** directory - Project-specific Claude configurations
+WHEN "worktree_coordination":
 
-### 3. Smart Context Loading
+- PRIORITIZE: Multi-agent coordination files, task assignments
+- FOCUS: Parallel development coordination and conflict avoidance
+- EXTRACT: Worktree status, agent assignments, shared state
 
-**For Issue-Based Development:**
+WHEN "complex_monorepo":
 
-- Load issue description, comments, and acceptance criteria
-- Extract labels to understand issue type (bug, feature, enhancement)
-- Identify related issues and PRs
-- Create todos from acceptance criteria
+- PRIORITIZE: Subproject analysis, dependency mapping
+- FOCUS: Cross-project impacts and integration points
+- EXTRACT: Workspace configuration, build dependencies, service mesh
 
-**For Feature Development:**
+STEP 3: Intelligent context discovery and loading
 
-- Load architectural documentation
-- Identify affected components
-- Find related test files
-- Extract API endpoints or interfaces
+IF $ARGUMENTS provided:
 
-**For Bug Fixes:**
+- FOCUS context loading on specified area or component
+- PRIORITIZE relevant documentation and coordination files
+- FILTER context to reduce noise and increase relevance
+  ELSE:
+- EXECUTE comprehensive context discovery across all available sources
+- LOAD all relevant project context systematically
 
-- Load error patterns from logs
-- Find related test failures
-- Identify recent changes to affected files
-- Load debugging history if available
+Use parallel sub-agents for comprehensive context analysis:
 
-### 4. Development Environment
+- **Agent 1**: Project Structure and Configuration Analysis
+  - Analyze build files, dependencies, and project structure
+  - Extract development commands and testing strategies
+  - Identify key directories and architectural patterns
 
-```bash
-# Extract development commands
-if [ -f "deno.json" ]; then
-  DEV_CMD=$(jq -r '.tasks.dev // "deno run"' deno.json 2>/dev/null)
-  TEST_CMD=$(jq -r '.tasks.test // "deno test"' deno.json 2>/dev/null)
-elif [ -f "package.json" ]; then
-  DEV_CMD=$(jq -r '.scripts.dev // .scripts.start // "npm start"' package.json 2>/dev/null)
-  TEST_CMD=$(jq -r '.scripts.test // "npm test"' package.json 2>/dev/null)
-elif [ -f "Cargo.toml" ]; then
-  DEV_CMD="cargo run"
-  TEST_CMD="cargo test"
-elif [ -f "go.mod" ]; then
-  DEV_CMD="go run ."
-  TEST_CMD="go test ./..."
-fi
+- **Agent 2**: Documentation and Coordination File Processing
+  - Load and parse PLAN.md, CLAUDE.md, README.md
+  - Process coordination files in /tmp/PROJECT/
+  - Extract documentation from docs/ directories
 
-# Check for Docker services
-if [ -f "docker-compose.yml" ] || [ -f "compose.yml" ]; then
-  SERVICES=$(yq '.services | keys | join(", ")' docker-compose.yml 2>/dev/null || echo "docker services")
-fi
-```
+- **Agent 3**: Git History and Branch Context Analysis
+  - Analyze recent commits and branch patterns
+  - Load issue context if available
+  - Extract development workflow patterns
 
-### 5. Port Configuration
+- **Agent 4**: Environment and Service Discovery
+  - Detect Docker services and port configurations
+  - Identify database connections and external dependencies
+  - Analyze deployment and infrastructure setup
 
-```bash
-# Detect default port
-DEFAULT_PORT=$(rg -o 'port["\s:=]+(\d{4})' -r '$1' --no-heading --no-filename | head -1)
+TRY:
 
-# Check if port is in use
-if [ -n "$DEFAULT_PORT" ] && lsof -i ":$DEFAULT_PORT" >/dev/null 2>&1; then
-  SUGGESTED_PORT=$((DEFAULT_PORT + RANDOM % 1000))
-  echo "⚠️  Port $DEFAULT_PORT in use. Suggested: PORT=$SUGGESTED_PORT"
-fi
-```
+- EXECUTE parallel context discovery across all identified sources
+- PROCESS and organize context by functional area
+- SYNTHESIZE findings into comprehensive project understanding
+- GENERATE appropriate todos based on discovered context
+- UPDATE session state: phase = "context_loaded"
 
-### 6. Testing Strategy Detection
+CATCH (missing_context_sources):
 
-```bash
-# Find test files and patterns
-TEST_COUNT=$(fd -e test.ts -e spec.ts -e test.js -e spec.js -e test.rs -e test.go | wc -l)
-INTEGRATION_TESTS=$(fd -p "integration|e2e" -e test.ts -e spec.ts -e test.js -e spec.js | wc -l)
+- PROVIDE detailed context source recommendations
+- CREATE placeholder coordination files for future use
+- DOCUMENT context gaps and suggest improvements
+- GENERATE basic project setup todos
 
-# Detect test configuration
-if [ -f "vitest.config.ts" ] || [ -f "jest.config.js" ]; then
-  TEST_CONFIG="Custom test configuration detected"
-elif [ -f "deno.json" ]; then
-  TEST_CONFIG="Deno test runner"
-fi
-```
+CATCH (complex_project_analysis_required):
 
-### 7. Auto-Generated Todo List
+- USE extended thinking for deep architectural analysis
+- BREAK down complex project structure into manageable components
+- IMPLEMENT progressive context loading with checkpoints
+- CREATE hierarchical project understanding
 
-Based on the context loaded, automatically create an appropriate todo list:
+CATCH (coordination_file_conflicts):
+
+- ANALYZE conflicting information across sources
+- PRIORITIZE context sources based on recency and authority
+- RESOLVE conflicts through intelligent merging strategies
+- DOCUMENT resolution decisions for transparency
+
+STEP 4: Context synthesis and todo generation
+
+PROCEDURE synthesize_project_context():
+
+- CONSOLIDATE findings from all context sources
+- CREATE unified project understanding
+- IDENTIFY key development workflows and entry points
+- EXTRACT actionable development tasks
+
+PROCEDURE generate_intelligent_todos():
+
+CASE project_state:
+WHEN "issue_branch_with_context":
 
 ```typescript
-const todos = [];
-
-// If issue context exists
-if (issueContext) {
-  todos.push({
+// Generate issue-specific todos
+const issueTodos = [
+  {
     content: `Review issue #${issueNumber}: ${issueTitle}`,
     status: "pending",
     priority: "high",
-  });
+  },
+  ...acceptanceCriteria.map((criterion) => ({
+    content: `Implement: ${criterion}`,
+    status: "pending",
+    priority: "high",
+  })),
+];
+```
 
-  // Parse acceptance criteria
-  acceptanceCriteria.forEach((criterion) => {
-    todos.push({
-      content: `Implement: ${criterion}`,
-      status: "pending",
-      priority: "high",
-    });
-  });
-}
+WHEN "coordination_workflow":
 
-// If in a worktree
-if (inWorktree) {
-  todos.push({
+```typescript
+// Generate coordination-based todos
+const coordTodos = [
+  {
     content: "Check coordination files for task assignments",
     status: "pending",
     priority: "medium",
-  });
-}
+  },
+  {
+    content: "Sync with other agents through shared state files",
+    status: "pending",
+    priority: "medium",
+  },
+];
+```
 
-// Standard development tasks
-if (hasTests) {
-  todos.push({
+WHEN "standard_development":
+
+```typescript
+// Generate standard development todos
+const devTodos = [
+  {
     content: "Run test suite to verify setup",
     status: "pending",
     priority: "medium",
-  });
-}
-
-if (hasDocker) {
-  todos.push({
-    content: "Start Docker services",
+  },
+  {
+    content: "Start development services if needed",
     status: "pending",
-    priority: "medium",
-  });
-}
+    priority: "low",
+  },
+];
 ```
 
-## Context Loading Examples
+STEP 5: Environment setup validation and recommendations
 
-### Example 1: Issue-Based Branch
+PROCEDURE validate_development_environment():
 
+- CHECK port availability for detected services
+- VALIDATE required dependencies and tools
+- VERIFY Docker services and external connections
+- ASSESS development workflow readiness
+
+IF port_conflicts_detected:
+
+- SUGGEST alternative port configurations
+- PROVIDE environment variable overrides
+- DOCUMENT port conflict resolution strategies
+
+IF missing_dependencies_detected:
+
+- LIST required tools and installation commands
+- PROVIDE setup instructions for detected framework
+- SUGGEST development environment improvements
+
+STEP 6: Session completion and context summary
+
+FINALLY:
+
+- UPDATE session state: phase = "complete"
+- GENERATE comprehensive context loading summary
+- SAVE context cache for future sessions: `/tmp/auto-context-cache-$SESSION_ID.json`
+- CLEAN UP temporary analysis files
+- CREATE todo list with TodoWrite tool based on discovered context
+
+## Context Loading Patterns
+
+### Branch-Based Context Detection:
+
+**Issue Branch Pattern** (`feature/123-description`, `fix/456-bug`):
+
+- Load issue context from `/tmp/PROJECT/BRANCH-issue-context.md`
+- Extract issue number, labels, and acceptance criteria
+- Generate issue-specific todos and development focus
+- Prioritize related documentation and test files
+
+**Coordination Branch Pattern** (in worktree environment):
+
+- Load coordination files from `/tmp/PROJECT/`
+- Parse agent assignments and task distribution
+- Check worktree status and parallel development state
+- Generate coordination-specific todos
+
+**Main Branch Development**:
+
+- Focus on PLAN.md and general project documentation
+- Load recent commit history for context
+- Generate standard development workflow todos
+- Prioritize project overview and setup tasks
+
+### Documentation Priority Hierarchy:
+
+1. **CLAUDE.md** (project-specific) - Highest priority development guidelines
+2. **PLAN.md** - Multi-agent coordination and task breakdown
+3. **Issue context files** - Branch-specific development requirements
+4. **README.md** - General project overview and setup
+5. **docs/** directory - Additional technical documentation
+6. **.claude/** directory - Project-specific Claude configurations
+
+### Environment Analysis:
+
+**Development Command Extraction:**
+
+- Deno projects: Extract from `deno.json` tasks
+- Node.js projects: Extract from `package.json` scripts
+- Rust projects: Use `cargo` commands
+- Go projects: Use `go` toolchain commands
+- Java projects: Use Maven/Gradle build tools
+
+**Service Discovery:**
+
+- Docker Compose services and port configurations
+- Database connections and external dependencies
+- API endpoints and service mesh configurations
+- Development vs production environment differences
+
+**Testing Strategy Detection:**
+
+- Test framework identification (Jest, Vitest, Deno test, etc.)
+- Test file patterns and coverage configuration
+- Integration and E2E testing setup
+- CI/CD pipeline integration points
+
+## Advanced Context Loading Strategies
+
+### Multi-Agent Context Discovery:
+
+For complex projects or when comprehensive analysis is needed:
+
+```markdown
+Think harder about optimal context loading strategies for this project complexity level.
+
+Use 4 parallel agents for thorough context discovery:
+
+1. **Structure Agent**: Project architecture and build configuration
+2. **Documentation Agent**: All documentation sources and coordination files
+3. **History Agent**: Git history, branch patterns, and development workflow
+4. **Environment Agent**: Services, dependencies, and deployment configuration
 ```
-🚀 Auto-Loading Project Context...
 
-📁 Project: awesome-app
-🌿 Branch: feature/34-user-authentication
-🏗️  Type: Deno/TypeScript (Fresh)
+### State Management Schema:
 
-📋 Issue Context Loaded:
-  #34: Add user authentication
-  Labels: enhancement, priority:high
-  Acceptance Criteria: 4 items
+**Session State Files:**
 
-⚡ Development Commands:
-  Start: deno task dev
-  Test: deno task test
-  Build: deno task build
+- `/tmp/auto-context-$SESSION_ID.json` - Main session state
+- `/tmp/auto-context-workspace-$SESSION_ID/` - Analysis workspace
+- `/tmp/auto-context-cache-$SESSION_ID.json` - Context cache for performance
+- `/tmp/auto-context-todos-$SESSION_ID.json` - Generated todo analysis
 
-🔌 Services:
-  Docker: postgres, redis
-  Port: 8000 (available ✓)
+**Context Loading Checkpoints:**
 
-📚 Documentation:
-  ✓ CLAUDE.md (project-specific)
-  ✓ README.md
-  ✓ PLAN.md (coordination)
+- `project_detected` - Basic project information extracted
+- `sources_discovered` - All context sources identified
+- `context_loaded` - Documentation and files processed
+- `todos_generated` - Action items created
+- `environment_validated` - Development setup verified
 
-✅ Created 6 todos based on issue requirements
-```
+### Integration Patterns:
 
-### Example 2: Main Branch Development
+**Workflow Integration:**
 
-```
-🚀 Auto-Loading Project Context...
+- **Pre-development**: Run automatically at session start
+- **Branch switching**: Re-run to update context for new branch
+- **Coordination**: Integrate with worktree and multi-agent workflows
+- **Documentation**: Keep context fresh with project evolution
 
-📁 Project: backend-api
-🌿 Branch: main
-🏗️  Type: Go (ConnectRPC)
+**Command Composition:**
 
-⚡ Development Commands:
-  Start: go run ./cmd/server
-  Test: go test ./...
-  Proto: buf generate
+- **Before `/start`**: Ensures comprehensive project understanding
+- **After `/new-worktree`**: Loads branch-specific context automatically
+- **With `/plan`**: Provides context for strategic planning
+- **Replaces**: Multiple manual `/context:*` command invocations
 
-📚 Key Directories:
-  - /api - Protocol buffers
-  - /internal - Business logic
-  - /cmd - Entry points
+### Expected Outcomes:
 
-✅ Created 3 todos for general development
-```
+**Immediate Project Orientation:**
 
-## Integration with Other Commands
+- Complete understanding of project structure and technology stack
+- Awareness of current development context (issues, coordination, etc.)
+- Ready-to-use development commands and environment setup
+- Prioritized todo list based on project state and requirements
 
-- **After `/new-worktree`**: Automatically loads issue context
-- **Before `/start`**: Ensures full context understanding
-- **With `/think`**: Provides context for architectural decisions
-- **Replaces**: Manual use of multiple `/context:*` commands
+**Enhanced Development Workflow:**
 
-## Smart Features
+- Seamless context switching between projects and branches
+- Automatic coordination with multi-agent development workflows
+- Intelligent environment setup and conflict resolution
+- Comprehensive project documentation awareness
 
-### Automatic Detection
+**Smart Context Management:**
 
-- Project type from build files
-- Framework from dependencies
-- Testing strategy from config
-- Development workflow from task runners
+- Adaptive loading based on project complexity and type
+- Efficient caching for performance in large projects
+- Conflict resolution for overlapping context sources
+- Progressive disclosure of context complexity
 
-### Context Prioritization
-
-- Issue context takes precedence for issue branches
-- PLAN.md for coordinated development
-- CLAUDE.md for project-specific guidelines
-- Recent git history for understanding changes
-
-### Intelligent Defaults
-
-- Suggests available ports when conflicts detected
-- Creates relevant todos based on context
-- Identifies primary development commands
-- Detects required services and dependencies
-
-## Best Practices
-
-1. **Run at session start** for immediate context
-2. **Run after branch switch** to update context
-3. **Check todo list** for suggested actions
-4. **Note port suggestions** to avoid conflicts
-5. **Review loaded context** to ensure completeness
-
-This command eliminates the need to manually load various context sources, providing a seamless onboarding experience for any project state.
+The auto context loader transforms project onboarding from a manual, error-prone process into an intelligent, automated workflow that adapts to any project structure and development context.

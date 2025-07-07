@@ -1,74 +1,155 @@
-# /schema
+---
+allowed-tools: Read, Write, Edit, Bash, Task
+description: Analyze and manage database schema, generate migrations, CRUD code, and seed data
+---
 
-Comprehensive database schema and data management command.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Git status: !`git status --porcelain || echo "Not a git repository"`
+- Project files: !`ls -la | grep -E "(deno\.json|package\.json|Cargo\.toml|go\.mod)" || echo "No common project files found"`
+- Database config files: !`fd -t f -e sql -e yml -e yaml -e toml | grep -E "(database|diesel|migrate)" | head -5 || echo "No database config files found"`
+- Migration directories: !`fd -t d migration | head -3 || echo "No migration directories found"`
 
-```
-/schema <action> [options]
-```
+## Your task
 
-## Actions
+Comprehensive database schema management command that analyzes current project context and executes specific database operations.
 
-### Migration Management
+STEP 1: Parse arguments and determine action
 
-```
-/schema migrate <description>
-/schema migrate --rollback <migration_id>
-```
+Arguments: $ARGUMENTS
+Parse action from arguments:
 
-### CRUD Generation
+- IF contains "migrate": Set action = "migration"
+- IF contains "crud": Set action = "crud_generation"
+- IF contains "seed": Set action = "data_seeding"
+- IF contains "analyze": Set action = "schema_analysis"
+- ELSE: Set action = "analyze" (default)
 
-```
-/schema crud --for <model>
-/schema crud --for <model> --lang <go|rust|java>
-```
+STEP 2: Detect project context and database tools
 
-### Data Seeding
+Analyze current project to determine:
 
-```
-/schema seed --for <model> --count <number>
-/schema seed --all --env <development|test>
-```
+- Database tool (golang-migrate, diesel, flyway, etc.)
+- ORM framework (sqlx, gorm, diesel, spring-data, etc.)
+- Database type (postgres, mysql, sqlite)
+- Existing schema structure
+- Migration state
 
-## Description
+Create context file: `/tmp/schema-context-$SESSION_ID.json`
 
-This command automates database schema management, CRUD boilerplate generation, and test data creation. It supports multiple database migration tools and programming languages.
+STEP 3: Execute specific action based on detected context
 
-### Migration Management
+CASE action:
+WHEN "migration":
 
-Creates versioned database migration files with proper UP/DOWN scripts:
+- Generate migration files with UP/DOWN scripts
+- Use detected migration tool format
+- Create timestamped migration files
+- CHECKPOINT: Save migration details to state file
 
-**Supported Migration Tools:**
+WHEN "crud_generation":
 
-- **golang-migrate**: Creates `.sql` files with timestamp prefixes
-- **Flyway**: Creates `V{version}__{description}.sql` files
-- **Diesel (Rust)**: Creates migration files in `migrations/` directory
-- **Liquibase**: Creates XML/YAML changelog files
+- Analyze model structures
+- Generate repository/DAO patterns
+- Create CRUD operations in detected language
+- Follow existing code patterns
 
-**Generated Migration Structure:**
+WHEN "data_seeding":
+
+- Generate realistic test data
+- Maintain foreign key relationships
+- Create seed scripts for detected database
+- Environment safety checks
+
+WHEN "schema_analysis":
+
+- Map existing schema structure
+- Identify relationships and constraints
+- Generate schema documentation
+- Find optimization opportunities
+
+STEP 4: Handle framework-specific implementation
+
+Database Tool Detection:
+
+- Go: golang-migrate, goose, atlas, ent
+- Rust: diesel, sqlx, sea-orm
+- Java: Flyway, Liquibase, JPA/Hibernate
+- Node/Deno: Prisma, TypeORM, Drizzle
+
+ORM Pattern Recognition:
+
+- Repository pattern (Go, Java)
+- Active Record pattern (Ruby, some JS ORMs)
+- Query Builder pattern (Rust sqlx)
+- Data Mapper pattern (TypeORM)
+
+STEP 5: Generate appropriate code/files
+
+Based on detected tools and patterns:
+
+- Create migration files with proper naming
+- Generate CRUD boilerplate following conventions
+- Create seed scripts with realistic data
+- Update configuration files if needed
+
+STEP 6: Validation and safety checks
+
+- Validate generated SQL syntax
+- Check for environment safety (no production operations)
+- Verify foreign key constraints
+- Test generated code compilation
+
+STEP 7: Report results and cleanup
+
+- Show summary of generated files
+- Provide next steps (run migrations, test code, etc.)
+- Clean up temporary files
+- Update state tracking
+
+## Framework-Specific Templates
+
+### Go with golang-migrate
 
 ```sql
--- migrations/000001_add_user_email_verification.up.sql
-ALTER TABLE users 
-ADD COLUMN email_verification_token VARCHAR(255),
-ADD COLUMN email_verified_at TIMESTAMP;
+-- migrations/000001_create_users.up.sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
 
-CREATE INDEX idx_users_verification_token 
-ON users(email_verification_token);
-
--- migrations/000001_add_user_email_verification.down.sql
-DROP INDEX idx_users_verification_token;
-ALTER TABLE users 
-DROP COLUMN email_verification_token,
-DROP COLUMN email_verified_at;
+-- migrations/000001_create_users.down.sql
+DROP TABLE users;
 ```
 
-### CRUD Generation
+### Rust with Diesel
 
-Analyzes model structures and generates complete data access layers:
+```rust
+// migrations/create_users/up.sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR NOT NULL UNIQUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+```
 
-**Go Example (with sqlx):**
+### Java with Flyway
+
+```sql
+-- V1__Create_users_table.sql
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## CRUD Generation Examples
+
+### Go Repository Pattern
 
 ```go
 type UserRepository struct {
@@ -76,24 +157,19 @@ type UserRepository struct {
 }
 
 func (r *UserRepository) Create(ctx context.Context, user *User) error {
-    query := `INSERT INTO users (name, email, created_at) VALUES ($1, $2, $3) RETURNING id`
-    return r.db.QueryRowContext(ctx, query, user.Name, user.Email, user.CreatedAt).Scan(&user.ID)
-}
-
-func (r *UserRepository) GetByID(ctx context.Context, id int64) (*User, error) {
-    // Implementation...
+    query := `INSERT INTO users (email) VALUES ($1) RETURNING id`
+    return r.db.QueryRowContext(ctx, query, user.Email).Scan(&user.ID)
 }
 ```
 
-**Rust Example (with sqlx):**
+### Rust with sqlx
 
 ```rust
 impl UserRepository {
     pub async fn create(&self, user: &User) -> Result<User, sqlx::Error> {
         let row = sqlx::query_as!(
             User,
-            "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *",
-            user.name,
+            "INSERT INTO users (email) VALUES ($1) RETURNING *",
             user.email
         )
         .fetch_one(&self.pool)
@@ -103,109 +179,53 @@ impl UserRepository {
 }
 ```
 
-**Java Example (with Spring Data JPA):**
+### Java Spring Data
 
 ```java
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
-    List<User> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
-    
-    @Query("SELECT u FROM User u WHERE u.name LIKE %:name%")
-    List<User> findByNameContaining(@Param("name") String name);
 }
 ```
 
-### Data Seeding
+## State Management
 
-Generates realistic test data for development and testing:
+Session state file: `/tmp/schema-state-$SESSION_ID.json`
 
-**Features:**
-
-- **Realistic Data**: Uses libraries like Faker to generate believable data
-- **Relationship Handling**: Maintains foreign key constraints
-- **Configurable Volume**: Specify exact counts or ranges
-- **Environment Safety**: Prevents accidental production seeding
-
-**Generated Seed Script Example:**
-
-```sql
--- seeds/users_seed.sql
-INSERT INTO users (name, email, created_at) VALUES
-('Alice Johnson', 'alice.johnson@example.com', '2024-01-15 10:30:00'),
-('Bob Smith', 'bob.smith@example.com', '2024-01-16 14:22:00'),
-('Carol Davis', 'carol.davis@example.com', '2024-01-17 09:15:00');
-
--- Maintains relationships
-INSERT INTO posts (user_id, title, content) VALUES
-(1, 'Getting Started with Go', 'Here are some tips...'),
-(1, 'Database Best Practices', 'When working with databases...'),
-(2, 'Rust Performance Tips', 'Optimizing Rust code...');
+```json
+{
+  "session_id": "$SESSION_ID",
+  "action": "migration",
+  "detected_tools": ["golang-migrate", "sqlx"],
+  "database_type": "postgres",
+  "generated_files": [
+    "migrations/000001_create_users.up.sql",
+    "migrations/000001_create_users.down.sql"
+  ],
+  "status": "completed"
+}
 ```
 
-## Framework Integration
+## Error Handling
 
-### Database Tools Detected:
+TRY:
 
-- **Go**: `golang-migrate`, `goose`, `atlas`, `ent`
-- **Rust**: `diesel`, `sqlx`, `sea-orm`
-- **Java**: `Flyway`, `Liquibase`, `JPA/Hibernate`
-- **Node/Deno**: `Prisma`, `TypeORM`, `Drizzle`
-
-### ORM Pattern Recognition:
-
-Automatically detects and follows existing patterns:
-
-- Repository pattern (Go, Java)
-- Active Record pattern (Ruby, some JS ORMs)
-- Query Builder pattern (Rust sqlx)
-- Data Mapper pattern (TypeORM)
-
-## Examples
-
-### Create a migration:
-
-```
-/schema migrate "add-user-email-verification-token"
-```
-
-### Generate CRUD for Go model:
-
-```
-/schema crud --for User --lang go
-```
-
-### Seed development data:
-
-```
-/schema seed --for User --count 50
-/schema seed --all --env development
-```
-
-### Rollback migration:
-
-```
-/schema migrate --rollback 20240315143022
-```
-
-## Configuration
-
-Respects existing database configuration files:
-
-- `database.yml` (Rails-style)
-- `dbconfig.yml` (golang-migrate)
-- `application.properties` (Spring)
-- `diesel.toml` (Diesel)
+- Execute primary operation
+- Validate generated code
+  CATCH (missing dependencies):
+- List required tools/packages
+- Provide installation instructions
+  CATCH (syntax errors):
+- Show specific error details
+- Suggest corrections
+  FINALLY:
+- Clean up temporary files
+- Update progress tracking
 
 ## Safety Features
 
-- **Environment Checks**: Prevents destructive operations in production
-- **Backup Recommendations**: Suggests backup commands before migrations
-- **Dry Run Mode**: Preview changes without executing
-- **Transaction Wrapping**: Wraps migrations in transactions when supported
-
-## Integration with Other Commands
-
-- Use with `/containerize` to include migration steps in Docker builds
-- Combine with `/ci-gen` to add database testing to CI pipelines
-- Use with `/deploy` to automate migrations during deployments
+- Environment detection (prevent production operations)
+- Backup recommendations before destructive operations
+- Dry run mode for preview
+- Transaction wrapping for migrations
+- Foreign key constraint validation

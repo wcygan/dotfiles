@@ -1,77 +1,166 @@
-# /api-docs
+---
+allowed-tools: Read, Write, Bash(fd:*), Bash(rg:*), Bash(jq:*), Bash(gdate:*), Task
+description: Generate comprehensive API documentation with OpenAPI specs and interactive sites
+---
 
-Automatically generate comprehensive API documentation from $ARGUMENT with OpenAPI specifications, interactive examples, and deployment-ready documentation sites.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s000000000 2>/dev/null || echo "1751900987850553000"`
+- Current directory: !`pwd`
+- Target: $ARGUMENTS
+- Project structure: !`fd . -t d -d 2 | head -10 || echo "No subdirectories found"`
+- API files: !`fd "\.(js|ts|go|rs|java|py|php|cs|rb|kt|scala)$" . | wc -l | tr -d ' ' || echo "0"`
+- Route patterns: !`rg "(app|router|route)\.(get|post|put|delete|patch)" . --type js --type ts --type go --type rust | wc -l | tr -d ' ' || echo "0"`
+- Controller files: !`fd "(controller|handler|route)" . -t f | head -5 || echo "No controllers found"`
+- Existing docs: !`fd "(openapi|swagger)\.(json|yaml|yml)$" . | head -3 || echo "No existing API docs found"`
+- Package files: !`fd "(package\.json|Cargo\.toml|go\.mod|pom\.xml|requirements\.txt)" . | head -3 || echo "No package files detected"`
+- Framework indicators: !`rg "(express|fastify|axum|actix|gin|echo|spring|django|flask)" . --type js --type ts --type go --type rust --type java --type python | wc -l | tr -d ' ' || echo "0"`
+- Git status: !`git status --porcelain | head -3 || echo "Not a git repository"`
+
+## Your Task
+
+STEP 1: Initialize API documentation session
+
+- CREATE session state file: `/tmp/api-docs-session-$SESSION_ID.json`
+- SET initial state:
+  ```json
+  {
+    "sessionId": "$SESSION_ID",
+    "phase": "discovery",
+    "target": "$ARGUMENTS",
+    "frameworks_detected": [],
+    "endpoints_found": [],
+    "documentation_strategy": "auto",
+    "output_formats": []
+  }
+  ```
+
+STEP 2: Determine documentation scope and strategy
+
+Think hard about the optimal documentation approach based on project complexity and framework diversity.
+
+**Extended Thinking Areas:**
+
+- Framework detection strategies and confidence scoring algorithms
+- Multi-language API schema extraction and synthesis approaches
+- Interactive documentation UX patterns and developer experience optimization
+- Deployment automation and CI/CD integration for documentation maintenance
+- Sub-agent coordination for large-scale API analysis and documentation generation
+
+IF $ARGUMENTS provided:
+IF $ARGUMENTS is file:
+
+- SET scope to "single_file"
+- ANALYZE specific route file for endpoint definitions
+- EXTRACT authentication and middleware requirements
+  ELSE IF $ARGUMENTS is directory:
+- SET scope to "directory_scan"
+- RECURSIVELY process all controller/handler files
+- BUILD comprehensive API specification with hierarchy
+  ELSE:
+
+- SET scope to "project_wide"
+- SCAN entire project for API route definitions and controllers
+- DETECT existing OpenAPI/Swagger specifications
+- ANALYZE framework structure for automatic documentation
+
+STEP 3: Framework detection and analysis
+
+TRY:
+
+- EXECUTE systematic framework detection from Context section
+- IDENTIFY primary backend framework(s) in use
+- DETERMINE API pattern conventions for detected frameworks
+- SAVE framework information to session state
+
+**Framework Analysis Logic:**
+
+CASE framework_indicators from Context:
+WHEN contains "express" OR "fastify":
+
+- SET framework to "node_express"
+- SEARCH for: `fd "(routes|controllers)" --type d`
+- EXTRACT patterns: `rg "(app|router)\.(get|post|put|delete|patch)" --type js --type ts -A 5`
+
+WHEN contains "axum" OR "actix":
+
+- SET framework to "rust_web"
+- SEARCH for: `fd "src" --type d`
+- EXTRACT patterns: `rg "Router::new\(\)|\.route\(|#\[axum::" --type rust -A 3`
+
+WHEN contains "spring" OR framework indicators show Java:
+
+- SET framework to "java_spring"
+- SEARCH for: `fd "(controller|resource)" --type d`
+- EXTRACT patterns: `rg "@(RestController|Path|GET|POST|PUT|DELETE)Mapping" --type java -A 3`
+
+WHEN contains "gin" OR "echo":
+
+- SET framework to "go_web"
+- EXTRACT patterns: `rg "router\.(GET|POST|PUT|DELETE)|func.*Handler" --type go -A 3`
+
+WHEN API files > 20 AND multiple frameworks detected:
+
+- USE sub-agent delegation for parallel framework analysis
+- DELEGATE framework-specific documentation generation
+
+CATCH (framework_detection_failed):
+
+- LOG detection failures to session state
+- CONTINUE with generic HTTP documentation approach
+- PROVIDE manual framework specification option
+
+STEP 4: Documentation generation strategy selection
+
+BASED ON detected frameworks and project complexity:
+
+FOR comprehensive projects (>50 endpoints OR multiple frameworks):
+
+**Use parallel sub-agents for optimal performance:**
 
 ```
-/api-docs [routes-file]
-/api-docs [controller-directory]
-/api-docs
+Analyze this API codebase using 5 parallel agents:
+1. Schema Analysis Agent: Extract data models, types, and validation rules
+2. Endpoint Discovery Agent: Map all API routes, methods, and parameter patterns
+3. Authentication Analysis Agent: Document auth flows, middleware, and security patterns
+4. Response Analysis Agent: Analyze response schemas, status codes, and error handling
+5. Integration Documentation Agent: Create deployment guides, testing frameworks, and CI/CD integration
+
+Each agent should focus exclusively on their domain and provide structured output for synthesis.
 ```
 
-## Context Detection
+FOR targeted projects (<50 endpoints, single framework):
 
-**When no argument provided:**
+- EXECUTE sequential documentation generation
+- FOCUS on framework-specific patterns and conventions
+- GENERATE comprehensive OpenAPI specification
 
-- Scans project for API route definitions and controllers
-- Detects existing OpenAPI/Swagger specifications
-- Analyzes framework structure for automatic documentation
-- Provides interactive endpoint selection
+STEP 5: Execute documentation generation workflow
 
-**When routes file provided:**
+FOR EACH detected framework:
 
-- Analyzes specific route file for endpoint definitions
-- Extracts authentication and middleware requirements
-- Documents request/response schemas
+- GENERATE framework-specific OpenAPI specifications
+- CREATE interactive documentation interfaces
+- EXTRACT schema definitions from code
+- COMPILE multi-language code examples
+- VALIDATE generated documentation completeness
 
-**When directory provided:**
+STEP 6: State management and checkpoint creation
 
-- Recursively processes all controller/handler files
-- Builds comprehensive API specification
-- Maintains hierarchical organization
+- UPDATE session state with generation progress
+- CREATE checkpoint: `/tmp/api-docs-checkpoint-$SESSION_ID.json`
+- SAVE generated specifications for review
+- PREPARE deployment-ready documentation
 
-## Framework Detection
+FINALLY:
 
-**Backend Framework Analysis:**
+- ARCHIVE session data for future reference
+- CLEAN UP temporary generation files
+- PROVIDE documentation deployment instructions
 
-```bash
-# Detect API framework and route patterns
-case $FRAMEWORK in
-  "express"|"fastify")
-    fd "(routes|controllers)" --type d
-    rg "(app|router)\.(get|post|put|delete|patch)" --type js --type ts -A 5
-    ;;
-  "axum"|"actix")
-    fd "src" --type d
-    rg "Router::new\(\)|\.route\(|#\[axum::" --type rust -A 3
-    ;;
-  "spring"|"quarkus")
-    fd "(controller|resource)" --type d
-    rg "@(RestController|Path|GET|POST|PUT|DELETE)Mapping" --type java -A 3
-    ;;
-  "gin"|"echo"|"connectrpc")
-    rg "router\.(GET|POST|PUT|DELETE)|func.*Handler" --type go -A 3
-    ;;
-  "fresh"|"oak")
-    fd "(routes|handlers)" --type d
-    rg "handler|export.*function" --type ts -A 3
-    ;;
-esac
-```
+## Framework-Specific Implementation Templates
 
-**Existing Documentation Detection:**
-
-```bash
-# Check for existing API documentation
-fd "(openapi|swagger).(json|yaml|yml)$" --max-depth 2
-fd "api-docs|docs/api" --type d
-rg "@swagger|@openapi|@apiDoc" --type js --type ts --type java --type go
-```
-
-## Documentation Generation Strategies
-
-### 1. OpenAPI Specification Generation
+### OpenAPI Specification Generation Patterns
 
 **Express.js with Swagger JSDoc:**
 
@@ -927,23 +1016,108 @@ jobs:
           git push
 ```
 
-## Output
+## Expected Output
 
-The command generates:
+After executing this command, you will have:
+
+**Generated Documentation:**
 
 1. **OpenAPI Specifications**: Complete API documentation with schemas, examples, and security definitions
-2. **Interactive Documentation**: Swagger UI, Redoc, or custom documentation sites
-3. **Code Examples**: Multi-language client code examples with authentication
-4. **Deployment Configuration**: Automated documentation deployment and hosting
-5. **API Testing Interface**: Built-in API testing capabilities
-6. **Schema Validation**: Request/response validation based on documentation
+2. **Interactive Documentation Sites**: Swagger UI, Redoc, or custom documentation with live testing
+3. **Multi-Language Code Examples**: Client code examples in JavaScript, Python, Go, Rust, curl
+4. **Schema Validation**: Request/response validation based on generated documentation
+5. **API Testing Interface**: Built-in API testing capabilities with authentication support
+
+**Deployment Ready Assets:**
+
+6. **Deployment Configuration**: GitHub Actions, GitLab CI, or other CI/CD for automated docs
+7. **Hosting Setup**: GitHub Pages, Netlify, or Vercel deployment configurations
+8. **Integration Scripts**: Package.json tasks or deno.json tasks for documentation maintenance
+
+**Development Integration:**
+
+9. **IDE Integration**: VS Code snippets and IntelliSense for documented APIs
+10. **Testing Integration**: Generated test templates based on documented endpoints
+11. **Monitoring Setup**: Basic observability configuration for API usage tracking
 
 ## Integration with Other Commands
 
-- Use with `/test-gen` for API test generation from documentation
-- Combine with `/load-test` for performance testing documented endpoints
-- Integrate with `/ci-gen` for automated documentation updates
-- Follow with `/deploy` for documentation site deployment
-- Use with `/validate` for API contract validation
+- `/test-generate-api-tests` - Generate comprehensive API tests from generated documentation
+- `/load-test-api` - Performance testing for documented endpoints with realistic scenarios
+- `/ci-generate-docs-pipeline` - Automated documentation updates in CI/CD workflows
+- `/deploy-docs-site` - Deploy interactive documentation to hosting platforms
+- `/validate-api-contracts` - Contract validation between documentation and implementation
+- `/context-load-openapi` - Load OpenAPI context for further API development
+- `/security-audit-api` - Security analysis based on documented endpoints and schemas
+
+## Session State Management Schema
+
+**State Files Created:**
+
+- `/tmp/api-docs-session-$SESSION_ID.json` - Main documentation generation state
+- `/tmp/api-docs-checkpoint-$SESSION_ID.json` - Progress checkpoint for resumability
+- `/tmp/api-docs-specs-$SESSION_ID/` - Generated OpenAPI specifications directory
+- `/tmp/api-docs-agents-$SESSION_ID/` - Inter-agent communication (for large projects)
+
+**Enhanced State Schema:**
+
+```json
+{
+  "sessionId": "$SESSION_ID",
+  "timestamp": "ISO_8601_TIMESTAMP",
+  "target": "$ARGUMENTS",
+  "phase": "discovery|analysis|generation|validation|deployment|complete",
+  "scope": "single_file|directory_scan|project_wide",
+  "frameworks_detected": [
+    {
+      "name": "express|axum|spring|gin|etc",
+      "confidence": "high|medium|low",
+      "endpoints_count": "number",
+      "file_patterns": ["list_of_relevant_files"]
+    }
+  ],
+  "endpoints_discovered": [
+    {
+      "method": "GET|POST|PUT|DELETE|PATCH",
+      "path": "/api/endpoint/path",
+      "source_file": "path/to/source.ext",
+      "line_number": "number",
+      "framework": "detected_framework",
+      "middleware": ["auth", "validation", "etc"],
+      "parameters": ["list_of_parameters"],
+      "documented": "boolean"
+    }
+  ],
+  "documentation_outputs": [
+    {
+      "format": "openapi|swagger|postman|etc",
+      "file_path": "generated/docs/path",
+      "status": "generated|validated|deployed",
+      "endpoints_covered": "number",
+      "completeness_score": "percentage"
+    }
+  ],
+  "sub_agent_coordination": {
+    "agents_used": ["schema", "endpoint", "auth", "response", "integration"],
+    "communication_files": ["/tmp/paths/to/agent/outputs"],
+    "synthesis_complete": "boolean",
+    "cross_cutting_concerns": ["shared_schemas", "common_middleware"]
+  },
+  "deployment_ready": {
+    "interactive_site": "path/to/docs/site",
+    "ci_integration": "github_actions|gitlab_ci|etc",
+    "hosting_target": "github_pages|netlify|vercel|etc"
+  }
+}
+```
+
+**Advanced Features:**
+
+- **Cross-Platform Session IDs**: Fallback date commands for non-GNU systems
+- **Framework Auto-Detection**: Intelligent pattern matching with confidence scoring
+- **Incremental Documentation**: Update existing docs without full regeneration
+- **Multi-Framework Support**: Handle polyglot APIs with multiple backend languages
+- **Deployment Automation**: Generate CI/CD configurations for documentation updates
+- **Interactive Testing**: Built-in API testing interface in generated documentation
 
 The documentation generation adapts to detected frameworks and provides comprehensive, interactive API documentation with automated deployment and maintenance.

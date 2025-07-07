@@ -1,67 +1,258 @@
-# /context-load-deno-fresh
+---
+allowed-tools: mcp__context7__resolve-library-id, mcp__context7__get-library-docs, WebFetch, Read, Write, Bash(fd:*), Bash(rg:*), Bash(gdate:*)
+description: Load comprehensive Deno Fresh framework context with islands architecture and modern styling
+---
 
-Load comprehensive documentation context for Deno Fresh web framework development.
+## Context
 
-## Instructions for Claude
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Fresh projects detected: !`fd "deno\.json" --max-depth 2 | rg fresh | head -5 || echo "No Fresh projects found"`
+- Deno version: !`deno --version | head -1 || echo "Deno not installed"`
+- Framework files: !`fd "(fresh\.config|routes|islands)" --type d --max-depth 3 | head -10 || echo "No Fresh structure detected"`
+- Tailwind configs: !`fd "(tailwind\.config|twind\.config)" --max-depth 2 | head -5 || echo "No styling configs found"`
+- Git status: !`git status --porcelain | head -5 || echo "Not a git repository"`
+- Current branch: !`git branch --show-current 2>/dev/null || echo "No git repository"`
 
-When this command is executed, you MUST:
+## Your Task
 
-1. **Use the Context7 MCP server** (if available) to fetch and load context from the URLs below
-2. **Use WebFetch tool** to gather information from these key sources:
-   - **Fresh Documentation**: `https://fresh.deno.dev/docs/`
-     - Focus on: islands architecture, routing, server-side rendering
-   - **Preact Guide**: `https://preactjs.com/guide/v10/getting-started`
-     - Focus on: components, hooks, signals, performance
-   - **Tailwind CSS**: `https://tailwindcss.com/docs`
-     - Focus on: utility classes, responsive design, customization
-   - **Fresh Tailwind Integration**: `https://fresh.deno.dev/docs/concepts/styling`
-     - Focus on: plugin setup, configuration, migration from Twind
-   - **Deno Deploy**: `https://docs.deno.com/deploy/`
-     - Focus on: deployment, edge functions, KV storage
-   - **Fresh Examples**: `https://github.com/denoland/fresh/tree/main/examples`
-     - Focus on: practical implementations, patterns
+STEP 1: Context Loading Session Initialization
 
-3. **Key documentation sections to prioritize**:
-   - Islands architecture concepts
-   - File-based routing system
-   - Server-side rendering
-   - Client-side hydration
-   - Signal-based state management
-   - Styling with Tailwind CSS plugin
-   - Tailwind configuration and optimization
-   - Migration from Twind to Tailwind CSS
+- Create session state file: /tmp/fresh-context-$SESSION_ID.json
+- Initialize context loading registry and source tracking
+- Set up parallel context loading coordination
+- Create checkpoint system for resumable context loading
 
-4. **Focus areas for this stack**:
-   - Zero-config TypeScript setup
-   - Islands architecture benefits
-   - File-based routing patterns
-   - Component composition
-   - State management with signals
-   - Styling strategies
-   - Performance optimization
-   - Deployment to Deno Deploy
+STEP 2: Fresh Framework Context Discovery
 
-## Expected Outcome
+TRY:
 
-After loading this context, you should be able to provide expert guidance on:
+- Use Context7 MCP server to load Fresh framework documentation:
+  - Resolve Fresh library ID: `/denoland/fresh`
+  - Load comprehensive Fresh documentation context
+  - Focus on: islands architecture, routing, SSR, hydration
+  - Save checkpoint: context7_fresh_loaded
 
-- Building Fresh applications
-- Implementing islands architecture
-- Creating reusable components
-- Managing application state
-- Styling with Tailwind CSS plugin (Fresh 1.6+)
-- Configuring Tailwind with ahead-of-time builds
-- Migrating from Twind to Tailwind CSS
-- Fresh 2.0 alpha features and timeline
-- Optimizing performance
-- Testing Fresh applications
-- Deploying to production
+CATCH (context7_unavailable):
 
-## Fresh Version Notes
+- Fall back to WebFetch for direct documentation loading
+- Use systematic web fetching for key Fresh resources
+- Document context7 availability for future sessions
+- Continue with manual context loading strategy
 
-- **Fresh 1.6+**: Stable with official Tailwind CSS plugin support
-- **Fresh 2.0 Alpha**: Available now with built-in Tailwind option during init
-- **Fresh 2.0 Stable**: Expected late Q3 2025 (September)
+STEP 3: Parallel Documentation Loading (Sub-Agent Approach)
+
+FOR comprehensive Fresh ecosystem coverage:
+
+Launch 5 parallel context loading sub-agents:
+
+- **Fresh Core Agent**: Load islands architecture, routing, and SSR documentation
+- **Preact Integration Agent**: Load component patterns, hooks, and signals documentation
+- **Styling Agent**: Load Tailwind CSS integration and Fresh styling strategies
+- **Deployment Agent**: Load Deno Deploy and production deployment documentation
+- **Examples Agent**: Analyze Fresh example projects and implementation patterns
+
+ELSE (focused context loading):
+
+Load core Fresh documentation sequentially:
+
+- Fresh Documentation: `https://fresh.deno.dev/docs/`
+- Preact Guide: `https://preactjs.com/guide/v10/getting-started`
+- Tailwind CSS Integration: `https://fresh.deno.dev/docs/concepts/styling`
+- Deno Deploy: `https://docs.deno.com/deploy/`
+
+STEP 4: Context Integration and Validation
+
+TRY:
+
+- Validate loaded documentation completeness
+- Cross-reference Fresh version compatibility (1.6+ vs 2.0 alpha)
+- Generate Fresh-specific guidance summary
+- Test context integration with project detection
+- Save checkpoint: context_integration_complete
+
+CATCH (incomplete_context_loading):
+
+- Document missing documentation sections
+- Provide fallback guidance sources
+- Create manual context loading instructions
+- Save partial context state for incremental loading
+
+CATCH (network_connectivity_issues):
+
+- Use cached documentation if available
+- Provide offline Fresh reference materials
+- Document connectivity limitations in session state
+- Create alternative context loading strategy
+
+STEP 5: Fresh Expertise Capabilities Enablement
+
+Activate expert capabilities for:
+
+**Core Fresh Framework:**
+
+- Islands architecture design and optimization
+- File-based routing system implementation
+- Server-side rendering and client-side hydration
+- Component composition and state management
+- Signal-based reactive state patterns
+
+**Modern Styling Ecosystem:**
+
+- Tailwind CSS plugin configuration (Fresh 1.6+)
+- Migration from Twind to Tailwind CSS
+- Responsive design and component patterns
+- Performance optimization and CSS purging
+- Dark mode and theming strategies
+
+**Production Deployment:**
+
+- Deno Deploy configuration and optimization
+- Edge functions and KV storage integration
+- Performance monitoring and analytics
+- CI/CD pipeline setup for Fresh applications
+
+STEP 6: Project-Specific Context Enhancement
+
+IF Fresh projects detected:
+
+- Analyze existing Fresh configuration files
+- Identify current version and feature usage
+- Map component patterns and styling approaches
+- Document migration opportunities and best practices
+
+IF Tailwind configs detected:
+
+- Load Tailwind-specific Fresh integration patterns
+- Analyze current styling architecture
+- Identify optimization opportunities within Fresh context
+
+STEP 7: Context Validation and Session Management
+
+TRY:
+
+- Execute comprehensive Fresh framework validation
+- Validate context coverage across all Fresh capabilities
+- Generate Fresh-specific project guidance
+- Test expert guidance capabilities
+- Save checkpoint: context_validation_complete
+
+CATCH (context_validation_failed):
+
+- Document context gaps and limitations
+- Provide alternative guidance sources
+- Create context improvement plan
+- Save validation issues to session state
+
+FINALLY:
+
+- Update Fresh context session state
+- Create context summary for current session
+- Clean up temporary context files: /tmp/fresh-temp-$SESSION_ID-*
+- Archive loaded context for future sessions
+
+## State Management Structure
+
+```json
+// /tmp/fresh-context-$SESSION_ID.json
+{
+  "sessionId": "$SESSION_ID",
+  "timestamp": "ISO_8601_TIMESTAMP",
+  "context_sources": {
+    "context7_available": true,
+    "loaded_docs": [
+      {
+        "source": "fresh_framework_docs",
+        "status": "loaded",
+        "focus_areas": ["islands", "routing", "ssr", "styling"]
+      },
+      {
+        "source": "preact_integration",
+        "status": "loaded",
+        "focus_areas": ["components", "hooks", "signals"]
+      },
+      {
+        "source": "tailwind_integration",
+        "status": "loaded",
+        "focus_areas": ["plugin_setup", "configuration", "optimization"]
+      }
+    ],
+    "failed_sources": [],
+    "fallback_sources": []
+  },
+  "project_context": {
+    "fresh_version": "1.6.8",
+    "styling_approach": "tailwind_plugin",
+    "deployment_target": "deno_deploy",
+    "architecture_patterns": ["islands", "signals"]
+  },
+  "checkpoints": {
+    "last_checkpoint": "context_validation_complete",
+    "next_milestone": "expert_guidance_ready",
+    "rollback_point": "context7_fresh_loaded"
+  },
+  "capabilities_loaded": [
+    "islands_architecture",
+    "file_based_routing",
+    "server_side_rendering",
+    "client_hydration",
+    "signal_state_management",
+    "tailwind_css_integration",
+    "component_composition",
+    "deno_deploy_optimization",
+    "performance_optimization",
+    "modern_ui_patterns"
+  ]
+}
+```
+
+## Expected Expert Capabilities
+
+After successful context loading, Claude will provide expert guidance on:
+
+**Core Fresh Development:**
+
+- Islands architecture design and implementation
+- File-based routing and middleware patterns
+- Server-side rendering optimization
+- Client-side hydration strategies
+- Component composition best practices
+
+**State Management & Interactivity:**
+
+- Signal-based reactive state patterns
+- Island communication and coordination
+- Form handling and validation
+- Real-time data integration
+
+**Modern Styling & UI:**
+
+- Tailwind CSS plugin configuration (Fresh 1.6+)
+- Responsive design implementation
+- Component pattern libraries
+- Performance-optimized styling
+- Migration from Twind to Tailwind CSS
+
+**Production & Deployment:**
+
+- Deno Deploy optimization strategies
+- Edge function implementation
+- KV storage integration
+- Performance monitoring and analytics
+- CI/CD pipeline configuration
+
+**Fresh Version Strategy:**
+
+- **Fresh 1.6+**: Production-ready with Tailwind CSS plugin
+- **Fresh 2.0 Alpha**: Available for testing with built-in Tailwind
+- **Fresh 2.0 Stable**: Expected Q3 2025 with enhanced performance
+
+## Session Isolation and Context Persistence
+
+- Each context loading session maintains isolated state in /tmp/fresh-context-$SESSION_ID.json
+- Checkpoint system enables resumable context loading for large documentation sets
+- Context artifacts cached for subsequent sessions to improve loading performance
+- Supports concurrent context loading sessions through unique session identifiers
 
 ## Modern UI Design Best Practices
 

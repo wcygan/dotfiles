@@ -1,187 +1,185 @@
-# /ideate-new
+---
+allowed-tools: Task, Read, Bash(fd:*), Bash(rg:*), Bash(wc:*), Bash(jq:*), Bash(gdate:*), Bash(eza:*)
+description: Discover and propose new Claude command opportunities through systematic analysis and parallel research
+---
 
-Discover and propose new Claude command opportunities based on systematic analysis of existing commands, developer workflow gaps, and emerging technology trends.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)000000"`
+- Current time: !`gdate -Iseconds 2>/dev/null || date -Iseconds`
+- Target focus area: $ARGUMENTS
+- Existing commands count: !`fd "\.md$" claude/commands | wc -l | tr -d ' ' || echo "unknown"`
+- Command categories: !`fd -t d . claude/commands -d 1 | eza --oneline 2>/dev/null | tr '\n' ', ' | sed 's/,$//' || echo "analysis, code, context, docs, git, meta, ops, scaffold, security, task, test, tool, workflow"`
+- Recent command additions: !`fd "\.md$" claude/commands -x stat -f "%m %N" | sort -nr | head -3 | cut -d' ' -f2- | sed 's|^claude/commands/||' | sed 's|\.md$||' || echo "none detected"`
+- Technology trend indicators: !`rg -i "(ai|ml|llm|kubernetes|docker|rust|go|deno|fresh)" claude/commands --count-matches | head -5 || echo "trend analysis needed"`
 
+## Your Task
+
+STEP 1: Initialize command opportunity analysis session
+
+- CREATE session state file: `/tmp/ideate-session-$SESSION_ID.json`
+- DETERMINE analysis scope based on focus area from Context
+- INITIALIZE tracking structures for command gaps and opportunities
+
+STEP 2: Parallel ecosystem analysis using sub-agent delegation
+
+TRY:
+
+LAUNCH 6 parallel sub-agents for comprehensive command ecosystem analysis:
+
+- **Agent 1: Command Inventory & Categorization**: Analyze existing command structure
+  - Count and categorize all commands in `claude/commands/` directory
+  - Map commands by workflow stage (planning, development, testing, deployment, ops)
+  - Identify command density patterns and coverage gaps
+  - Extract naming conventions and complexity patterns
+
+- **Agent 2: Developer Workflow Pain Points**: Research current pain points
+  - Research common developer complaints and friction points
+  - Identify repeated manual tasks lacking automation
+  - Analyze complex workflows needing systematic approaches
+  - Survey Stack Overflow trends and GitHub issue patterns
+
+- **Agent 3: Technology Trend Analysis**: Track emerging technology adoption
+  - Survey latest framework migrations (React → Next, etc.)
+  - Research cloud-native development complexity growth
+  - Identify AI/ML integration workflow gaps
+  - Track mobile development automation opportunities
+
+- **Agent 4: Command Pattern Analysis**: Deep-dive existing successful patterns
+  - Analyze naming conventions (action-based, hyphenated, prefixed)
+  - Review command complexity and argument patterns
+  - Identify successful command structures for replication
+  - Map command interdependencies and workflow chains
+
+- **Agent 5: Industry Standards Research**: Analyze competitive landscape
+  - Research CLI tools and command patterns in similar products
+  - Identify industry best practices for developer tooling
+  - Analyze enterprise workflow automation gaps
+  - Survey developer productivity enhancement opportunities
+
+- **Agent 6: Focus Area Deep Dive**: Specialized analysis based on $ARGUMENTS
+  - IF focus-area specified: Deep analysis of ai-ml, frontend, cloud, mobile, database, security, or emerging
+  - IF no focus specified: Cross-cutting analysis of all categories
+  - Identify specialized command opportunities within focus domain
+  - Research domain-specific pain points and automation gaps
+
+CATCH (analysis_failed):
+
+- LOG error details to session state
+- CONTINUE with available analysis results
+- PROVIDE recommendations based on partial data
+
+STEP 3: Synthesize findings and identify high-impact opportunities
+
+FOR EACH sub-agent result:
+
+- AGGREGATE findings into session state
+- IDENTIFY overlapping pain points (indicates high-impact opportunities)
+- CLASSIFY opportunities by impact level and implementation complexity
+- CROSS-REFERENCE with existing command ecosystem to avoid duplication
+
+**Opportunity Classification Framework:**
+
+```json
+{
+  "tier1_immediate": {
+    "criteria": "Addresses widespread pain points, clear ROI, fits ecosystem",
+    "examples": []
+  },
+  "tier2_strategic": {
+    "criteria": "Emerging tech support, enterprise gaps, command synergy",
+    "examples": []
+  },
+  "tier3_future": {
+    "criteria": "Experimental tech, foundation building, niche value",
+    "examples": []
+  }
+}
 ```
-/ideate-new [focus-area]
+
+STEP 4: Generate command proposals with contextual intelligence
+
+FOR EACH identified opportunity:
+
+- DESIGN command following established patterns:
+  - **Name**: Action-based, hyphenated, namespace-aware
+  - **Usage**: `/command [optional-context]` format
+  - **Auto-detection**: Project structure awareness (package.json, Cargo.toml, etc.)
+  - **Smart defaults**: Work without arguments, progressive enhancement
+  - **Graceful fallback**: Interactive guidance when context unclear
+
+- CREATE comprehensive proposal including:
+  - **Gap Description**: What current need is unmet
+  - **Value Proposition**: How it improves developer workflow
+  - **Context Awareness**: Detection and adaptation capabilities
+  - **Implementation Complexity**: Effort estimation
+  - **Tier Classification**: Priority level and timeline
+
+ANALYZE findings using strategic prioritization framework:
+
+**Tier 1 (Immediate Implementation)**
+
+- Sort opportunities by impact × feasibility score
+- Prioritize pain points affecting >50% of developers
+- SELECT 3-5 highest-value command proposals
+
+**Tier 2 (Strategic Development)**
+
+- Identify emerging technology support needs
+- Focus on enterprise workflow automation gaps
+- GROUP related commands for coordinated development
+
+**Tier 3 (Future Research)**
+
+- Catalog experimental/niche opportunities
+- BUILD foundation for next-generation capabilities
+- DOCUMENT for future iteration cycles
+
+STEP 6: Generate comprehensive output with implementation roadmap
+
+CREATE structured output containing:
+
+**Executive Summary**
+
+- KEY findings from parallel analysis
+- HIGHEST-impact opportunity areas identified
+- STRATEGIC recommendations for command ecosystem growth
+
+**Tiered Command Proposals**
+FOR EACH proposed command:
+
+```markdown
+### /proposed-command-name
+
+**Tier**: [1|2|3] - [Immediate|Strategic|Future]
+**Gap**: What current need is unmet
+**Value**: How it improves developer workflow\
+**Usage**: `/command [args]` - Simple invocation pattern
+**Context**: Auto-detection capabilities and project awareness
+**Complexity**: [Low|Medium|High] implementation effort
+**Timeline**: Suggested development phase
 ```
-
-## Parameters
-
-- `focus-area` (optional) - Specific area to analyze: `ai-ml`, `frontend`, `cloud`, `mobile`, `database`, `security`, `emerging`
-- If no focus area specified, performs comprehensive analysis across all categories
-
-## Process
-
-### Phase 1: Current State Analysis
-
-**Command Ecosystem Inventory**
-
-1. **Count and categorize existing commands**:
-   - List all commands in `claude/commands/` directory
-   - Group by workflow stage (planning, development, testing, deployment, etc.)
-   - Identify coverage gaps and underrepresented categories
-
-2. **Pattern recognition**:
-   - Analyze naming conventions (action-based, hyphenated, prefixed)
-   - Review command complexity and argument patterns
-   - Note successful command structures for replication
-
-3. **Usage gap identification**:
-   - Map developer workflow stages to command availability
-   - Identify single-command categories that could expand
-   - Note areas with high manual effort but no automation
-
-### Phase 2: Market Research & Pain Point Analysis
-
-**Developer Workflow Trends**
-
-1. **Technology evolution tracking**:
-   - Survey latest framework migrations and tool adoptions
-   - Research emerging development practices and patterns
-   - Identify automation opportunities in manual processes
-
-2. **Pain point validation**:
-   - Common developer complaints and friction points
-   - Repeated tasks that could benefit from automation
-   - Complex workflows that need systematic approaches
-
-3. **Industry trend analysis**:
-   - Cloud-native development complexity
-   - AI/ML integration requirements
-   - Mobile development automation gaps
-   - Security and compliance automation needs
-
-### Phase 3: Opportunity Identification
-
-**Command Gap Analysis**
-
-1. **High-impact opportunities**:
-   - Pain points affecting 50%+ of developers
-   - Manual processes with clear automation potential
-   - Complex workflows needing systematic guidance
-
-2. **Strategic opportunities**:
-   - Emerging technology adoption support
-   - Enterprise workflow automation
-   - Developer productivity enhancement
-
-3. **Future-focused opportunities**:
-   - Next-generation technology preparation
-   - Experimental workflow automation
-   - Niche but valuable use cases
-
-### Phase 4: Command Design & Prioritization
-
-**Design Principles**
-
-1. **Simple usage patterns**:
-   - `/command [optional-context]` format
-   - Auto-detection of project context when possible
-   - Interactive fallback for guided assistance
-
-2. **Contextual intelligence**:
-   - Read project structure (package.json, Cargo.toml, etc.)
-   - Detect frameworks and tools in use
-   - Provide relevant suggestions based on environment
-
-3. **Smart defaults**:
-   - Work without arguments for common cases
-   - Progressive enhancement with optional specificity
-   - Fail gracefully with helpful guidance
-
-**Prioritization Framework**
-
-**Tier 1 (Immediate Value)**
-
-- Addresses widespread pain points
-- Clear ROI for developer productivity
-- Fits existing command ecosystem
-
-**Tier 2 (Strategic Value)**
-
-- Supports emerging technology adoption
-- Fills enterprise workflow gaps
-- Enhances command synergy
-
-**Tier 3 (Future Value)**
-
-- Experimental/emerging technologies
-- Foundation for future command development
-- Niche but valuable capabilities
-
-### Phase 5: Research Output
-
-**Command Proposals**
-
-For each proposed command:
-
-1. **Name and usage**: Simple, consistent naming following existing patterns
-2. **Gap description**: What current need is unmet
-3. **Value proposition**: How it improves developer workflow
-4. **Context awareness**: How it detects and adapts to project environment
-5. **Tier classification**: Priority level and implementation timeline
 
 **Implementation Roadmap**
 
-- Phase 1: High-impact commands addressing major pain points
-- Phase 2: Strategic commands for emerging technologies
-- Phase 3: Future-focused and experimental commands
+- **Phase 1** (0-3 months): Critical gap commands for immediate productivity gains
+- **Phase 2** (3-6 months): Strategic technology support and workflow enhancement
+- **Phase 3** (6+ months): Advanced capabilities and experimental features
 
-## Key Research Areas
+**Research Areas Summary**
 
-### AI/ML Workflows
+Based on analysis, focus areas for command development:
 
-- MLOps pipeline setup and management
-- Model deployment and versioning
-- Data pipeline automation
-- Experiment tracking integration
+- **AI/ML Integration**: Workflow automation, model deployment, experiment tracking
+- **Cloud-Native Operations**: Kubernetes troubleshooting, service mesh, container optimization
+- **Developer Experience**: Build tool migration, performance optimization, testing automation
+- **Security & Compliance**: Vulnerability scanning, dependency auditing, hardening processes
+- **Database Operations**: Migration strategies, performance optimization, schema evolution
+- **Mobile Development**: CI/CD automation, cross-platform support, store deployment
 
-### Frontend Development
+FINALLY:
 
-- Build tool migration automation
-- Performance optimization workflows
-- Framework-specific scaffolding gaps
-- Micro-frontend architecture support
-
-### Cloud-Native Development
-
-- Kubernetes troubleshooting and debugging
-- Multi-cluster deployment management
-- Service mesh configuration
-- Container optimization workflows
-
-### Mobile Development
-
-- Platform-specific CI/CD automation
-- Testing framework setup
-- Store deployment workflows
-- Cross-platform development support
-
-### Database Operations
-
-- Zero-downtime migration strategies
-- Performance optimization workflows
-- Data pipeline management
-- Schema evolution automation
-
-### Security & Compliance
-
-- Automated vulnerability scanning
-- Dependency security auditing
-- Compliance workflow automation
-- Security hardening processes
-
-## Output Format
-
-Present findings as:
-
-1. **Executive Summary**: Key gaps and highest-impact opportunities
-2. **Tiered Command List**: Organized by implementation priority
-3. **Usage Examples**: Simple command invocation patterns
-4. **Context Integration**: How commands fit existing workflow
-5. **Implementation Roadmap**: Suggested development phases
-
-Focus on actionable insights that directly translate to valuable new commands following the established patterns and design principles.
+- SAVE complete analysis to session state file
+- PROVIDE actionable command proposals ready for implementation
+- INCLUDE usage examples and integration guidance
+- FOCUS on established patterns and design principles for ecosystem consistency

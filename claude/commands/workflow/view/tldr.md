@@ -1,3 +1,243 @@
+---
+allowed-tools: Read, Task, Bash(fd:*), Bash(rg:*), Bash(bat:*), Bash(wc:*), Bash(head:*), Bash(tail:*), Bash(eza:*), Bash(gdate:*)
+description: Generate concise, actionable TL;DR summaries with progressive disclosure and strategic thinking
+---
+
+## Context
+
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
+- Target content: $ARGUMENTS
+- Content type: !`if [ -f "$ARGUMENTS" ]; then echo "file" && eza -la "$ARGUMENTS" 2>/dev/null | head -1; elif [ -d "$ARGUMENTS" ]; then echo "directory" && eza -la "$ARGUMENTS" 2>/dev/null | head -3; else echo "topic/discussion"; fi`
+- Content size: !`if [ -f "$ARGUMENTS" ]; then wc -l "$ARGUMENTS" 2>/dev/null | head -1; elif [ -d "$ARGUMENTS" ]; then fd . "$ARGUMENTS" -t f | wc -l 2>/dev/null; else echo "unknown"; fi`
+- File preview: !`if [ -f "$ARGUMENTS" ]; then head -10 "$ARGUMENTS" 2>/dev/null | bat --style=plain -l markdown; else echo "Not a file"; fi`
+
+## Your Task
+
+STEP 1: Initialize TL;DR session with intelligent content analysis
+
+- CREATE session state file: `/tmp/tldr-session-$SESSION_ID.json`
+- ANALYZE content type and complexity from Context section
+- DETERMINE optimal TL;DR strategy based on content characteristics
+- PLAN progressive disclosure levels (30-second, 2-minute, 5-minute)
+
+```bash
+# Initialize TL;DR session state
+echo '{
+  "sessionId": "'$SESSION_ID'",
+  "targetContent": "'$ARGUMENTS'",
+  "contentType": "unknown",
+  "analysisStrategy": "auto-detect",
+  "progressiveDisclosure": true
+}' > /tmp/tldr-session-$SESSION_ID.json
+```
+
+STEP 2: Content analysis and strategy selection
+
+IF content_type == "file":
+
+- READ file content to understand structure and key points
+- IDENTIFY document type (code, documentation, configuration, etc.)
+- EXTRACT key sections, headings, and critical information
+- DETERMINE technical vs. business audience focus
+
+ELSE IF content_type == "directory":
+
+- ANALYZE project structure and file organization
+- IDENTIFY technology stack and architecture patterns
+- FIND key configuration files and documentation
+- DETERMINE project complexity and scope
+
+ELSE IF content_type == "topic/discussion":
+
+- THINK HARD about the topic to identify core concepts
+- RESEARCH key aspects and common questions
+- STRUCTURE information hierarchy from critical to contextual
+- FOCUS on actionable insights and next steps
+
+STEP 3: Generate progressive disclosure TL;DR with strategic thinking
+
+TRY:
+
+**Progressive TL;DR Structure:**
+
+## 🎯 30-Second Version
+
+[One paragraph with absolute essentials - what someone needs to know immediately]
+
+## ⚡ 2-Minute Version
+
+### Bottom Line
+
+[1-2 sentences with the most critical takeaway]
+
+### Key Points
+
+- [Most important fact/decision]
+- [Second most important point]
+- [Third critical element]
+
+### Immediate Action
+
+[Single most important next step]
+
+## 📋 5-Minute Version
+
+### Complete Overview
+
+[Detailed analysis with full context]
+
+### All Key Points
+
+- [Comprehensive list of important facts]
+- [Supporting details and context]
+- [Constraints and dependencies]
+
+### Next Steps
+
+1. [Immediate action - what to do first]
+2. [Follow-up action - what to do next]
+3. [Future consideration - what to plan for]
+
+### Critical Notes
+
+- [Important warnings or constraints]
+- [Key dependencies or requirements]
+- [Risks or limitations to be aware of]
+
+### Resources
+
+- [Essential links or documents]
+- [Key people to contact]
+- [Tools or systems to use]
+
+CATCH (content_analysis_failed):
+
+- LOG error details to session state
+- PROVIDE general TL;DR framework for user to populate
+- INCLUDE guidance on content analysis strategies
+
+STEP 4: Apply context-specific TL;DR formatting
+
+FOR content_type:
+
+**Technical/Code Content:**
+
+```markdown
+# TL;DR: [Component/System]
+
+## What It Does
+
+[One sentence description of purpose]
+
+## Key Components
+
+- [Main module/service]: [What it handles]
+- [Secondary component]: [Its role]
+- [Integration point]: [How it connects]
+
+## To Get Started
+
+1. [Setup/installation step]
+2. [Configuration requirement]
+3. [First thing to run/test]
+
+## Common Issues
+
+- [Most frequent problem and fix]
+- [Performance consideration]
+
+## Who to Ask
+
+- [Subject matter expert]
+- [Documentation location]
+```
+
+**Documentation Content:**
+
+```markdown
+# TL;DR: [Document Name]
+
+## Main Message
+
+[Core thesis or argument in one sentence]
+
+## Key Takeaways
+
+- [Most important insight]
+- [Critical fact or data point]
+- [Actionable recommendation]
+
+## Implementation
+
+1. [First step to apply this knowledge]
+2. [How to measure success]
+
+## Skip This If
+
+- [When this doesn't apply]
+- [Prerequisites not met]
+```
+
+**Project/Feature Content:**
+
+```markdown
+# TL;DR: [Project Name]
+
+## Goal
+
+[What we're trying to achieve]
+
+## Status
+
+[Current phase and % complete]
+
+## Key Risks
+
+- [Biggest concern]
+- [Timeline risk]
+
+## Need From You
+
+- [Specific ask or decision needed]
+- [Resource requirement]
+
+## Timeline
+
+- [Key milestone dates]
+```
+
+STEP 5: Quality validation and optimization
+
+- VERIFY TL;DR can be read in under specified time limits
+- ENSURE each section includes concrete next steps
+- HIGHLIGHT biggest risks and critical concerns
+- PROVIDE contact info or resource references
+- USE bullet points and short sentences consistently
+
+STEP 6: Generate final TL;DR with session summary
+
+- UPDATE session state with completion status
+- PROVIDE TL;DR following chosen format
+- INCLUDE meta-information about analysis process
+- CLEAN UP temporary session files
+
+```bash
+# Update session completion
+jq --arg status "completed" --arg timestamp "$(gdate -Iseconds 2>/dev/null || date -Iseconds)" '
+  .status = $status |
+  .completed_timestamp = $timestamp |
+  .analysis_method = "progressive_disclosure"
+' /tmp/tldr-session-$SESSION_ID.json > /tmp/tldr-session-$SESSION_ID.tmp && \
+mv /tmp/tldr-session-$SESSION_ID.tmp /tmp/tldr-session-$SESSION_ID.json
+```
+
+FINALLY:
+
+- PRESENT TL;DR using appropriate format for content type
+- INCLUDE progressive disclosure sections (30s/2min/5min)
+- PROVIDE meta-commentary on TL;DR creation process if helpful
+- SUGGEST integration with other workflow commands if relevant
+
 # /tldr
 
 Generate concise, actionable summaries of complex topics, documentation, codebases, or discussions. Focus on essential information and immediate next steps.

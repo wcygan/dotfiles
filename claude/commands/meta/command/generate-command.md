@@ -1,111 +1,192 @@
-**Goal**
-Add a reusable project-level slash command so anyone who clones your repo can invoke it with `/project:<name>` inside the Claude Code CLI.
-
+---
+allowed-tools: Read, Write, Bash(mkdir:*), Bash(fd:*), Bash(ls:*), Bash(git:*), Bash(gdate:*)
+description: Interactive generator for project-level slash commands with best practices validation
 ---
 
-## 1 Decide what the command should do
+## Context
 
-- **Name** → becomes the slash-command (`<file>.md` → `/project:<file-name>`).
-- **Prompt text** → the body of the `.md` file; that text is sent to Claude when the command runs.
-- **Parameters** (optional) → use the special token `$ARGUMENTS` to splice user-supplied arguments into the prompt.
-- **Scope** → anything in `./.claude/commands/**` is project-scoped; nested folders add extra path segments (`frontend/build.md` → `/project:frontend:build`). ([docs.anthropic.com][1])
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Existing .claude directory: !`ls -la .claude 2>/dev/null || echo "No .claude directory found"`
+- Current command structure: !`fd "\.md$" .claude/commands 2>/dev/null | head -5 || echo "No existing commands"`
+- Git status: !`git status --porcelain 2>/dev/null | head -3 || echo "Not a git repository"`
+- Project type indicators: !`fd "(package\.json|deno\.json|Cargo\.toml|go\.mod|pom\.xml)" . -d 2 | head -3`
 
-> **Clarify**: What action do you want this command to automate? (e.g., “spin up a dev container”, “generate a PR template”, “audit code for security issues”).
+## Your Task
 
----
+STEP 1: Initialize command generation session and analyze project context
 
-## 2 Scaffold the directory (one-time)
+- CREATE session state file: `/tmp/generate-command-state-$SESSION_ID.json`
+- ANALYZE existing .claude/commands structure from Context
+- IDENTIFY project patterns and common workflows
+- DETERMINE recommended command categories based on project type
+
+STEP 2: Interactive command specification gathering
+
+TRY:
+
+- PROMPT user for command requirements using intelligent project-based suggestions:
+
+**Command Specification Questions:**
+
+1. **Command Purpose**: What specific task should this command automate?
+
+   Examples based on detected project type:
+   - Deno projects: "test-single", "build-deploy", "format-check"
+   - Rust projects: "cargo-audit", "benchmark-performance", "docker-build"
+   - Go projects: "generate-mocks", "run-integration-tests", "profile-memory"
+   - Multi-language: "sync-dependencies", "security-scan", "generate-docs"
+
+2. **Command Name**: What should the slash command be called?
+   - Must be kebab-case (e.g., "audit-security", "fix-issue")
+   - Will be accessible as `/project:command-name`
+
+3. **Parameters Needed**: Does the command need user input?
+   - None: Simple execution commands
+   - Single: Use `$ARGUMENTS` token
+   - Multiple: Design structured input pattern
+
+4. **Command Complexity Level**:
+   - **Simple**: Single-step operation, no state management
+   - **Interactive**: Requires user confirmation or multi-phase execution
+   - **Complex**: Needs state management, error handling, resumability
+   - **Analysis**: Benefits from extended thinking or sub-agents
+
+5. **Tools Required**: What operations will the command perform?
+   - File operations: Read, Write, Edit, MultiEdit
+   - Shell commands: Bash with specific tool restrictions
+   - External APIs: WebFetch, WebSearch
+   - Sub-processes: Task (for sub-agent delegation)
+
+CATCH (user_input_incomplete):
+
+- SAVE partial input to session state
+- PROVIDE examples and suggestions
+- CONTINUE gathering missing information
+
+STEP 3: Generate command file with best practices validation
+
+**Command Generation Process:**
+
+IF command_complexity == "simple":
+
+- GENERATE basic command structure:
+  ```yaml
+  ---
+  allowed-tools: [detected_tools]
+  description: [user_provided_purpose]
+  ---
+
+  ## Context
+
+  - Session ID: !`gdate +%s%N`
+  [context_commands_based_on_purpose]
+
+  ## Your task
+
+  [user_specified_task_converted_to_steps]
+  ```
+
+IF command_complexity == "interactive":
+
+- GENERATE command with checkpoint pattern:
+  - Session state management
+  - User confirmation points
+  - Resume capability
+
+IF command_complexity == "complex":
+
+- GENERATE command with full state management:
+  - `/tmp/command-state-$SESSION_ID.json` pattern
+  - TRY/CATCH blocks for error handling
+  - STEP-based execution with validation
+
+IF command_complexity == "analysis":
+
+- INCLUDE extended thinking recommendations:
+  - "think hard" prompts for complex decisions
+  - Sub-agent delegation patterns for parallel research
+  - Token-efficient context management
+
+**Best Practices Validation:**
+
+FOR EACH generated command:
+
+- VALIDATE front matter completeness
+- ENSURE session ID in Context section
+- VERIFY all bash commands are safe and tested
+- CHECK programmatic structure (STEP/IF/FOR patterns)
+- CONFIRM error handling for risky operations
+- TEST command follows gold standard (/commit pattern)
+
+STEP 4: Create command directory structure and file
 
 ```bash
-mkdir -p .claude/commands
+# Ensure .claude/commands directory exists
+IF [ ! -d ".claude/commands" ]; then
+  mkdir -p .claude/commands
+  echo "Created .claude/commands directory"
+fi
+
+# Determine command file path
+command_file=".claude/commands/${command_name}.md"
+
+# Check for existing command
+IF [ -f "$command_file" ]; then
+  echo "⚠️ Command $command_name already exists"
+  PROMPT user for overwrite confirmation
+fi
 ```
 
----
+STEP 5: Write and validate generated command
 
-## 3 Create the command file
+- WRITE command file to determined path
+- VALIDATE generated command syntax
+- TEST all bash commands in Context section for compatibility
+- VERIFY command follows established patterns
 
-### Simple, no parameters
+STEP 6: Commit new command to version control
 
-`./.claude/commands/audit-security.md`
-
-```md
-Audit this repository for security vulnerabilities:
-
-1. Identify common CWE patterns in the code.
-2. Flag third-party dependencies with known CVEs.
-3. Output findings as a Markdown checklist.
-```
-
-Run it:
+IF git repository detected:
 
 ```bash
-claude > /project:audit-security
+# Stage the new command
+git add .claude/commands/${command_name}.md
+
+# Create descriptive commit message
+git commit -m "feat: add /project:${command_name} command
+
+Adds interactive command for ${command_purpose}.
+Includes proper front matter, dynamic context, and error handling."
+
+echo "✅ Command committed to version control"
 ```
 
-### Parameterised
+STEP 7: Provide usage instructions and next steps
 
-`./.claude/commands/fix-issue.md`
+- DISPLAY command usage: `/project:${command_name}`
+- SHOW command file location for editing
+- SUGGEST testing the command before team distribution
+- RECOMMEND documenting the command in project README if applicable
 
-```md
-Fix issue #$ARGUMENTS.\
-Steps:
+FINALLY:
 
-1. Read the ticket description.
-2. Locate the relevant code.
-3. Implement a minimal fix with tests.
-4. Output a concise PR body with changelog notes.
-```
+- CLEAN UP session state file
+- REPORT successful command generation
+- PROVIDE command testing instructions
 
-Invoke with an argument:
+**Example Command Patterns by Type:**
 
-```bash
-claude > /project:fix-issue 417
-```
+1. **Git/GitHub Operations**: Follow `/commit` gold standard pattern
+2. **Code Analysis**: Include sub-agent delegation for large codebases
+3. **Build/Deploy**: Add state management for multi-step processes
+4. **Testing**: Include parallel execution for performance
+5. **Documentation**: Use extended thinking for comprehensive coverage
 
-`$ARGUMENTS` is replaced by `417` at runtime. ([docs.anthropic.com][1])
+**Advanced Features to Consider:**
 
----
-
-## 4 (Optionally) add lightweight metadata
-
-Claude ignores Markdown comments, so you can embed front-matter for human readers or tooling:
-
-```md
-<!--
-name: audit-security
-owner: dev-infra
-tags: security, ci
--->
-
-...prompt text...
-```
-
----
-
-## 5 Version-control it
-
-```bash
-git add .claude/commands
-git commit -m "feat: add /project:audit-security command"
-```
-
-Everyone who pulls the repo now has access.
-
----
-
-### Alternative patterns & trade-offs
-
-| Pattern                                                 | Pros                                     | Cons                                            |
-| ------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------- |
-| **One-file-per-command (above)**                        | Simple, explicit, Git-friendly           | Many small files if you create lots of commands |
-| **Directory sub-grouping**                              | Logical namespaces (`frontend/`, `ops/`) | Slightly longer slash-path                      |
-| **Templated prompts with multiple `$ARGUMENTS` tokens** | Flexible (e.g., `$1`, `$2` style)        | Harder for newcomers to infer correct usage     |
-| **Personal commands (`~/.claude/commands`)**            | Portable across projects                 | Not shared with the team                        |
-
----
-
-## Next step
-
-Let me know the **specific task** you’d like your new command to perform and the **params** (if any). I’ll draft the exact `.md` file contents for you.
-
-[1]: https://docs.anthropic.com/en/docs/claude-code/tutorials "Tutorials - Anthropic"
+- **Sub-Agent Integration**: For complex analysis or parallel research tasks
+- **Extended Thinking**: For architectural decisions or deep analysis
+- **State Management**: For resumable workflows and error recovery
+- **Dynamic Context**: For real-time project state awareness
+- **Security Validation**: Ensure minimal tool permissions and safe operations

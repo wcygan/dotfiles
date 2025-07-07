@@ -1,132 +1,306 @@
-<!--
-name: search:smart
-purpose: Intelligent code search using modern tools (ripgrep, fd, fzf)
-tags: search, code-analysis, modern-tools, productivity
--->
+---
+allowed-tools: Task, Bash(rg:*), Bash(fd:*), Bash(bat:*), Bash(fzf:*), Bash(eza:*), Bash(jq:*), Bash(gdate:*), Bash(wc:*), Bash(head:*), Bash(tail:*)
+description: Intelligent code search orchestrator using modern tools with parallel analysis capabilities
+---
 
-Perform intelligent code search using modern, fast command-line tools. Combines ripgrep (rg), fd, and fzf for efficient pattern matching, file discovery, and interactive selection.
+## Context
 
-**Context**: $ARGUMENTS (search pattern, file type, or search scope)
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
+- Current directory: !`pwd`
+- Search target: $ARGUMENTS
+- Project languages: !`fd "(package\.json|Cargo\.toml|go\.mod|deno\.json|pom\.xml|build\.gradle)" . -d 3 | head -5 || echo "No build files detected"`
+- Codebase size: !`fd "\.(js|ts|jsx|tsx|rs|go|java|py|rb|php|c|cpp|h|hpp|cs|kt|swift|scala)" . | wc -l | tr -d ' '` files
+- Directory structure: !`eza -la --tree --level=2 2>/dev/null | head -10 || fd . -t d -d 2 | head -10`
+- Modern tools status: !`echo "rg: $(which rg >/dev/null && echo ✓ || echo ✗) | fd: $(which fd >/dev/null && echo ✓ || echo ✗) | bat: $(which bat >/dev/null && echo ✓ || echo ✗) | fzf: $(which fzf >/dev/null && echo ✓ || echo ✗)"`
 
-## Search Strategy
+## Your Task
 
-1. **Pattern-based Search**
-   - Use ripgrep for fast content search with regex support
-   - File type filtering for language-specific searches
-   - Context lines and match highlighting
+STEP 1: Initialize intelligent search session and analyze project context
 
-2. **File Discovery**
-   - Use fd for fast file finding with glob patterns
-   - Respect .gitignore and common ignore patterns
-   - Filter by extension, modification time, or path patterns
-
-3. **Interactive Selection**
-   - Integrate with fzf for fuzzy finding and selection
-   - Preview matches with bat for syntax highlighting
-   - Multi-select capabilities for batch operations
-
-## Search Commands
+- CREATE session state file: `/tmp/search-session-$SESSION_ID.json`
+- ANALYZE project structure from Context section
+- DETERMINE search complexity based on codebase size and query
+- VALIDATE modern CLI tools availability (rg, fd, bat, fzf are MANDATORY)
 
 ```bash
-# Content search with ripgrep
-rg "$PATTERN" --type $FILETYPE --context 3 --color always --heading --line-number
-
-# Advanced pattern search with multiple file types
-rg "$PATTERN" --type-add 'config:*.{json,yaml,yml,toml}' --type config --context 2
-
-# File discovery with fd
-fd "$PATTERN" --type file --extension $EXT --hidden --follow
-
-# Interactive search with fzf integration
-rg --line-number --color=always "$PATTERN" | fzf --ansi --delimiter : --nth 3.. --preview 'bat --color=always --highlight-line {2} {1}'
-
-# Search in specific directories
-rg "$PATTERN" src/ tests/ --type rust --context 2
-
-# Case-insensitive search with word boundaries
-rg -i "\b$PATTERN\b" --type typescript --context 1
-
-# Search for function definitions
-rg "^(function|def|fn|func)\s+$PATTERN" --type-add 'code:*.{js,ts,py,rs,go}' --type code
-
-# Find recent files and search within them
-fd --changed-within 7d --type file | xargs rg "$PATTERN" --context 2
+# Initialize search session state
+echo '{
+  "sessionId": "'$SESSION_ID'",
+  "searchTarget": "'$ARGUMENTS'",
+  "projectLanguages": [],
+  "searchStrategy": "auto-detect",
+  "resultsFound": 0,
+  "searchHistory": []
+}' > /tmp/search-session-$SESSION_ID.json
 ```
 
-## Output Processing
+STEP 2: Adaptive search strategy selection with intelligent routing
+
+TRY:
+
+CASE search_complexity:
+WHEN "simple_pattern":
+
+- EXECUTE direct ripgrep search with smart filtering
+- USE targeted file type detection
+- PROVIDE immediate results with context
+
+WHEN "complex_analysis":
+
+- LAUNCH parallel sub-agents for comprehensive search
+- COORDINATE results from multiple search domains
+- SYNTHESIZE findings into coherent analysis
+
+WHEN "interactive_exploration":
+
+- ENABLE fzf-powered interactive search interface
+- PROVIDE live preview with bat syntax highlighting
+- SUPPORT multi-select and batch operations
+
+**Simple Pattern Search (Fast Results):**
 
 ```bash
-# JSON output for structured processing
-rg "$PATTERN" --json | jq '.data | select(.type=="match") | {file: .path.text, line: .line_number, text: .lines.text}'
+# Smart case-insensitive search with context
+rg "$ARGUMENTS" --smart-case --context 3 --color always --heading --line-number --stats
 
-# Count matches per file
-rg "$PATTERN" --count-matches --sort path
+# Language-specific search with auto-detection
+if fd "\.rs$" . | head -1 >/dev/null; then
+  echo "🦀 Rust project detected - searching with Rust patterns"
+  rg "$ARGUMENTS" --type rust --context 2
+fi
 
-# Search with file stats
-rg "$PATTERN" --stats --type rust
+if fd "\.go$" . | head -1 >/dev/null; then
+  echo "🐹 Go project detected - searching with Go patterns"  
+  rg "$ARGUMENTS" --type go --context 2
+fi
 
-# Export results for further analysis
-rg "$PATTERN" --json > /tmp/search-results.json
+if fd "\.(js|ts)$" . | head -1 >/dev/null; then
+  echo "⚡ JavaScript/TypeScript project detected"
+  rg "$ARGUMENTS" --type-add 'js:*.{js,ts,jsx,tsx}' --type js --context 2
+fi
 ```
 
-## Search Modes
+STEP 3: Parallel comprehensive search using sub-agent architecture
 
-### Quick Search
+IF codebase_size > 1000 files OR search_target contains multiple_terms:
 
-Fast content search with basic filtering:
+LAUNCH parallel sub-agents for comprehensive code exploration:
+
+- **Agent 1: Source Code Search**: Search in primary source directories (src/, lib/, app/)
+  - Focus: Function definitions, class declarations, main implementation logic
+  - Tools: rg with language-specific patterns, function signature detection
+  - Output: Core implementation findings with relevance scoring
+
+- **Agent 2: Test Code Analysis**: Search in test directories (test/, tests/, spec/, **tests**)
+  - Focus: Test cases, mocks, test utilities, usage patterns
+  - Tools: rg with test-specific patterns, test framework detection
+  - Output: Test coverage insights and example usage patterns
+
+- **Agent 3: Documentation Search**: Search in documentation and comments (docs/, README, inline comments)
+  - Focus: API documentation, usage examples, architectural notes
+  - Tools: rg with comment patterns, markdown search, documentation analysis
+  - Output: Contextual documentation and usage guidance
+
+- **Agent 4: Configuration Search**: Search in configuration files (.json, .toml, .yaml, .env, config/)
+  - Focus: Environment variables, build configurations, deployment settings
+  - Tools: rg with config-specific patterns, structured data search
+  - Output: Configuration insights and environment setup
+
+- **Agent 5: Script & Tool Search**: Search in automation scripts (scripts/, bin/, tools/, .github/)
+  - Focus: Build scripts, deployment tools, CI/CD configurations
+  - Tools: rg with script patterns, workflow analysis
+  - Output: Automation and workflow findings
+
+**Sub-Agent Coordination:**
 
 ```bash
-rg "$PATTERN" --smart-case --context 1
+# Each agent reports findings to session state
+echo "Parallel search agents launched for comprehensive analysis..."
+echo "Results will be aggregated and ranked by relevance"
 ```
 
-### Deep Search
+STEP 4: Interactive search interface with modern tooling
 
-Comprehensive search with multiple strategies:
+**fzf-Powered Interactive Search:**
 
 ```bash
-# Search content
-rg "$PATTERN" --type-add 'all:*' --type all --context 3
-# Search filenames
-fd "$PATTERN" --type file
-# Search in hidden files
-rg "$PATTERN" --hidden --context 2
+# Interactive content search with live preview
+rg --line-number --color=always --smart-case "$ARGUMENTS" | \
+  fzf --ansi --delimiter : --nth 3.. \
+      --preview 'bat --color=always --highlight-line {2} {1}' \
+      --preview-window right:50% \
+      --bind 'enter:execute(bat --color=always --highlight-line {2} {1})'
+
+# Interactive file discovery
+fd "$ARGUMENTS" --type file --color always | \
+  fzf --preview 'bat --color=always {}' \
+      --preview-window right:50%
 ```
 
-### Interactive Mode
-
-Fuzzy finding with preview:
+**Advanced Search Patterns:**
 
 ```bash
-rg --line-number --color=always "$PATTERN" | fzf --ansi --preview 'bat --color=always --highlight-line {2} {1}' --preview-window up:50%
+# Function/method search with language awareness
+rg "^(function|def|fn|func|class|interface|type)\s+.*$ARGUMENTS" --type-add 'code:*.{js,ts,py,rs,go,java,c,cpp}' --type code
+
+# TODO/FIXME search with context
+rg "(TODO|FIXME|HACK|NOTE|BUG).*$ARGUMENTS" --context 2 --color always
+
+# Recent changes search (files modified in last 7 days)
+fd --changed-within 7d --type file | xargs rg "$ARGUMENTS" --context 2 --color always
 ```
 
-## Integration Examples
+STEP 5: Results processing and intelligent ranking
 
-### Language-Specific Searches
+TRY:
 
-- **Rust**: `rg "fn $PATTERN" --type rust --context 2`
-- **Go**: `rg "func $PATTERN" --type go --context 2`
-- **TypeScript**: `rg "(function|const|let).*$PATTERN" --type typescript --context 2`
-- **Config Files**: `rg "$PATTERN" --type-add 'config:*.{json,yaml,toml}' --type config`
-
-### Development Workflows
-
-- **TODO/FIXME**: `rg "(TODO|FIXME|HACK|NOTE)" --context 1`
-- **Error Handling**: `rg "(error|Error|err)" --type rust --context 2`
-- **Dependencies**: `fd "package.json|Cargo.toml|go.mod|deno.json" | xargs bat`
-
-## Example Usage
+**Structured Output Generation:**
 
 ```bash
-# Search for API endpoints
-/search:smart "POST|GET|PUT|DELETE"
+# Generate JSON results for programmatic processing
+rg "$ARGUMENTS" --json | jq -r '
+  select(.type=="match") | 
+  {
+    file: .path.text,
+    line: .line_number,
+    content: .lines.text,
+    relevance: (.lines.text | length)
+  }
+' > /tmp/search-results-$SESSION_ID.json
 
-# Find configuration files
-/search:smart config
+# Statistics and summary
+echo "📊 Search Statistics:"
+rg "$ARGUMENTS" --stats --color always
 
-# Interactive function search
-/search:smart fn main rust
-
-# Search recent changes
-/search:smart modified 7d "async function"
+# File-based match counts  
+echo "📁 Matches per file:"
+rg "$ARGUMENTS" --count-matches --sort path | head -10
 ```
+
+**Result Filtering and Enhancement:**
+
+```bash
+# Filter by file types based on project
+project_types=$(fd "(package\.json|Cargo\.toml|go\.mod)" . | head -1)
+if [[ -n "$project_types" ]]; then
+  echo "🎯 Project-specific filtering applied"
+fi
+
+# Contextual result enhancement
+echo "🔍 Enhanced search results with:"
+echo "  - Syntax highlighting via bat"
+echo "  - Interactive selection via fzf" 
+echo "  - Smart case matching"
+echo "  - Language-aware patterns"
+```
+
+CATCH (search_failed):
+
+- LOG error details to session state
+- PROVIDE alternative search strategies
+- SUGGEST tool installation if modern tools missing
+
+```bash
+echo "⚠️ Search execution failed. Checking tool availability:"
+echo "Required tools status:"
+echo "  ripgrep (rg): $(which rg >/dev/null && echo '✓ installed' || echo '❌ missing - install with: brew install ripgrep')"
+echo "  fd: $(which fd >/dev/null && echo '✓ installed' || echo '❌ missing - install with: brew install fd')"
+echo "  bat: $(which bat >/dev/null && echo '✓ installed' || echo '❌ missing - install with: brew install bat')"
+echo "  fzf: $(which fzf >/dev/null && echo '✓ installed' || echo '❌ missing - install with: brew install fzf')"
+```
+
+STEP 6: Session state management and search history
+
+**Update Session State:**
+
+```bash
+# Update search session with results
+jq --arg query "$ARGUMENTS" --arg timestamp "$(gdate -Iseconds 2>/dev/null || date -Iseconds)" '
+  .searchHistory += [{
+    "query": $query,
+    "timestamp": $timestamp,
+    "resultsCount": (.resultsFound // 0)
+  }]
+' /tmp/search-session-$SESSION_ID.json > /tmp/search-session-$SESSION_ID.tmp && \
+mv /tmp/search-session-$SESSION_ID.tmp /tmp/search-session-$SESSION_ID.json
+```
+
+**Search Session Summary:**
+
+```bash
+echo "✅ Search session completed"
+echo "🔍 Query: $ARGUMENTS"
+echo "📊 Results: $(jq -r '.resultsFound // 0' /tmp/search-session-$SESSION_ID.json) matches found"
+echo "⏱️ Session: $SESSION_ID"
+echo "💾 Results cached in: /tmp/search-results-$SESSION_ID.json"
+```
+
+FINALLY:
+
+- SAVE session state for potential follow-up searches
+- PROVIDE guidance for result exploration
+- SUGGEST related search patterns based on project analysis
+
+## Search Strategies Reference
+
+### Language-Specific Patterns
+
+**Rust Projects:**
+
+- Function definitions: `rg "^(fn|pub fn|async fn)" --type rust`
+- Struct/enum definitions: `rg "^(struct|enum|trait)" --type rust`
+- Error handling: `rg "(Result|Option|unwrap|expect)" --type rust`
+
+**Go Projects:**
+
+- Function definitions: `rg "^func.*$ARGUMENTS" --type go`
+- Interface definitions: `rg "^type.*interface" --type go`
+- Error handling: `rg "error.*$ARGUMENTS" --type go`
+
+**TypeScript/JavaScript Projects:**
+
+- Function definitions: `rg "(function|const|let).*$ARGUMENTS" --type typescript`
+- Class definitions: `rg "^(class|interface|type).*$ARGUMENTS" --type typescript`
+- Async patterns: `rg "(async|await|Promise).*$ARGUMENTS" --type typescript`
+
+**Java Projects:**
+
+- Class definitions: `rg "^(public|private).*class.*$ARGUMENTS" --type java`
+- Method definitions: `rg "(public|private).*$ARGUMENTS.*\(" --type java`
+- Annotations: `rg "@.*$ARGUMENTS" --type java`
+
+### Development Workflow Searches
+
+**Common Development Patterns:**
+
+- API endpoints: `rg "(GET|POST|PUT|DELETE|PATCH).*$ARGUMENTS"`
+- Environment variables: `rg "process\.env\.$ARGUMENTS|$\{$ARGUMENTS\}"`
+- Configuration keys: `rg "\"$ARGUMENTS\":" --type json`
+- Database queries: `rg "(SELECT|INSERT|UPDATE|DELETE).*$ARGUMENTS" --ignore-case`
+
+**Code Quality Searches:**
+
+- Technical debt: `rg "(TODO|FIXME|HACK|DEPRECATED).*$ARGUMENTS"`
+- Security patterns: `rg "(password|secret|token|api.?key).*$ARGUMENTS" --ignore-case`
+- Performance patterns: `rg "(slow|performance|optimize|cache).*$ARGUMENTS" --ignore-case`
+
+## Example Usage Scenarios
+
+```bash
+# Search for API endpoint implementations
+/search-smart "createUser"
+
+# Find all configuration references
+/search-smart "database_url"
+
+# Interactive exploration of authentication code
+/search-smart "auth token"
+
+# Comprehensive analysis of error handling patterns
+/search-smart "error handling"
+
+# Find recent changes related to specific feature
+/search-smart "payment processing"
+```
+
+This intelligent search command adapts to your project, leverages modern tools exclusively, and provides both quick results and comprehensive analysis capabilities through parallel sub-agent coordination.

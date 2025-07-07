@@ -1,30 +1,283 @@
+---
+allowed-tools: Read, Write, Edit, MultiEdit, Bash(rg:*), Bash(fd:*), Bash(git:*), Bash(wc:*), Bash(gdate:*), Bash(head:*), Bash(grep:*), Bash(xargs:*)
+description: Systematic code simplification with complexity analysis and refactoring automation
+---
+
 # /simplify
 
-Refactor complex code to be more readable, maintainable, and easier to understand while preserving functionality.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Target file/directory: $ARGUMENTS
+- Code complexity hotspots: !`rg "if.*if.*if|for.*for|while.*while" . | wc -l | tr -d ' '` nested structures found
+- Complex conditionals: !`rg "&&.*&&|\\|\\|.*\\|\\|" . | wc -l | tr -d ' '` complex conditions found
+- Nested functions: !`rg "function.*{.*function|=>.*=>" . | wc -l | tr -d ' '` nested functions found
+- Test coverage gaps: !`fd "test" --type f | xargs rg -l "skip|todo" | wc -l | tr -d ' '` untested code blocks
+- File count: !`fd . -t f | wc -l | tr -d ' '` files in scope
+- Technology stack: !`fd "(deno\.json|package\.json|Cargo\.toml|go\.mod|pom\.xml)" --max-depth 2 | head -3 || echo "No framework files detected"`
+- Git status: !`git status --porcelain | wc -l | tr -d ' '` changes pending
+
+## Your Task
+
+STEP 1: Complexity Analysis and Target Identification
+
+Think deeply about code complexity patterns and systematic simplification approaches.
+
+IF $ARGUMENTS specifies file or directory:
+
+- Focus analysis on specified target
+- Create detailed complexity profile for target code
+
+ELSE:
+
+- Perform project-wide complexity analysis
+- Identify highest-impact simplification targets
+- Prioritize files by complexity metrics
+
+TRY:
+
+- Initialize simplification session: /tmp/simplify-$SESSION_ID.json
+- Analyze complexity hotspots using multiple metrics:
+  - Cyclomatic complexity: nested conditionals and loops
+  - Function length and parameter counts
+  - Code duplication patterns
+  - Naming quality and clarity
+  - Test coverage and maintainability
+- Create complexity baseline and improvement targets
+- Save checkpoint: complexity_analysis_complete
+
+CATCH (analysis_scope_too_large):
+
+- Limit analysis to top 10 most complex files
+- Focus on files with highest change frequency
+- Prioritize user-specified targets over automatic detection
+- Document scope limitations in session state
+
+STEP 2: Simplification Strategy Planning
+
+Think harder about optimal refactoring approach and risk assessment.
+
+- Create systematic simplification plan with phases:
+  - **Phase 1**: Extract methods and reduce function complexity
+  - **Phase 2**: Simplify conditional logic and eliminate nesting
+  - **Phase 3**: Replace imperative loops with functional constructs
+  - **Phase 4**: Improve naming and eliminate magic numbers
+  - **Phase 5**: Restructure classes and modules for separation of concerns
+
+- Assess refactoring risks and create rollback strategy
+- Identify prerequisite changes and dependencies
+- Plan validation checkpoints throughout process
+- Update session state with comprehensive plan
+
+STEP 3: Method Extraction and Function Decomposition
+
+FOR EACH complex function IN analysis_targets:
+
+Think about optimal decomposition strategy for each function.
+
+- Identify distinct responsibilities and concerns
+- Extract helper methods with clear, descriptive names
+- Reduce parameter counts through object encapsulation
+- Eliminate deep nesting through early returns
+- Create focused, single-purpose functions
+
+Example transformation pattern:
 
 ```
-/simplify [file path or code block]
+BEFORE: 50-line function with mixed concerns
+AFTER: 5-10 line orchestrator + 3-5 focused helper methods
 ```
 
-## Simplification Process
+Update files using MultiEdit for batch refactoring operations.
 
-### 1. Complexity Analysis
+STEP 4: Conditional Logic Simplification
 
-```bash
-# Identify complexity hotspots
-rg "if.*if.*if|for.*for|while.*while" -A 10  # Nested structures
-rg "&&.*&&|\\|\\|.*\\|\\|" -A 5              # Complex conditionals
-rg "function.*{.*function|=>.*=>" -A 10       # Nested functions
-fd "test" --type f | xargs rg -l "skip|todo"  # Untested code
+- Identify complex boolean expressions and nested conditionals
+- Extract boolean logic into descriptive predicate functions
+- Replace nested if-else chains with guard clauses
+- Use early returns to reduce nesting depth
+- Combine related conditions into semantic groups
+
+Apply transformations:
+
+- Complex conditionals → Named boolean functions
+- Nested if-else → Early return patterns
+- Magic numbers → Named constants
+- Complex expressions → Intermediate variables with descriptive names
+
+STEP 5: Loop and Iteration Modernization
+
+- Replace imperative loops with functional constructs where appropriate
+- Use language-specific higher-order functions (map, filter, reduce)
+- Eliminate manual index management and mutation
+- Convert accumulator patterns to functional equivalents
+- Maintain performance characteristics while improving readability
+
+Framework-specific optimizations:
+
+- JavaScript/TypeScript: Array methods, async/await patterns
+- Python: List comprehensions, generator expressions
+- Rust: Iterator chains, functional transformations
+- Go: Range loops, slice operations
+- Java: Stream API, functional interfaces
+
+STEP 6: Naming and Documentation Enhancement
+
+- Replace abbreviations and cryptic names with descriptive alternatives
+- Use domain-specific terminology consistently
+- Make boolean variables and functions interrogative
+- Eliminate generic names (data, info, temp, utils)
+- Add targeted documentation for complex algorithms only
+
+Quality checks:
+
+- Names should explain intent, not implementation
+- Functions should read like sentences
+- Variables should describe what they contain
+- Constants should explain why the value matters
+
+STEP 7: Structural Refactoring and Separation of Concerns
+
+Think deeply about optimal module and class structure.
+
+- Identify mixed responsibilities in classes and modules
+- Extract specialized services and utilities
+- Apply dependency injection for better testability
+- Reduce coupling through interface segregation
+- Group related functionality into cohesive modules
+
+Create architectural improvements:
+
+- Single Responsibility Principle adherence
+- Interface-based design for flexibility
+- Composition over inheritance patterns
+- Clear module boundaries and dependencies
+
+STEP 8: Validation and Quality Assurance
+
+TRY:
+
+- Run existing test suite to verify functionality preservation
+- Execute static analysis tools for complexity metrics
+- Perform manual code review of all changes
+- Validate performance hasn't degraded
+- Ensure code coverage is maintained or improved
+- Save checkpoint: validation_complete
+
+CATCH (test_failures):
+
+- Analyze failing tests and identify root causes
+- Restore from previous checkpoint if critical functionality broken
+- Fix issues incrementally with focused changes
+- Update tests if behavior legitimately changed
+- Document any intentional behavior modifications
+
+CATCH (performance_regression):
+
+- Profile performance-critical paths
+- Optimize functional constructs if needed
+- Consider hybrid approaches for hot paths
+- Maintain simplification gains while restoring performance
+- Document performance trade-offs made
+
+STEP 9: Documentation and Cleanup
+
+- Generate simplification summary with metrics
+- Document architectural changes and design decisions
+- Update code comments for complex algorithms only
+- Remove outdated comments and TODO items
+- Create refactoring guide for team reference
+
+Generate comprehensive improvement report:
+
+```markdown
+## Simplification Summary
+
+**Complexity Metrics:**
+
+- Cyclomatic complexity: {before} → {after}
+- Average function length: {before} → {after} lines
+- Code duplication: {before} → {after} instances
+- Test coverage: {before} → {after}%
+
+**Key Improvements:**
+
+- Extracted {N} methods for better separation of concerns
+- Simplified {N} complex conditional expressions
+- Replaced {N} imperative loops with functional constructs
+- Improved naming for {N} variables/functions
+
+**Files Modified:** {file_count}
+**Lines Changed:** {line_delta}
+**Estimated Maintainability Improvement:** {percentage}%
 ```
 
-### 2. Simplification Strategies
+STEP 10: State Management and Session Completion
 
-#### Extract Methods
+TRY:
 
-**Before:**
+- Finalize simplification session state
+- Archive transformation patterns for reuse
+- Create rollback instructions if needed
+- Generate team knowledge sharing materials
+- Save checkpoint: simplification_complete
+
+CATCH (incomplete_refactoring):
+
+- Document partial completion status
+- Create continuation plan for next session
+- Save intermediate results and progress
+- Provide recommendations for remaining work
+
+FINALLY:
+
+- Clean up temporary analysis files: /tmp/simplify-temp-$SESSION_ID-*
+- Generate final metrics comparison report
+- Update session state with completion status
+- Archive refactoring patterns for future use
+
+```json
+// /tmp/simplify-$SESSION_ID.json
+{
+  "sessionId": "$SESSION_ID",
+  "target": "$ARGUMENTS",
+  "phase": "completion",
+  "metrics": {
+    "before": {
+      "cyclomatic_complexity": 0,
+      "function_count": 0,
+      "average_function_length": 0,
+      "code_duplication": 0
+    },
+    "after": {
+      "cyclomatic_complexity": 0,
+      "function_count": 0,
+      "average_function_length": 0,
+      "code_duplication": 0
+    }
+  },
+  "changes": {
+    "files_modified": 0,
+    "methods_extracted": 0,
+    "conditionals_simplified": 0,
+    "loops_modernized": 0,
+    "variables_renamed": 0
+  },
+  "checkpoints": {
+    "complexity_analysis": "complete",
+    "strategy_planning": "complete",
+    "refactoring_execution": "complete",
+    "validation": "complete"
+  }
+}
+```
+
+## Simplification Patterns and Examples
+
+### Method Extraction Pattern
+
+**Before:** Large function with mixed concerns
 
 ```javascript
 function processOrder(order) {
@@ -34,7 +287,7 @@ function processOrder(order) {
 }
 ```
 
-**After:**
+**After:** Decomposed with clear responsibilities
 
 ```javascript
 function processOrder(order) {
@@ -44,9 +297,9 @@ function processOrder(order) {
 }
 ```
 
-#### Simplify Conditionals
+### Conditional Simplification Pattern
 
-**Before:**
+**Before:** Complex nested conditions
 
 ```python
 if user.age >= 18 and user.age <= 65 and user.status == "active" and not user.suspended:
@@ -55,20 +308,19 @@ if user.age >= 18 and user.age <= 65 and user.status == "active" and not user.su
 return False
 ```
 
-**After:**
+**After:** Descriptive predicate functions
 
 ```python
 def is_eligible_user(user):
     is_valid_age = 18 <= user.age <= 65
     is_active = user.status == "active" and not user.suspended
     has_funds = user.balance > 0 or user.credit_limit > 0
-    
     return is_valid_age and is_active and has_funds
 ```
 
-#### Replace Loops with Higher-Order Functions
+### Loop Modernization Pattern
 
-**Before:**
+**Before:** Imperative accumulation
 
 ```rust
 let mut results = Vec::new();
@@ -79,7 +331,7 @@ for item in items {
 }
 ```
 
-**After:**
+**After:** Functional transformation
 
 ```rust
 let results: Vec<_> = items
@@ -89,165 +341,29 @@ let results: Vec<_> = items
     .collect();
 ```
 
-#### Use Early Returns
+## Extended Thinking Integration
 
-**Before:**
+This command leverages extended thinking for:
 
-```go
-func process(data Data) (Result, error) {
-    if data != nil {
-        if data.IsValid() {
-            result := compute(data)
-            if result != nil {
-                return result, nil
-            } else {
-                return nil, errors.New("computation failed")
-            }
-        } else {
-            return nil, errors.New("invalid data")
-        }
-    } else {
-        return nil, errors.New("nil data")
-    }
-}
-```
+- **Complex Code Analysis**: Deep analysis of architectural patterns and anti-patterns
+- **Refactoring Strategy**: Systematic evaluation of transformation trade-offs
+- **Risk Assessment**: Comprehensive analysis of refactoring risks and mitigation strategies
+- **Performance Impact**: Detailed consideration of simplification effects on performance
 
-**After:**
+## Quality Assurance Guidelines
 
-```go
-func process(data Data) (Result, error) {
-    if data == nil {
-        return nil, errors.New("nil data")
-    }
-    
-    if !data.IsValid() {
-        return nil, errors.New("invalid data")
-    }
-    
-    result := compute(data)
-    if result == nil {
-        return nil, errors.New("computation failed")
-    }
-    
-    return result, nil
-}
-```
+- **Preserve Functionality**: All existing behavior must be maintained
+- **Maintain Performance**: No significant performance degradation
+- **Improve Maintainability**: Focus on long-term code health
+- **Follow Conventions**: Respect team and language idioms
+- **Validate Changes**: Comprehensive testing and verification
 
-#### Extract Constants and Magic Numbers
+## Integration with Development Workflow
 
-**Before:**
+- Use after complex feature implementation for cleanup
+- Apply before major feature additions to reduce complexity
+- Integrate with code review process for continuous improvement
+- Combine with `/analyze-complexity` for detailed metrics
+- Follow with `/generate-tests` for improved test coverage
 
-```java
-if (retries > 3 && delay > 1000) {
-    wait(delay * 1.5);
-}
-```
-
-**After:**
-
-```java
-private static final int MAX_RETRIES = 3;
-private static final long MIN_DELAY_MS = 1000;
-private static final double BACKOFF_MULTIPLIER = 1.5;
-
-if (retries > MAX_RETRIES && delay > MIN_DELAY_MS) {
-    wait((long)(delay * BACKOFF_MULTIPLIER));
-}
-```
-
-### 3. Naming Improvements
-
-- Replace abbreviations with full words
-- Use domain-specific terminology
-- Make boolean names interrogative
-- Avoid generic names (data, info, temp)
-
-### 4. Structure Improvements
-
-#### Before
-
-```typescript
-class OrderProcessor {
-  // 500 lines of mixed concerns
-}
-```
-
-#### After
-
-```typescript
-class OrderProcessor {
-  constructor(
-    private validator: OrderValidator,
-    private calculator: PriceCalculator,
-    private notifier: CustomerNotifier,
-  ) {}
-
-  async process(order: Order): Promise<ProcessedOrder> {
-    const validated = await this.validator.validate(order);
-    const priced = await this.calculator.calculate(validated);
-    await this.notifier.notify(priced);
-    return priced;
-  }
-}
-```
-
-### 5. Testing Simplification
-
-- Extract test helpers
-- Use descriptive test names
-- Remove test duplication
-- Add missing edge cases
-
-### 6. Documentation
-
-Add clear, concise comments only where necessary:
-
-```python
-# Calculate compound interest using the formula: A = P(1 + r/n)^(nt)
-def calculate_compound_interest(principal, rate, time, compounds_per_year):
-    return principal * (1 + rate/compounds_per_year) ** (compounds_per_year * time)
-```
-
-## Validation
-
-After simplification, ensure:
-
-- All tests still pass
-- No functionality is lost
-- Performance hasn't degraded
-- Code coverage is maintained
-
-## Output Format
-
-```markdown
-## Simplification Summary
-
-**Complexity Reduced From:** [metrics]
-**Complexity Reduced To:** [metrics]
-
-### Changes Made:
-
-1. Extracted X methods for better separation of concerns
-2. Simplified Y conditional expressions
-3. Replaced Z loops with functional constructs
-4. Improved naming for N variables/functions
-
-### Key Improvements:
-
-- Reduced cyclomatic complexity from A to B
-- Improved readability score from C to D
-- Decreased file length from E to F lines
-
-### Code Diff:
-
-[Show key before/after examples]
-```
-
-## Guidelines
-
-- Preserve all functionality
-- Maintain or improve performance
-- Keep domain logic intact
-- Follow language idioms
-- Consider team conventions
-- Add tests for refactored code
+The goal is creating cleaner, more maintainable code through systematic simplification while preserving all functionality and performance characteristics.

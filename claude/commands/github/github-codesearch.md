@@ -1,6 +1,6 @@
 ---
-allowed-tools: Bash(gh api:*), Bash(gh auth:*)
-description: Search GitHub for code using GitHub CLI
+allowed-tools: Bash(gh api:*), Bash(gh auth:*), Bash(base64:*), Bash(grep:*), Bash(head:*)
+description: Search GitHub for code using GitHub CLI with precise line number permalinks
 ---
 
 ## Context
@@ -20,11 +20,13 @@ Steps:
 2. Check GitHub CLI authentication status
 3. If not authenticated, prompt user to run `gh auth login`
 4. Use GitHub CLI to search for code with text matches: `gh api search/code --header "Accept: application/vnd.github.text-match+json" --raw-field q="$ARGUMENTS"`
-5. Parse and format the search results
-6. Display the results with:
+5. For each result, fetch the file content to determine exact line numbers:
+   - `gh api repos/{owner}/{repo}/contents/{path} --jq '.content' | base64 -d | grep -n "search_pattern"`
+6. Parse and format the search results
+7. Display the results with:
    - Repository name and description
    - File path and relevant code snippet
-   - Direct link to the file on GitHub
+   - Direct permalink with exact line number: `{html_url}#L{line_number}`
    - Total number of results found
 
 GitHub CLI command: `gh api search/code --method GET --header "Accept: application/vnd.github.text-match+json" --raw-field q="QUERY"`
@@ -66,6 +68,8 @@ Found {total_count} results:
 💻 Code snippet:
 {text_matches[].fragment with highlighted matches}
 
+🔗 Permalink: {html_url}#L{estimated_line_number}
+
 ---
 ```
 
@@ -74,5 +78,21 @@ Extract code snippets from the `text_matches` array in the API response. Each te
 - `fragment`: The actual code snippet
 - `matches`: Array of highlighted match positions
 - Show match highlights using **bold** or similar formatting
+
+**Permalink Generation:**
+
+- Fetch file content using: `gh api repos/{owner}/{repo}/contents/{path}`
+- Decode base64 content and search for exact matches with line numbers
+- Use `grep -n` to find precise line numbers for code fragments
+- Generate permalink format: `{html_url}#L{line_number}`
+- Example: `https://github.com/owner/repo/blob/sha/file.rs#L42`
+
+**Line Number Detection Process:**
+
+1. Extract repository owner, name, and file path from search result
+2. Fetch file content: `gh api repos/{owner}/{repo}/contents/{path} --jq '.content'`
+3. Decode and search: `base64 -d | grep -n "exact_code_pattern"`
+4. Use first match line number for permalink generation
+5. If multiple matches, show all line numbers or use first occurrence
 
 Limit display to first 10 results for readability.

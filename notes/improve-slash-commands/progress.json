@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 72,
-  "inProgress": 12,
-  "lastUpdated": "2025-07-07T14:52:09.697Z",
+  "completed": 76,
+  "inProgress": 8,
+  "lastUpdated": "2025-07-07T14:53:10.838Z",
   "commands": [
     {
       "id": "001",
@@ -1582,18 +1582,21 @@
       "name": "context-load-java-quarkus",
       "filepath": "claude/commands/context/java/context-load-java-quarkus.md",
       "namespace": "context/java",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T14:50:59.100Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T14:52:48.529Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "projectSpecificAnalysis"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17518998591000nyzghb11i7",
-        "timestamp": 1751899859
       }
     },
     {
@@ -1697,18 +1700,21 @@
       "name": "context-load-talos",
       "filepath": "claude/commands/context/k8s/context-load-talos.md",
       "namespace": "context/k8s",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T14:51:16.349Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T14:52:59.799Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751899876349eiyyhrs12ot",
-        "timestamp": 1751899876
       }
     },
     {
@@ -1735,18 +1741,22 @@
       "name": "context-load-observability",
       "filepath": "claude/commands/context/observability/context-load-observability.md",
       "namespace": "context/observability",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T14:51:19.171Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T14:53:06.619Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded",
+        "errorHandlingImproved"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751899879171j585rf512we",
-        "timestamp": 1751899879
       }
     },
     {
@@ -1792,18 +1802,21 @@
       "name": "context-load-rust-db",
       "filepath": "claude/commands/context/rust/context-load-rust-db.md",
       "namespace": "context/rust",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T14:51:29.923Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T14:53:10.838Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751899889923w90klmj13ei",
-        "timestamp": 1751899889
       }
     },
     {

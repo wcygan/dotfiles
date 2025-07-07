@@ -7,7 +7,7 @@ description: Load comprehensive lakehouse architecture context with parallel doc
 
 ## Context
 
-- Session ID: !`gdate +%s%N`
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
 - Current directory: !`pwd`
 - Project structure: !`fd . -t d -d 3 | head -10 || echo "No directories found"`
 - Kubernetes manifests: !`fd "\.(yaml|yml)$" . | rg -l "(kind:|apiVersion:)" | wc -l | tr -d ' ' || echo "0"`
@@ -21,6 +21,7 @@ description: Load comprehensive lakehouse architecture context with parallel doc
 
 STEP 1: Initialize comprehensive lakehouse documentation loading session
 
+- VALIDATE required tools availability (fd, rg, git, jq)
 - CREATE session state file: `/tmp/context-lakehouse-$SESSION_ID.json`
 - SET initial state:
   ```json
@@ -93,12 +94,12 @@ ELSE:
   6. **Rook Ceph Agent**: `https://rook.io/docs/rook/latest-release/Storage-Configuration/Object-Storage-RGW/object-storage/`
      - FOCUS: S3-compatible object storage, bucket policies, performance tuning, multi-site replication
 
-CATCH (context7_unavailable OR webfetch_network_error):
+CATCH (context7_unavailable OR webfetch_network_error OR tool_availability_error):
 
 - LOG error details to session state
 - PROVIDE comprehensive internal knowledge fallback
-- SAVE offline documentation recommendations
-- CONTINUE with available information
+- SAVE offline documentation recommendations to `/tmp/context-lakehouse-$SESSION_ID-offline.md`
+- CONTINUE with available information and graceful degradation
 
 STEP 4: Parallel documentation synthesis and organization
 
@@ -138,6 +139,7 @@ STEP 6: Comprehensive context integration with extended thinking
 STEP 7: State management and session completion
 
 - UPDATE session state with loaded context and completion status
+- ATOMIC write to state file with file locking for concurrent safety
 - CREATE comprehensive context summary: `/tmp/context-lakehouse-$SESSION_ID-summary.md`
 - SAVE technology-specific guides: `/tmp/context-lakehouse-$SESSION_ID/`
   - `trino-optimization-guide.md`

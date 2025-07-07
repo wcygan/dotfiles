@@ -1,5 +1,5 @@
 ---
-allowed-tools: WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, Bash(fd:*), Bash(rg:*), Bash(gdate:*), Bash(wc:*), Bash(git:*), Read, Write
+allowed-tools: WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, Bash(fd:*), Bash(rg:*), Bash(gdate:*), Bash(wc:*), Bash(git:*), Read, Write, Task
 description: Load comprehensive Rust testing documentation with adaptive framework detection and project-specific optimization
 ---
 
@@ -68,43 +68,51 @@ Think deeply about the optimal testing documentation loading strategy based on d
   - IF Mockall > 0: ADD "mocking" to frameworks
   - IF Workspace > 0: ADD "workspace-testing" to frameworks
 
-STEP 3: Adaptive documentation loading with error handling
+STEP 3: Adaptive documentation loading with parallel sub-agent delegation
 
 TRY:
 
 CASE project_complexity:
 WHEN "enterprise":
 
-- LOAD comprehensive testing documentation using parallel strategy:
-  1. **Core Testing Documentation**:
+- LOAD comprehensive testing documentation using sub-agent parallel strategy:
+
+  **Launch 6 parallel sub-agents for documentation gathering:**
+
+  1. **Core Testing Agent**:
      - WebFetch: `https://doc.rust-lang.org/book/ch11-00-testing.html`
      - FOCUS: Unit tests, integration tests, documentation tests, test organization
      - Context7: resolve-library-id for "rust-test-patterns"
 
-  2. **Advanced Async Testing** (if async tests detected):
+  2. **Async Testing Agent** (if async tests detected):
      - WebFetch: `https://docs.rs/tokio/latest/tokio/test/index.html`
      - FOCUS: async runtime testing, multi-threaded testing, time control
      - Context7: get-library-docs for tokio testing patterns
 
-  3. **Integration Testing with Containers** (if testcontainers detected):
+  3. **Integration Testing Agent** (if testcontainers detected):
      - WebFetch: `https://docs.rs/testcontainers/latest/testcontainers/`
      - FOCUS: database testing, service integration, container lifecycle
      - Context7: resolve-library-id for "testcontainers-rs"
 
-  4. **Performance Testing** (if criterion detected):
+  4. **Performance Testing Agent** (if criterion detected):
      - WebFetch: `https://docs.rs/criterion/latest/criterion/`
      - FOCUS: benchmarking, statistical analysis, performance regression testing
      - Context7: get-library-docs for criterion benchmarking
 
-  5. **Property-Based Testing** (if proptest detected):
+  5. **Property Testing Agent** (if proptest detected):
      - WebFetch: `https://docs.rs/proptest/latest/proptest/`
      - FOCUS: test generation, fuzzing, property verification
      - Context7: resolve-library-id for "proptest"
 
-  6. **Mocking and Test Doubles** (if mockall detected):
+  6. **Mocking Agent** (if mockall detected):
      - WebFetch: `https://docs.rs/mockall/latest/mockall/`
      - FOCUS: dependency injection, mock creation, test isolation
      - Context7: get-library-docs for mockall patterns
+
+  **Sub-Agent Coordination:**
+  - Each agent works independently on their domain
+  - Save findings to `/tmp/rust-testing-agent-$AGENT_ID-$SESSION_ID.json`
+  - Main agent synthesizes all results into comprehensive context
 
 WHEN "moderate":
 

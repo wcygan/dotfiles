@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 94,
-  "inProgress": 7,
-  "lastUpdated": "2025-07-07T15:11:00.724Z",
+  "completed": 95,
+  "inProgress": 8,
+  "lastUpdated": "2025-07-07T15:11:11.128Z",
   "commands": [
     {
       "id": "001",
@@ -1624,18 +1624,17 @@
       "name": "context-load-java-temporal",
       "filepath": "claude/commands/context/java/context-load-java-temporal.md",
       "namespace": "context/java",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:09:04.762Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:11:02.535Z",
+      "improvements": [
+        "subAgentPatternsAdded",
+        "performanceOptimized"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751900944762da2brhk1xq6",
-        "timestamp": 1751900944
       }
     },
     {
@@ -2173,8 +2172,8 @@
       "name": "docs-init",
       "filepath": "claude/commands/docs/manage/docs-init.md",
       "namespace": "docs/manage",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:11:04.650Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2182,15 +2181,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901064650wc22hqk2sn",
+        "timestamp": 1751901064
+      }
     },
     {
       "id": "103",
       "name": "docs-update",
       "filepath": "claude/commands/docs/manage/docs-update.md",
       "namespace": "docs/manage",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:11:11.127Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2198,7 +2200,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901071127i8eijvo3u7",
+        "timestamp": 1751901071
+      }
     },
     {
       "id": "104",

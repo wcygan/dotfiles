@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 131,
-  "inProgress": 27,
-  "lastUpdated": "2025-07-07T15:24:30.570Z",
+  "completed": 134,
+  "inProgress": 24,
+  "lastUpdated": "2025-07-07T15:24:44.884Z",
   "commands": [
     {
       "id": "001",
@@ -2627,18 +2627,20 @@
       "name": "monitor",
       "filepath": "claude/commands/ops/monitor/monitor.md",
       "namespace": "ops/monitor",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:15.324Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:24:44.884Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751901675324g9qckb0o56",
-        "timestamp": 1751901675
       }
     },
     {
@@ -2851,19 +2853,23 @@
       "name": "audit",
       "filepath": "claude/commands/security/audit/audit.md",
       "namespace": "security/audit",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:41.202Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T10:24:44-05:00",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "1751901701202dlbyrbbqll",
-        "timestamp": 1751901701
-      }
+      "claimedBy": null
     },
     {
       "id": "135",
@@ -3008,18 +3014,20 @@
       "name": "test-gen",
       "filepath": "claude/commands/test/generate/test-gen.md",
       "namespace": "test/generate",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:57.537Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:24:41.808Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751901717537rxtxck0sf0",
-        "timestamp": 1751901717
       }
     },
     {

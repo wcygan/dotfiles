@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 116,
-  "inProgress": 2,
-  "lastUpdated": "2025-07-07T15:17:46.032Z",
+  "completed": 117,
+  "inProgress": 1,
+  "lastUpdated": "2025-07-07T15:18:41.157Z",
   "commands": [
     {
       "id": "001",
@@ -2521,18 +2521,20 @@
       "name": "ci-gen",
       "filepath": "claude/commands/ops/ci/ci-gen.md",
       "namespace": "ops/ci",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:14:35.982Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:18:41.156Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "17519012759824ij8qc2eg8",
-        "timestamp": 1751901275
       }
     },
     {

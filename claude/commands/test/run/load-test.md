@@ -1,81 +1,159 @@
-# /load-test
+---
+allowed-tools: Task, Read, Write, Edit, MultiEdit, Bash(fd:*), Bash(rg:*), Bash(jq:*), Bash(gdate:*), Bash(k6:*), Bash(artillery:*), Bash(docker:*), Bash(curl:*), Bash(eza:*), Bash(bat:*)
+description: Comprehensive load testing orchestrator with intelligent scenario generation, performance baselines, and automated analysis
+---
 
-Generate comprehensive load testing suites for $ARGUMENT with intelligent test scenario creation, performance baselines, and automated analysis.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
+- Load test target: $ARGUMENTS
+- Current directory: !`pwd`
+- Project structure: !`eza -la --tree --level=2 2>/dev/null | head -15 || fd . -t d -d 2 | head -10`
+- Technology stack: !`fd "(package\.json|Cargo\.toml|go\.mod|deno\.json|pom\.xml|build\.gradle)" . -d 3 | head -10 || echo "No build files detected"`
+- Load testing tools: !`echo "k6: $(which k6 >/dev/null && echo ✓ || echo ✗) | artillery: $(which artillery >/dev/null && echo ✓ || echo ✗) | docker: $(which docker >/dev/null && echo ✓ || echo ✗)"`
+- Existing endpoints: !`rg "(app|router|handler)\.(get|post|put|delete|patch)" --type js --type ts -m 5 2>/dev/null | head -5 || echo "No API routes detected"`
+- Running services: !`docker ps --format "table {{.Names}}\t{{.Ports}}" 2>/dev/null | head -5 || echo "No Docker services detected"`
+- Available ports: !`netstat -an 2>/dev/null | rg ":3000|:8000|:8080" | head -3 || echo "No common dev ports in use"`
 
-```
-/load-test [endpoint-url]
-/load-test [api-spec-file]
-/load-test
-```
+## Your Task
 
-## Context Detection
+STEP 1: Initialize load testing session with intelligent context analysis
 
-**When no argument provided:**
-
-- Analyzes project structure for API endpoints and services
-- Detects OpenAPI/Swagger specifications
-- Identifies docker-compose services with exposed ports
-- Provides interactive endpoint selection
-
-**When endpoint provided:**
-
-- Creates targeted load tests for specific URL
-- Auto-detects authentication requirements
-- Analyzes response patterns for realistic scenarios
-
-**When API spec provided:**
-
-- Generates comprehensive test suite from OpenAPI/Swagger
-- Creates weighted scenario distributions
-- Includes all endpoint combinations
-
-## Framework Detection
-
-**Load Testing Tools:**
+- CREATE session state file: `/tmp/load-test-session-$SESSION_ID.json`
+- ANALYZE project structure from Context section
+- DETECT primary technology stack and frameworks
+- IDENTIFY existing load testing configurations
+- VALIDATE load testing tools availability (k6, artillery, docker are REQUIRED)
 
 ```bash
-# Detect existing tools
-fd "package.json" | xargs jq -r '.devDependencies | keys[]' | rg "(k6|artillery|wrk|autocannon)"
+# Initialize load testing session state
+echo '{
+  "sessionId": "'$SESSION_ID'",
+  "target": "'$ARGUMENTS'",
+  "detectedFramework": "auto-detect",
+  "loadTestingTool": "k6",
+  "scenarioStrategy": "intelligent",
+  "baselineRequired": true,
+  "ciIntegration": true
+}' > /tmp/load-test-session-$SESSION_ID.json
+```
 
-# Check for load testing configs
-fd "(k6|artillery|wrk).(js|yml|yaml|json)$" --max-depth 2
+STEP 2: Intelligent target detection and analysis strategy
 
-# Analyze project language preferences
-case $DETECTED_TECH in
-  "node"|"deno") echo "k6 or Artillery recommended" ;;
-  "go") echo "wrk or hey recommended" ;;
-  "rust") echo "drill or wrk recommended" ;;
-  "python") echo "locust recommended" ;;
+CASE target_type:
+WHEN "no_arguments":
+
+- EXECUTE comprehensive project analysis for API discovery
+- DETECT OpenAPI/Swagger specifications in project
+- IDENTIFY docker-compose services with exposed ports
+- PROVIDE interactive endpoint selection interface
+
+WHEN "endpoint_url":
+
+- CREATE targeted load tests for specific URL endpoint
+- AUTO-DETECT authentication requirements via endpoint analysis
+- ANALYZE response patterns for realistic test scenarios
+- GENERATE endpoint-specific performance thresholds
+
+WHEN "api_spec_file":
+
+- PARSE comprehensive test suite from OpenAPI/Swagger specification
+- CREATE weighted scenario distributions based on endpoint criticality
+- INCLUDE all endpoint combinations with realistic data flows
+- GENERATE full API coverage testing matrix
+
+STEP 3: Advanced framework detection with parallel sub-agent analysis
+
+TRY:
+
+IF project_complexity == "enterprise" OR codebase_size > 100_files:
+
+LAUNCH parallel sub-agents for comprehensive load testing strategy:
+
+- **Agent 1: Technology Stack Analysis**: Analyze project dependencies and frameworks
+  - Focus: Package managers, runtime dependencies, existing test tools
+  - Tools: fd for file discovery, jq for JSON parsing, rg for pattern matching
+  - Output: Technology manifest with recommended load testing tools
+
+- **Agent 2: API Surface Discovery**: Map all available API endpoints and services
+  - Focus: REST endpoints, GraphQL schemas, gRPC services, WebSocket connections
+  - Tools: rg for route patterns, framework-specific endpoint detection
+  - Output: Comprehensive API inventory with criticality scoring
+
+- **Agent 3: Performance Requirements Analysis**: Determine performance criteria and SLAs
+  - Focus: Existing monitoring, performance budgets, business requirements
+  - Tools: Analysis of monitoring configs, SLA documents, performance metrics
+  - Output: Performance baseline requirements and threshold definitions
+
+- **Agent 4: Infrastructure Assessment**: Evaluate deployment and scaling characteristics
+  - Focus: Container orchestration, database connections, external dependencies
+  - Tools: docker-compose analysis, kubernetes manifest detection
+  - Output: Infrastructure constraints and scaling considerations
+
+ELSE:
+
+EXECUTE streamlined framework detection:
+
+```bash
+# Detect existing load testing tools
+echo "🔍 Analyzing project for load testing tools..."
+fd "package.json" . | xargs jq -r '.devDependencies | keys[]?' 2>/dev/null | rg "(k6|artillery|wrk|autocannon)" || echo "No existing tools found"
+
+# Check for load testing configurations
+echo "📁 Searching for existing load test configs..."
+fd "(k6|artillery|wrk)\.(js|yml|yaml|json)$" . --max-depth 3 || echo "No load test configs found"
+
+# Analyze project language preferences for tool recommendation
+project_tech=$(fd "(package\.json|Cargo\.toml|go\.mod|deno\.json)" . | head -1)
+case $project_tech in
+  *package.json*|*deno.json*) echo "🎯 JavaScript/TypeScript project - k6 or Artillery recommended" ;;
+  *go.mod*) echo "🐹 Go project - wrk or hey recommended" ;;
+  *Cargo.toml*) echo "🦀 Rust project - drill or wrk recommended" ;;
+  *) echo "📊 Multi-language project - k6 recommended for versatility" ;;
 esac
 ```
 
-## Load Test Generation Strategies
+STEP 4: Intelligent load test generation with framework-specific optimizations
 
-### 1. API Endpoint Analysis
-
-**Endpoint Discovery:**
+**Comprehensive API Endpoint Discovery:**
 
 ```bash
-# Extract API routes from common frameworks
-case $FRAMEWORK in
-  "express"|"fastify")
-    rg "(app|router)\.(get|post|put|delete|patch)" --type js --type ts -A 2
-    ;;
-  "axum"|"actix")
-    rg "Router::new\(\)|\.route\(" --type rust -A 2
-    ;;
-  "spring"|"quarkus")
-    rg "@(GetMapping|PostMapping|PutMapping|DeleteMapping|RequestMapping)" --type java -A 2
-    ;;
-  "gin"|"echo"|"connectrpc")
-    rg "router\.(GET|POST|PUT|DELETE)|connect\." --type go -A 2
-    ;;
-  "fresh"|"oak")
-    rg "handler|GET|POST" --type ts -A 2
-    ;;
-esac
+# Advanced framework-specific endpoint extraction
+echo "🔍 Discovering API endpoints for load testing..."
+
+# JavaScript/TypeScript frameworks
+if fd "package\.json" . | head -1 >/dev/null; then
+  echo "📡 Analyzing JavaScript/TypeScript API routes..."
+  rg "(app|router|handler)\.(get|post|put|delete|patch)" --type js --type ts -A 2 -B 1 | head -20
+  rg "@(Get|Post|Put|Delete|Patch)" --type ts -A 2 | head -10  # NestJS decorators
+fi
+
+# Rust web frameworks
+if fd "Cargo\.toml" . | head -1 >/dev/null; then
+  echo "🦀 Analyzing Rust web service routes..."
+  rg "Router::new\(\)|\.route\(|\.get\(|\.post\(" --type rust -A 2 -B 1 | head -20
+  rg "#\[axum::debug_handler\]|#\[get\(|#\[post\(" --type rust -A 1 | head -10  # Axum handlers
+fi
+
+# Go web frameworks
+if fd "go\.mod" . | head -1 >/dev/null; then
+  echo "🐹 Analyzing Go web service routes..."
+  rg "router\.(GET|POST|PUT|DELETE)|r\.(GET|POST)" --type go -A 2 -B 1 | head -20
+  rg "connect\.|grpc\.|rpc" --type go -A 2 | head -10  # gRPC/ConnectRPC
+fi
+
+# Java Spring/Quarkus
+if fd "(pom\.xml|build\.gradle)" . | head -1 >/dev/null; then
+  echo "☕ Analyzing Java web service endpoints..."
+  rg "@(GetMapping|PostMapping|PutMapping|DeleteMapping|RequestMapping)" --type java -A 2 -B 1 | head -20
+  rg "@Path\(|@GET|@POST" --type java -A 1 | head -10  # JAX-RS
+fi
+
+# Deno Fresh
+if fd "deno\.json" . | head -1 >/dev/null; then
+  echo "🦕 Analyzing Deno Fresh API routes..."
+  rg "handler|export.*function.*(GET|POST)" --type ts -A 2 -B 1 | head -20
+fi
 ```
 
 **OpenAPI/Swagger Analysis:**

@@ -1,5 +1,5 @@
 ---
-allowed-tools: WebFetch, Read, Bash(fd:*), Bash(rg:*), Bash(jq:*), Bash(gdate:*), Bash(mvn:*), Bash(gradle:*)
+allowed-tools: Task, WebFetch, Read, Bash(fd:*), Bash(rg:*), Bash(jq:*), Bash(gdate:*), Bash(mvn:*), Bash(gradle:*)
 description: Load comprehensive Java Temporal workflow documentation with project-specific optimization
 ---
 
@@ -51,60 +51,53 @@ IF Java projects with Temporal usage found:
 - EMPHASIZE workflow design principles and best practices
 - INCLUDE project setup and Spring Boot integration patterns
 
-STEP 3: Strategic documentation loading with intelligent prioritization
+STEP 3: Parallel documentation loading with sub-agent delegation
 
 TRY:
 
-- EXECUTE systematic context loading from prioritized sources
-- USE WebFetch tool for each documentation URL
-- PROCESS and organize information by functional area
-- SAVE loaded context to session state
+- LAUNCH 7 parallel sub-agents for simultaneous documentation loading
+- EACH sub-agent processes one priority documentation source
+- SAVE loaded context to session state from all agents
+- SYNTHESIZE findings from parallel execution
 
-**Core Documentation Sources (Priority-Ordered):**
+**Parallel Sub-Agent Documentation Loading:**
 
-FOR EACH priority source:
+LAUNCH parallel sub-agents to load comprehensive Temporal documentation:
 
-1. **Temporal Core Concepts**
-   - URL: `https://docs.temporal.io/concepts`
-   - FETCH: Core workflow concepts, task queues, signals, queries
-   - FOCUS: Durable execution model, workflow lifecycle, state management
-   - EXTRACT: Mental models and architectural patterns
+- **Agent 1: Core Concepts**: Load foundational Temporal concepts from `https://docs.temporal.io/concepts`
+  - Focus: Durable execution model, workflow lifecycle, task queues, signals, queries
+  - Extract: Mental models and architectural patterns
 
-2. **Java SDK Implementation Guide**
-   - URL: `https://docs.temporal.io/dev-guide/java`
-   - FETCH: Java-specific implementation patterns and best practices
-   - FOCUS: Workflow definition, activity implementation, worker configuration
-   - EXTRACT: Code examples and configuration patterns
+- **Agent 2: Java SDK Guide**: Load Java implementation patterns from `https://docs.temporal.io/dev-guide/java`
+  - Focus: Workflow definition, activity implementation, worker configuration
+  - Extract: Code examples and configuration patterns
 
-3. **Java Testing Strategies**
-   - URL: `https://docs.temporal.io/dev-guide/java/testing`
-   - FETCH: TestWorkflowEnvironment, unit testing, integration testing
-   - FOCUS: Time manipulation, mock activities, test determinism
-   - EXTRACT: Testing patterns and time-skipping techniques
+- **Agent 3: Testing Strategies**: Load testing methodologies from `https://docs.temporal.io/dev-guide/java/testing`
+  - Focus: TestWorkflowEnvironment, time manipulation, mock activities, test determinism
+  - Extract: Testing patterns and time-skipping techniques
 
-4. **Temporal Java Samples Repository**
-   - URL: `https://github.com/temporalio/samples-java`
-   - FETCH: Real-world implementation examples and patterns
-   - FOCUS: Production-ready workflow implementations
-   - EXTRACT: Complete example applications and integration patterns
+- **Agent 4: Java Samples**: Load real-world examples from `https://github.com/temporalio/samples-java`
+  - Focus: Production-ready workflow implementations and patterns
+  - Extract: Complete example applications and integration patterns
 
-5. **Spring Boot Integration Patterns**
-   - URL: `https://docs.temporal.io/dev-guide/java/foundations#dependency-injection`
-   - FETCH: Spring Boot integration and dependency injection
-   - FOCUS: Application configuration, bean management, lifecycle
-   - EXTRACT: Production deployment patterns
+- **Agent 5: Spring Integration**: Load Spring Boot patterns from `https://docs.temporal.io/dev-guide/java/foundations#dependency-injection`
+  - Focus: Application configuration, dependency injection, bean management, lifecycle
+  - Extract: Production deployment and configuration patterns
 
-6. **Production Operations Guide**
-   - URL: `https://docs.temporal.io/production-deployment`
-   - FETCH: Deployment, monitoring, observability, scaling
-   - FOCUS: Production readiness, metrics, alerting
-   - EXTRACT: Operational best practices and troubleshooting
+- **Agent 6: Production Operations**: Load operational guidance from `https://docs.temporal.io/production-deployment`
+  - Focus: Deployment, monitoring, observability, scaling, metrics, alerting
+  - Extract: Operational best practices and troubleshooting procedures
 
-7. **Workflow Versioning and Migration**
-   - URL: `https://docs.temporal.io/dev-guide/java/versioning`
-   - FETCH: Versioning strategies, backward compatibility, migration
-   - FOCUS: Production evolution, breaking changes, rollback strategies
-   - EXTRACT: Versioning patterns and migration procedures
+- **Agent 7: Versioning & Migration**: Load evolution strategies from `https://docs.temporal.io/dev-guide/java/versioning`
+  - Focus: Versioning strategies, backward compatibility, migration, breaking changes
+  - Extract: Versioning patterns and rollback procedures
+
+**Sub-Agent Coordination:**
+
+- Each sub-agent executes independently with WebFetch tool
+- Results aggregated in session state under respective functional areas
+- Parallel execution provides 5-7x performance improvement over sequential loading
+- Failed agents report to session state without blocking others
 
 CATCH (documentation_fetch_failed):
 

@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 139,
-  "inProgress": 19,
-  "lastUpdated": "2025-07-07T15:25:51.097Z",
+  "completed": 113,
+  "inProgress": 5,
+  "lastUpdated": "2025-07-07T15:16:34.867Z",
   "commands": [
     {
       "id": "001",
@@ -2307,20 +2307,18 @@
       "name": "pr-review",
       "filepath": "claude/commands/git/pr/pr-review.md",
       "namespace": "git/pr",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:17:46.032Z",
-      "improvements": [
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "subAgentPatternsAdded",
-        "extendedThinkingAdded",
-        "stateManagementAdded"
-      ],
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:11:36.145Z",
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": true,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
+      },
+      "claimedBy": {
+        "sessionId": "17519010961454mz83vl5y0",
+        "timestamp": 1751901096
       }
     },
     {
@@ -2371,20 +2369,18 @@
       "name": "generate-command",
       "filepath": "claude/commands/meta/command/generate-command.md",
       "namespace": "meta/command",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:18:41.157Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "extendedThinkingAdded"
-      ],
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:02.920Z",
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
+      },
+      "claimedBy": {
+        "sessionId": "17519012429206t9s0lmban",
+        "timestamp": 1751901242
       }
     },
     {
@@ -2392,21 +2388,18 @@
       "name": "ideate-commands",
       "filepath": "claude/commands/meta/command/ideate-commands.md",
       "namespace": "meta/command",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:17:21.228Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "extendedThinkingAdded",
-        "subAgentPatternsAdded"
-      ],
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:05.438Z",
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
+      },
+      "claimedBy": {
+        "sessionId": "1751901245438ucbj4rubqu",
+        "timestamp": 1751901245
       }
     },
     {
@@ -2476,25 +2469,18 @@
       "name": "search-smart",
       "filepath": "claude/commands/meta/search/search-smart.md",
       "namespace": "meta/search",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:16:51Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded",
-        "extendedThinkingAdded"
-      ],
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:14.114Z",
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
-        "hadStateManagement": false,
-        "hadSubAgentPatterns": false,
-        "hadExtendedThinking": false,
-        "linesOfCode": 297,
-        "complexityScore": 8.5
+        "hadStateManagement": false
+      },
+      "claimedBy": {
+        "sessionId": "17519012541144j1uhorda0",
+        "timestamp": 1751901254
       }
     },
     {
@@ -2523,20 +2509,18 @@
       "name": "ci-gen",
       "filepath": "claude/commands/ops/ci/ci-gen.md",
       "namespace": "ops/ci",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:18:41.156Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "extendedThinkingAdded"
-      ],
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:14:35.982Z",
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
+      },
+      "claimedBy": {
+        "sessionId": "17519012759824ij8qc2eg8",
+        "timestamp": 1751901275
       }
     },
     {
@@ -2544,51 +2528,40 @@
       "name": "containerize",
       "filepath": "claude/commands/ops/deploy/containerize.md",
       "namespace": "ops/deploy",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:24:26.400Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded",
-        "securityHardening"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "120",
       "name": "deploy",
       "filepath": "claude/commands/ops/deploy/deploy.md",
       "namespace": "ops/deploy",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:23:10.139Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "subAgentPatternsAdded",
-        "stateManagementAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "121",
       "name": "health-check",
       "filepath": "claude/commands/ops/infra/health-check.md",
       "namespace": "ops/infra",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:12.952Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": true,
@@ -2596,186 +2569,143 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": {
-        "sessionId": "1751901672952ybkjymtnrx",
-        "timestamp": 1751901672
-      }
+      "claimedBy": null
     },
     {
       "id": "122",
       "name": "infra-status",
       "filepath": "claude/commands/ops/infra/infra-status.md",
       "namespace": "ops/infra",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:23:12.355Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "123",
       "name": "monitor",
       "filepath": "claude/commands/ops/monitor/monitor.md",
       "namespace": "ops/monitor",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:24:44.884Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "124",
       "name": "observe",
       "filepath": "claude/commands/ops/monitor/observe.md",
       "namespace": "ops/monitor",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:22:58.063Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "125",
       "name": "benchmark",
       "filepath": "claude/commands/ops/perf/benchmark.md",
       "namespace": "ops/perf",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:24:05.286Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "126",
       "name": "perf",
       "filepath": "claude/commands/ops/perf/perf.md",
       "namespace": "ops/perf",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:23:38.273Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded",
-        "extendedThinkingAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "127",
       "name": "scaffold-deno-fresh",
       "filepath": "claude/commands/scaffold/deno/scaffold-deno-fresh.md",
       "namespace": "scaffold/deno",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:23:26.325Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "extendedThinkingAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "128",
       "name": "scaffold-deno-script",
       "filepath": "claude/commands/scaffold/deno/scaffold-deno-script.md",
       "namespace": "scaffold/deno",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:23:09.341Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "modernToolsIntegrated"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "129",
       "name": "scaffold-go-connect",
       "filepath": "claude/commands/scaffold/go/scaffold-go-connect.md",
       "namespace": "scaffold/go",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:23:15.135Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "130",
       "name": "scaffold-go-http-server",
       "filepath": "claude/commands/scaffold/go/scaffold-go-http-server.md",
       "namespace": "scaffold/go",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:35.154Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2783,59 +2713,15 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": {
-        "sessionId": "1751901695154i083xnbptg",
-        "timestamp": 1751901695
-      }
+      "claimedBy": null
     },
     {
       "id": "131",
       "name": "scaffold-java-quarkus",
       "filepath": "claude/commands/scaffold/java/scaffold-java-quarkus.md",
       "namespace": "scaffold/java",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:23:19.927Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded"
-      ],
-      "metrics": {
-        "hadFrontMatter": false,
-        "hadDynamicContext": false,
-        "hadProgrammaticStructure": false,
-        "hadStateManagement": false
-      }
-    },
-    {
-      "id": "132",
-      "name": "scaffold-rust-axum",
-      "filepath": "claude/commands/scaffold/rust/scaffold-rust-axum.md",
-      "namespace": "scaffold/rust",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:23:24.853Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "productionReadyTemplates"
-      ],
-      "metrics": {
-        "hadFrontMatter": false,
-        "hadDynamicContext": false,
-        "hadProgrammaticStructure": false,
-        "hadStateManagement": false
-      }
-    },
-    {
-      "id": "133",
-      "name": "scaffold-rust-cli",
-      "filepath": "claude/commands/scaffold/rust/scaffold-rust-cli.md",
-      "namespace": "scaffold/rust",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:39.017Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2843,26 +2729,48 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "17519016990160kldnbqqd8",
-        "timestamp": 1751901699
-      }
+      "claimedBy": null
+    },
+    {
+      "id": "132",
+      "name": "scaffold-rust-axum",
+      "filepath": "claude/commands/scaffold/rust/scaffold-rust-axum.md",
+      "namespace": "scaffold/rust",
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
+      "metrics": {
+        "hadFrontMatter": false,
+        "hadDynamicContext": false,
+        "hadProgrammaticStructure": false,
+        "hadStateManagement": false
+      },
+      "claimedBy": null
+    },
+    {
+      "id": "133",
+      "name": "scaffold-rust-cli",
+      "filepath": "claude/commands/scaffold/rust/scaffold-rust-cli.md",
+      "namespace": "scaffold/rust",
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
+      "metrics": {
+        "hadFrontMatter": false,
+        "hadDynamicContext": false,
+        "hadProgrammaticStructure": false,
+        "hadStateManagement": false
+      },
+      "claimedBy": null
     },
     {
       "id": "134",
       "name": "audit",
       "filepath": "claude/commands/security/audit/audit.md",
       "namespace": "security/audit",
-      "status": "completed",
-      "lastModified": "2025-07-07T10:24:44-05:00",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "extendedThinkingAdded",
-        "subAgentPatternsAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
@@ -2876,8 +2784,8 @@
       "name": "secrets-audit",
       "filepath": "claude/commands/security/audit/secrets-audit.md",
       "namespace": "security/audit",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:44.186Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2885,39 +2793,31 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "1751901704186zei9x0sqzq",
-        "timestamp": 1751901704
-      }
+      "claimedBy": null
     },
     {
       "id": "136",
       "name": "harden",
       "filepath": "claude/commands/security/model/harden.md",
       "namespace": "security/model",
-      "status": "completed",
-      "lastModified": "2025-07-07T10:23:39-05:00",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "137",
       "name": "threat-model",
       "filepath": "claude/commands/security/model/threat-model.md",
       "namespace": "security/model",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:47.214Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": true,
@@ -2925,18 +2825,15 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "1751901707213tnudv5erdd",
-        "timestamp": 1751901707
-      }
+      "claimedBy": null
     },
     {
       "id": "138",
       "name": "coverage",
       "filepath": "claude/commands/test/analyze/coverage.md",
       "namespace": "test/analyze",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:50.885Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2944,40 +2841,31 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": {
-        "sessionId": "1751901710885ac7e8mtrmo",
-        "timestamp": 1751901710
-      }
+      "claimedBy": null
     },
     {
       "id": "139",
       "name": "debug",
       "filepath": "claude/commands/test/debug/debug.md",
       "namespace": "test/debug",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:24:30.569Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded",
-        "extendedThinkingAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "140",
       "name": "flaky-fix",
       "filepath": "claude/commands/test/fix/flaky-fix.md",
       "namespace": "test/fix",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:54.418Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2985,60 +2873,31 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "1751901714418tp86981s18",
-        "timestamp": 1751901714
-      }
+      "claimedBy": null
     },
     {
       "id": "141",
       "name": "integration-test",
       "filepath": "claude/commands/test/generate/integration-test.md",
       "namespace": "test/generate",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:25:02.482Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "142",
       "name": "test-gen",
       "filepath": "claude/commands/test/generate/test-gen.md",
       "namespace": "test/generate",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:24:41.808Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded"
-      ],
-      "metrics": {
-        "hadFrontMatter": false,
-        "hadDynamicContext": false,
-        "hadProgrammaticStructure": false,
-        "hadStateManagement": false
-      }
-    },
-    {
-      "id": "143",
-      "name": "load-test",
-      "filepath": "claude/commands/test/run/load-test.md",
-      "namespace": "test/run",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:59.316Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3046,38 +2905,47 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "1751901719316hcb2zo6slc",
-        "timestamp": 1751901719
-      }
+      "claimedBy": null
+    },
+    {
+      "id": "143",
+      "name": "load-test",
+      "filepath": "claude/commands/test/run/load-test.md",
+      "namespace": "test/run",
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
+      "metrics": {
+        "hadFrontMatter": false,
+        "hadDynamicContext": false,
+        "hadProgrammaticStructure": false,
+        "hadStateManagement": false
+      },
+      "claimedBy": null
     },
     {
       "id": "144",
       "name": "tdd",
       "filepath": "claude/commands/test/run/tdd.md",
       "namespace": "test/run",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:24:58.446Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "145",
       "name": "validate",
       "filepath": "claude/commands/test/run/validate.md",
       "namespace": "test/run",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:38.724Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": true,
@@ -3085,18 +2953,15 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "17519018187247hkbx9qvsa",
-        "timestamp": 1751901818
-      }
+      "claimedBy": null
     },
     {
       "id": "146",
       "name": "epic",
       "filepath": "claude/commands/workflow/create/epic.md",
       "namespace": "workflow/create",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:40.755Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3104,18 +2969,15 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "1751901820755an1343yw4k",
-        "timestamp": 1751901820
-      }
+      "claimedBy": null
     },
     {
       "id": "147",
       "name": "prototype",
       "filepath": "claude/commands/workflow/create/prototype.md",
       "namespace": "workflow/create",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:42.679Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3123,40 +2985,31 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": {
-        "sessionId": "1751901822679z8uohplwin",
-        "timestamp": 1751901822
-      }
+      "claimedBy": null
     },
     {
       "id": "148",
       "name": "clean",
       "filepath": "claude/commands/workflow/manage/clean.md",
       "namespace": "workflow/manage",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:25:43.965Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded",
-        "subAgentPatternsAdded",
-        "extendedThinkingIntegration"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "149",
       "name": "integrate",
       "filepath": "claude/commands/workflow/manage/integrate.md",
       "namespace": "workflow/manage",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:47.953Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3164,18 +3017,15 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "1751901827953x1zdu5ixhb",
-        "timestamp": 1751901827
-      }
+      "claimedBy": null
     },
     {
       "id": "150",
       "name": "organize",
       "filepath": "claude/commands/workflow/manage/organize.md",
       "namespace": "workflow/manage",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:49.606Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3183,18 +3033,15 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": {
-        "sessionId": "1751901829606p9bign5xtv",
-        "timestamp": 1751901829
-      }
+      "claimedBy": null
     },
     {
       "id": "151",
       "name": "plan",
       "filepath": "claude/commands/workflow/manage/plan.md",
       "namespace": "workflow/manage",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:52.092Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3202,18 +3049,15 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": {
-        "sessionId": "1751901832092uw389b9y7f",
-        "timestamp": 1751901832
-      }
+      "claimedBy": null
     },
     {
       "id": "152",
       "name": "release",
       "filepath": "claude/commands/workflow/manage/release.md",
       "namespace": "workflow/manage",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:53.991Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3221,18 +3065,15 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "17519018339916mtqu68yhn",
-        "timestamp": 1751901833
-      }
+      "claimedBy": null
     },
     {
       "id": "153",
       "name": "sync",
       "filepath": "claude/commands/workflow/manage/sync.md",
       "namespace": "workflow/manage",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:54.537Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3240,18 +3081,15 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "17519018345372vvatmiyq2",
-        "timestamp": 1751901834
-      }
+      "claimedBy": null
     },
     {
       "id": "154",
       "name": "start",
       "filepath": "claude/commands/workflow/start/start.md",
       "namespace": "workflow/start",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:56.510Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3259,18 +3097,15 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": {
-        "sessionId": "1751901836510u0ujkcryw4",
-        "timestamp": 1751901836
-      }
+      "claimedBy": null
     },
     {
       "id": "155",
       "name": "next-steps",
       "filepath": "claude/commands/workflow/view/next-steps.md",
       "namespace": "workflow/view",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:59.097Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3278,59 +3113,31 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": {
-        "sessionId": "1751901839097zkopu9wz8l",
-        "timestamp": 1751901839
-      }
+      "claimedBy": null
     },
     {
       "id": "156",
       "name": "options",
       "filepath": "claude/commands/workflow/view/options.md",
       "namespace": "workflow/view",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:25:51.096Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "subAgentPatternsAdded",
-        "stateManagementAdded"
-      ],
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      }
+      },
+      "claimedBy": null
     },
     {
       "id": "157",
       "name": "progress",
       "filepath": "claude/commands/workflow/view/progress.md",
       "namespace": "workflow/view",
-      "status": "completed",
-      "lastModified": "2025-07-07T15:25:50.692Z",
-      "improvements": [
-        "frontMatterAdded",
-        "dynamicContextAdded",
-        "programmaticStructureAdded",
-        "stateManagementAdded"
-      ],
-      "metrics": {
-        "hadFrontMatter": false,
-        "hadDynamicContext": false,
-        "hadProgrammaticStructure": false,
-        "hadStateManagement": false
-      }
-    },
-    {
-      "id": "158",
-      "name": "summary",
-      "filepath": "claude/commands/workflow/view/summary.md",
-      "namespace": "workflow/view",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:24:03.488Z",
+      "status": "pending",
+      "lastModified": null,
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -3338,10 +3145,23 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "1751901843488a91hdcozva",
-        "timestamp": 1751901843
-      }
+      "claimedBy": null
+    },
+    {
+      "id": "158",
+      "name": "summary",
+      "filepath": "claude/commands/workflow/view/summary.md",
+      "namespace": "workflow/view",
+      "status": "pending",
+      "lastModified": null,
+      "improvements": [],
+      "metrics": {
+        "hadFrontMatter": false,
+        "hadDynamicContext": false,
+        "hadProgrammaticStructure": false,
+        "hadStateManagement": false
+      },
+      "claimedBy": null
     },
     {
       "id": "159",

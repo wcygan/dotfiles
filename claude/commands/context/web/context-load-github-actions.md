@@ -25,7 +25,7 @@ STEP 1: Initialize adaptive GitHub Actions context loading session
   ```json
   {
     "sessionId": "$SESSION_ID",
-    "timestamp": "$(date -Iseconds)",
+    "timestamp": "$(gdate -Iseconds 2>/dev/null || date -Iseconds)",
     "project_type": "auto-detect",
     "existing_workflows": 0,
     "technology_stack": [],

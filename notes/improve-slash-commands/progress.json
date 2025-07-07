@@ -1,23 +1,27 @@
 {
-  "id": "085",
-  "name": "context-load-security",
-  "filepath": "claude/commands/context/security/context-load-security.md",
-  "namespace": "context/security",
-  "status": "completed",
-  "lastModified": "2025-07-07T14:59:32.3NZ",
-  "improvements": [
-    "frontMatterAdded",
-    "dynamicContextAdded",
-    "programmaticStructureAdded",
-    "stateManagementAdded",
-    "extendedThinkingAdded"
+  "commands": [
+    {
+      "id": "085",
+      "name": "context-load-security",
+      "filepath": "claude/commands/context/security/context-load-security.md",
+      "namespace": "context/security",
+      "status": "completed",
+      "lastModified": "2025-07-07T14:59:32.3NZ",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
+      "metrics": {
+        "hadFrontMatter": false,
+        "hadDynamicContext": false,
+        "hadProgrammaticStructure": false,
+        "hadStateManagement": false
+      }
+    }
   ],
-  "metrics": {
-    "hadFrontMatter": false,
-    "hadDynamicContext": false,
-    "hadProgrammaticStructure": false,
-    "hadStateManagement": false
-  },
   "completed": 84,
   "inProgress": 15,
   "lastUpdated": "2025-07-07T14:59:32.3NZ"

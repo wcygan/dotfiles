@@ -2371,18 +2371,20 @@
       "name": "generate-command",
       "filepath": "claude/commands/meta/command/generate-command.md",
       "namespace": "meta/command",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:14:02.920Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:18:41.157Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17519012429206t9s0lmban",
-        "timestamp": 1751901242
       }
     },
     {

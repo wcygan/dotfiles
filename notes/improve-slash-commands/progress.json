@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 152,
-  "inProgress": 7,
-  "lastUpdated": "2025-07-07T15:30:58.106Z",
+  "completed": 154,
+  "inProgress": 5,
+  "lastUpdated": "2025-07-07T15:31:23.954Z",
   "commands": [
     {
       "id": "001",
@@ -2777,18 +2777,19 @@
       "name": "scaffold-go-http-server",
       "filepath": "claude/commands/scaffold/go/scaffold-go-http-server.md",
       "namespace": "scaffold/go",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:35.154Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:31:23.954Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751901695154i083xnbptg",
-        "timestamp": 1751901695
       }
     },
     {
@@ -3108,18 +3109,20 @@
       "name": "epic",
       "filepath": "claude/commands/workflow/create/epic.md",
       "namespace": "workflow/create",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:40.755Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:31:11.412Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751901820755an1343yw4k",
-        "timestamp": 1751901820
       }
     },
     {

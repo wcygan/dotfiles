@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 142,
-  "inProgress": 16,
-  "lastUpdated": "2025-07-07T15:26:26.760Z",
+  "completed": 143,
+  "inProgress": 15,
+  "lastUpdated": "2025-07-07T15:26:28.096Z",
   "commands": [
     {
       "id": "001",
@@ -2879,18 +2879,20 @@
       "name": "secrets-audit",
       "filepath": "claude/commands/security/audit/secrets-audit.md",
       "namespace": "security/audit",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:44.186Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:26:28.095Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751901704186zei9x0sqzq",
-        "timestamp": 1751901704
       }
     },
     {

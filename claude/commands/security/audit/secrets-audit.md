@@ -251,75 +251,113 @@ echo "  bat: $(which bat >/dev/null && echo '✓ installed' || echo '❌ missing
 echo "  jq: $(which jq >/dev/null && echo '✓ installed' || echo '❌ missing - install with: brew install jq')"
 ```
 
-## Remediation Actions
+STEP 7: Security remediation and prevention with automated implementation
 
-### Immediate Actions
-
-- Remove secrets from code and configuration files
-- Add patterns to .gitignore to prevent future commits
-- Rotate compromised credentials immediately
-- Use environment variables or secret management systems
-
-### Prevention Measures
+**Immediate Security Actions:**
 
 ```bash
-# Create .gitignore patterns
-echo "*.env
-*.pem
-*.key
-config/secrets.yml
-.env.local" >> .gitignore
+echo "🔧 Implementing security remediation measures..."
 
-# Setup pre-commit hook for secret detection
-echo '#!/bin/bash
-rg -i "(password|secret|key|token)" --quiet && echo "Potential secrets detected!" && exit 1' > .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit
+# Create comprehensive .gitignore patterns
+if [ ! -f .gitignore ] || ! grep -q "# Security patterns" .gitignore; then
+  echo "# Security patterns" >> .gitignore
+  echo "*.env" >> .gitignore
+  echo "*.env.local" >> .gitignore
+  echo "*.env.production" >> .gitignore
+  echo "*.pem" >> .gitignore
+  echo "*.key" >> .gitignore
+  echo "*.p12" >> .gitignore
+  echo "*.jks" >> .gitignore
+  echo "config/secrets.yml" >> .gitignore
+  echo "secrets/" >> .gitignore
+  echo "🔒 Security patterns added to .gitignore"
+else
+  echo "✓ .gitignore already contains security patterns"
+fi
+
+# Setup automated pre-commit security hook
+if [ -d .git ]; then
+  cat > .git/hooks/pre-commit << 'EOF'
+#!/bin/bash
+# Automated security scan pre-commit hook
+echo "🔍 Running pre-commit security scan..."
+if git diff --staged --name-only | xargs rg -i "(password|secret|key|token|api_key)" --quiet 2>/dev/null; then
+  echo "❌ Potential secrets detected in staged changes!"
+  echo "Run 'git diff --staged | rg -i \"(password|secret|key|token)\"' to review"
+  exit 1
+fi
+echo "✓ No obvious secrets detected in staged changes"
+EOF
+  chmod +x .git/hooks/pre-commit
+  echo "🔒 Automated security pre-commit hook installed"
+else
+  echo "⚠️ Not a git repository - skipping pre-commit hook setup"
+fi
 ```
 
-## Output Format
-
-### Summary Report
-
-```json
-{
-  "scan_timestamp": "2024-06-15T10:30:00Z",
-  "scope": "full|staged|recent",
-  "findings": [
-    {
-      "file": "src/config.ts",
-      "line": 42,
-      "type": "api_key",
-      "severity": "high",
-      "pattern": "API_KEY = 'sk-...'",
-      "recommendation": "Move to environment variable"
-    }
-  ],
-  "summary": {
-    "total_files_scanned": 156,
-    "files_with_findings": 3,
-    "high_risk_findings": 2,
-    "medium_risk_findings": 5
-  },
-  "recommendations": [
-    "Rotate API key found in src/config.ts",
-    "Add .env files to .gitignore",
-    "Setup secret management system"
-  ]
-}
-```
-
-## Example Usage
+**Security Recommendations Report:**
 
 ```bash
-# Full security audit
-/secrets:audit
-
-# Scan only staged changes
-/secrets:audit staged
-
-# Scan recent commits (last 30 days)  
-/secrets:audit recent
-
-# Scan specific file types
-/secrets:audit "*.env *.json *.yaml"
+echo "📝 Security recommendations:"
+echo "1. 🔄 Rotate any discovered credentials immediately"
+echo "2. 🔐 Move secrets to environment variables or secret management"
+echo "3. 🛡️ Enable branch protection rules requiring security reviews"
+echo "4. 🔍 Set up automated security scanning in CI/CD pipeline"
+echo "5. 📚 Train team on secure coding practices"
 ```
+
+FINALLY:
+
+- SAVE complete security audit results to session state
+- PROVIDE actionable security recommendations
+- ENABLE continuous security monitoring
+
+```bash
+echo "✅ Security audit completed"
+echo "🔍 Scan scope: $ARGUMENTS"
+echo "📊 Session: $SESSION_ID" 
+echo "💾 Results: /tmp/security-findings-$SESSION_ID.json"
+echo "📋 Audit state: /tmp/secrets-audit-$SESSION_ID.json"
+echo "🔄 Recommendations implemented for ongoing security"
+```
+
+## Security Audit Reference
+
+### Critical Risk Patterns
+
+**API Keys & Tokens:**
+
+- AWS Access Keys: `AKIA[0-9A-Z]{16}`
+- GitHub Personal Access Tokens: `ghp_[a-zA-Z0-9]{36}`
+- Generic API Keys: `api[-_]?key\s*[:=]\s*['\"]?[a-zA-Z0-9]{20,}['\"]?`
+
+**Database Credentials:**
+
+- Connection Strings: `(postgres|mysql|mongodb|redis)://.*:[^@]*@`
+- Database Passwords: `(db_pass|database_password|mysql_pass|postgres_pass)`
+
+**Cryptographic Materials:**
+
+- Private Keys: `-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----`
+- Certificates: `\.(pem|key|p12|pfx|crt|cer|jks|keystore)$`
+
+### Command Usage Examples
+
+```bash
+# Comprehensive security audit
+/secrets-audit
+
+# Quick staged changes scan
+/secrets-audit staged
+
+# Recent development history scan
+/secrets-audit recent
+
+# Targeted pattern search
+/secrets-audit "aws_access_key github_pat"
+
+# Configuration files only
+/secrets-audit "*.env *.config *.json"
+```
+
+This command provides enterprise-grade security auditing with automated remediation, state management, and continuous monitoring capabilities.

@@ -49,6 +49,8 @@ STEP 2: Project-specific context detection and research strategy
 
 Think hard about the optimal context loading strategy based on detected project characteristics and existing Temporal usage patterns.
 
+Think deeper about enterprise-grade implementation requirements, performance optimization strategies, and production deployment considerations for Temporal workflows.
+
 - ANALYZE project context from detection commands
 - DETERMINE primary development language and framework
 - IDENTIFY existing Temporal integration patterns
@@ -74,7 +76,7 @@ TRY:
 
 IF research_focus == "comprehensive_overview":
 
-- USE Task tool to delegate parallel documentation loading:
+- USE Task tool to delegate parallel documentation loading with 5 specialized agents:
   1. **Core Concepts Agent**: Load fundamental Temporal concepts
      - WebFetch: `https://docs.temporal.io/concepts`
      - FOCUS: workflows, activities, workers, task queues, durable execution

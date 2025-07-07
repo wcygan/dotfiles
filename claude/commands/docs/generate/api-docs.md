@@ -5,7 +5,7 @@ description: Generate comprehensive API documentation with OpenAPI specs and int
 
 ## Context
 
-- Session ID: !`gdate +%s%N 2>/dev/null || date +%s000000000 2>/dev/null || echo "session-$(date +%s)000000000"`
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s000000000 2>/dev/null || echo "1751900987850553000"`
 - Current directory: !`pwd`
 - Target: $ARGUMENTS
 - Project structure: !`fd . -t d -d 2 | head -10 || echo "No subdirectories found"`
@@ -38,6 +38,14 @@ STEP 1: Initialize API documentation session
 STEP 2: Determine documentation scope and strategy
 
 Think hard about the optimal documentation approach based on project complexity and framework diversity.
+
+**Extended Thinking Areas:**
+
+- Framework detection strategies and confidence scoring algorithms
+- Multi-language API schema extraction and synthesis approaches
+- Interactive documentation UX patterns and developer experience optimization
+- Deployment automation and CI/CD integration for documentation maintenance
+- Sub-agent coordination for large-scale API analysis and documentation generation
 
 IF $ARGUMENTS provided:
 IF $ARGUMENTS is file:
@@ -108,12 +116,18 @@ BASED ON detected frameworks and project complexity:
 
 FOR comprehensive projects (>50 endpoints OR multiple frameworks):
 
-- DELEGATE to parallel sub-agents:
-  1. **Schema Analysis Agent**: Extract data models and types
-  2. **Endpoint Discovery Agent**: Map all API routes and methods
-  3. **Authentication Analysis Agent**: Document auth patterns and middleware
-  4. **Response Analysis Agent**: Analyze response schemas and examples
-  5. **Integration Documentation Agent**: Create deployment and testing guides
+**Use parallel sub-agents for optimal performance:**
+
+```
+Analyze this API codebase using 5 parallel agents:
+1. Schema Analysis Agent: Extract data models, types, and validation rules
+2. Endpoint Discovery Agent: Map all API routes, methods, and parameter patterns
+3. Authentication Analysis Agent: Document auth flows, middleware, and security patterns
+4. Response Analysis Agent: Analyze response schemas, status codes, and error handling
+5. Integration Documentation Agent: Create deployment guides, testing frameworks, and CI/CD integration
+
+Each agent should focus exclusively on their domain and provide structured output for synthesis.
+```
 
 FOR targeted projects (<50 endpoints, single framework):
 

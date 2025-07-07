@@ -1,185 +1,104 @@
-# /elaborate
+---
+allowed-tools: Read, Write, Bash(fd:*), Bash(rg:*), Bash(git:*), Bash(gdate:*), Task
+description: Generate comprehensive technical analysis and implementation guide
+---
 
-Provide an in-depth analysis and implementation guide for a specific technical approach or solution.
+## Context
 
-## Usage
+- Session ID: !`gdate +%s%N`
+- Analysis target: $ARGUMENTS
+- Project structure: !`fd . -t d -d 2 | head -10`
+- Technology indicators: !`fd package.json Cargo.toml go.mod pom.xml deno.json -d 3`
+- Recent changes: !`git log --oneline -5 || echo "No git repository"`
 
-```
-/elaborate [approach or solution description]
-```
+## Your task
 
-## Instructions
+STEP 1: Initialize analysis session
 
-For the given approach, provide a comprehensive deep-dive following this format:
+- Create analysis workspace: /tmp/elaborate-analysis-$SESSION_ID/
+- Document target: $ARGUMENTS
+- Analyze project context for technology stack
 
-### 1. Approach Overview
+STEP 2: Determine analysis complexity
+IF approach requires multi-domain expertise:
 
-**Summary**: 2-3 sentence high-level description
+- Use Task tool to delegate parallel research:
+  - Agent 1: Architecture and design patterns
+  - Agent 2: Implementation strategies and code examples
+  - Agent 3: Testing and deployment approaches
+  - Agent 4: Risk analysis and alternatives
+    ELSE:
+- Proceed with single-agent deep analysis
+- Think deeply about architectural implications
 
-**Core Concept**: Explain the fundamental idea and why it works
+STEP 3: Generate comprehensive analysis
+FOR EACH analysis domain:
 
-**Key Principles**: List 3-5 guiding principles of this approach
+- Research current best practices
+- Identify implementation patterns
+- Document concrete examples
+- Assess risks and alternatives
 
-### 2. Technical Architecture
+STEP 4: Create implementation roadmap
 
-#### Component Breakdown
+- Break down into phases with realistic timelines
+- Identify dependencies and prerequisites
+- Define success criteria and checkpoints
+- Include testing and validation steps
 
-- List major components/modules
-- Describe responsibilities of each
-- Show component interactions (consider ASCII diagram)
+STEP 5: Synthesize findings
 
-#### Technology Stack
+- Combine research from all domains
+- Create actionable implementation guide
+- Include code examples and configuration
+- Document deployment and monitoring strategy
 
-- **Core Technologies**: Primary languages/frameworks
-- **Supporting Tools**: Build tools, testing frameworks, etc.
-- **Infrastructure**: Deployment and runtime requirements
+STEP 6: Save analysis artifacts
 
-#### Data Flow
+- Write comprehensive guide to /tmp/elaborate-analysis-$SESSION_ID/guide.md
+- Create implementation checklist
+- Document key decisions and rationale
 
-- Describe how data moves through the system
-- Identify transformation points
-- Note persistence layers
+## Analysis Framework
 
-### 3. Implementation Roadmap
+### Core Sections (generate programmatically)
 
-#### Phase 1: Foundation (Days 1-X)
+1. **Executive Summary** (2-3 sentences)
+2. **Technical Architecture** (components, data flow, tech stack)
+3. **Implementation Phases** (3-phase approach with timelines)
+4. **Code Examples** (2-3 concrete implementations)
+5. **Integration Strategy** (APIs, dependencies, deployment)
+6. **Testing Approach** (unit, integration, performance)
+7. **Risk Assessment** (technical and operational risks)
+8. **Alternative Approaches** (2-3 variations with trade-offs)
+9. **Production Considerations** (monitoring, scaling, maintenance)
+10. **Resource Library** (docs, tools, references)
 
-- [ ] Setup and scaffolding tasks
-- [ ] Core infrastructure
-- [ ] Basic functionality
+### Quality Standards
 
-#### Phase 2: Core Features (Days X-Y)
+- Provide specific, actionable guidance
+- Include realistic effort estimates
+- Address common implementation pitfalls
+- Balance theoretical concepts with practical details
+- Consider long-term maintenance and evolution
+- Include concrete code examples in appropriate languages
 
-- [ ] Primary feature implementation
-- [ ] Integration points
-- [ ] Initial testing
+## Extended Thinking Integration
 
-#### Phase 3: Hardening (Days Y-Z)
+For complex architectural decisions:
 
-- [ ] Error handling and edge cases
-- [ ] Performance optimization
-- [ ] Security measures
+- Think deeply about system design trade-offs
+- Consider scalability and performance implications
+- Analyze security and compliance requirements
+- Evaluate maintenance and operational complexity
 
-### 4. Code Examples
+## Output Format
 
-Provide 2-3 concrete code snippets demonstrating:
+Generate structured markdown with:
 
-- Key patterns or abstractions
-- Critical implementation details
-- Configuration examples
-
-```[language]
-// Example code with explanatory comments
-```
-
-### 5. Integration Points
-
-**APIs/Interfaces**:
-
-- Define public contracts
-- Specify protocols and formats
-- Document authentication/authorization
-
-**Dependencies**:
-
-- External services required
-- Library dependencies
-- System requirements
-
-### 6. Testing Strategy
-
-**Unit Testing**:
-
-- What to test and why
-- Mocking strategies
-- Coverage targets
-
-**Integration Testing**:
-
-- Key integration scenarios
-- Test data management
-- Environment setup
-
-**Performance Testing**:
-
-- Load testing approach
-- Benchmarking methodology
-- Performance targets
-
-### 7. Deployment Considerations
-
-**Environment Requirements**:
-
-- Development setup
-- Staging configuration
-- Production specifications
-
-**Deployment Process**:
-
-- Build pipeline
-- Deployment steps
-- Rollback procedures
-
-**Monitoring & Observability**:
-
-- Key metrics to track
-- Logging strategy
-- Alerting thresholds
-
-### 8. Risk Analysis
-
-**Technical Risks**:
-
-- Potential failure points
-- Mitigation strategies
-- Contingency plans
-
-**Operational Risks**:
-
-- Maintenance complexity
-- Team knowledge requirements
-- Vendor lock-in concerns
-
-### 9. Alternative Variations
-
-Describe 2-3 variations of this approach:
-
-- When to use each variation
-- Trade-offs between variations
-- Migration paths between them
-
-### 10. Real-World Examples
-
-- Reference implementations
-- Case studies
-- Lessons learned from production deployments
-
-### 11. Resources & References
-
-- Official documentation
-- Tutorials and guides
-- Community resources
-- Related tools and libraries
-
-## Guidelines
-
-- Provide actionable, specific guidance
-- Include realistic timelines and effort estimates
-- Address common pitfalls and how to avoid them
-- Balance theory with practical implementation details
-- Consider maintenance and evolution, not just initial build
-
-## Example
-
-```
-/elaborate Implement event-driven architecture using Apache Kafka
-```
-
-## Relationship to /options
-
-This command complements `/options` by:
-
-- Taking one option from `/options` and expanding it fully
-- Providing implementation-ready details vs high-level comparison
-- Focusing on "how" rather than "which"
-- Offering concrete code and configuration examples
+- Clear section headers
+- Actionable checklists
+- Code examples with explanations
+- Visual diagrams where helpful (ASCII art)
+- Time estimates and effort projections
+- Risk mitigation strategies

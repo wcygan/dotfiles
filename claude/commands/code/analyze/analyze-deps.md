@@ -1,192 +1,227 @@
-<!--
-name: analyze:deps
-purpose: Analyze project dependencies using modern tools and provide insights
-tags: dependencies, analysis, security, performance, modern-tools
--->
+---
+allowed-tools: Bash, Read, Write
+description: Analyze project dependencies with security, performance, and maintenance insights
+---
 
-Analyze project dependencies across multiple languages and package managers using modern command-line tools. Provides security, performance, and maintenance insights for dependency management.
+## Context
 
-**Context**: $ARGUMENTS (optional - specific analysis type: security, outdated, size, licenses, graph, or all)
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Project files: !`fd "(deno\.json|package\.json|Cargo\.toml|go\.mod|pom\.xml|requirements\.txt|composer\.json)" . -t f | head -10 || echo "No project files detected"`
+- Directory structure: !`fd . -t d -d 2 | head -10 || echo "No directories found"`
+- Git status: !`git status --porcelain | head -5 || echo "Not a git repository"`
+- Current branch: !`git branch --show-current 2>/dev/null || echo "No git repository"`
+- Lock files: !`fd "(package-lock\.json|yarn\.lock|Cargo\.lock|go\.sum|poetry\.lock|deno\.lock)" . -t f | head -5 || echo "No lock files found"`
 
-## Analysis Types
+## Your Task
 
-1. **Security Analysis**
-   - Vulnerable dependency detection
-   - CVE database checks
-   - Security advisory reports
+Analyze project dependencies using modern tools. Analysis type: $ARGUMENTS (security, outdated, size, licenses, graph, or all - defaults to 'all')
 
-2. **Performance Analysis**
-   - Bundle size impact
-   - Load time analysis
-   - Dependency tree depth
+STEP 1: Initialize Analysis Session
 
-3. **Maintenance Analysis**
-   - Outdated packages
-   - Maintenance status
-   - Update recommendations
+- Create session state file: /tmp/analyze-deps-$SESSION_ID.json
+- Detect project type from Context section
+- Parse analysis type from $ARGUMENTS (default: 'all')
+- Initialize analysis results structure
 
-## Language-Specific Commands
+STEP 2: Project Type Detection and Setup
 
-### Deno Projects
+IF project files include "deno.json":
 
-```bash
-# Dependency graph with modern tools
-deno info --json | jq '.modules[] | {specifier, dependencies: .dependencies[].specifier}' | bat --language json
+- SET project_type = "deno"
+- SET package_manager = "deno"
+  ELSE IF project files include "package.json":
+- SET project_type = "node"
+- SET package_manager = "npm" OR "yarn" (detect from lock files)
+  ELSE IF project files include "Cargo.toml":
+- SET project_type = "rust"
+- SET package_manager = "cargo"
+  ELSE IF project files include "go.mod":
+- SET project_type = "go"
+- SET package_manager = "go"
+  ELSE IF project files include "pom.xml":
+- SET project_type = "java"
+- SET package_manager = "maven"
+  ELSE:
+- SET project_type = "unknown"
+- WARN: "No recognized project files found"
 
-# Security audit
-deno task audit || echo "No audit task defined"
+STEP 3: Security Analysis
 
-# Outdated dependencies (check deno.json)
-fd "deno.json" | xargs bat --language json | jq '.imports'
+IF analysis_type IN ['security', 'all']:
 
-# Size analysis
-deno bundle main.ts | wc -c | numfmt --to=iec
-```
+TRY:
 
-### Rust Projects
+CASE project_type:
+WHEN "deno":
 
-```bash
-# Cargo dependency analysis
-cargo tree --format "{p} {f}" | rg -v "build-dependencies|dev-dependencies" | head -20
+- Check for security advisories in JSR imports
+- Analyze remote dependencies for known vulnerabilities
+- Generate security report
 
-# Security audit
-cargo audit --json | jq '.vulnerabilities[] | {package: .package.name, version: .package.version, id: .advisory.id, severity: .advisory.severity}'
+  WHEN "rust":
+  - Run: cargo audit --json (if available)
+  - Parse security advisories
+  - Check crates.io for vulnerability reports
 
-# Outdated dependencies
-cargo outdated --root-deps-only --format json | jq '.dependencies[] | select(.status != "up-to-date") | {name, project, latest, status}'
+  WHEN "node":
+  - Run: npm audit --json OR yarn audit --json
+  - Parse vulnerability data
+  - Check for known problematic packages
 
-# Build time analysis
-cargo build --timings --release 2>&1 | rg "time:" | head -10
-```
+  WHEN "go":
+  - Run: go list -json -m all (check for known issues)
+  - Check Go vulnerability database
+  - Analyze module security status
 
-### Go Projects
+CATCH (security_scan_failure):
 
-```bash
-# Module dependency graph
-go mod graph | head -20 | bat
+- Log error to session state
+- Continue with other analysis types
+- Note: Manual security review recommended
 
-# Vulnerability check
-go list -json -m all | jq -r '.Path + " " + .Version' | head -20
+STEP 4: Performance Analysis
 
-# Module size analysis
-go list -m -json all | jq -r '.Path' | xargs -I {} sh -c 'echo -n "{}: "; go list -f "{{.ImportPath}} {{.Module.Path}}" {} 2>/dev/null | wc -c'
+IF analysis_type IN ['size', 'performance', 'all']:
 
-# Unused dependencies
-go mod tidy && git diff go.mod go.sum
-```
+TRY:
 
-### Node.js/TypeScript Projects
+CASE project_type:
+WHEN "deno":
 
-```bash
-# Security audit with JSON output
-npm audit --json | jq '.vulnerabilities | keys[] as $k | {package: $k, severity: .[$k].severity, via: .[$k].via}'
+- Analyze import map sizes
+- Check for large remote dependencies
+- Estimate bundle impact
 
-# Outdated packages
-npm outdated --json | jq 'to_entries[] | {package: .key, current: .value.current, wanted: .value.wanted, latest: .value.latest}'
+  WHEN "rust":
+  - Run: cargo tree --format "{p}" | head -20
+  - Analyze compilation impact
+  - Check for duplicate dependencies
 
-# Bundle size analysis
-fd "package.json" | xargs jq '.dependencies, .devDependencies' | jq -s 'add | keys[]' | wc -l
+  WHEN "node":
+  - Calculate node_modules size
+  - Analyze bundle size contributors
+  - Check for large packages
 
-# License analysis
-fd "package.json" | xargs jq -r '.dependencies, .devDependencies | keys[]' | head -10
-```
+  WHEN "go":
+  - Run: go list -m all | head -20
+  - Analyze module sizes
+  - Check dependency depth
 
-## Modern Tool Integration
+CATCH (performance_analysis_failure):
 
-### Dependency Visualization
+- Log error to session state
+- Provide manual analysis guidance
 
-```bash
-# Create dependency graph with modern tools
-case $PROJECT_TYPE in
-  "rust")
-    cargo tree --format "{p}" | rg -v "├─|└─" | sort | uniq | head -20 | bat
-    ;;
-  "go") 
-    go mod graph | cut -d' ' -f1 | sort | uniq | head -20 | bat
-    ;;
-  "deno")
-    deno info --json | jq -r '.modules[].specifier' | head -20 | bat
-    ;;
-esac
-```
+STEP 5: Maintenance Analysis
 
-### Security Scanning
+IF analysis_type IN ['outdated', 'maintenance', 'all']:
 
-```bash
-# Universal security check
-rg -i "(vulnerable|cve-|security|advisory)" package-lock.json Cargo.lock go.sum deno.lock --context 2 --type json
+TRY:
 
-# Check for known problematic packages
-rg -i "(left-pad|event-stream|flatmap-stream)" package*.json Cargo.toml go.mod deno.json --context 1
-```
+FOR EACH detected package manager:
 
-### Performance Impact
+- Check for outdated dependencies
+- Analyze maintenance status
+- Generate update recommendations
+- Assess breaking change risks
 
-```bash
-# Large dependency detection
-case $PROJECT_TYPE in
-  "rust")
-    cargo tree --format "{c}" | rg "([0-9]+\.[0-9]+\s*(MB|KB))" --only-matching | sort -hr | head -10
-    ;;
-  "node")
-    fd node_modules | head -20 | xargs du -sh | sort -hr | head -10 | bat
-    ;;
-esac
-```
+CATCH (maintenance_check_failure):
 
-## Analysis Outputs
+- Log warning to session state
+- Recommend manual dependency review
 
-### Summary Report
+STEP 6: Generate Comprehensive Report
+
+TRY:
+
+- Compile all analysis results from session state
+- Create dependency summary with counts and types
+- Generate security risk assessment
+- Provide maintenance recommendations
+- Calculate dependency health score
+- Save final report to session state
+
+STEP 7: Present Results
+
+- Display analysis summary in structured format
+- Highlight critical security issues
+- Show outdated dependency priorities
+- Provide actionable next steps
+- Save report to: /tmp/analyze-deps-report-$SESSION_ID.json
+
+CATCH (report_generation_failure):
+
+- Provide partial results
+- Log error details
+- Offer manual analysis steps
+
+FINALLY:
+
+- Update session state with completion status
+- Clean up temporary analysis files
+- Archive session data for future reference
+
+## State Management
 
 ```json
+// /tmp/analyze-deps-$SESSION_ID.json
 {
-  "project_type": "rust|go|deno|node",
-  "total_dependencies": 42,
-  "security_issues": [
-    {
-      "package": "package-name",
-      "severity": "high|medium|low",
-      "advisory": "CVE-2024-1234",
-      "fixed_version": "1.2.3"
+  "sessionId": "$SESSION_ID",
+  "timestamp": "ISO_8601_TIMESTAMP",
+  "projectType": "detected_project_type",
+  "analysisType": "$ARGUMENTS",
+  "phase": "analysis_complete",
+  "results": {
+    "security": {
+      "vulnerabilities": [],
+      "riskLevel": "low|medium|high",
+      "recommendations": []
+    },
+    "performance": {
+      "bundleSize": "estimated_size",
+      "dependencyCount": 0,
+      "largestDependencies": []
+    },
+    "maintenance": {
+      "outdatedCount": 0,
+      "outdatedPackages": [],
+      "updatePriority": "low|medium|high"
     }
-  ],
-  "outdated_packages": [
-    {
-      "package": "package-name",
-      "current": "1.0.0",
-      "latest": "2.0.0",
-      "breaking_changes": true
-    }
-  ],
+  },
   "recommendations": [
-    "Update package-name to fix security vulnerability",
-    "Consider removing unused dependency xyz"
+    "Priority actions based on analysis"
+  ],
+  "healthScore": "0-100",
+  "nextActions": [
+    "Specific next steps for dependency management"
   ]
 }
 ```
 
-### Maintenance Dashboard
+## Modern Tool Integration
 
-- Dependency freshness score
-- Security risk assessment
-- Bundle size impact
-- Update priority ranking
+- **fd**: Fast file discovery for project detection
+- **rg**: Security pattern searching in lock files
+- **jq**: JSON processing for package manager outputs
+- **bat**: Syntax-highlighted output for better readability
+- **Modern package managers**: Native audit and analysis commands
 
 ## Example Usage
 
 ```bash
-# Full dependency analysis
-/analyze:deps
+# Complete dependency analysis
+/analyze-deps
 
-# Security-focused analysis
-/analyze:deps security
+# Security-focused analysis only
+/analyze-deps security
 
 # Check for outdated packages
-/analyze:deps outdated
+/analyze-deps outdated
 
-# Bundle size analysis
-/analyze:deps size
+# Bundle size and performance analysis
+/analyze-deps size
 
-# License compliance check
-/analyze:deps licenses
+# License compliance analysis
+/analyze-deps licenses
 ```

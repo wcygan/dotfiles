@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 61,
-  "inProgress": 8,
-  "lastUpdated": "2025-07-07T13:41:54.353Z",
+  "completed": 63,
+  "inProgress": 6,
+  "lastUpdated": "2025-07-07T13:42:32.504Z",
   "commands": [
     {
       "id": "001",
@@ -1162,18 +1162,19 @@
       "name": "bottleneck",
       "filepath": "claude/commands/code/analyze/bottleneck.md",
       "namespace": "code/analyze",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:40:27.246Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:42:24.487Z",
+      "improvements": [
+        "sessionIdGeneration",
+        "formattingCleanup",
+        "subAgentCoordination",
+        "errorHandling"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751895627246o55dxdrpdp",
-        "timestamp": 1751895627
       }
     },
     {
@@ -1246,18 +1247,19 @@
       "name": "bug-fix",
       "filepath": "claude/commands/code/fix/bug-fix.md",
       "namespace": "code/fix",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:40:30.119Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:42:32.503Z",
+      "improvements": [
+        "subAgentPatternsAdded",
+        "extendedThinkingAdded",
+        "programmaticStructureEnhanced",
+        "advancedErrorHandling"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751895630114129w6fbpnp",
-        "timestamp": 1751895630
       }
     },
     {

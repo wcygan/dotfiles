@@ -103,21 +103,106 @@ STEP 4: Feature Branch Creation
 
 STEP 5: Bug Investigation and Root Cause Analysis
 
-FOR complex bugs requiring deep investigation:
+Think deeply about the optimal debugging approach for this specific bug type and system complexity.
 
-- Use Task tool to delegate investigation to specialized sub-agents:
-  - Code analysis agent for identifying problematic code patterns
-  - Log analysis agent for examining error patterns
-  - Dependency analysis agent for checking library conflicts
-- Think harder about edge cases and system interactions
+FOR complex bugs requiring comprehensive investigation:
+
+Use parallel sub-agents for thorough bug analysis:
+
+- **Code Analysis Agent**: Examine code patterns, recent changes, and potential regression sources
+- **Environment Agent**: Analyze configuration, dependencies, and deployment differences
+- **Data Flow Agent**: Trace data flow and identify transformation issues
+- **Integration Agent**: Check API contracts, service interactions, and third-party integrations
+- **Security Agent**: Assess security implications and vulnerability patterns
 
 PROCEDURE investigate_bug():
 
-- Search codebase for relevant files and functions
-- Examine recent changes that might have introduced the bug
-- Check for similar patterns in bug reports or commit history
-- Identify test cases that should catch this bug
-- Document findings in state file
+CASE bug_complexity:
+WHEN "simple" (single component, clear error):
+
+- Execute focused code analysis
+- Check recent commits in affected area
+- Verify environment configuration
+- Identify minimal reproduction case
+
+WHEN "moderate" (multiple components, unclear cause):
+
+- Deploy 3 parallel investigation agents:
+  - **Agent 1**: Code pattern analysis and recent change impact
+  - **Agent 2**: Environment and dependency analysis
+  - **Agent 3**: Integration and data flow validation
+- Synthesize findings from all agents
+- Correlate timeline with deployment and configuration changes
+
+WHEN "complex" (system-wide, intermittent, or performance-related):
+
+- Execute comprehensive multi-agent investigation:
+  - **Agent 1**: Deep code analysis across all potentially affected systems
+  - **Agent 2**: Performance profiling and resource utilization analysis
+  - **Agent 3**: Data integrity and flow validation across services
+  - **Agent 4**: Security and authentication pathway analysis
+  - **Agent 5**: Infrastructure and deployment environment analysis
+- Think harder about race conditions, timing issues, and edge cases
+- Correlate findings across all analysis dimensions
+
+**Investigation Framework:**
+
+```json
+// Enhanced bug analysis structure
+{
+  "bug_classification": {
+    "type": "functional|performance|security|integration|data",
+    "severity": "low|medium|high|critical",
+    "scope": "component|service|system|cross-system",
+    "reproducibility": "always|intermittent|specific_conditions"
+  },
+  "analysis_approach": {
+    "agents_deployed": ["code", "environment", "data", "integration", "security"],
+    "investigation_depth": "surface|moderate|deep|comprehensive",
+    "timeline_analysis": "last_24h|last_week|since_deployment",
+    "correlation_factors": ["code_changes", "config_changes", "data_changes", "infrastructure"]
+  },
+  "findings": [
+    {
+      "agent": "analysis_agent_name",
+      "finding_type": "root_cause|contributing_factor|side_effect",
+      "confidence": "low|medium|high",
+      "evidence": ["evidence_item_1", "evidence_item_2"],
+      "affected_components": ["component_list"],
+      "recommendation": "fix_approach"
+    }
+  ]
+}
+```
+
+TRY:
+
+- Execute selected investigation strategy based on bug complexity
+- Document all findings in structured format
+- Identify primary root cause and contributing factors
+- Update state: analysis.rootCause, analysis.affectedFiles
+- Mark checkpoint: analysis_complete = true
+
+CATCH (investigation_inconclusive):
+
+- Document partial findings and hypotheses
+- Create structured testing plan to isolate cause
+- Save investigation state for incremental analysis
+- Recommend additional monitoring or logging
+
+CATCH (multiple_root_causes):
+
+- Prioritize fixes by impact and risk
+- Create multi-phase fix strategy
+- Document interdependencies between issues
+- Update state with complex fix plan
+
+CATCH (insufficient_information):
+
+- Document information gaps and requirements
+- Create data gathering plan (logs, metrics, user reports)
+- Set up enhanced monitoring for future investigation
+- Save incomplete analysis state for continuation
 
 STEP 6: Bug Fix Implementation
 
@@ -140,14 +225,132 @@ TRY:
 
 STEP 7: Testing and Validation
 
+Think harder about comprehensive testing strategies that ensure fix reliability and prevent regressions.
+
 PROCEDURE validate_fix():
 
-- Run unit tests related to the bug
-- Perform integration testing if applicable
-- Manual testing of the specific bug scenario
-- Check for potential side effects
+CASE testing_complexity:
+WHEN "simple" (isolated component fix):
 
+- Execute focused unit tests for affected component
+- Run regression tests for related functionality
+- Perform manual verification of fix scenario
+- Validate error handling and edge cases
+
+WHEN "moderate" (multiple component changes):
+
+- Use parallel testing approach:
+  - **Testing Agent 1**: Unit test execution and coverage validation
+  - **Testing Agent 2**: Integration test execution across affected services
+  - **Testing Agent 3**: End-to-end testing of user workflows
+- Cross-validate results from all testing agents
+- Perform load testing if performance-related fix
+
+WHEN "complex" (system-wide changes or critical fixes):
+
+- Execute comprehensive multi-agent testing strategy:
+  - **Agent 1**: Comprehensive unit and component testing
+  - **Agent 2**: Integration testing across all affected systems
+  - **Agent 3**: End-to-end workflow validation
+  - **Agent 4**: Performance and load testing validation
+  - **Agent 5**: Security and vulnerability testing
+- Think deeply about potential failure modes and edge cases
+- Validate fix under various system conditions and loads
+
+**Testing Framework:**
+
+```json
+// Enhanced testing validation structure
+{
+  "testing_strategy": {
+    "scope": "unit|integration|e2e|comprehensive",
+    "agents_deployed": ["unit", "integration", "e2e", "performance", "security"],
+    "test_categories": ["regression", "functionality", "performance", "security", "edge_cases"],
+    "environments": ["local", "staging", "production_like"]
+  },
+  "test_execution": [
+    {
+      "agent": "testing_agent_name",
+      "test_type": "unit|integration|e2e|performance|security",
+      "status": "pending|running|passed|failed|skipped",
+      "coverage": "percentage_or_scope",
+      "results": {
+        "passed": "number",
+        "failed": "number",
+        "skipped": "number",
+        "duration": "execution_time"
+      },
+      "failures": [
+        {
+          "test_name": "failing_test",
+          "failure_reason": "detailed_error",
+          "fix_required": "boolean"
+        }
+      ]
+    }
+  ],
+  "validation_checklist": {
+    "original_bug_fixed": "boolean",
+    "no_new_regressions": "boolean",
+    "performance_maintained": "boolean",
+    "security_not_compromised": "boolean",
+    "edge_cases_handled": "boolean"
+  }
+}
+```
+
+TRY:
+
+- Execute selected testing strategy based on fix complexity
+- Run automated test suites with comprehensive coverage
+- Perform manual testing of critical user workflows
+- Validate performance metrics haven't degraded
+- Check security implications of the fix
 - Update state: checkpoints.tests_verified = true
+
+CATCH (test_failures_detected):
+
+- Analyze failing tests to determine if fix needs adjustment
+- Classify failures: legitimate_failures vs test_updates_needed
+- Refine fix implementation or update test expectations
+- Re-run validation cycle until all tests pass
+
+CATCH (performance_regression_detected):
+
+- Analyze performance impact of the fix
+- Optimize fix implementation to minimize performance cost
+- Consider alternative fix approaches if performance is critical
+- Document performance trade-offs in fix documentation
+
+CATCH (new_bugs_introduced):
+
+- Perform impact analysis of newly discovered issues
+- Prioritize new bugs vs original bug severity
+- Create follow-up issues for new problems
+- Consider rolling back fix if new issues are critical
+
+CATCH (security_concerns_identified):
+
+- Halt deployment and analyze security implications
+- Engage security review process if available
+- Modify fix to address security concerns
+- Add security-focused tests to prevent future issues
+
+**Debugging and Profiling Integration:**
+
+FOR performance or complex bugs:
+
+- Integrate with debugging tools: debugger, profiler, memory analyzer
+- Capture before/after metrics for quantitative validation
+- Set up monitoring alerts for the fixed component
+- Create performance regression tests
+
+FOR security-related fixes:
+
+- Run security scanning tools on the fixed code
+- Validate input sanitization and authorization checks
+- Test for common vulnerability patterns (OWASP Top 10)
+- Review code for privilege escalation risks
 
 STEP 8: Commit and Push Changes
 

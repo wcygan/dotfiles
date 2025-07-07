@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 82,
-  "inProgress": 14,
-  "lastUpdated": "2025-07-07T14:59:04.385Z",
+  "completed": 83,
+  "inProgress": 16,
+  "lastUpdated": "2025-07-07T14:59:16.130Z",
   "commands": [
     {
       "id": "001",
@@ -1792,18 +1792,20 @@
       "name": "context-load-rust-async",
       "filepath": "claude/commands/context/rust/context-load-rust-async.md",
       "namespace": "context/rust",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T14:51:28.315Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T14:59:13.444Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751899888315dg85kvu13ar",
-        "timestamp": 1751899888
       }
     },
     {
@@ -2084,8 +2086,8 @@
       "name": "api-docs",
       "filepath": "claude/commands/docs/generate/api-docs.md",
       "namespace": "docs/generate",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:59:09.389Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2093,15 +2095,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751900349389mdlt9761hhu",
+        "timestamp": 1751900349
+      }
     },
     {
       "id": "098",
       "name": "changelog",
       "filepath": "claude/commands/docs/generate/changelog.md",
       "namespace": "docs/generate",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:59:13.547Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2109,15 +2114,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751900353547j6f713j1hs3",
+        "timestamp": 1751900353
+      }
     },
     {
       "id": "099",
       "name": "document",
       "filepath": "claude/commands/docs/generate/document.md",
       "namespace": "docs/generate",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:59:16.130Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2125,7 +2133,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751900356130u1dsiix1hzb",
+        "timestamp": 1751900356
+      }
     },
     {
       "id": "100",

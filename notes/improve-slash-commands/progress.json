@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 134,
-  "inProgress": 24,
-  "lastUpdated": "2025-07-07T15:24:44.884Z",
+  "completed": 136,
+  "inProgress": 22,
+  "lastUpdated": "2025-07-07T15:25:02.483Z",
   "commands": [
     {
       "id": "001",
@@ -2995,18 +2995,20 @@
       "name": "integration-test",
       "filepath": "claude/commands/test/generate/integration-test.md",
       "namespace": "test/generate",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:56.084Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:25:02.482Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751901716084bl3yma5s7m",
-        "timestamp": 1751901716
       }
     },
     {
@@ -3054,18 +3056,19 @@
       "name": "tdd",
       "filepath": "claude/commands/test/run/tdd.md",
       "namespace": "test/run",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:22:01.090Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:24:58.446Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17519017210900g23dhosra",
-        "timestamp": 1751901721
       }
     },
     {

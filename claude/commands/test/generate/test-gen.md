@@ -1,197 +1,404 @@
-# /test-gen
+---
+allowed-tools: Task, Read, Write, Edit, MultiEdit, Bash(fd:*), Bash(rg:*), Bash(jq:*), Bash(bat:*), Bash(eza:*), Bash(gdate:*), Bash(wc:*), Bash(head:*), Bash(mvn:*), Bash(gradle:*), Bash(cargo:*), Bash(go:*), Bash(deno:*), Bash(npm:*)
+description: Intelligent test suite generator with framework detection, programmatic structure analysis, and comprehensive test creation
+---
 
-Generate comprehensive test suites for $ARGUMENT with intelligent test case creation based on code analysis and testing best practices.
+## Context
 
-## Context Intelligence
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
+- Target: $ARGUMENTS
+- Current directory: !`pwd`
+- Project structure: !`eza -la --tree --level=2 2>/dev/null | head -10 || fd . -t d -d 2 | head -8`
+- Existing tests: !`fd "(test|spec)\.(js|ts|jsx|tsx|rs|go|java|py)$" . | wc -l | tr -d ' '` files
+- Build files: !`fd "(package\.json|Cargo\.toml|go\.mod|deno\.json|pom\.xml|build\.gradle)" . -d 3 | head -5 || echo "No build files detected"`
+- Testing frameworks: !`fd "package.json" . | xargs jq -r '.devDependencies // {} | keys[]' 2>/dev/null | rg "(jest|vitest|mocha|ava|playwright|cypress)" | head -3 || echo "No JS test frameworks"`
+- Modern tools status: !`echo "fd: $(which fd >/dev/null && echo ✓ || echo ✗) | rg: $(which rg >/dev/null && echo ✓ || echo ✗) | jq: $(which jq >/dev/null && echo ✓ || echo ✗)"`
 
-### Framework Detection
+## Your Task
+
+STEP 1: Initialize intelligent test generation session with comprehensive project analysis
+
+- CREATE session state file: `/tmp/test-gen-session-$SESSION_ID.json`
+- ANALYZE project structure and technology stack from Context section
+- DETECT primary programming language and testing frameworks
+- IDENTIFY existing test patterns and coverage gaps
+
+```bash
+# Initialize test generation session state
+echo '{
+  "sessionId": "'$SESSION_ID'",
+  "target": "'$ARGUMENTS'",
+  "detectedLanguages": [],
+  "testingFrameworks": [],
+  "existingTestCount": 0,
+  "generatedTests": []
+}' > /tmp/test-gen-session-$SESSION_ID.json
+```
+
+STEP 2: Multi-language framework detection with intelligent routing
 
 **JavaScript/TypeScript Projects:**
 
 ```bash
 # Detect testing framework from package.json
-fd "package.json" | xargs jq -r '.devDependencies | keys[]' | rg "(jest|vitest|mocha|ava)"
+fd "package.json" . | xargs jq -r '.devDependencies // {} | keys[]' 2>/dev/null | rg "(jest|vitest|mocha|ava)"
 
 # Deno projects
-fd "deno.json" | xargs jq -r '.tasks | keys[]' | rg "test"
+fd "deno.json" . | xargs jq -r '.tasks // {} | keys[]' 2>/dev/null | rg "test"
 
 # Test file patterns
-fd "(test|spec)\.(js|ts|jsx|tsx)$" --max-depth 2
+fd "(test|spec)\.(js|ts|jsx|tsx)$" . --max-depth 2
 ```
 
 **Rust Projects:**
 
 ```bash
 # Cargo.toml analysis
-fd "Cargo.toml" | xargs rg "\[dev-dependencies\]" -A 10
-fd "lib.rs|main.rs" | xargs rg "#\[cfg\(test\)\]"
+fd "Cargo.toml" . | xargs rg "\[dev-dependencies\]" -A 10 2>/dev/null || echo "No Cargo.toml found"
+fd "(lib|main)\.rs$" . | xargs rg "#\[cfg\(test\)\]" 2>/dev/null || echo "No Rust test modules found"
 ```
 
 **Go Projects:**
 
 ```bash
 # Test file detection
-fd "_test\.go$" 
-go list ./... | rg "test"
+fd "_test\.go$" . 2>/dev/null || echo "No Go test files found"
+go list ./... 2>/dev/null | rg "test" || echo "Go modules not available"
 ```
 
 **Python Projects:**
 
 ```bash
 # Testing framework detection
-fd "(requirements|pyproject).(txt|toml)" | xargs rg "(pytest|unittest|nose)"
-fd "test_.*\.py$|.*_test\.py$"
+fd "(requirements|pyproject)\.(txt|toml)" . | xargs rg "(pytest|unittest|nose)" 2>/dev/null || echo "No Python test frameworks detected"
+fd "test_.*\.py$|.*_test\.py$" . 2>/dev/null || echo "No Python test files found"
 ```
+
+**Java Projects:**
+
+```bash
+# Maven/Gradle test detection
+fd "pom\.xml$" . | xargs rg "(junit|testng|mockito)" 2>/dev/null || echo "No Maven test dependencies"
+fd "build\.gradle$" . | xargs rg "(junit|testng|spock)" 2>/dev/null || echo "No Gradle test dependencies"
+fd ".*Test\.java$" . 2>/dev/null || echo "No Java test files found"
+```
+
+STEP 3: Parallel test analysis and generation with sub-agent coordination
+
+TRY:
+
+IF project_complexity == "multi-language" OR codebase_size > 50_files:
+
+LAUNCH parallel sub-agents for comprehensive test generation:
+
+- **Agent 1: Unit Test Analysis**: Analyze existing unit tests and identify gaps
+  - Focus: Function coverage, edge cases, error handling patterns
+  - Tools: rg for test pattern analysis, code complexity assessment
+  - Output: Unit test coverage report and generation targets
+
+- **Agent 2: Integration Test Strategy**: Design integration test architecture
+  - Focus: API endpoints, database interactions, service boundaries
+  - Tools: fd for endpoint discovery, dependency mapping
+  - Output: Integration test plan and mock requirements
+
+- **Agent 3: E2E Test Planning**: Analyze user flows and critical paths
+  - Focus: Frontend interactions, user journeys, business workflows
+  - Tools: Component analysis, routing discovery
+  - Output: E2E test scenarios and automation strategy
+
+- **Agent 4: Test Data Management**: Design test data generation and management
+  - Focus: Realistic test data, factories, fixtures, mocks
+  - Tools: Schema analysis, data model discovery
+  - Output: Test data strategy and generation utilities
+
+ELSE:
+
+EXECUTE streamlined single-agent test generation:
 
 ## Test Generation Strategies
 
-### 1. Unit/Component Test Generation
+STEP 4: Language-specific test generation with programmatic structure analysis
 
-**Analysis Phase:**
+**Analysis Phase with Dynamic Language Detection:**
 
 ```bash
-# Extract function signatures and interfaces
-case $DETECTED_LANGUAGE in
-  "typescript"|"javascript")
+# Extract function signatures and interfaces based on detected project type
+PROJECT_LANG=$(fd "(package\.json|Cargo\.toml|go\.mod|pom\.xml)" . | head -1 | sed 's/.*\.//' || echo "unknown")
+
+case $PROJECT_LANG in
+  "json")
+    echo "📦 JavaScript/TypeScript project detected"
     # Parse TypeScript/JavaScript for functions and classes
-    rg "^(export\s+)?(function|class|const|let)\s+\w+" --type ts --type js -A 3
+    rg "^(export\s+)?(function|class|const|let)\s+\w+" --type-add 'web:*.{js,ts,jsx,tsx}' --type web -A 3 2>/dev/null || echo "No JS/TS functions found"
     ;;
-  "rust")
+  "toml")
+    echo "🦀 Rust project detected"
     # Extract public functions and structs
-    rg "^pub\s+(fn|struct|enum|trait)" --type rust -A 2
+    rg "^pub\s+(fn|struct|enum|trait)" --type rust -A 2 2>/dev/null || echo "No public Rust items found"
     ;;
-  "go")
+  "mod")
+    echo "🐹 Go project detected"
     # Extract public functions and types
-    rg "^func\s+[A-Z]\w*|^type\s+[A-Z]\w*" --type go -A 2
+    rg "^func\s+[A-Z]\w*|^type\s+[A-Z]\w*" --type go -A 2 2>/dev/null || echo "No public Go items found"
     ;;
-  "python")
-    # Extract classes and functions
-    rg "^(class|def)\s+\w+" --type py -A 2
+  "xml")
+    echo "☕ Java project detected"
+    # Extract public classes and methods
+    rg "^\s*public\s+(class|interface|enum)\s+\w+|^\s*public\s+.*\s+\w+\s*\(" --type java -A 2 2>/dev/null || echo "No public Java items found"
+    ;;
+  *)
+    echo "🔍 Multi-language or unknown project - analyzing all supported types"
     ;;
 esac
 ```
 
-**Test Template Generation:**
+### Unit/Component Test Generation Framework
 
-**TypeScript/Deno Example:**
+STEP 5: Test template generation with framework-specific patterns
+
+**Session State Management:**
+
+```bash
+# Update session state with generation progress
+jq --arg lang "$PROJECT_LANG" --arg timestamp "$(gdate -Iseconds 2>/dev/null || date -Iseconds)" '
+  .detectedLanguages += [$lang] |
+  .lastAnalysis = $timestamp
+' /tmp/test-gen-session-$SESSION_ID.json > /tmp/test-gen-session-$SESSION_ID.tmp && \
+mv /tmp/test-gen-session-$SESSION_ID.tmp /tmp/test-gen-session-$SESSION_ID.json
+```
+
+**TypeScript/Deno Test Generation:**
 
 ```typescript
-// Generated tests for UserService
-import { assertEquals, assertRejects } from "@std/assert";
-import { UserService } from "../src/user-service.ts";
+// Generated comprehensive tests for $ARGUMENTS
+import { assertEquals, assertExists, assertRejects } from "@std/assert";
+import { $ARGUMENTS } from "../src/$ARGUMENTS.ts";
 
-Deno.test("UserService - createUser with valid data", async () => {
-  const userService = new UserService();
-  const userData = {
+// Test data generation utilities
+const generateTestData = () => ({
+  valid: {
     email: "test@example.com",
     name: "Test User",
-  };
-
-  const result = await userService.createUser(userData);
-
-  assertEquals(result.email, userData.email);
-  assertEquals(result.name, userData.name);
-  assertEquals(typeof result.id, "string");
+    id: crypto.randomUUID(),
+  },
+  invalid: {
+    email: "invalid-email",
+    name: "",
+    id: null,
+  },
 });
 
-Deno.test("UserService - createUser with invalid email", async () => {
-  const userService = new UserService();
-  const userData = {
-    email: "invalid-email",
-    name: "Test User",
-  };
+// Happy path tests
+Deno.test("$ARGUMENTS - successful operations with valid data", async () => {
+  const service = new $ARGUMENTS();
+  const testData = generateTestData().valid;
+
+  const result = await service.create(testData);
+
+  assertEquals(result.email, testData.email);
+  assertEquals(result.name, testData.name);
+  assertExists(result.id);
+});
+
+// Error handling tests
+Deno.test("$ARGUMENTS - validation errors with invalid data", async () => {
+  const service = new $ARGUMENTS();
+  const testData = generateTestData().invalid;
 
   await assertRejects(
-    () => userService.createUser(userData),
+    () => service.create(testData),
     Error,
-    "Invalid email format",
+    "Validation failed",
   );
 });
 
-Deno.test("UserService - findUser by ID", async () => {
-  const userService = new UserService();
+// Edge case tests
+Deno.test("$ARGUMENTS - edge cases and boundary conditions", async () => {
+  const service = new $ARGUMENTS();
 
-  // Test existing user
-  const existingUser = await userService.findUser("user123");
-  assertEquals(existingUser.id, "user123");
+  // Test with null/undefined inputs
+  await assertRejects(() => service.create(null));
+  await assertRejects(() => service.create(undefined));
 
-  // Test non-existing user
-  const nonExistingUser = await userService.findUser("nonexistent");
-  assertEquals(nonExistingUser, null);
+  // Test with empty objects
+  await assertRejects(() => service.create({}));
+});
+
+// Performance and load tests
+Deno.test("$ARGUMENTS - performance with multiple operations", async () => {
+  const service = new $ARGUMENTS();
+  const operations = [];
+
+  for (let i = 0; i < 100; i++) {
+    operations.push(service.create(generateTestData().valid));
+  }
+
+  const results = await Promise.allSettled(operations);
+  const successful = results.filter((r) => r.status === "fulfilled").length;
+
+  assertEquals(successful, 100);
 });
 ```
 
-**Rust Example:**
+STEP 6: Cross-platform test generation with error handling
+
+**Rust Test Generation:**
 
 ```rust
-// Generated tests for user_service module
+// Generated comprehensive tests for $ARGUMENTS module
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::Duration;
+    use tokio::time::timeout;
     
-    #[tokio::test]
-    async fn test_create_user_with_valid_data() {
-        let user_service = UserService::new();
-        let user_data = CreateUserRequest {
+    // Test fixture generation
+    fn create_valid_test_data() -> TestData {
+        TestData {
             email: "test@example.com".to_string(),
             name: "Test User".to_string(),
-        };
+            id: uuid::Uuid::new_v4().to_string(),
+        }
+    }
+    
+    fn create_invalid_test_data() -> TestData {
+        TestData {
+            email: "invalid-email".to_string(),
+            name: "".to_string(),
+            id: "".to_string(),
+        }
+    }
+    
+    // Happy path tests
+    #[tokio::test]
+    async fn test_successful_operations() {
+        let service = $ARGUMENTS::new();
+        let test_data = create_valid_test_data();
         
-        let result = user_service.create_user(user_data).await.unwrap();
+        let result = service.create(test_data).await.expect("Should create successfully");
         
         assert_eq!(result.email, "test@example.com");
         assert_eq!(result.name, "Test User");
         assert!(!result.id.is_empty());
     }
     
+    // Error handling tests
     #[tokio::test]
-    async fn test_create_user_with_invalid_email() {
-        let user_service = UserService::new();
-        let user_data = CreateUserRequest {
-            email: "invalid-email".to_string(),
-            name: "Test User".to_string(),
-        };
+    async fn test_validation_errors() {
+        let service = $ARGUMENTS::new();
+        let test_data = create_invalid_test_data();
         
-        let result = user_service.create_user(user_data).await;
+        let result = service.create(test_data).await;
         
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("Invalid email"));
+        assert!(result.unwrap_err().to_string().contains("validation"));
     }
     
+    // Timeout and performance tests
+    #[tokio::test]
+    async fn test_operation_timeout() {
+        let service = $ARGUMENTS::new();
+        let test_data = create_valid_test_data();
+        
+        let result = timeout(Duration::from_secs(5), service.create(test_data)).await;
+        
+        assert!(result.is_ok(), "Operation should complete within timeout");
+    }
+    
+    // Concurrent operation tests
+    #[tokio::test]
+    async fn test_concurrent_operations() {
+        let service = std::sync::Arc::new($ARGUMENTS::new());
+        let mut handles = vec![];
+        
+        for i in 0..10 {
+            let service_clone = service.clone();
+            let handle = tokio::spawn(async move {
+                let mut test_data = create_valid_test_data();
+                test_data.name = format!("User {}", i);
+                service_clone.create(test_data).await
+            });
+            handles.push(handle);
+        }
+        
+        let results: Vec<_> = futures::future::join_all(handles).await;
+        
+        assert_eq!(results.len(), 10);
+        assert!(results.iter().all(|r| r.is_ok()));
+    }
+    
+    // Property-based tests
     #[test]
-    fn test_validate_email() {
+    fn test_email_validation_properties() {
+        // Valid email patterns
         assert!(validate_email("test@example.com"));
+        assert!(validate_email("user.name+tag@domain.co.uk"));
+        
+        // Invalid email patterns
         assert!(!validate_email("invalid-email"));
         assert!(!validate_email(""));
+        assert!(!validate_email("@domain.com"));
+        assert!(!validate_email("user@"));
     }
 }
 ```
 
-### 2. API Test Generation
+STEP 7: API and integration test generation with comprehensive coverage
 
-**API Endpoint Discovery:**
+TRY:
+
+**State Management for API Discovery:**
 
 ```bash
-# Analyze API routes and endpoints
-case $FRAMEWORK in
-  "axum"|"actix")
-    rg "Router::new\(\)|\.route\(" --type rust -A 2
-    ;;
-  "express"|"fastify")
-    rg "(app|router)\.(get|post|put|delete|patch)" --type js --type ts -A 2
-    ;;
-  "spring"|"quarkus")
-    rg "@(GetMapping|PostMapping|PutMapping|DeleteMapping)" --type java -A 2
-    ;;
-  "connectrpc"|"gin")
-    rg "func.*Handler|router\.(GET|POST|PUT|DELETE)" --type go -A 2
-    ;;
-esac
+# Discover and catalog API endpoints
+echo "🔍 Discovering API endpoints for $ARGUMENTS..."
+API_ENDPOINTS=$(rg "(GET|POST|PUT|DELETE|PATCH).*$ARGUMENTS" --type-add 'web:*.{js,ts,rs,go,java}' --type web 2>/dev/null | head -10 || echo "No API endpoints found")
+echo "$API_ENDPOINTS" > /tmp/api-endpoints-$SESSION_ID.txt
 ```
 
-**Generated API Tests:**
+### API Test Generation Framework
 
-**Deno/Fresh Example:**
+**Dynamic API Endpoint Discovery:**
+
+```bash
+# Intelligent framework detection and endpoint analysis
+DETECTED_FRAMEWORK="unknown"
+
+# Check for Rust web frameworks
+if fd "Cargo.toml" . | xargs rg "(axum|actix-web|warp)" >/dev/null 2>&1; then
+  DETECTED_FRAMEWORK="rust-web"
+  echo "🦀 Rust web framework detected"
+  rg "Router::new\(\)|\.route\(|async fn.*Handler" --type rust -A 2 2>/dev/null || echo "No Rust routes found"
+fi
+
+# Check for Node.js frameworks
+if fd "package.json" . | xargs rg "(express|fastify|koa)" >/dev/null 2>&1; then
+  DETECTED_FRAMEWORK="nodejs-web"
+  echo "🟢 Node.js web framework detected"
+  rg "(app|router|server)\.(get|post|put|delete|patch)" --type-add 'web:*.{js,ts}' --type web -A 2 2>/dev/null || echo "No Node.js routes found"
+fi
+
+# Check for Java frameworks
+if fd "pom.xml" . | xargs rg "(spring-boot|quarkus)" >/dev/null 2>&1; then
+  DETECTED_FRAMEWORK="java-web"
+  echo "☕ Java web framework detected"
+  rg "@(GetMapping|PostMapping|PutMapping|DeleteMapping|RequestMapping)" --type java -A 2 2>/dev/null || echo "No Java endpoints found"
+fi
+
+# Check for Go frameworks
+if fd "go.mod" . | xargs rg "(gin|echo|fiber|mux)" >/dev/null 2>&1; then
+  DETECTED_FRAMEWORK="go-web"
+  echo "🐹 Go web framework detected"
+  rg "func.*Handler|router\.(GET|POST|PUT|DELETE)" --type go -A 2 2>/dev/null || echo "No Go routes found"
+fi
+
+# Update session state with framework detection
+jq --arg framework "$DETECTED_FRAMEWORK" '.detectedFramework = $framework' /tmp/test-gen-session-$SESSION_ID.json > /tmp/test-gen-session-$SESSION_ID.tmp && mv /tmp/test-gen-session-$SESSION_ID.tmp /tmp/test-gen-session-$SESSION_ID.json
+```
+
+STEP 8: Framework-specific API test generation with comprehensive scenarios
+
+**Deno/Fresh API Test Generation:**
 
 ```typescript
 // Generated API tests for user endpoints
@@ -280,7 +487,23 @@ mod integration_tests {
 }
 ```
 
-### 3. End-to-End Test Generation
+STEP 9: End-to-end test generation with modern testing frameworks
+
+CATCH (test_generation_failed):
+
+- LOG error details to session state
+- PROVIDE fallback test generation strategies
+- SUGGEST manual test creation guidelines
+
+```bash
+echo "⚠️ Test generation encountered errors. Providing fallback strategies..."
+echo "Available testing tools:"
+echo "  Deno: $(which deno >/dev/null && echo '✓ available' || echo '❌ install with: curl -fsSL https://deno.land/install.sh | sh')"
+echo "  Node.js: $(which node >/dev/null && echo '✓ available' || echo '❌ install with: brew install node')"
+echo "  Rust: $(which cargo >/dev/null && echo '✓ available' || echo '❌ install with: curl --proto =https --tlsv1.2 -sSf https://sh.rustup.rs | sh')"
+```
+
+### End-to-End Test Generation Framework
 
 **E2E Test Setup:**
 
@@ -331,9 +554,46 @@ test.describe("User Management Flow", () => {
 });
 ```
 
-## Test Data Generation
+STEP 10: Test data generation and management with realistic patterns
 
-### Realistic Test Data Creation
+**Session State Finalization:**
+
+```bash
+# Finalize session state with generation summary
+jq --arg timestamp "$(gdate -Iseconds 2>/dev/null || date -Iseconds)" --arg target "$ARGUMENTS" '
+  .completedAt = $timestamp |
+  .generationSummary = {
+    "target": $target,
+    "testFilesGenerated": (.generatedTests | length),
+    "frameworksSupported": [.detectedFramework],
+    "testTypes": ["unit", "integration", "e2e", "api"]
+  }
+' /tmp/test-gen-session-$SESSION_ID.json > /tmp/test-gen-session-$SESSION_ID.tmp && mv /tmp/test-gen-session-$SESSION_ID.tmp /tmp/test-gen-session-$SESSION_ID.json
+```
+
+FINALLY:
+
+- SAVE session state for test execution and maintenance
+- PROVIDE comprehensive test running instructions
+- SUGGEST CI/CD integration patterns
+- CLEAN UP temporary analysis files
+
+```bash
+echo "✅ Test generation completed for $ARGUMENTS"
+echo "📊 Session: $SESSION_ID"
+echo "📁 Session state: /tmp/test-gen-session-$SESSION_ID.json"
+echo "🧪 Generated comprehensive test suite with:"
+echo "  - Unit tests with edge cases and error handling"
+echo "  - Integration tests for API endpoints"
+echo "  - E2E tests for user workflows"
+echo "  - Performance and load tests"
+echo "  - Test data generation utilities"
+echo "  - Mock and stub implementations"
+```
+
+## Test Data Generation Strategies
+
+### Realistic Test Data Creation Framework
 
 **Faker Integration:**
 

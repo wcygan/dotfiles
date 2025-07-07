@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 54,
-  "inProgress": 11,
-  "lastUpdated": "2025-07-07T13:40:07.072Z",
+  "completed": 55,
+  "inProgress": 12,
+  "lastUpdated": "2025-07-07T13:40:58.212Z",
   "commands": [
     {
       "id": "001",
@@ -1159,7 +1159,7 @@
       "filepath": "claude/commands/code/analyze/bottleneck.md",
       "namespace": "code/analyze",
       "status": "in-progress",
-      "lastModified": "2025-07-07T13:28:52.344Z",
+      "lastModified": "2025-07-07T13:40:27.246Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1168,8 +1168,8 @@
         "hadStateManagement": true
       },
       "claimedBy": {
-        "sessionId": "1751894932343l3nq9jzame",
-        "timestamp": 1751894932
+        "sessionId": "1751895627246o55dxdrpdp",
+        "timestamp": 1751895627
       }
     },
     {
@@ -1243,7 +1243,7 @@
       "filepath": "claude/commands/code/fix/bug-fix.md",
       "namespace": "code/fix",
       "status": "in-progress",
-      "lastModified": "2025-07-07T13:29:01.113Z",
+      "lastModified": "2025-07-07T13:40:30.119Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1252,8 +1252,8 @@
         "hadStateManagement": false
       },
       "claimedBy": {
-        "sessionId": "1751894941113y0y27aab0f",
-        "timestamp": 1751894941
+        "sessionId": "1751895630114129w6fbpnp",
+        "timestamp": 1751895630
       }
     },
     {
@@ -1283,18 +1283,21 @@
       "name": "deno-ify",
       "filepath": "claude/commands/code/migrate/deno-ify.md",
       "namespace": "code/migrate",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:36:51.927Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:40:58.212Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "errorHandlingEnhanced",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751895411927e4ao8tqh50",
-        "timestamp": 1751895411
       }
     },
     {
@@ -1459,8 +1462,8 @@
       "name": "context-load-scylla",
       "filepath": "claude/commands/context/db/context-load-scylla.md",
       "namespace": "context/db",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T13:40:51.790Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1468,15 +1471,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751895651790ii9jdfoqlc",
+        "timestamp": 1751895651
+      }
     },
     {
       "id": "067",
       "name": "context-load-deno-fresh",
       "filepath": "claude/commands/context/deno/context-load-deno-fresh.md",
       "namespace": "context/deno",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T13:40:57.582Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1484,7 +1490,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17518956575829nh3zxiqpc",
+        "timestamp": 1751895657
+      }
     },
     {
       "id": "068",

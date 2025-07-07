@@ -1,12 +1,85 @@
+---
+allowed-tools: Read, Grep, Bash(fd:*), Bash(rg:*), Bash(bat:*), Bash(jq:*), Bash(git:*), Bash(gdate:*), Write, Task
+description: Generate explanatory diagrams from code and architecture analysis
+---
+
 # /visualize
 
-Analyzes code and architecture for $ARGUMENT to generate explanatory diagrams.
+## Context
 
-## Description
+- Session ID: !`gdate +%s%N`
+- Current directory: !`pwd`
+- Target: $ARGUMENTS
+- Project structure: !`fd . -t d -d 3 | head -10`
+- Code files: !`fd "\.(go|rs|ts|js|py|java|cpp|c)$" . | wc -l | tr -d ' ' || echo "0"`
+- Config files: !`fd "(docker-compose|kubernetes|k8s)" . -t f | head -5 || echo "No infrastructure configs"`
+- Database models: !`rg "(struct|class|interface|type).*\{" --type-add 'code:*.{go,rs,ts,js,py,java}' -t code | head -5 || echo "No models found"`
+- Git status: !`git status --porcelain | head -5 || echo "Not a git repository"`
+- Documentation: !`fd "docs|documentation" . -t d | head -3 || echo "No docs directory"`
 
-This command transforms complex code, logic, and system architectures into clear, visual diagrams. A picture is worth a thousand lines of code - this command makes systems easier to understand, debug, and communicate about.
+## Your Task
 
-### What it generates:
+STEP 1: Initialize Visualization Session
+
+- Create session state file: /tmp/visualize-$SESSION_ID.json
+- Initialize analysis registry and diagram queue
+- Setup output directory: docs/diagrams/
+- Determine visualization scope from $ARGUMENTS
+
+STEP 2: Analyze Target and Determine Diagram Types
+
+IF $ARGUMENTS contains specific function/method:
+
+- Focus on code flow visualization
+- Generate function flowcharts
+- Analyze control flow and decision points
+
+ELSE IF $ARGUMENTS contains database/model patterns:
+
+- Generate Entity Relationship Diagrams
+- Map table relationships and constraints
+- Analyze schema dependencies
+
+ELSE IF $ARGUMENTS contains infrastructure configs:
+
+- Create system architecture diagrams
+- Map service dependencies
+- Generate deployment topology
+
+ELSE IF $ARGUMENTS contains API/handler patterns:
+
+- Generate sequence diagrams
+- Map request/response flows
+- Analyze service interactions
+
+ELSE IF $ARGUMENTS is directory or broad scope:
+
+- Use extended thinking to determine optimal visualization strategy
+- Consider sub-agent delegation for large codebases:
+  - Agent 1: Code flow analysis
+  - Agent 2: Database schema mapping
+  - Agent 3: System architecture discovery
+  - Agent 4: API interaction analysis
+- Generate comprehensive diagram suite
+
+STEP 3: Execute Analysis and Generation
+
+FOR EACH diagram type identified:
+
+- Analyze relevant code patterns
+- Extract relationships and dependencies
+- Generate Mermaid.js diagram syntax
+- Create markdown file with embedded diagram
+- Add interactive elements and complexity annotations
+
+STEP 4: Output and Documentation
+
+- Save diagrams to docs/diagrams/ directory
+- Create index file linking all generated diagrams
+- Add source links and explanatory text
+- Update session state with completion status
+
+## Diagram Types Generated:
 
 #### 1. Code Flow Visualization
 
@@ -553,44 +626,36 @@ digraph Dependencies {
 }
 ```
 
-## Examples
+## Usage Examples
 
-### Visualize a function:
+### Function Analysis:
 
 ```
 /visualize ./src/payment.go:ProcessPayment
 ```
 
-### Create database ERD:
+### Database Schema:
 
 ```
-/visualize ./models --type erd
+/visualize ./models
 ```
 
-### Generate system architecture:
+### System Architecture:
 
 ```
-/visualize ./docker-compose.yml --type architecture
+/visualize ./docker-compose.yml
 ```
 
-### Create API sequence diagram:
+### API Flows:
 
 ```
-/visualize ./api/handlers --type sequence
+/visualize ./api/handlers
 ```
 
-### Output to specific file:
+### Complete Codebase (uses sub-agents for large projects):
 
 ```
-/visualize ./src/auth.rs --output docs/diagrams/auth-flow.md
-```
-
-### Default outputs (created automatically):
-
-```
-/visualize ./src/payment.go          # Creates docs/diagrams/payment-flow.md
-/visualize ./models --type erd       # Creates docs/diagrams/database-schema.md
-/visualize ./docker-compose.yml     # Creates docs/diagrams/system-architecture.md
+/visualize .
 ```
 
 ## File Structure Created
@@ -607,62 +672,24 @@ project-root/
         └── infrastructure.md        # Kubernetes and infrastructure
 ```
 
+## State Management
+
+- Session files: /tmp/visualize-$SESSION_ID.json
+- Analysis registry: tracks discovered patterns and relationships
+- Diagram queue: manages generation workflow
+- Output tracking: monitors created files and links
+- Checkpoint system: enables resumable analysis for large codebases
+
 ## Advanced Features
 
-### Interactive Diagrams
+- **Interactive Elements**: Clickable diagram nodes linking to source code
+- **Complexity Metrics**: Annotated cyclomatic complexity and decision points
+- **Dependency Mapping**: Circular dependency detection and warnings
+- **Multi-format Output**: Mermaid.js, PlantUML, and Graphviz DOT support
+- **Sub-agent Integration**: Parallel analysis for comprehensive codebase coverage
 
-Generates interactive diagrams with clickable elements:
+## Integration Patterns
 
-```mermaid
-flowchart TD
-    A["Start"] --> B["Process"]
-    B --> C["End"]
-    
-    click A "https://github.com/org/repo/blob/main/src/start.go" "View Source"
-    click B "https://github.com/org/repo/blob/main/src/process.go" "View Source"
-    click C "https://github.com/org/repo/blob/main/src/end.go" "View Source"
-```
-
-### Complexity Analysis
-
-Annotates diagrams with complexity metrics:
-
-```mermaid
-flowchart TD
-    A["Login Function<br/>Complexity: 3"] --> B{"Valid User?"}
-    B -->|Yes| C["Success<br/>Path: 1"]
-    B -->|No| D["Retry<br/>Path: 2"]
-    D --> E{"Max Retries?"}
-    E -->|Yes| F["Lock Account<br/>Path: 3"]
-    E -->|No| A
-```
-
-### Dependency Analysis
-
-Shows dependency relationships and potential circular dependencies:
-
-```mermaid
-graph TD
-    A[auth] --> B[database]
-    C[user] --> A
-    C --> B
-    D[payment] --> C
-    E[notification] --> C
-    F[api] --> A
-    F --> C
-    F --> D
-    F --> E
-    
-    style A fill:#ff9999
-    style C fill:#ff9999
-    
-    classDef warning fill:#ffeb3b,stroke:#f57f17,stroke-width:2px
-    class A,C warning
-```
-
-## Integration with Other Commands
-
-- Use with `/document` to include diagrams in generated documentation
-- Combine with `/refactor` to visualize before/after architecture changes
-- Use with `/review` to create visual explanations for code reviews
-- Integrate with `/epic` to show system-wide architectural changes
+- `/document` - Embed diagrams in generated documentation
+- `/refactor` - Visualize architecture before/after changes
+- `/review` - Create visual explanations for code reviews

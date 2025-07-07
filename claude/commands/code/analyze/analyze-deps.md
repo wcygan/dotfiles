@@ -1,6 +1,6 @@
 ---
-allowed-tools: Bash, Read, Write
-description: Analyze project dependencies with security, performance, and maintenance insights
+allowed-tools: Read, Write, Bash(fd:*), Bash(rg:*), Bash(jq:*), Bash(gdate:*), Bash(git:*), Bash(npm:*), Bash(yarn:*), Bash(cargo:*), Bash(go:*), Bash(deno:*), Task
+description: Comprehensive dependency analysis with security auditing and maintenance insights
 ---
 
 ## Context
@@ -15,6 +15,12 @@ description: Analyze project dependencies with security, performance, and mainte
 
 ## Your Task
 
+STEP 0: Analysis Strategy Selection
+
+- Think deeply about optimal dependency analysis approaches for this project
+- Consider project complexity and multi-language support requirements
+- Determine if parallel sub-agent analysis would benefit large codebases
+
 Analyze project dependencies using modern tools. Analysis type: $ARGUMENTS (security, outdated, size, licenses, graph, or all - defaults to 'all')
 
 STEP 1: Initialize Analysis Session
@@ -24,33 +30,68 @@ STEP 1: Initialize Analysis Session
 - Parse analysis type from $ARGUMENTS (default: 'all')
 - Initialize analysis results structure
 
-STEP 2: Project Type Detection and Setup
+STEP 2: Project Type Detection and Multi-Language Support
 
-IF project files include "deno.json":
+- Detect ALL project types in current directory (multi-language projects)
+- Initialize project_types array for comprehensive analysis
 
-- SET project_type = "deno"
-- SET package_manager = "deno"
-  ELSE IF project files include "package.json":
-- SET project_type = "node"
-- SET package_manager = "npm" OR "yarn" (detect from lock files)
-  ELSE IF project files include "Cargo.toml":
-- SET project_type = "rust"
-- SET package_manager = "cargo"
-  ELSE IF project files include "go.mod":
-- SET project_type = "go"
-- SET package_manager = "go"
-  ELSE IF project files include "pom.xml":
-- SET project_type = "java"
-- SET package_manager = "maven"
-  ELSE:
-- SET project_type = "unknown"
+FOR EACH detected project file:
+
+IF "deno.json" found:
+
+- ADD "deno" to project_types
+- SET deno_package_manager = "deno"
+
+IF "package.json" found:
+
+- ADD "node" to project_types
+- SET node_package_manager = "npm" OR "yarn" (detect from lock files)
+
+IF "Cargo.toml" found:
+
+- ADD "rust" to project_types
+- SET rust_package_manager = "cargo"
+
+IF "go.mod" found:
+
+- ADD "go" to project_types
+- SET go_package_manager = "go"
+
+IF "pom.xml" found:
+
+- ADD "java" to project_types
+- SET java_package_manager = "maven"
+
+IF project_types.length == 0:
+
+- SET project_types = ["unknown"]
 - WARN: "No recognized project files found"
 
-STEP 3: Security Analysis
+IF project_types.length > 1:
+
+- Consider sub-agent delegation for parallel analysis across languages
+- Think harder about coordination strategies for multi-language dependency analysis
+
+STEP 3: Security Analysis Strategy
 
 IF analysis_type IN ['security', 'all']:
 
+IF project_types.length > 2:
+
+- Use parallel sub-agents for multi-language security analysis:
+  - **Deno Security Agent**: JSR and remote dependency vulnerability scanning
+  - **Node Security Agent**: npm/yarn audit and vulnerability database checks
+  - **Rust Security Agent**: cargo audit and crates.io advisory analysis
+  - **Go Security Agent**: govulncheck and module security validation
+  - **Coordination Agent**: Aggregate findings and risk prioritization
+
+ELSE:
+
+- Execute sequential security analysis for detected project types
+
 TRY:
+
+FOR EACH project_type IN project_types:
 
 CASE project_type:
 WHEN "deno":
@@ -80,11 +121,16 @@ CATCH (security_scan_failure):
 - Continue with other analysis types
 - Note: Manual security review recommended
 
-STEP 4: Performance Analysis
+STEP 4: Performance and Bundle Analysis
 
 IF analysis_type IN ['size', 'performance', 'all']:
 
+- Think hard about performance impact analysis across different package managers
+- Consider bundle size optimization recommendations based on project type
+
 TRY:
+
+FOR EACH project_type IN project_types:
 
 CASE project_type:
 WHEN "deno":
@@ -113,18 +159,22 @@ CATCH (performance_analysis_failure):
 - Log error to session state
 - Provide manual analysis guidance
 
-STEP 5: Maintenance Analysis
+STEP 5: Maintenance and Lifecycle Analysis
 
 IF analysis_type IN ['outdated', 'maintenance', 'all']:
 
+- Use extended thinking for complex dependency update strategies
+- Consider breaking change impact across multi-language projects
+
 TRY:
 
-FOR EACH detected package manager:
+FOR EACH project_type IN project_types:
 
-- Check for outdated dependencies
-- Analyze maintenance status
-- Generate update recommendations
-- Assess breaking change risks
+- Check for outdated dependencies using appropriate package manager
+- Analyze dependency maintenance status and community health
+- Generate prioritized update recommendations
+- Assess breaking change risks and migration effort
+- Calculate dependency freshness score
 
 CATCH (maintenance_check_failure):
 
@@ -201,11 +251,29 @@ FINALLY:
 
 ## Modern Tool Integration
 
-- **fd**: Fast file discovery for project detection
-- **rg**: Security pattern searching in lock files
-- **jq**: JSON processing for package manager outputs
-- **bat**: Syntax-highlighted output for better readability
-- **Modern package managers**: Native audit and analysis commands
+- **fd**: Fast file discovery for project detection and dependency analysis
+- **rg**: Security pattern searching in lock files and configuration analysis
+- **jq**: JSON processing for package manager outputs and vulnerability data
+- **Sub-agents**: Parallel analysis for complex multi-language codebases
+- **Extended thinking**: Deep dependency strategy analysis for complex projects
+- **Native package managers**: cargo audit, npm audit, go mod, deno info
+
+## Sub-Agent Delegation Patterns
+
+### Large Multi-Language Projects (3+ package managers)
+
+Use parallel sub-agents for comprehensive analysis:
+
+1. **Language-Specific Security Agents**: Each analyzes security for one ecosystem
+2. **Performance Analysis Agent**: Cross-language bundle size and optimization
+3. **Maintenance Coordination Agent**: Unified update strategy across languages
+4. **Risk Assessment Agent**: Holistic dependency health scoring
+
+### Extended Thinking Integration
+
+- Complex dependency conflict resolution strategies
+- Multi-language ecosystem compatibility analysis
+- Strategic dependency update planning with risk assessment
 
 ## Example Usage
 
@@ -224,4 +292,7 @@ FINALLY:
 
 # License compliance analysis
 /analyze-deps licenses
+
+# Multi-language project analysis (uses sub-agents)
+/analyze-deps all
 ```

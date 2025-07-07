@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 58,
-  "inProgress": 11,
-  "lastUpdated": "2025-07-07T13:41:29.105Z",
+  "completed": 61,
+  "inProgress": 8,
+  "lastUpdated": "2025-07-07T13:41:54.353Z",
   "commands": [
     {
       "id": "001",
@@ -1142,18 +1142,19 @@
       "name": "analyze-deps",
       "filepath": "claude/commands/code/analyze/analyze-deps.md",
       "namespace": "code/analyze",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:40:06.421Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:41:45.406Z",
+      "improvements": [
+        "frontMatterUpdated",
+        "subAgentPatternsAdded",
+        "extendedThinkingAdded",
+        "multiLanguageSupportAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751895606421kb371a8otz",
-        "timestamp": 1751895606
       }
     },
     {
@@ -1329,18 +1330,20 @@
       "name": "related",
       "filepath": "claude/commands/code/navigate/related.md",
       "namespace": "code/navigate",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:36:55.595Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:41:47.471Z",
+      "improvements": [
+        "frontMatterUpdated",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": true,
         "hadDynamicContext": true,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751895415595ct6v8snhe2",
-        "timestamp": 1751895415
       }
     },
     {
@@ -1469,18 +1472,19 @@
       "name": "context-load-scylla",
       "filepath": "claude/commands/context/db/context-load-scylla.md",
       "namespace": "context/db",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:40:51.790Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:41:54.353Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751895651790ii9jdfoqlc",
-        "timestamp": 1751895651
       }
     },
     {

@@ -7,7 +7,7 @@ description: Systematic performance bottleneck analysis and optimization across 
 
 ## Context
 
-- Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "session-$(date +%s)"`
+- Session ID: !`gdate +%s%N 2>/dev/null || date +%s000000000 2>/dev/null || echo "session-$(date +%s)000000000"`
 - Target system: $ARGUMENTS
 - Current system load: !`uptime | awk -F'load average:' '{print $2}' || echo "Load info unavailable"`
 - Memory usage: !`free -h 2>/dev/null | head -2 || vm_stat 2>/dev/null | head -5 || echo "Memory info unavailable"`
@@ -122,25 +122,33 @@ CATCH (system_access_denied):
 - Continue with limited baseline data
 - Log fallback strategy in session notes
 
-````
 CATCH (monitoring_tool_missing):
 
 - Document missing monitoring capabilities in session state
 - Create fallback analysis strategy using available system tools
 - Save monitoring gap analysis to session state
-- Continue with manual profiling approach`
+- Continue with manual profiling approach
 
 STEP 3: Multi-Dimensional Bottleneck Analysis
 
 Think deeply about the optimal approach for comprehensive performance analysis across all system layers.
 
-Use parallel sub-agents for comprehensive bottleneck discovery:
+**Sub-Agent Coordination Strategy:**
 
-- **Agent 1**: CPU and Memory Performance Analysis
-- **Agent 2**: Database Performance Analysis
-- **Agent 3**: Network and I/O Analysis
-- **Agent 4**: Application Code Profiling
-- **Agent 5**: Infrastructure Monitoring Assessment
+Use 5 parallel sub-agents for comprehensive bottleneck discovery:
+
+- **Agent 1 (CPU/Memory)**: Analyze CPU utilization patterns, memory allocation, garbage collection pressure, and system resource contention
+- **Agent 2 (Database)**: Examine query performance, index usage, connection pooling, and database-specific bottlenecks
+- **Agent 3 (Network/I-O)**: Investigate network latency, bandwidth utilization, disk I/O patterns, and storage performance
+- **Agent 4 (Application Code)**: Profile application logic, identify algorithmic inefficiencies, and code-level performance issues
+- **Agent 5 (Infrastructure)**: Assess monitoring tools, deployment configuration, and system architecture bottlenecks
+
+**Agent Coordination Protocol:**
+
+- Each agent saves findings to: /tmp/agent-{1-5}-results-$SESSION_ID.json
+- Agents work independently on non-overlapping system layers
+- Main agent synthesizes results after all sub-agents complete
+- Checkpoint created after each agent completes: agent_{N}_analysis_complete
 
 FOR EACH analysis dimension IN parallel:
 
@@ -161,7 +169,7 @@ Execute systematic bottleneck identification across all system components:
 // Bottleneck analysis structure
 {
   "bottleneck_type": "cpu|memory|io|network|database|cache|algorithm",
-  "severity": "low|medium|high|critical", 
+  "severity": "low|medium|high|critical",
   "description": "Human-readable bottleneck description",
   "impact": "Performance impact assessment",
   "location": "Code/system location of bottleneck",
@@ -250,7 +258,7 @@ FOR EACH discovered bottleneck:
   - IF high_system_time: RECOMMEND I/O optimization, batch operations
   - IF high_iowait: RECOMMEND storage optimization, async operations
 
-- **Memory Optimization Strategy**: 
+- **Memory Optimization Strategy**:
   - IF memory_leaks: RECOMMEND object pooling, proper cleanup
   - IF gc_pressure: RECOMMEND data structure optimization, streaming
   - IF allocation_patterns: RECOMMEND memory-efficient algorithms
@@ -262,13 +270,12 @@ FOR EACH discovered bottleneck:
 
 - Create optimization priority matrix based on:
   - Performance impact potential (high/medium/low)
-  - Implementation effort (high/medium/low) 
+  - Implementation effort (high/medium/low)
   - Risk level (high/medium/low)
   - Resource requirements
 
 - Generate implementation roadmap: /tmp/optimization-roadmap-$SESSION_ID.json
 - Save checkpoint: optimization_strategy_complete
-```
 
 STEP 5: Continuous Monitoring Setup
 
@@ -339,28 +346,32 @@ FOR EACH detected database type:
 **Database Analysis Execution:**
 
 CASE database_type:
-  WHEN "postgresql":
-    - Execute PostgreSQL performance analysis
-    - Query pg_stat_statements for slow queries
-    - Analyze index usage and recommendations
-    - Check connection pool status
-    
-  WHEN "mysql":
-    - Execute MySQL performance analysis  
-    - Query performance_schema for slow queries
-    - Analyze index efficiency
-    - Check connection and lock status
-    
-  WHEN "mongodb":
-    - Execute MongoDB performance analysis
-    - Analyze slow operations from profiler
-    - Check index usage patterns
-    - Analyze replica set performance
-    
-  DEFAULT:
-    - Document unsupported database type
-    - Recommend general database optimization practices
-    - Continue with application-level analysis
+WHEN "postgresql":
+
+- Execute PostgreSQL performance analysis
+- Query pg_stat_statements for slow queries
+- Analyze index usage and recommendations
+- Check connection pool status
+
+WHEN "mysql":
+
+- Execute MySQL performance analysis\
+- Query performance_schema for slow queries
+- Analyze index efficiency
+- Check connection and lock status
+
+WHEN "mongodb":
+
+- Execute MongoDB performance analysis
+- Analyze slow operations from profiler
+- Check index usage patterns
+- Analyze replica set performance
+
+DEFAULT:
+
+- Document unsupported database type
+- Recommend general database optimization practices
+- Continue with application-level analysis
 
 **PostgreSQL Performance Analysis:**
 
@@ -480,10 +491,9 @@ FINALLY:
 
 - Update session state: phase = "completed"
 - Archive analysis artifacts for future reference
-- Clean up temporary session files: /tmp/*-$SESSION_ID-*
+- Clean up temporary session files: /tmp/_-$SESSION_ID._
 - Generate session completion summary
 - Provide next steps and follow-up recommendations
-```
 
 ## Integration and Expected Outcomes
 
@@ -506,12 +516,14 @@ FINALLY:
 ### Performance Improvement Examples
 
 **Before Optimization:**
+
 - Average response time: 2.5 seconds
 - CPU utilization: 95%
 - Database query time: 1.2 seconds
 - Memory usage: 92%
 
 **After Optimization (Expected):**
+
 - Average response time: 0.8 seconds (68% improvement)
 - CPU utilization: 45% (53% reduction)
 - Database query time: 0.3 seconds (75% improvement)
@@ -523,11 +535,11 @@ FINALLY:
 - **Bottleneck Resolution**: 90%+ of critical issues addressed
 - **Monitoring Coverage**: 100% of system components monitored
 - **Optimization ROI**: 3:1 performance improvement to effort ratio
-```
 
 ## Session State Management
 
 **State Files Created:**
+
 - `/tmp/bottleneck-analysis-$SESSION_ID.json` - Main session state
 - `/tmp/performance-baseline-$SESSION_ID.json` - System baseline metrics
 - `/tmp/bottleneck-results-$SESSION_ID.json` - Analysis findings
@@ -536,6 +548,7 @@ FINALLY:
 - `/tmp/bottleneck-final-report-$SESSION_ID.json` - Comprehensive report
 
 **Resumability:**
+
 - Session can be resumed from any checkpoint
 - Partial analysis results preserved across sessions
 - State transitions tracked for workflow continuation
@@ -544,6 +557,7 @@ FINALLY:
 ### Command Execution Summary
 
 **Workflow Overview:**
+
 1. **Initialization** → Architecture detection and session setup
 2. **Baseline** → Performance metrics collection
 3. **Analysis** → Multi-dimensional bottleneck discovery (parallel sub-agents)
@@ -552,6 +566,7 @@ FINALLY:
 6. **Reporting** → Comprehensive analysis and next steps
 
 **Expected Deliverables:**
+
 - Comprehensive bottleneck analysis report
 - Prioritized optimization roadmap
 - Performance monitoring configuration
@@ -560,8 +575,9 @@ FINALLY:
 - Performance regression detection framework
 
 **Performance Impact:**
+
 - **Analysis Speed**: 5x faster with parallel sub-agent execution
 - **Coverage**: 100% of system layers (CPU, memory, database, network, I/O)
 - **Accuracy**: Evidence-based bottleneck identification with metrics
 - **Actionability**: Specific optimization steps with effort estimates
-````
+- **Token Efficiency**: Multi-agent approach optimizes context usage across analysis domains

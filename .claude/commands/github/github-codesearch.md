@@ -1,6 +1,6 @@
 ---
-allowed-tools: WebFetch
-description: Search GitHub for code using GitHub's search API (requires authentication)
+allowed-tools: Bash(gh api:*), Bash(gh auth:*)
+description: Search GitHub for code using GitHub CLI
 ---
 
 ## Context
@@ -8,6 +8,7 @@ description: Search GitHub for code using GitHub's search API (requires authenti
 - Session ID: !`gdate +%s%N`
 - Search query: $ARGUMENTS
 - Current directory: !`pwd`
+- GitHub CLI auth status: !`gh auth status`
 
 ## Your task
 
@@ -16,15 +17,17 @@ Search GitHub for code using the provided query and display the results in a for
 Steps:
 
 1. Validate that a search query was provided
-2. Make a request to GitHub's search API using the query
-3. Parse and format the search results
-4. Display the results with:
+2. Check GitHub CLI authentication status
+3. If not authenticated, prompt user to run `gh auth login`
+4. Use GitHub CLI to search for code: `gh api search/code --raw-field q="$ARGUMENTS"`
+5. Parse and format the search results
+6. Display the results with:
    - Repository name and description
    - File path and relevant code snippet
    - Direct link to the file on GitHub
    - Total number of results found
 
-API endpoint: https://api.github.com/search/code?q={query}
+GitHub CLI command: `gh api search/code --method GET --raw-field q="QUERY"`
 
 Example queries:
 
@@ -36,19 +39,18 @@ Example queries:
 Handle errors gracefully:
 
 - If no query provided, show usage examples
-- If authentication required (401 error):
+- If GitHub CLI not authenticated:
+  - Instruct user to run `gh auth login`
   - Explain that GitHub code search requires authentication
-  - Provide instructions on setting up GitHub token or using GitHub CLI
-  - Suggest alternative: use repository search instead
 - If API rate limit exceeded, inform user to try again later
 - If no results found, suggest refining the search query
-- If API error occurs, display the error message
+- If GitHub CLI error occurs, display the error message
 
-**Authentication Options:**
+**Authentication Setup:**
 
-1. Use GitHub CLI: `gh auth login` (recommended)
-2. Set GitHub token in environment variable
-3. Use repository search as fallback (no authentication required)
+1. Install GitHub CLI: `brew install gh` (macOS) or equivalent
+2. Authenticate: `gh auth login`
+3. Verify: `gh auth status`
 
 Format output as:
 

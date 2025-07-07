@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 117,
-  "inProgress": 1,
-  "lastUpdated": "2025-07-07T15:18:41.157Z",
+  "completed": 126,
+  "inProgress": 18,
+  "lastUpdated": "2025-07-07T15:23:26.326Z",
   "commands": [
     {
       "id": "001",
@@ -2544,8 +2544,8 @@
       "name": "containerize",
       "filepath": "claude/commands/ops/deploy/containerize.md",
       "namespace": "ops/deploy",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:07.510Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2553,31 +2553,39 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901667510rlti0tpnd6",
+        "timestamp": 1751901667
+      }
     },
     {
       "id": "120",
       "name": "deploy",
       "filepath": "claude/commands/ops/deploy/deploy.md",
       "namespace": "ops/deploy",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:23:10.139Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "subAgentPatternsAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": null
+      }
     },
     {
       "id": "121",
       "name": "health-check",
       "filepath": "claude/commands/ops/infra/health-check.md",
       "namespace": "ops/infra",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:12.952Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": true,
@@ -2585,31 +2593,39 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901672952ybkjymtnrx",
+        "timestamp": 1751901672
+      }
     },
     {
       "id": "122",
       "name": "infra-status",
       "filepath": "claude/commands/ops/infra/infra-status.md",
       "namespace": "ops/infra",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:23:12.355Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": null
+      }
     },
     {
       "id": "123",
       "name": "monitor",
       "filepath": "claude/commands/ops/monitor/monitor.md",
       "namespace": "ops/monitor",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:15.324Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2617,31 +2633,39 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901675324g9qckb0o56",
+        "timestamp": 1751901675
+      }
     },
     {
       "id": "124",
       "name": "observe",
       "filepath": "claude/commands/ops/monitor/observe.md",
       "namespace": "ops/monitor",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:22:58.063Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": null
+      }
     },
     {
       "id": "125",
       "name": "benchmark",
       "filepath": "claude/commands/ops/perf/benchmark.md",
       "namespace": "ops/perf",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:20.532Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2649,15 +2673,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901680532rvn3zqkos0",
+        "timestamp": 1751901680
+      }
     },
     {
       "id": "126",
       "name": "perf",
       "filepath": "claude/commands/ops/perf/perf.md",
       "namespace": "ops/perf",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:21.601Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2665,63 +2692,80 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901681601xo3skkpoyk",
+        "timestamp": 1751901681
+      }
     },
     {
       "id": "127",
       "name": "scaffold-deno-fresh",
       "filepath": "claude/commands/scaffold/deno/scaffold-deno-fresh.md",
       "namespace": "scaffold/deno",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:23:26.325Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": null
+      }
     },
     {
       "id": "128",
       "name": "scaffold-deno-script",
       "filepath": "claude/commands/scaffold/deno/scaffold-deno-script.md",
       "namespace": "scaffold/deno",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:23:09.341Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "modernToolsIntegrated"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": null
+      }
     },
     {
       "id": "129",
       "name": "scaffold-go-connect",
       "filepath": "claude/commands/scaffold/go/scaffold-go-connect.md",
       "namespace": "scaffold/go",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:23:15.135Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": null
+      }
     },
     {
       "id": "130",
       "name": "scaffold-go-http-server",
       "filepath": "claude/commands/scaffold/go/scaffold-go-http-server.md",
       "namespace": "scaffold/go",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:35.154Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2729,47 +2773,59 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901695154i083xnbptg",
+        "timestamp": 1751901695
+      }
     },
     {
       "id": "131",
       "name": "scaffold-java-quarkus",
       "filepath": "claude/commands/scaffold/java/scaffold-java-quarkus.md",
       "namespace": "scaffold/java",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:23:19.927Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": null
+      }
     },
     {
       "id": "132",
       "name": "scaffold-rust-axum",
       "filepath": "claude/commands/scaffold/rust/scaffold-rust-axum.md",
       "namespace": "scaffold/rust",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:23:24.853Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "productionReadyTemplates"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": null
+      }
     },
     {
       "id": "133",
       "name": "scaffold-rust-cli",
       "filepath": "claude/commands/scaffold/rust/scaffold-rust-cli.md",
       "namespace": "scaffold/rust",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:39.017Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2777,15 +2833,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17519016990160kldnbqqd8",
+        "timestamp": 1751901699
+      }
     },
     {
       "id": "134",
       "name": "audit",
       "filepath": "claude/commands/security/audit/audit.md",
       "namespace": "security/audit",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:41.202Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2793,15 +2852,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901701202dlbyrbbqll",
+        "timestamp": 1751901701
+      }
     },
     {
       "id": "135",
       "name": "secrets-audit",
       "filepath": "claude/commands/security/audit/secrets-audit.md",
       "namespace": "security/audit",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:44.186Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2809,15 +2871,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901704186zei9x0sqzq",
+        "timestamp": 1751901704
+      }
     },
     {
       "id": "136",
       "name": "harden",
       "filepath": "claude/commands/security/model/harden.md",
       "namespace": "security/model",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:45.865Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2825,15 +2890,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901705865xr9i2oar7g",
+        "timestamp": 1751901705
+      }
     },
     {
       "id": "137",
       "name": "threat-model",
       "filepath": "claude/commands/security/model/threat-model.md",
       "namespace": "security/model",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:47.214Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": true,
@@ -2841,15 +2909,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901707213tnudv5erdd",
+        "timestamp": 1751901707
+      }
     },
     {
       "id": "138",
       "name": "coverage",
       "filepath": "claude/commands/test/analyze/coverage.md",
       "namespace": "test/analyze",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:50.885Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2857,15 +2928,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901710885ac7e8mtrmo",
+        "timestamp": 1751901710
+      }
     },
     {
       "id": "139",
       "name": "debug",
       "filepath": "claude/commands/test/debug/debug.md",
       "namespace": "test/debug",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:52.770Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2873,15 +2947,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901712770py7unjcrup",
+        "timestamp": 1751901712
+      }
     },
     {
       "id": "140",
       "name": "flaky-fix",
       "filepath": "claude/commands/test/fix/flaky-fix.md",
       "namespace": "test/fix",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:54.418Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2889,15 +2966,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901714418tp86981s18",
+        "timestamp": 1751901714
+      }
     },
     {
       "id": "141",
       "name": "integration-test",
       "filepath": "claude/commands/test/generate/integration-test.md",
       "namespace": "test/generate",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:56.084Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2905,15 +2985,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901716084bl3yma5s7m",
+        "timestamp": 1751901716
+      }
     },
     {
       "id": "142",
       "name": "test-gen",
       "filepath": "claude/commands/test/generate/test-gen.md",
       "namespace": "test/generate",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:57.537Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2921,15 +3004,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901717537rxtxck0sf0",
+        "timestamp": 1751901717
+      }
     },
     {
       "id": "143",
       "name": "load-test",
       "filepath": "claude/commands/test/run/load-test.md",
       "namespace": "test/run",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:21:59.316Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2937,15 +3023,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901719316hcb2zo6slc",
+        "timestamp": 1751901719
+      }
     },
     {
       "id": "144",
       "name": "tdd",
       "filepath": "claude/commands/test/run/tdd.md",
       "namespace": "test/run",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:22:01.090Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2953,7 +3042,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17519017210900g23dhosra",
+        "timestamp": 1751901721
+      }
     },
     {
       "id": "145",

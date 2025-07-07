@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 81,
-  "inProgress": 5,
-  "lastUpdated": "2025-07-07T14:58:04.fZ",
+  "completed": 82,
+  "inProgress": 14,
+  "lastUpdated": "2025-07-07T14:59:04.385Z",
   "commands": [
     {
       "id": "001",
@@ -1873,8 +1873,29 @@
       "name": "context-load-testing-deno",
       "filepath": "claude/commands/context/testing/context-load-testing-deno.md",
       "namespace": "context/testing",
+      "status": "completed",
+      "lastModified": "2025-07-07T14:58:25.612Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded"
+      ],
+      "metrics": {
+        "hadFrontMatter": false,
+        "hadDynamicContext": false,
+        "hadProgrammaticStructure": false,
+        "hadStateManagement": false
+      }
+    },
+    {
+      "id": "087",
+      "name": "context-load-testing-go",
+      "filepath": "claude/commands/context/testing/context-load-testing-go.md",
+      "namespace": "context/testing",
       "status": "in-progress",
-      "lastModified": "2025-07-07T14:56:49.816Z",
+      "lastModified": "2025-07-07T14:58:22.500Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1883,33 +1904,17 @@
         "hadStateManagement": false
       },
       "claimedBy": {
-        "sessionId": "1751900209816cu2vy631bz9",
-        "timestamp": 1751900209
+        "sessionId": "1751900302500cg1688h1d1l",
+        "timestamp": 1751900302
       }
-    },
-    {
-      "id": "087",
-      "name": "context-load-testing-go",
-      "filepath": "claude/commands/context/testing/context-load-testing-go.md",
-      "namespace": "context/testing",
-      "status": "pending",
-      "lastModified": null,
-      "improvements": [],
-      "metrics": {
-        "hadFrontMatter": false,
-        "hadDynamicContext": false,
-        "hadProgrammaticStructure": false,
-        "hadStateManagement": false
-      },
-      "claimedBy": null
     },
     {
       "id": "088",
       "name": "context-load-testing-java",
       "filepath": "claude/commands/context/testing/context-load-testing-java.md",
       "namespace": "context/testing",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:58:24.081Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1917,15 +1922,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751900304081740elt21dbx",
+        "timestamp": 1751900304
+      }
     },
     {
       "id": "089",
       "name": "context-load-testing-rust",
       "filepath": "claude/commands/context/testing/context-load-testing-rust.md",
       "namespace": "context/testing",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:58:26.288Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1933,15 +1941,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751900306288ff94zek1drp",
+        "timestamp": 1751900306
+      }
     },
     {
       "id": "090",
       "name": "context-load-fresh-connect-stack",
       "filepath": "claude/commands/context/web/context-load-fresh-connect-stack.md",
       "namespace": "context/web",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:58:33.028Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1949,15 +1960,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751900313028bxf4wo21enn",
+        "timestamp": 1751900313
+      }
     },
     {
       "id": "091",
       "name": "context-load-gh-cli",
       "filepath": "claude/commands/context/web/context-load-gh-cli.md",
       "namespace": "context/web",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:58:37.499Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1965,15 +1979,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17519003174994aqgzmh1few",
+        "timestamp": 1751900317
+      }
     },
     {
       "id": "092",
       "name": "context-load-github-actions",
       "filepath": "claude/commands/context/web/context-load-github-actions.md",
       "namespace": "context/web",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:58:38.591Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1981,15 +1998,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751900318591ra06bse1fje",
+        "timestamp": 1751900318
+      }
     },
     {
       "id": "093",
       "name": "context-load-offline-data-platform",
       "filepath": "claude/commands/context/web/context-load-offline-data-platform.md",
       "namespace": "context/web",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:58:46.365Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -1997,15 +2017,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751900326365yr5po071fqj",
+        "timestamp": 1751900326
+      }
     },
     {
       "id": "094",
       "name": "context-load-tailwind",
       "filepath": "claude/commands/context/web/context-load-tailwind.md",
       "namespace": "context/web",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:58:58.983Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2013,15 +2036,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751900338983cpks6lz1g57",
+        "timestamp": 1751900338
+      }
     },
     {
       "id": "095",
       "name": "context-load-temporal",
       "filepath": "claude/commands/context/web/context-load-temporal.md",
       "namespace": "context/web",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:58:59.841Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2029,15 +2055,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751900339841c9hn9is1g9c",
+        "timestamp": 1751900339
+      }
     },
     {
       "id": "096",
       "name": "explain",
       "filepath": "claude/commands/docs/analyze/explain.md",
       "namespace": "docs/analyze",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T14:59:04.379Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": false,
@@ -2045,7 +2074,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17519003443790788krw1gs2",
+        "timestamp": 1751900344
+      }
     },
     {
       "id": "097",

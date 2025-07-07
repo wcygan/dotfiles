@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 39,
-  "inProgress": 17,
-  "lastUpdated": "2025-07-07T13:30:03.583Z",
+  "completed": 40,
+  "inProgress": 16,
+  "lastUpdated": "2025-07-07T13:30:19.771Z",
   "commands": [
     {
       "id": "001",
@@ -908,18 +908,19 @@
       "name": "map",
       "filepath": "claude/commands/analyze/code/map.md",
       "namespace": "analyze/code",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T13:27:48.137Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T13:30:19.771Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751894868137xu0rkrq9ad",
-        "timestamp": 1751894868
       }
     },
     {

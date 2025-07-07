@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 113,
-  "inProgress": 5,
-  "lastUpdated": "2025-07-07T15:16:34.867Z",
+  "completed": 115,
+  "inProgress": 3,
+  "lastUpdated": "2025-07-07T15:17:21.228Z",
   "commands": [
     {
       "id": "001",
@@ -2388,18 +2388,21 @@
       "name": "ideate-commands",
       "filepath": "claude/commands/meta/command/ideate-commands.md",
       "namespace": "meta/command",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:14:05.438Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:17:21.228Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751901245438ucbj4rubqu",
-        "timestamp": 1751901245
       }
     },
     {
@@ -2469,18 +2472,25 @@
       "name": "search-smart",
       "filepath": "claude/commands/meta/search/search-smart.md",
       "namespace": "meta/search",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:14:14.114Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:16:51Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
-        "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17519012541144j1uhorda0",
-        "timestamp": 1751901254
+        "hadStateManagement": false,
+        "hadSubAgentPatterns": false,
+        "hadExtendedThinking": false,
+        "linesOfCode": 297,
+        "complexityScore": 8.5
       }
     },
     {

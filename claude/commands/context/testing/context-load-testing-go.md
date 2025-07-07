@@ -30,6 +30,12 @@ STEP 1: Initialize comprehensive Go testing context session
     "sessionId": "$SESSION_ID",
     "timestamp": "ISO_8601_TIMESTAMP",
     "phase": "initialization",
+    "performance_metrics": {
+      "start_time": "ISO_8601_TIMESTAMP",
+      "phase_timings": {},
+      "agent_completion_times": {},
+      "total_duration": null
+    },
     "go_project_analysis": {
       "modules_count": "auto-detect",
       "test_files_count": "auto-detect",
@@ -40,7 +46,12 @@ STEP 1: Initialize comprehensive Go testing context session
     "documentation_sources": {},
     "focus_areas": [],
     "context_optimization": {},
-    "checkpoints": {}
+    "checkpoints": {},
+    "error_recovery": {
+      "failed_operations": [],
+      "recovery_attempts": [],
+      "partial_completions": []
+    }
   }
   ```
 - CREATE context workspace: `/tmp/go-testing-context-$SESSION_ID/`
@@ -49,6 +60,10 @@ STEP 1: Initialize comprehensive Go testing context session
 STEP 2: Go project structure analysis and testing framework detection
 
 Think deeply about the optimal context loading strategy based on the detected Go project characteristics and testing patterns.
+
+IF complexity appears high (>50 test files OR multiple frameworks):
+
+- Think harder about enterprise Go testing architecture patterns and optimal sub-agent coordination strategies
 
 - ANALYZE project structure from Context section
 - DETERMINE testing complexity and framework usage patterns
@@ -82,14 +97,22 @@ IF complexity_level == "enterprise":
 - USE Task tool for comprehensive parallel documentation loading:
   1. **Standard Library Deep Dive Agent**: Core testing package, subtests, benchmarks
      - SAVE findings to: `/tmp/go-testing-context-$SESSION_ID/stdlib-deep-dive.json`
+     - CHECKPOINT: Standard library analysis complete
   2. **Framework Mastery Agent**: Testify, Ginkgo, GoMock advanced patterns
      - SAVE findings to: `/tmp/go-testing-context-$SESSION_ID/framework-mastery.json`
+     - CHECKPOINT: Framework analysis complete
   3. **Performance Testing Agent**: Benchmarking, profiling, performance testing
      - SAVE findings to: `/tmp/go-testing-context-$SESSION_ID/performance-testing.json`
+     - CHECKPOINT: Performance analysis complete
   4. **Testing Architecture Agent**: Test organization, CI/CD, coverage strategies
      - SAVE findings to: `/tmp/go-testing-context-$SESSION_ID/testing-architecture.json`
+     - CHECKPOINT: Architecture analysis complete
   5. **Advanced Patterns Agent**: Integration testing, mocking, race detection
      - SAVE findings to: `/tmp/go-testing-context-$SESSION_ID/advanced-patterns.json`
+     - CHECKPOINT: Advanced patterns analysis complete
+
+  - COORDINATE: Wait for all agents to complete before synthesis
+  - VALIDATE: Ensure all checkpoint files exist before proceeding
 
 ELSE IF complexity_level == "moderate":
 
@@ -137,10 +160,19 @@ ELSE:
 
 CATCH (documentation_loading_failed):
 
-- LOG failed sources to session state
+- LOG failed sources to session state with specific error details
+- ATTEMPT alternative documentation sources
 - CONTINUE with available documentation
-- PROVIDE manual context loading instructions
+- PROVIDE manual context loading instructions with recovery steps
 - SAVE fallback documentation references
+- UPDATE state with partial completion status
+
+CATCH (sub_agent_coordination_failed):
+
+- LOG coordination issues and failed checkpoints
+- ATTEMPT recovery with reduced agent count
+- MERGE available partial results
+- CONTINUE with degraded but functional analysis
 
 STEP 4: Go-specific testing context organization and synthesis
 
@@ -222,17 +254,20 @@ STEP 6: Multi-phase testing implementation guidance
 
 STEP 7: State management and comprehensive artifact creation
 
-- UPDATE session state with Go testing analysis results
+- UPDATE session state with Go testing analysis results and performance metrics
+- RECORD phase completion times and agent performance statistics
 - CREATE comprehensive testing guide: `/tmp/go-testing-context-$SESSION_ID/comprehensive-guide.md`
 - GENERATE testing checklist: `/tmp/go-testing-context-$SESSION_ID/testing-checklist.md`
 - SAVE Go-specific examples: `/tmp/go-testing-context-$SESSION_ID/go-examples/`
 - CREATE framework integration guide: `/tmp/go-testing-context-$SESSION_ID/framework-guide.md`
 - DOCUMENT testing architecture decisions: `/tmp/go-testing-context-$SESSION_ID/architecture-decisions.md`
+- GENERATE performance report: `/tmp/go-testing-context-$SESSION_ID/performance-metrics.json`
 
 STEP 8: Advanced Go testing enhancement for complex projects
 
 IF complexity_level == "enterprise" AND multiple sub-agents used:
 
+- Ultrathink about enterprise Go testing coordination and cross-service integration patterns
 - COORDINATE cross-domain testing analysis synthesis
 - IDENTIFY integration points between testing strategies
 - GENERATE enterprise Go testing guidance:

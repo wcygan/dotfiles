@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 146,
-  "inProgress": 12,
-  "lastUpdated": "2025-07-07T15:26:57.386Z",
+  "completed": 149,
+  "inProgress": 9,
+  "lastUpdated": "2025-07-07T15:28:10.696Z",
   "commands": [
     {
       "id": "001",
@@ -2921,18 +2921,21 @@
       "name": "threat-model",
       "filepath": "claude/commands/security/model/threat-model.md",
       "namespace": "security/model",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:47.214Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:28:00.552Z",
+      "improvements": [
+        "frontMatterUpdated",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": true,
         "hadDynamicContext": true,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751901707213tnudv5erdd",
-        "timestamp": 1751901707
       }
     },
     {
@@ -3042,18 +3045,20 @@
       "name": "load-test",
       "filepath": "claude/commands/test/run/load-test.md",
       "namespace": "test/run",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:21:59.316Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:28:10.696Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751901719316hcb2zo6slc",
-        "timestamp": 1751901719
       }
     },
     {
@@ -3266,18 +3271,21 @@
       "name": "start",
       "filepath": "claude/commands/workflow/start/start.md",
       "namespace": "workflow/start",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:56.510Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:27:58.631Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded",
+        "extendedThinkingAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751901836510u0ujkcryw4",
-        "timestamp": 1751901836
       }
     },
     {

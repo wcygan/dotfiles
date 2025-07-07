@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 101,
-  "inProgress": 8,
-  "lastUpdated": "2025-07-07T15:12:45.220Z",
+  "completed": 103,
+  "inProgress": 6,
+  "lastUpdated": "2025-07-07T15:13:25.487Z",
   "commands": [
     {
       "id": "001",
@@ -2158,18 +2158,21 @@
       "name": "docs-add",
       "filepath": "claude/commands/docs/manage/docs-add.md",
       "namespace": "docs/manage",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:10:58.057Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:13:25.487Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "extendedThinkingAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "1751901058057m4q7psb1rv",
-        "timestamp": 1751901058
       }
     },
     {
@@ -2312,18 +2315,20 @@
       "name": "pr-update",
       "filepath": "claude/commands/git/pr/pr-update.md",
       "namespace": "git/pr",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:11:38.965Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:13:10.297Z",
+      "improvements": [
+        "frontMatterEnhanced",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "errorHandlingEnhanced"
+      ],
       "metrics": {
         "hadFrontMatter": true,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751901098965f32pbex66u",
-        "timestamp": 1751901098
       }
     },
     {

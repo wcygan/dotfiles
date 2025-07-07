@@ -1,7 +1,161 @@
 ---
-allowed-tools: Bash(gh pr edit:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr ready:*), Bash(gh pr close:*), Bash(gh pr reopen:*), Bash(gh label list:*), Bash(git branch:*), Bash(date:*)
-description: Update existing pull requests
+allowed-tools: Bash(gh pr edit:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr ready:*), Bash(gh pr close:*), Bash(gh pr reopen:*), Bash(gh label list:*), Bash(git branch:*), Bash(git status:*), Bash(gdate:*)
+description: Update existing pull requests with comprehensive metadata management
 ---
+
+## Context
+
+- Session ID: !`gdate +%s%N`
+- Current PR status: !`gh pr list --head $(git branch --show-current) --json number,title,state,url -q '.[0] // {"number": "none", "title": "No PR found", "state": "N/A", "url": "N/A"}' 2>/dev/null || echo '{"number": "none", "title": "No PR found", "state": "N/A", "url": "N/A"}'`
+- Git branch: !`git branch --show-current`
+- Recent commits: !`git log --oneline -3`
+- Available labels: !`gh label list --json name -q '.[].name' | head -10 | tr '\n' ',' | sed 's/,$//' || echo "No labels found"`
+- Repository info: !`gh repo view --json name,owner -q '.owner.login + "/" + .name' || echo "No repo info"`
+
+## Your Task
+
+STEP 1: Initialize PR update session
+
+- CREATE session state file: `/tmp/pr-update-state-$SESSION_ID.json`
+- SET initial state:
+  ```json
+  {
+    "sessionId": "$SESSION_ID",
+    "timestamp": "ISO_8601_TIMESTAMP",
+    "target_pr": null,
+    "current_branch": "DETECTED_BRANCH",
+    "requested_updates": [],
+    "validation_results": {},
+    "execution_log": []
+  }
+  ```
+
+STEP 2: Parse arguments and determine target PR
+
+IF $ARGUMENTS contains PR number:
+
+- EXTRACT PR number from arguments
+- VALIDATE PR exists and is accessible
+- SET target_pr in session state
+
+ELSE:
+
+- USE current branch PR from Context section
+- IF no current branch PR found:
+  - LIST available PRs for user selection
+  - EXIT with guidance on PR selection
+
+STEP 3: Validate PR state and permissions
+
+TRY:
+
+- VERIFY PR exists and is not merged/closed (unless explicitly updating closed PR)
+- CHECK write permissions on repository
+- VALIDATE current PR state allows requested changes
+- SAVE validation results to session state
+
+CATCH (pr_access_error):
+
+- LOG error details to session state
+- PROVIDE helpful error message with next steps
+- SUGGEST alternative approaches (permissions, PR selection)
+
+STEP 4: Parse and validate update requests
+
+FOR EACH update request in $ARGUMENTS:
+
+- PARSE update type (title, body, labels, reviewers, milestone, state)
+- VALIDATE update syntax and values
+- CHECK for conflicting updates
+- ADD to requested_updates in session state
+
+STEP 5: Execute PR updates systematically
+
+TRY:
+
+- FOR EACH validated update request:
+  - EXECUTE update using appropriate gh command
+  - VERIFY update succeeded
+  - LOG execution result to session state
+  - HANDLE partial failures gracefully
+
+**Update Execution Patterns:**
+
+**Title Updates:**
+
+```bash
+gh pr edit $PR_NUMBER --title "$NEW_TITLE"
+```
+
+**Body Updates:**
+
+```bash
+gh pr edit $PR_NUMBER --body "$(cat <<'EOF'
+$NEW_BODY_CONTENT
+EOF
+)"
+```
+
+**Label Management:**
+
+```bash
+# Add labels
+gh pr edit $PR_NUMBER --add-label "label1,label2"
+
+# Remove labels
+gh pr edit $PR_NUMBER --remove-label "label1,label2"
+```
+
+**Reviewer Management:**
+
+```bash
+# Add reviewers
+gh pr edit $PR_NUMBER --add-reviewer "user1,user2,@team"
+
+# Remove reviewers
+gh pr edit $PR_NUMBER --remove-reviewer "user1"
+```
+
+**State Changes:**
+
+```bash
+# Ready for review
+gh pr ready $PR_NUMBER
+
+# Convert to draft
+gh pr edit $PR_NUMBER --draft
+
+# Close/reopen
+gh pr close $PR_NUMBER
+gh pr reopen $PR_NUMBER
+```
+
+CATCH (update_execution_failed):
+
+- LOG specific failure details
+- CONTINUE with remaining updates if possible
+- PROVIDE rollback guidance for partial failures
+- SAVE recovery instructions to session state
+
+STEP 6: Verify updates and generate summary
+
+- FETCH updated PR information
+- COMPARE with requested changes
+- GENERATE summary of successful updates
+- IDENTIFY any failed or partial updates
+- PROVIDE next steps for incomplete updates
+
+STEP 7: Session cleanup and reporting
+
+- ARCHIVE session state: `/tmp/pr-update-archive-$SESSION_ID.json`
+- REPORT update summary with PR URL
+- CLEAN UP temporary session files
+- PROVIDE follow-up recommendations
+
+FINALLY:
+
+- ENSURE session state is preserved for debugging
+- LOG completion status and timestamp
 
 # /pr-update
 

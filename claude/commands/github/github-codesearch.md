@@ -19,7 +19,7 @@ Steps:
 1. Validate that a search query was provided
 2. Check GitHub CLI authentication status
 3. If not authenticated, prompt user to run `gh auth login`
-4. Use GitHub CLI to search for code: `gh api search/code --raw-field q="$ARGUMENTS"`
+4. Use GitHub CLI to search for code with text matches: `gh api search/code --header "Accept: application/vnd.github.text-match+json" --raw-field q="$ARGUMENTS"`
 5. Parse and format the search results
 6. Display the results with:
    - Repository name and description
@@ -27,7 +27,7 @@ Steps:
    - Direct link to the file on GitHub
    - Total number of results found
 
-GitHub CLI command: `gh api search/code --method GET --raw-field q="QUERY"`
+GitHub CLI command: `gh api search/code --method GET --header "Accept: application/vnd.github.text-match+json" --raw-field q="QUERY"`
 
 Example queries:
 
@@ -63,9 +63,16 @@ Found {total_count} results:
 📄 {file_path}
 🔗 {html_url}
 
-{code_snippet}
+💻 Code snippet:
+{text_matches[].fragment with highlighted matches}
 
 ---
 ```
+
+Extract code snippets from the `text_matches` array in the API response. Each text match contains:
+
+- `fragment`: The actual code snippet
+- `matches`: Array of highlighted match positions
+- Show match highlights using **bold** or similar formatting
 
 Limit display to first 10 results for readability.

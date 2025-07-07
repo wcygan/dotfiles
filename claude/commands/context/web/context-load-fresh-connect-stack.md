@@ -8,12 +8,12 @@ description: Load comprehensive context about Fresh + ConnectRPC full-stack arch
 - Session ID: !`gdate +%s%N`
 - Current directory: !`pwd`
 - Project structure: !`fd . -t d -d 3 | head -10 || echo "No directories found"`
-- Fresh indicators: !`fd "deno.json" . -d 2 | xargs -I {} sh -c 'echo "File: {}" && jq -r ".imports | keys[]?" "{}" 2>/dev/null | rg "@fresh" || echo "No Fresh imports"' 2>/dev/null || echo "No deno.json found"`
+- Fresh indicators: !`fd "deno.json" . -d 2 -x jq -r '.imports | keys[]? // empty' {} 2>/dev/null | rg "@fresh" || echo "No Fresh imports found"`
 - Go backend indicators: !`fd "go.mod" . -d 3 | head -3 || echo "No Go modules found"`
 - ConnectRPC patterns: !`rg "connectrpc|connect-go|@connectrpc" . --type typescript --type go | head -5 || echo "No ConnectRPC patterns found"`
 - Buf.build packages: !`rg "@buf/.*\.bufbuild" . --type json --type typescript | head -3 || echo "No buf.build packages found"`
 - Docker setup: !`fd "docker-compose.yml|Dockerfile" . -d 2 || echo "No Docker configuration found"`
-- Technology stack summary: !`echo "Frontend:" && (fd "deno.json" . -d 2 | wc -l | tr -d ' ') && echo "Backend:" && (fd "go.mod" . -d 3 | wc -l | tr -d ' ') && echo "Docker:" && (fd "docker-compose.yml" . -d 2 | wc -l | tr -d ' ')`
+- Technology stack summary: !`echo "Frontend: $(fd "deno.json" . -d 2 | wc -l | tr -d ' ') | Backend: $(fd "go.mod" . -d 3 | wc -l | tr -d ' ') | Docker: $(fd "docker-compose.yml" . -d 2 | wc -l | tr -d ' ')"`
 
 ## Your Task
 
@@ -47,6 +47,8 @@ STEP 1: Initialize comprehensive Fresh + ConnectRPC context loading session
 STEP 2: Project architecture detection and analysis
 
 TRY:
+
+- Think deeply about the optimal Fresh + ConnectRPC architecture patterns based on the detected project structure
 
 - ANALYZE project structure from Context section
 - DETERMINE Fresh + ConnectRPC architecture type:
@@ -82,7 +84,8 @@ STEP 3: Adaptive documentation loading based on detected architecture
 CASE architecture_type:
 WHEN "full_stack_fresh_connect":
 
-- USE Task tool for parallel documentation loading:
+- Think harder about full-stack integration patterns and potential architectural challenges
+- USE Task tool for parallel documentation loading with 5 specialized agents:
   1. **Fresh Architecture Agent**: Load Fresh 2.0 Islands, SSR, routing patterns
      - SAVE findings to: `/tmp/fresh-connect-context-$SESSION_ID/fresh-architecture.json`
   2. **ConnectRPC Integration Agent**: Load Go ConnectRPC, buf.build, protobuf patterns
@@ -124,39 +127,45 @@ TRY:
 **Core Framework Documentation:**
 
 1. **Fresh Framework Context**
-   - WebFetch: `https://fresh.deno.dev/docs/introduction`
+   - TRY WebFetch: `https://fresh.deno.dev/docs/introduction`
    - FOCUS: Islands architecture, SSR, routing, deployment
    - EXTRACT: Key concepts, integration patterns, best practices
+   - FALLBACK: Use embedded documentation if fetch fails
 
 2. **Fresh 2.0 Evolution**
-   - WebFetch: `https://deno.com/blog/an-update-on-fresh`
+   - TRY WebFetch: `https://deno.com/blog/an-update-on-fresh`
    - FOCUS: New features, migration guidance, alpha stability
    - EXTRACT: Production readiness, breaking changes, roadmap
+   - FALLBACK: Reference cached alpha documentation patterns
 
 3. **ConnectRPC Go Documentation**
-   - WebFetch: `https://connectrpc.com/docs/go/getting-started`
+   - TRY WebFetch: `https://connectrpc.com/docs/go/getting-started`
    - FOCUS: Service implementation, middleware, testing
    - EXTRACT: Best practices, error handling, performance patterns
+   - FALLBACK: Use embedded Go service patterns
 
 4. **ConnectRPC Web Integration**
-   - WebFetch: `https://connectrpc.com/docs/web/getting-started`
+   - TRY WebFetch: `https://connectrpc.com/docs/web/getting-started`
    - FOCUS: Browser client setup, transport configuration
    - EXTRACT: Integration patterns, debugging, optimization
+   - FALLBACK: Reference client setup examples below
 
 5. **Protocol Buffers Schema Design**
-   - WebFetch: `https://developers.google.com/protocol-buffers/docs/proto3`
+   - TRY WebFetch: `https://developers.google.com/protocol-buffers/docs/proto3`
    - FOCUS: Schema design, evolution, best practices
    - EXTRACT: Type safety, versioning, performance considerations
+   - FALLBACK: Use embedded protobuf best practices
 
 CATCH (documentation_fetch_failed):
 
-- LOG failed sources to session state
-- CONTINUE with available documentation
-- PROVIDE manual documentation references
-- SAVE fallback resources list
+- LOG failed sources to session state with specific error details
+- CONTINUE with available documentation and embedded examples
+- PROVIDE comprehensive manual documentation references
+- SAVE detailed fallback resources list with alternative sources
 
 STEP 5: Project-specific context organization and synthesis
 
+- Think deeply about integrating all loaded context into actionable guidance for the specific project architecture
 - ORGANIZE loaded context by architecture domains:
   - **Frontend Architecture**: Fresh Islands, SSR, client-side state
   - **Backend Services**: ConnectRPC handlers, middleware, testing
@@ -165,11 +174,12 @@ STEP 5: Project-specific context organization and synthesis
   - **Production Deployment**: Docker, monitoring, security
   - **Type Safety**: End-to-end type flow, schema evolution
 
-- SYNTHESIZE project-specific guidance:
-  - Integration with detected project structure
-  - Optimization for current technology stack
-  - Migration paths for architecture evolution
-  - Performance considerations for specific use cases
+- SYNTHESIZE project-specific guidance with comprehensive analysis:
+  - Integration patterns tailored to detected project structure
+  - Optimization strategies for current technology stack
+  - Migration paths for architecture evolution with risk assessment
+  - Performance considerations and bottleneck prevention
+  - Security best practices for the specific stack combination
 
 STEP 6: Session state management and context completion
 

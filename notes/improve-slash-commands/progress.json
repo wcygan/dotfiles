@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 97,
-  "inProgress": 9,
-  "lastUpdated": "2025-07-07T15:11:31.900Z",
+  "completed": 98,
+  "inProgress": 10,
+  "lastUpdated": "2025-07-07T15:11:36.148Z",
   "commands": [
     {
       "id": "001",
@@ -1951,18 +1951,19 @@
       "name": "context-load-fresh-connect-stack",
       "filepath": "claude/commands/context/web/context-load-fresh-connect-stack.md",
       "namespace": "context/web",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:09:15.923Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:11:33.868Z",
+      "improvements": [
+        "bashCommandReliability",
+        "extendedThinkingIntegration",
+        "errorHandlingEnhancement",
+        "subAgentCoordination"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
-      },
-      "claimedBy": {
-        "sessionId": "1751900955923a7esdus1zsz",
-        "timestamp": 1751900955
       }
     },
     {
@@ -2269,8 +2270,8 @@
       "name": "pr-create",
       "filepath": "claude/commands/git/pr/pr-create.md",
       "namespace": "git/pr",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:11:34.064Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": true,
@@ -2278,15 +2279,18 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901094064d0wye3z5r6",
+        "timestamp": 1751901094
+      }
     },
     {
       "id": "108",
       "name": "pr-review",
       "filepath": "claude/commands/git/pr/pr-review.md",
       "namespace": "git/pr",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:11:36.145Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": true,
@@ -2294,7 +2298,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "17519010961454mz83vl5y0",
+        "timestamp": 1751901096
+      }
     },
     {
       "id": "109",

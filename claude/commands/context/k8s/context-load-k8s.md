@@ -11,7 +11,7 @@ description: Load comprehensive Kubernetes documentation context with cluster-sp
 - K8s cluster info: !`kubectl cluster-info --short 2>/dev/null || echo "No cluster connection"`
 - K8s manifests: !`fd "\.(yaml|yml)$" . | rg -l "(apiVersion|kind)" | head -10 || echo "No K8s manifests found"`
 - Helm charts: !`fd "Chart\.(yaml|yml)$" . | head -5 || echo "No Helm charts found"`
-- K8s tools: !`which kubectl helm kustomize 2>/dev/null || echo "No K8s tools detected"`
+- K8s tools: !`(which kubectl helm kustomize 2>/dev/null | wc -l | tr -d ' ') || echo "0"` available
 - Namespaces: !`kubectl get namespaces --no-headers 2>/dev/null | wc -l | tr -d ' ' || echo "0"`
 - Running pods: !`kubectl get pods --all-namespaces --no-headers 2>/dev/null | wc -l | tr -d ' ' || echo "0"`
 - Technology stack: !`fd "(deno\.json|package\.json|Cargo\.toml|go\.mod)" . | head -3 || echo "K8s-only project"`
@@ -21,6 +21,7 @@ description: Load comprehensive Kubernetes documentation context with cluster-sp
 STEP 1: Initialize context loading session
 
 - CREATE session state file: `/tmp/k8s-context-$SESSION_ID.json`
+- VALIDATE session ID generation and file creation permissions
 - SET initial state:
   ```json
   {
@@ -60,11 +61,12 @@ ELSE:
 
 STEP 3: Strategic documentation loading
 
-Think deeply about optimal Kubernetes learning and operational documentation strategies for this specific environment.
+Think deeply about optimal Kubernetes learning and operational documentation strategies for this specific environment. Analyze the cluster configuration, detected workloads, and technology stack to prioritize the most relevant documentation areas.
 
 TRY:
 
 - EXECUTE systematic context loading from prioritized sources
+- FOR complex environments with many detected features: Use parallel sub-agents to load different documentation areas simultaneously
 - USE WebFetch tool for each documentation URL with targeted focus
 - PROCESS and organize information by Kubernetes functional area
 - SAVE loaded context to session state
@@ -207,9 +209,10 @@ CATCH (context_organization_failed):
 
 FINALLY:
 
-- ARCHIVE context session data for future reference
+- ARCHIVE context session data: `/tmp/k8s-context-archive-$SESSION_ID.json`
 - PROVIDE context loading summary with coverage metrics
-- CLEAN UP temporary session files
+- CLEAN UP temporary session files (EXCEPT archived data)
+- LOG session completion timestamp and status
 
 ## Context Loading Strategy
 

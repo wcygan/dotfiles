@@ -2,8 +2,8 @@
   "version": "1.0",
   "totalCommands": 159,
   "completed": 98,
-  "inProgress": 10,
-  "lastUpdated": "2025-07-07T15:11:36.148Z",
+  "inProgress": 11,
+  "lastUpdated": "2025-07-07T15:11:38.968Z",
   "commands": [
     {
       "id": "001",
@@ -2308,8 +2308,8 @@
       "name": "pr-update",
       "filepath": "claude/commands/git/pr/pr-update.md",
       "namespace": "git/pr",
-      "status": "pending",
-      "lastModified": null,
+      "status": "in-progress",
+      "lastModified": "2025-07-07T15:11:38.965Z",
       "improvements": [],
       "metrics": {
         "hadFrontMatter": true,
@@ -2317,7 +2317,10 @@
         "hadProgrammaticStructure": false,
         "hadStateManagement": true
       },
-      "claimedBy": null
+      "claimedBy": {
+        "sessionId": "1751901098965f32pbex66u",
+        "timestamp": 1751901098
+      }
     },
     {
       "id": "110",

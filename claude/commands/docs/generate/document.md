@@ -244,6 +244,13 @@ FINALLY:
 - Think deeply about optimal documentation structure for multi-service architectures
 - Consider accessibility and internationalization requirements for global projects
 
+**Extended Thinking Areas:**
+
+- Documentation architecture patterns for scalable multi-service systems
+- User journey mapping for optimal information architecture
+- Integration strategies between generated and hand-written documentation
+- Long-term maintenance and evolution strategies for documentation systems
+
 **Content Generation Optimization:**
 
 - Think harder about technical writing best practices for specific audiences

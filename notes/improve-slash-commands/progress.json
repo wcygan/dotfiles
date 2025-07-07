@@ -1,9 +1,9 @@
 {
   "version": "1.0",
   "totalCommands": 159,
-  "completed": 139,
-  "inProgress": 19,
-  "lastUpdated": "2025-07-07T15:25:51.097Z",
+  "completed": 141,
+  "inProgress": 17,
+  "lastUpdated": "2025-07-07T15:26:04.343Z",
   "commands": [
     {
       "id": "001",
@@ -3231,18 +3231,20 @@
       "name": "sync",
       "filepath": "claude/commands/workflow/manage/sync.md",
       "namespace": "workflow/manage",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:23:54.537Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:26:04.343Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded",
+        "stateManagementAdded",
+        "subAgentPatternsAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
-      },
-      "claimedBy": {
-        "sessionId": "17519018345372vvatmiyq2",
-        "timestamp": 1751901834
       }
     },
     {
@@ -3329,19 +3331,20 @@
       "name": "summary",
       "filepath": "claude/commands/workflow/view/summary.md",
       "namespace": "workflow/view",
-      "status": "in-progress",
-      "lastModified": "2025-07-07T15:24:03.488Z",
-      "improvements": [],
+      "status": "completed",
+      "lastModified": "2025-07-07T15:30:00Z",
+      "improvements": [
+        "frontMatterAdded",
+        "dynamicContextAdded",
+        "programmaticStructureAdded"
+      ],
       "metrics": {
         "hadFrontMatter": false,
         "hadDynamicContext": false,
         "hadProgrammaticStructure": false,
         "hadStateManagement": false
       },
-      "claimedBy": {
-        "sessionId": "1751901843488a91hdcozva",
-        "timestamp": 1751901843
-      }
+      "claimedBy": null
     },
     {
       "id": "159",

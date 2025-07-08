@@ -47,22 +47,23 @@ The installation process:
 
 ### 2. Shell Aliases and Functions
 
-After installation, you'll have access to powerful shell aliases and functions:
+After installation, you'll have access to convenient shell aliases and functions:
 
 ```bash
 # Enhanced navigation
-ll    # Detailed file listing with git status
-..    # Go up one directory
-...   # Go up two directories
+alias l='exa -l'        # Detailed file listing
+alias c='clear'         # Clear current terminal screen
+alias ..='cd ..'        # Go up one directory
+alias ...='cd ../.. '   # Go up two directories
 
 # Git shortcuts
-gs    # git status
-gc    # git commit
-gp    # git push
+alias gs='git status'    # git status
+alias gc='git commit'    # git commit
+alias gp='git push'      # git push
 
 # Utility functions
-mkd   # Create directory and cd into it
-proj  # Quick project navigation
+alias g='gemini'         # Start Gemini CLI
+alias x='claude'         # Start Claude Code
 ```
 
 ### 3. Modern Shell Configuration
@@ -82,27 +83,6 @@ Includes configurations for:
 - Zed
 - Cursor
 - Vim
-
-## Customization
-
-### Personal Configuration
-
-Create `~/.extra.sh` for personal settings that won't be overwritten:
-
-```bash
-# ~/.extra.sh
-export MY_API_KEY="..."
-alias myproject="cd ~/projects/myproject"
-```
-
-### Claude Commands
-
-Add custom commands in `~/.claude/commands/`:
-
-```bash
-mkdir -p ~/.claude/commands/custom
-echo "My custom command" > ~/.claude/commands/custom/my-command.md
-```
 
 ## Troubleshooting
 
@@ -131,6 +111,4 @@ deno task clean-backups
 
 ## Next Steps
 
-- Explore the [configuration options](/docs/configuration/shell)
 - Learn about [shell configuration](/docs/configuration/shell)
-- Set up [editor integrations](/docs/configuration/editors)

@@ -88,83 +88,17 @@ export HISTFILESIZE=20000
 export HISTCONTROL=ignoreboth:erasedups
 ```
 
-## Shell Functions
-
-### Project Navigation
-
-```bash
-# Quick project access
-function proj() {
-  cd ~/Development/$1
-}
-
-# Create directory and cd into it
-function mkd() {
-  mkdir -p "$@" && cd "$_"
-}
-```
-
-### Development Helpers
-
-```bash
-# Find process by name
-function findproc() {
-  ps aux | grep -v grep | grep "$1"
-}
-
-# Extract various archive formats
-function extract() {
-  # Handles .tar.gz, .zip, .7z, etc.
-}
-```
-
-## Customization
-
-### Adding Personal Configuration
-
-Create `~/.extra.sh` for personal settings:
-
-```bash
-# Personal aliases
-alias myproject="cd ~/projects/myproject"
-
-# Private environment variables
-export MY_API_KEY="..."
-
-# Custom functions
-function my_function() {
-  echo "My custom function"
-}
-```
-
-### Platform-Specific Configuration
-
-The shell configuration automatically detects and loads platform-specific
-settings:
-
-```bash
-# macOS specific
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  # macOS configurations
-fi
-
-# Linux specific
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  # Linux configurations
-fi
-```
-
 ## Modern CLI Tools
 
 The configuration assumes these modern CLI tools are installed:
 
-- **ripgrep (rg)**: Fast text search
-- **fd**: Fast file finder
-- **bat**: Better cat with syntax highlighting
-- **eza**: Modern ls replacement
-- **jq/yq**: JSON/YAML processing
-- **fzf**: Fuzzy finder
-- **delta**: Better git diff
+- **[ripgrep (rg)](https://github.com/BurntSushi/ripgrep)**: Fast text search
+- **[fd](https://github.com/sharkdp/fd)**: Fast file finder
+- **[bat](https://github.com/sharkdp/bat)**: Better cat with syntax highlighting
+- **[eza](https://github.com/eza-community/eza)**: Modern ls replacement
+- **[jq](https://github.com/jqlang/jq)/[yq](https://github.com/mikefarah/yq)**: JSON/YAML processing
+- **[fzf](https://github.com/junegunn/fzf)**: Fuzzy finder
+- **[delta](https://github.com/dandavison/delta)**: Better git diff
 
 ## Tips
 

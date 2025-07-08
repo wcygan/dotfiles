@@ -113,20 +113,6 @@ Options:
   --dry-run           Show what would be removed
 ```
 
-### generate-docs.ts
-
-Generate documentation from Claude commands:
-
-```bash
-deno run --allow-read --allow-write scripts/generate-docs.ts
-```
-
-Features:
-- Parses command YAML frontmatter
-- Creates Docusaurus-compatible markdown
-- Maintains category structure
-- Auto-updates navigation
-
 ## Script Development
 
 ### Creating New Scripts

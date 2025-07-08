@@ -7,7 +7,6 @@ const sidebars: SidebarsConfig = {
       label: "Getting Started",
       collapsed: false,
       items: [
-        "getting-started/installation",
         "getting-started/quick-start",
       ],
     },
@@ -17,7 +16,6 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         "configuration/shell",
-        "configuration/editors",
         "configuration/tools",
       ],
     },

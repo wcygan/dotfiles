@@ -70,8 +70,8 @@ const config: Config = {
           title: "Docs",
           items: [
             {
-              label: "Getting Started",
-              to: "/docs/getting-started/installation",
+              label: "Quick Start",
+              to: "/docs/getting-started/quick-start",
             },
             {
               label: "Configuration",
@@ -96,10 +96,10 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
-      additionalLanguages: ["bash", "typescript", "rust", "go", "java"],
+      additionalLanguages: ["bash", "typescript", "rust", "go", "java", "python", "yaml", "docker"],
     },
     colorMode: {
-      defaultMode: "dark",
+      defaultMode: "light",
       disableSwitch: false,
       respectPrefersColorScheme: true,
     },

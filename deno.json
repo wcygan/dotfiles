@@ -27,6 +27,7 @@
     "agent": "deno run --allow-all scripts/launch-agent.ts",
     "claim-task": "deno run --allow-all scripts/claim-next-task.ts",
     "clean-backups": "deno run --allow-all scripts/clean-backups.ts",
+    "docs": "cd docs && npm start",
     "docs:dev": "cd docs && npm start",
     "docs:build": "cd docs && npm run build",
     "docs:serve": "cd docs && npm run serve",

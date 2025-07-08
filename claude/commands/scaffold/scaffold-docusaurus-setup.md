@@ -46,17 +46,11 @@ After project creation, update the key configuration files to match the minimal 
        "go",
        "java",
        "python",
-       "javascript",
-       "html",
-       "css",
-       "json",
-       "markdown",
        "yaml",
-       "shell",
-       "dockerfile",
-       "xml",
+       "docker", // Note: use "docker" not "dockerfile"
      ];
      ```
+     **Important:** Only include languages that aren't already built-in. The following are included by default: javascript, css, json, markdown, markup (HTML/XML)
    - No blog (set blog: false)
 
 2. **Simplify sidebars.ts** to have a basic structure:
@@ -110,15 +104,8 @@ const config: Config = {
         "go",
         "java",
         "python",
-        "javascript",
-        "html",
-        "css",
-        "json",
-        "markdown",
         "yaml",
-        "shell",
-        "dockerfile",
-        "xml",
+        "docker",
       ],
     },
 
@@ -282,3 +269,31 @@ graph TD;
 ````
 
 The site should be minimal, clean, and ready for documentation with full TypeScript support and diagram capabilities.
+
+### Troubleshooting Common Issues
+
+#### Prism Language Errors
+
+If you see errors like `Cannot find module './prism-<language>'`:
+
+1. **Check the exact language name**: Language names must match the Prism component file names exactly
+   - Use `docker` not `dockerfile`
+   - Use `bash` not `shell`
+   - HTML/XML syntax is provided by `markup` (included by default)
+
+2. **Don't add default languages**: These are already included and will cause errors if added to `additionalLanguages`:
+   - `javascript`, `jsx`, `typescript`, `tsx`
+   - `css`, `scss`
+   - `json`
+   - `markdown`
+   - `markup` (HTML/XML)
+
+3. **Verify language availability**: Check `node_modules/prismjs/components/` for available language files:
+   ```bash
+   ls node_modules/prismjs/components/ | grep "prism-.*\.js$" | grep -v min
+   ```
+
+4. **Clear cache after changes**: Always clear Docusaurus cache after modifying language configuration:
+   ```bash
+   npm run clear
+   ```

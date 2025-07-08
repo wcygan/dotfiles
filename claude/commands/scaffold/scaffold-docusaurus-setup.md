@@ -36,8 +36,27 @@ After project creation, update the key configuration files to match the minimal 
    - Simple title and tagline
    - GitHub Pages configuration (if git remote exists)
    - Classic preset with minimal navbar
-   - Dark mode by default
-   - Syntax highlighting for common languages (bash, typescript, rust, go, java)
+   - Light mode by default (defaultMode: "light")
+   - Comprehensive syntax highlighting with additionalLanguages:
+     ```typescript
+     additionalLanguages: [
+       "bash",
+       "typescript",
+       "rust",
+       "go",
+       "java",
+       "python",
+       "javascript",
+       "html",
+       "css",
+       "json",
+       "markdown",
+       "yaml",
+       "shell",
+       "dockerfile",
+       "xml",
+     ];
+     ```
    - No blog (set blog: false)
 
 2. **Simplify sidebars.ts** to have a basic structure:
@@ -61,6 +80,56 @@ Then update docusaurus.config.ts to include:
 - Import the mermaid theme
 - Add markdown.mermaid = true
 - Configure the theme with mermaid support
+
+Example configuration snippet for docusaurus.config.ts:
+
+```typescript
+import { themes as prismThemes } from "prism-react-renderer";
+import type { Config } from "@docusaurus/types";
+import type * as Preset from "@docusaurus/preset-classic";
+
+const config: Config = {
+  // ... other config ...
+
+  markdown: {
+    mermaid: true,
+  },
+
+  themes: ["@docusaurus/theme-mermaid"],
+
+  themeConfig: {
+    // ... other theme config ...
+
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+      additionalLanguages: [
+        "bash",
+        "typescript",
+        "rust",
+        "go",
+        "java",
+        "python",
+        "javascript",
+        "html",
+        "css",
+        "json",
+        "markdown",
+        "yaml",
+        "shell",
+        "dockerfile",
+        "xml",
+      ],
+    },
+
+    colorMode: {
+      defaultMode: "light",
+      disableSwitch: false,
+      respectPrefersColorScheme: true,
+    },
+  } satisfies Preset.ThemeConfig,
+};
+```
 
 ### Step 5: Create minimal starter content
 

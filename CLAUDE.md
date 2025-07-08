@@ -786,6 +786,149 @@ When creating slash commands:
 
 This programming paradigm transforms slash commands from simple automations into robust, production-ready workflows.
 
+## Claude Code Hooks
+
+Claude Code supports hooks that execute commands at specific points in its lifecycle, enabling powerful automation workflows.
+
+### Hook Types
+
+1. **PreToolUse** - Runs before tool execution
+2. **PostToolUse** - Runs after tool completion (most commonly used)
+3. **Notification** - Triggers on notifications
+4. **Stop** - Runs when agents finish responding
+5. **SubagentStop** - Runs when subagents finish responding
+
+### Hook Configuration
+
+Hooks are configured in Claude settings files (`~/.claude/settings.json` or `.claude/settings.json`):
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/script.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Common Hook Use Cases
+
+**1. Code Formatting**
+
+- Auto-format files after editing (most popular use case)
+- Language-specific formatting (Go, TypeScript, Python, etc.)
+- Markdown and documentation formatting
+
+**2. Git Integration**
+
+- Auto-stage formatted files
+- Prepare commit messages
+- Update git status
+
+**3. Command Logging**
+
+- Log all executed commands for audit trails
+- Track Claude's actions for debugging
+- Analytics and usage patterns
+
+**4. Notifications**
+
+- Desktop notifications when tasks complete
+- Sound alerts for long-running operations
+- Status updates via external services
+
+**5. Validation & Testing**
+
+- Run tests after code changes
+- Type-check TypeScript files
+- Lint modified files
+- Version consistency checks
+
+### Hook Implementation Example
+
+**Auto-formatting hook** (`.claude/hooks/format.sh`):
+
+```bash
+#!/bin/bash
+# Read JSON input from stdin
+input=$(cat)
+
+# Extract file path from JSON
+file_path=$(echo "$input" | jq -r '.tool_input.file_path // .tool_response.filePath // empty')
+
+# Format based on file extension
+case "${file_path##*.}" in
+  go) go fmt "$file_path" ;;
+  js|ts) npx prettier --write "$file_path" ;;
+  py) black "$file_path" ;;
+esac
+```
+
+### Finding Hooks on GitHub
+
+To discover how others are using Claude Code hooks:
+
+**Search for hook configurations:**
+
+```
+https://github.com/search?q=path:*claude*/settings*.json+"PostToolUse"&type=code
+https://github.com/search?q=path:*claude*/settings*.json+"hooks"&type=code
+```
+
+**Search for hook scripts:**
+
+```
+https://github.com/search?q=path:.claude/hooks+extension:sh&type=code
+```
+
+**Using GitHub CLI:**
+
+```bash
+# Search for PostToolUse hooks
+gh api search/code --raw-field q='path:*claude*/settings*.json "PostToolUse"'
+
+# Search for hook scripts
+gh api search/code --raw-field q='path:.claude/hooks extension:sh'
+```
+
+### Best Practices
+
+1. **Security**: Only execute trusted scripts, validate inputs
+2. **Performance**: Keep hooks fast to avoid slowing down Claude
+3. **Error Handling**: Hooks should fail gracefully
+4. **Logging**: Log hook actions for debugging
+5. **Idempotency**: Hooks should be safe to run multiple times
+
+### Hook Input Format
+
+Hooks receive JSON input via stdin containing:
+
+- `tool_name`: The tool that triggered the hook
+- `tool_input`: Input parameters to the tool
+- `tool_response`: Response from the tool (PostToolUse only)
+
+Example input:
+
+```json
+{
+  "tool_name": "Edit",
+  "tool_input": {
+    "file_path": "/path/to/file.go",
+    "old_string": "...",
+    "new_string": "..."
+  }
+}
+```
+
 ## Parallel Claude Code Sessions with Git Worktrees
 
 Run multiple Claude Code sessions simultaneously on different features using Git worktrees, enabling true parallel development without branch switching conflicts.

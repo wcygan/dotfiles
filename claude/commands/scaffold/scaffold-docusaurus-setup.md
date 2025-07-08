@@ -12,7 +12,7 @@ description: Scaffold a minimal Docusaurus documentation site with TypeScript an
 
 ## Your task
 
-Create a minimal Docusaurus documentation site similar to the dotfiles /docs/ setup, with TypeScript support and diagram capabilities.
+Create a minimal Docusaurus documentation site in `/docs/` folder with TypeScript support and diagram capabilities.
 
 ### Step 1: Validate environment
 
@@ -91,12 +91,36 @@ If the current directory is not a git repository, initialize one:
 cd docs && git init
 ```
 
-### Step 9: Final setup instructions
+### Step 9: Configure Deno tasks for documentation
+
+Update or create `deno.json` in the project root to include documentation tasks:
+
+```json
+{
+  "tasks": {
+    "docs": "cd docs && npm start",
+    "docs:dev": "cd docs && npm start",
+    "docs:build": "cd docs && npm run build",
+    "docs:serve": "cd docs && npm run serve",
+    "docs:deploy": "cd docs && npm run deploy",
+    "docs:install": "cd docs && npm install"
+  }
+}
+```
+
+This allows you to run documentation commands using Deno:
+
+- `deno task docs` - Start the development server
+- `deno task docs:build` - Build the static site
+- `deno task docs:serve` - Serve the built site locally
+- `deno task docs:deploy` - Deploy to GitHub Pages
+
+### Step 10: Final setup instructions
 
 Provide the user with:
 
-1. Commands to start the development server: `cd docs && npm start`
-2. Build command: `cd docs && npm run build`
+1. Commands to start the development server: `deno task docs` or `cd docs && npm start`
+2. Build command: `deno task docs:build` or `cd docs && npm run build`
 3. Deployment instructions for GitHub Pages
 4. How to use Mermaid diagrams in markdown files
 

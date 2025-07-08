@@ -27,6 +27,10 @@ This document defines immutable system rules for AI collaboration across my deve
 └── CLAUDE.md      # Project-specific AI instructions
 ```
 
+## Performance-First Mindset
+
+**ALWAYS optimize for parallel execution.** When facing any task that can be decomposed into independent subtasks, immediately delegate to sub-agents. This includes research, analysis, file discovery, and multi-aspect evaluations. Sequential execution should be the exception, not the rule.
+
 ## Operational Rules & Constraints
 
 ### File Access Permissions
@@ -84,9 +88,13 @@ This document defines immutable system rules for AI collaboration across my deve
 ### Feature Implementation Process
 
 1. Create git worktree for isolated development
-2. Read existing code structure
-3. Write tests FIRST (TDD approach)
-4. Implement feature
+2. **Deploy sub-agents** to analyze:
+   - Agent 1: Existing code structure and patterns
+   - Agent 2: Related test files and coverage
+   - Agent 3: Dependencies and integration points
+   - Agent 4: Similar implementations in codebase
+3. Synthesize findings and write tests FIRST (TDD approach)
+4. Implement feature following discovered patterns
 5. Run tests and verify
 6. Create PR using `gh pr create`
 7. Remove worktree after merge
@@ -94,10 +102,14 @@ This document defines immutable system rules for AI collaboration across my deve
 ### Debugging Process
 
 1. Read error message and identify file/line
-2. Check immediate context (±5 lines)
-3. Read entire function if unclear
-4. Trace call stack if necessary
-5. Propose minimal fix addressing root cause
+2. **Launch parallel investigation**:
+   - Agent 1: Analyze error context and surrounding code
+   - Agent 2: Search for similar error patterns in codebase
+   - Agent 3: Check related test files for expected behavior
+   - Agent 4: Investigate recent changes in affected files
+3. Synthesize findings from all agents
+4. Propose minimal fix addressing root cause
+5. Verify fix doesn't break existing tests
 
 ### Project Lifecycle Commands
 
@@ -144,19 +156,44 @@ All projects MUST use Deno as task runner with standardized commands:
 
 ### Sub-Agent Architecture
 
-**Use sub-agents for:**
+**CRITICAL: Prioritize sub-agent delegation for maximum performance and efficiency.**
 
-- Parallel research and analysis (up to 10 concurrent)
-- File discovery and pattern searches
-- Documentation gathering
-- Test coverage analysis
+Sub-agents enable parallel execution, dramatically reducing task completion time through concurrent processing. Claude Code automatically manages up to 10 parallel agents, queuing additional tasks as needed.
 
-**Never use sub-agents for:**
+**ALWAYS use sub-agents for:**
 
-- Decision-making or code writing
-- Shared file modifications
-- Git operations
-- Configuration updates
+- **Codebase exploration**: Parallel analysis of directories, file patterns, and code structure
+- **Multi-aspect analysis**: Simultaneously analyze security, performance, tests, and documentation
+- **Research tasks**: Gather information from multiple sources concurrently
+- **File discovery**: Search for patterns, keywords, or structures across the codebase
+- **Documentation tasks**: Generate or analyze docs for multiple components in parallel
+- **Test analysis**: Coverage reports, test pattern identification, missing test detection
+- **Dependency mapping**: Trace dependencies and usage patterns throughout the codebase
+- **Code quality checks**: Run multiple linters, formatters, or analyzers simultaneously
+- **Migration planning**: Analyze impact across different modules concurrently
+- **Bug investigation**: Search for related issues across multiple files/directories
+
+**Benefits of sub-agent delegation:**
+
+- **5-10x faster execution** through parallelization
+- **Comprehensive coverage** without sequential bottlenecks
+- **Reduced token usage** per individual agent
+- **Better organization** with clear task separation
+- **Scalability** for large codebases
+
+**Sub-agent best practices:**
+
+1. **Launch early and often**: Start sub-agents as soon as you identify parallel opportunities
+2. **Clear boundaries**: Each sub-agent should have a well-defined, independent scope
+3. **Batch related tasks**: Group similar operations for efficiency
+4. **Synthesize results**: Main agent should aggregate and analyze all findings
+
+**Only avoid sub-agents for:**
+
+- Sequential operations with dependencies
+- Direct file modifications (unless independent)
+- Git operations requiring coordination
+- Single-file simple operations
 
 ### Git Worktrees
 
@@ -166,6 +203,41 @@ All projects MUST use Deno as task runner with standardized commands:
 - Remove after PR merge
 
 ## Examples & Patterns
+
+### Sub-Agent Delegation Patterns
+
+**Pattern 1: Comprehensive Codebase Analysis**
+
+```
+Deploy 5 agents to analyze the authentication system:
+- Agent 1: Find all authentication endpoints
+- Agent 2: Analyze security implementations
+- Agent 3: Check test coverage for auth
+- Agent 4: Document current auth flows
+- Agent 5: Identify potential vulnerabilities
+```
+
+**Pattern 2: Refactoring Impact Analysis**
+
+```
+Before refactoring a core module, deploy agents:
+- Agent 1: Find all direct imports/usage
+- Agent 2: Identify indirect dependencies
+- Agent 3: Analyze test dependencies
+- Agent 4: Check for string references
+- Agent 5: Review documentation mentions
+```
+
+**Pattern 3: Performance Investigation**
+
+```
+For performance issues, launch parallel analysis:
+- Agent 1: Profile database queries
+- Agent 2: Analyze algorithm complexity
+- Agent 3: Check for N+1 problems
+- Agent 4: Review caching opportunities
+- Agent 5: Identify blocking operations
+```
 
 ### Deno Task Configuration
 
@@ -253,8 +325,10 @@ Use extended thinking for complex tasks:
 ## Critical Reminders
 
 - **YOU MUST** follow these guidelines exactly
-- **ALWAYS** ask for clarification if requirements conflict
+- **ALWAYS** use sub-agents for parallelizable tasks
+- **PRIORITIZE** parallel execution over sequential processing
 - **NEVER** use deprecated patterns or legacy tools
 - **ALWAYS** prioritize performance and type safety
-- **THINK** programmatically, not conversationally
+- **THINK** in terms of concurrent workflows
 - **EXECUTE** tasks deterministically when possible
+- **LEVERAGE** up to 10 concurrent sub-agents for maximum efficiency

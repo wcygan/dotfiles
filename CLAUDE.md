@@ -6,6 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a modern dotfiles repository built with Deno TypeScript scripts. It provides safe installation of shell configurations across platforms (Bash, Zsh) with automatic backup functionality. The project uses Deno for all scripting and automation.
 
+## Performance-First Development
+
+**CRITICAL: Always maximize parallel execution through sub-agents. Sequential processing is obsolete.**
+
+- **Default to 8-10 parallel agents** for any analysis task
+- **Never analyze files one-by-one** when you can analyze them simultaneously
+- **Expect 5-10x performance gains** through parallelization
+- **Launch all agents immediately** - no progressive spawning
+
 ## Key Commands
 
 ```bash
@@ -220,12 +229,22 @@ Commands are organized in a namespaced directory structure under `claude/command
 
 ### Creating New Commands
 
-When creating new commands, follow the namespace structure:
+When creating new commands, follow the namespace structure AND parallel execution patterns:
 
 1. **Identify the appropriate namespace** - Choose from existing namespaces or propose a new one
 2. **Create the file in the correct directory** - e.g., `claude/commands/test/analyze/analyze-test-complexity.md`
 3. **Name the file descriptively** - Use the final command name with namespace prefixes
 4. **The command will be accessible as** - `/analyze-test-complexity`
+5. **ALWAYS design for parallelism** - Every command should spawn 5-10 sub-agents by default
+6. **Include performance metrics** - State expected speedup (usually 5-10x)
+
+**Command Design Checklist:**
+
+- [ ] Uses 8-10 parallel sub-agents
+- [ ] No sequential file analysis
+- [ ] Clear agent responsibilities
+- [ ] Performance expectations stated
+- [ ] Synthesis strategy defined
 
 Example directory structure:
 
@@ -431,90 +450,127 @@ Example output:
 
 ## Sub-Agent Integration in Slash Commands
 
-Based on insights from Claude Code sub-agent architecture, slash commands can leverage parallel execution for enhanced performance and capabilities.
+**CRITICAL: Always leverage sub-agents for maximum performance. Parallel execution should be your default approach for all slash commands that can be decomposed into independent tasks.**
 
-### When to Use Sub-Agents in Slash Commands
+### Sub-Agent Performance Benefits
 
-**Ideal Use Cases:**
+- **5-10x faster execution** through parallel processing
+- **Comprehensive analysis** without sequential bottlenecks
+- **Better resource utilization** with up to 10 concurrent agents
+- **Scalability** for large codebases and complex tasks
 
-1. **Large-scale Code Analysis** - Exploring multiple files/directories in parallel
-2. **Independent Research Tasks** - Gathering information from different sources simultaneously
-3. **Multi-aspect Analysis** - Analyzing code quality, security, performance in parallel
-4. **Documentation Generation** - Creating docs for multiple components concurrently
+### When to ALWAYS Use Sub-Agents
 
-**Not Recommended For:**
+**Mandatory for:**
 
-1. **Sequential Operations** - Tasks with dependencies between steps
-2. **Simple Single-file Operations** - Overhead outweighs benefits
-3. **State-modifying Operations** - Risk of conflicts with parallel writes
+1. **Any multi-file analysis** - Never analyze files sequentially
+2. **Research and discovery** - Always parallelize information gathering
+3. **Code quality checks** - Run multiple analyzers concurrently
+4. **Documentation tasks** - Generate docs for components in parallel
+5. **Testing analysis** - Coverage, patterns, and test discovery
+6. **Refactoring impact** - Analyze dependencies simultaneously
+7. **Security audits** - Check multiple vulnerability types at once
+8. **Performance profiling** - Analyze different bottlenecks in parallel
+9. **Migration planning** - Assess impact across modules concurrently
+10. **Bug investigation** - Search for patterns across the codebase
+
+**Only avoid for:**
+
+- Single-file simple edits
+- Sequential operations with strict dependencies
+- Direct file modifications requiring coordination
 
 ### Sub-Agent Slash Command Template
 
 ```yaml
 ---
-allowed-tools: Task, Bash(find:*), Bash(rg:*), Read
-description: Analyze codebase architecture using parallel sub-agents
+allowed-tools: Task, Bash(fd:*), Bash(rg:*), Read, Grep
+description: High-performance parallel analysis using sub-agents
 ---
 
 ## Context
 
 - Project structure: !`fd . -t d -d 3`
-- File count by type: !`fd . -e js -e ts -e py | wc -l`
+- File distribution: !`fd . -t f | head -100 | xargs -I {} dirname {} | sort | uniq -c`
 
 ## Your task
 
-Analyze this codebase using parallel sub-agents to understand:
+**IMMEDIATELY deploy 8-10 parallel sub-agents** to maximize performance:
 
-1. **Architecture Agent**: Analyze overall project structure and design patterns
-2. **Dependencies Agent**: Map out all dependencies and their relationships  
-3. **Security Agent**: Identify potential security vulnerabilities
-4. **Performance Agent**: Find performance bottlenecks and optimization opportunities
-5. **Test Coverage Agent**: Analyze test coverage and testing patterns
+1. **Structure Analysis Agent**: Map project architecture and patterns
+2. **Dependency Mapping Agent**: Trace all imports and dependencies
+3. **Security Audit Agent**: Scan for vulnerabilities and security issues
+4. **Performance Analysis Agent**: Identify bottlenecks and optimizations
+5. **Test Coverage Agent**: Analyze test completeness and patterns
+6. **Code Quality Agent**: Check complexity, duplication, and standards
+7. **Documentation Agent**: Assess documentation coverage
+8. **Integration Points Agent**: Find external APIs and services
+9. **Configuration Agent**: Analyze config files and environment setup
+10. **Technical Debt Agent**: Identify areas needing refactoring
 
-Launch these 5 agents in parallel to explore the codebase. Each agent should:
-- Focus only on their specific domain
-- Create a summary report
-- Identify key findings and recommendations
+**CRITICAL**: Launch ALL agents simultaneously for maximum efficiency. Each agent operates independently with focused scope. Synthesis happens after all agents complete.
 
-Synthesize all findings into a comprehensive architecture report.
+**Expected speedup**: 8-10x faster than sequential analysis.
 ```
 
 ### Implementation Patterns
 
-**1. Discovery Pattern** - Multiple agents explore different aspects:
+**1. Aggressive Discovery Pattern** - Maximum parallelization:
 
 ```yaml
 ## Your task
 
-Use 4 parallel agents to discover:
-  - Agent 1: All API endpoints in the codebase
-  - Agent 2: Database schema and models
-  - Agent 3: Authentication and authorization flows
-  - Agent 4: External service integrations
+**DEPLOY 8 AGENTS IMMEDIATELY** for comprehensive discovery:
+  - Agent 1: All REST/GraphQL/RPC endpoints
+  - Agent 2: Database schemas, models, migrations
+  - Agent 3: Authentication/authorization implementations
+  - Agent 4: External API integrations
+  - Agent 5: Event handlers and message queues
+  - Agent 6: Background jobs and scheduled tasks
+  - Agent 7: Configuration and environment variables
+  - Agent 8: Frontend-backend interaction points
+
+NO SEQUENTIAL ANALYSIS. Launch all agents in first response.
 ```
 
-**2. Analysis Pattern** - Deep dive into specific areas:
+**2. Deep Analysis Pattern** - Parallel deep dives:
 
 ```yaml
 ## Your task
 
-Analyze the authentication system using 3 parallel agents:
-  - Agent 1: Review security implementation
-  - Agent 2: Check test coverage
-  - Agent 3: Document current flows
+**LAUNCH 10 PARALLEL AGENTS** for authentication analysis:
+  - Agent 1: Security vulnerability scan
+  - Agent 2: OAuth/JWT implementation review
+  - Agent 3: Session management analysis
+  - Agent 4: Password policy enforcement
+  - Agent 5: Test coverage assessment
+  - Agent 6: Performance impact analysis
+  - Agent 7: Documentation completeness
+  - Agent 8: Integration point mapping
+  - Agent 9: Error handling review
+  - Agent 10: Compliance check (OWASP/PCI)
+
+Execute ALL agents simultaneously for 10x speedup.
 ```
 
-**3. Generation Pattern** - Create multiple artifacts:
+**3. Parallel Generation Pattern** - Concurrent artifact creation:
 
 ```yaml
 ## Your task
 
-Generate documentation using 5 parallel agents:
-  - Agent 1: API documentation
-  - Agent 2: Component documentation
-  - Agent 3: Configuration guide
-  - Agent 4: Deployment instructions
-  - Agent 5: Troubleshooting guide
+**SPAWN 10 AGENTS NOW** to generate all documentation:
+  - Agent 1: REST API documentation
+  - Agent 2: GraphQL schema documentation
+  - Agent 3: Component/module documentation
+  - Agent 4: Database schema documentation
+  - Agent 5: Configuration reference
+  - Agent 6: Deployment guide
+  - Agent 7: Security guidelines
+  - Agent 8: Performance tuning guide
+  - Agent 9: Troubleshooting guide
+  - Agent 10: Developer onboarding guide
+
+CRITICAL: All agents work in parallel. No waiting.
 ```
 
 ### Best Practices for Sub-Agent Commands
@@ -545,43 +601,55 @@ Generate documentation using 5 parallel agents:
 
 ```yaml
 ---
-allowed-tools: Task, Read, Grep, Bash(rg:*)
-description: Comprehensive code quality analysis using parallel agents
+allowed-tools: Task, Read, Grep, Bash(rg:*), Bash(fd:*)
+description: Ultra-fast code quality analysis with 10 parallel agents
 ---
 
 ## Your task
 
-Perform comprehensive code quality analysis using multiple agents:
+**IMMEDIATELY LAUNCH 10 PARALLEL AGENTS** for instant comprehensive analysis:
 
-1. **Complexity Analysis**: Identify complex functions and modules
-2. **Duplication Detection**: Find duplicate code patterns
-3. **Style Consistency**: Check coding standards adherence
-4. **Documentation Coverage**: Assess documentation completeness
-5. **Dead Code Detection**: Find unused code
-6. **Type Safety**: Analyze type coverage and safety
+1. **Complexity Scanner**: Cyclomatic complexity in all functions
+2. **Duplication Hunter**: Find all duplicate code blocks
+3. **Style Enforcer**: Scan for style guide violations
+4. **Doc Coverage Analyzer**: Missing documentation finder
+5. **Dead Code Eliminator**: Unused code detection
+6. **Type Safety Auditor**: Type coverage and any-type usage
+7. **Security Scanner**: Common vulnerability patterns
+8. **Performance Profiler**: Algorithm complexity issues
+9. **Test Quality Checker**: Test coverage and quality
+10. **Dependency Analyzer**: Circular and outdated dependencies
 
-Each agent works independently. Compile findings into actionable recommendations.
+**NO SEQUENTIAL EXECUTION**. All agents run simultaneously.
+Results synthesized after parallel completion.
+Expected time: 10x faster than traditional analysis.
 ```
 
 **Migration Planning** (`/plan-migration`):
 
 ```yaml
 ---
-allowed-tools: Task, Read, Grep
-description: Plan technology migration using parallel analysis
+allowed-tools: Task, Read, Grep, Bash(rg:*), Bash(fd:*)
+description: Lightning-fast migration analysis with parallel agents
 ---
 
 ## Your task
 
-Plan migration from $ARGUMENTS using parallel agents to analyze:
+**DEPLOY 10 AGENTS NOW** for instant migration analysis of $ARGUMENTS:
 
-1. **Current Implementation**: Map existing usage patterns
-2. **Dependencies**: Identify all dependent code
-3. **Risk Assessment**: Evaluate migration risks
-4. **Migration Strategy**: Design phased approach
-5. **Testing Requirements**: Define test scenarios
+1. **Usage Mapper**: Find all current implementation locations
+2. **Dependency Tracer**: Map entire dependency graph
+3. **Risk Analyzer**: Identify high-risk changes
+4. **Impact Assessor**: Evaluate blast radius
+5. **Test Gap Finder**: Missing test scenarios
+6. **Performance Analyzer**: Migration performance impact
+7. **Security Auditor**: Security implications
+8. **API Compatibility**: Breaking change detection
+9. **Data Migration**: Schema/data changes needed
+10. **Rollback Planner**: Reversal strategy design
 
-Synthesize into a comprehensive migration plan with timeline and risk mitigation.
+**CRITICAL**: Launch all agents in parallel.
+Deliver comprehensive plan 10x faster.
 ```
 
 ### Performance Considerations

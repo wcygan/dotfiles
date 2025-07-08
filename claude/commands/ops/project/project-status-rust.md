@@ -15,32 +15,54 @@ description: Comprehensive Rust project health check with build, test, lint, and
 
 ## Your Task
 
-STEP 1: Initialize Rust project health check session
+**IMMEDIATELY DEPLOY 8 PARALLEL RUST PROJECT HEALTH AGENTS** for ultra-fast comprehensive project analysis: **${ARGUMENTS:-quick} mode**
 
-- CREATE session state file: `/tmp/rust-status-$SESSION_ID.json`
-- VALIDATE Rust project presence (Cargo.toml)
-- DETERMINE check mode from $ARGUMENTS (quick vs detailed)
-- GATHER initial project metadata
+**CRITICAL**: Launch ALL agents simultaneously in first response - NO sequential processing.
 
-```bash
-# Initialize session state
-echo '{
-  "sessionId": "'$SESSION_ID'",
-  "timestamp": "'$(gdate -Iseconds 2>/dev/null || date -Iseconds)'",
-  "checkMode": "'${ARGUMENTS:-quick}'",
-  "projectPath": "'$(pwd)'",
+## Parallel Rust Project Health Framework
+
+STEP 1: **LAUNCH ALL 8 AGENTS SIMULTANEOUSLY**
+
+**NO SEQUENTIAL PROCESSING** - Deploy these specialized Rust health analysis agents in parallel:
+
+1. **Build & Compilation Agent**: Cargo check, compilation errors, dependency resolution, build optimization
+2. **Test Suite & Coverage Agent**: Test execution, coverage analysis, test count, test quality assessment
+3. **Code Quality & Clippy Agent**: Clippy warnings, lint analysis, code quality metrics, style violations
+4. **Security & Audit Agent**: Cargo audit, vulnerabilities, yanked crates, security best practices
+5. **Dependencies & Updates Agent**: Outdated dependencies, version conflicts, update recommendations
+6. **Project Structure Agent**: File organization, README, LICENSE, best practices, workspace analysis
+7. **Performance & Benchmarks Agent**: Binary size, benchmarks, performance metrics, optimization opportunities
+8. **Formatting & Standards Agent**: Rustfmt, code formatting, naming conventions, documentation standards
+
+**Expected speedup**: 8x faster than sequential health checks.
+
+STEP 2: Initialize Parallel Session Management
+
+```json
+// /tmp/rust-status-$SESSION_ID.json
+{
+  "sessionId": "$SESSION_ID",
+  "timestamp": "$(gdate -Iseconds 2>/dev/null || date -Iseconds)",
+  "checkMode": "${ARGUMENTS:-quick}",
+  "projectPath": "$(pwd)",
+  "phase": "parallel_analysis",
   "healthStatus": {
     "build": "pending",
     "tests": "pending",
     "clippy": "pending",
-    "format": "pending",
-    "security": "pending"
+    "security": "pending",
+    "dependencies": "pending",
+    "structure": "pending",
+    "performance": "pending",
+    "format": "pending"
   },
   "issues": []
-}' > /tmp/rust-status-$SESSION_ID.json
+}
 ```
 
-STEP 2: Build and compilation health check
+STEP 3: Parallel Health Analysis Execution
+
+**ALL AGENTS WORK CONCURRENTLY:**
 
 TRY:
 

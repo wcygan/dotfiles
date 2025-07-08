@@ -19,6 +19,11 @@ deno task pre-commit:fix       # Run pre-commit checks with auto-fix
 deno task ci:check             # CI environment validation
 deno task ci:fix               # CI environment validation with fixes
 
+# Documentation
+deno task docs:dev             # Start Docusaurus dev server
+deno task docs:build           # Build documentation site
+deno task docs:serve           # Serve built documentation
+
 # Scripts
 deno run --allow-all install-safely.ts           # Main installation script
 deno run --allow-all integration-test.ts         # Integration test runner
@@ -63,6 +68,7 @@ deno run --allow-all scripts/pre-commit-check.ts # Pre-commit validation
   - This directory contains sensitive or project-specific configurations not meant for distribution
 - `cursor/`, `vscode/`, `zed/` - Editor-specific configurations with keybindings
 - `tools/` - User-installable scripts copied to ~/.tools during installation
+- `docs/` - Docusaurus documentation site with guides and references (integrated with Deno tasks)
 - Shell dotfiles are dynamically generated during installation
 
 ### Installation Process
@@ -83,6 +89,86 @@ Each installation creates timestamped backups and provides rollback capability.
 
 - All scripting uses Deno with JSR imports (@std/* packages)
 - Cross-platform compatibility is maintained for macOS, Linux, and Windows
+
+## Documentation (Docusaurus)
+
+This project includes a comprehensive documentation site built with Docusaurus, fully integrated with the Deno task runner for a seamless development workflow.
+
+### Overview
+
+- Modern documentation site using Docusaurus v3.8.1
+- Deployed to GitHub Pages at https://wcygan.github.io/dotfiles/
+- Integrated with Deno tasks for consistent developer experience
+- Dark mode enabled by default with user preference support
+
+### Deno Integration
+
+All documentation commands are available through `deno.json` tasks:
+
+```bash
+# Docusaurus commands via Deno tasks
+deno task docs:install     # Install npm dependencies
+deno task docs:dev         # Start development server (localhost:3000)
+deno task docs:build       # Build static site
+deno task docs:serve       # Serve built site locally
+deno task docs:typecheck   # Type check TypeScript files
+
+# Alternative: Direct npm commands
+cd docs && npm start       # Same as deno task docs:dev
+cd docs && npm run build   # Same as deno task docs:build
+cd docs && npm run deploy  # Deploy to GitHub Pages
+```
+
+### Directory Structure
+
+- `docs/` - Docusaurus root directory (excluded from Deno formatting)
+  - `docs/` - Markdown documentation files
+    - `getting-started/` - Installation and quick start guides
+    - `configuration/` - Shell, editor, and tool configurations
+    - `reference/` - Script reference documentation
+  - `src/` - Custom components and pages
+    - `components/` - HomepageFeatures component
+    - `pages/` - Custom homepage with hero section
+    - `css/` - Custom styling for light/dark themes
+  - `static/` - Static assets directory
+  - `build/` - Generated static site (git-ignored)
+  - `docusaurus.config.ts` - Site configuration
+  - `sidebars.ts` - Documentation structure
+
+### Content Organization
+
+- **Getting Started**: Installation guide with prerequisites, quick start, and backup/rollback procedures
+- **Configuration**: Detailed guides for shell, editor, and tool configurations
+- **Reference**: Comprehensive script documentation
+- **Features**:
+  - Sidebar navigation with collapsible sections
+  - Syntax highlighting for bash, typescript, rust, go, and java
+  - Edit on GitHub links for easy contributions
+  - Broken link detection during builds
+
+### Deployment
+
+- **URL**: https://wcygan.github.io/dotfiles/
+- **Base URL**: `/dotfiles/`
+- **Deployment Branch**: `gh-pages`
+- **Organization**: `wcygan`
+- **Deploy Command**: `cd docs && npm run deploy`
+
+### Development Workflow
+
+1. **Initial Setup**: `deno task docs:install` to install dependencies
+2. **Development**: `deno task docs:dev` starts the dev server with hot reload
+3. **Type Checking**: `deno task docs:typecheck` ensures TypeScript correctness
+4. **Building**: `deno task docs:build` creates production-ready static files
+5. **Preview**: `deno task docs:serve` to preview the built site locally
+
+### Integration Notes
+
+- The `docs/` directory is excluded from Deno formatting (`fmt.exclude` in deno.json)
+- Documentation complements this CLAUDE.md file:
+  - **CLAUDE.md**: AI assistant context, development guidelines, and internal documentation
+  - **Docs Site**: User-facing installation guides, configuration references, and public documentation
+- Changes to shell configurations should be reflected in both places when appropriate
 
 ## Zed Editor Tasks
 

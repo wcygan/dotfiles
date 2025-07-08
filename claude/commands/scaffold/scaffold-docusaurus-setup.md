@@ -76,8 +76,84 @@ Each file should have proper frontmatter with sidebar_position.
 ### Step 6: Customize the homepage
 
 1. Update src/pages/index.tsx with a simple hero section
-2. Create src/components/HomepageFeatures.tsx with 2-3 key features
+2. Create src/components/HomepageFeatures.tsx with project-specific features
 3. Update src/css/custom.css with minimal styling
+
+#### Customizing HomepageFeatures.tsx
+
+Replace the default HomepageFeatures.tsx with a project-specific version. Here's a template:
+
+```typescript
+import React from "react";
+import clsx from "clsx";
+import styles from "./HomepageFeatures.module.css";
+
+type FeatureItem = {
+  title: string;
+  description: JSX.Element;
+};
+
+// Customize these features based on your project
+const FeatureList: FeatureItem[] = [
+  {
+    title: "Easy to Use",
+    description: (
+      <>
+        Describe how your project simplifies a complex task or provides an intuitive interface for
+        users.
+      </>
+    ),
+  },
+  {
+    title: "Built for Developers",
+    description: (
+      <>
+        Highlight developer-friendly features like CLI tools, APIs, extensibility, or integration
+        capabilities.
+      </>
+    ),
+  },
+  {
+    title: "Production Ready",
+    description: (
+      <>
+        Emphasize reliability, performance, security features, or battle-tested nature of your
+        project.
+      </>
+    ),
+  },
+];
+
+function Feature({ title, description }: FeatureItem) {
+  return (
+    <div className={clsx("col col--4")}>
+      <div className="text--center padding-horiz--md">
+        <h3>{title}</h3>
+        <p>{description}</p>
+      </div>
+    </div>
+  );
+}
+
+export default function HomepageFeatures(): JSX.Element {
+  return (
+    <section className={styles.features}>
+      <div className="container">
+        <div className="row">
+          {FeatureList.map((props, idx) => <Feature key={idx} {...props} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+Example project-specific features to consider:
+
+- **For a CLI tool**: "Cross-platform Support", "Zero Configuration", "Extensive Plugin System"
+- **For a library**: "Type-Safe", "Tree-Shakeable", "Framework Agnostic"
+- **For a service**: "High Availability", "Auto-scaling", "Multi-region Support"
+- **For dev tools**: "Hot Reload", "Built-in Testing", "IDE Integration"
 
 ### Step 7: Add TypeScript configuration
 

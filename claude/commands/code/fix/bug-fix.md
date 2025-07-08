@@ -107,13 +107,56 @@ Think deeply about the optimal debugging approach for this specific bug type and
 
 FOR complex bugs requiring comprehensive investigation:
 
-Use parallel sub-agents for thorough bug analysis:
+**CRITICAL: Deploy parallel sub-agents for maximum performance (8-10x faster bug investigation)**
 
-- **Code Analysis Agent**: Examine code patterns, recent changes, and potential regression sources
-- **Environment Agent**: Analyze configuration, dependencies, and deployment differences
-- **Data Flow Agent**: Trace data flow and identify transformation issues
-- **Integration Agent**: Check API contracts, service interactions, and third-party integrations
-- **Security Agent**: Assess security implications and vulnerability patterns
+IMMEDIATELY launch 8 specialized bug investigation agents:
+
+- **Agent 1: Code Pattern Analysis**: Examine code patterns, recent changes, and potential regression sources
+  - Focus: Function implementations, class hierarchies, recent commits, code quality patterns
+  - Tools: Git blame, code pattern analysis, complexity metrics, refactoring impact assessment
+  - Output: Code-level root cause analysis with change timeline and impact assessment
+
+- **Agent 2: Environment & Configuration Analysis**: Analyze configuration, dependencies, and deployment differences
+  - Focus: Environment variables, configuration files, dependency versions, deployment settings
+  - Tools: Configuration validation, dependency analysis, environment comparison, deployment history
+  - Output: Environment-related causes with configuration drift analysis and dependency conflicts
+
+- **Agent 3: Data Flow & State Analysis**: Trace data flow and identify transformation issues
+  - Focus: Data transformations, state mutations, database interactions, API data contracts
+  - Tools: Data flow tracing, state analysis, database query analysis, API contract validation
+  - Output: Data-related issues with flow diagrams and state corruption analysis
+
+- **Agent 4: Integration & Service Analysis**: Check API contracts, service interactions, and third-party integrations
+  - Focus: Service boundaries, API calls, message queues, external service dependencies
+  - Tools: API testing, service mesh analysis, integration testing, dependency mapping
+  - Output: Integration issues with service interaction analysis and external dependency validation
+
+- **Agent 5: Security & Authentication Analysis**: Assess security implications and vulnerability patterns
+  - Focus: Authentication flows, authorization checks, input validation, security policies
+  - Tools: Security scanning, vulnerability analysis, authentication testing, policy validation
+  - Output: Security-related causes with vulnerability assessment and authentication flow analysis
+
+- **Agent 6: Performance & Resource Analysis**: Identify performance bottlenecks and resource constraints
+  - Focus: CPU usage, memory consumption, database performance, network latency
+  - Tools: Performance profiling, resource monitoring, database query analysis, latency measurement
+  - Output: Performance issues with bottleneck identification and resource utilization patterns
+
+- **Agent 7: Testing & Validation Analysis**: Examine test coverage, test failures, and validation gaps
+  - Focus: Test suite analysis, coverage gaps, failing tests, validation logic
+  - Tools: Test coverage analysis, test failure investigation, validation testing, quality metrics
+  - Output: Testing-related insights with coverage gaps and validation deficiencies
+
+- **Agent 8: Historical & Timeline Analysis**: Investigate historical patterns, change correlation, and temporal factors
+  - Focus: Change history, deployment timeline, error patterns, seasonal variations
+  - Tools: Git history analysis, deployment tracking, error correlation, timeline analysis
+  - Output: Historical context with change correlation and temporal pattern identification
+
+**Sub-Agent Coordination:**
+
+- Each agent saves findings to `/tmp/bug-investigation-agents-$SESSION_ID/`
+- Parallel execution provides 8-10x speed improvement over sequential investigation
+- Cross-agent correlation identifies complex multi-dimensional bug patterns
+- Results synthesized with root cause ranking and confidence scoring
 
 PROCEDURE investigate_bug():
 
@@ -127,21 +170,18 @@ WHEN "simple" (single component, clear error):
 
 WHEN "moderate" (multiple components, unclear cause):
 
-- Deploy 3 parallel investigation agents:
+- Deploy 5 parallel investigation agents:
   - **Agent 1**: Code pattern analysis and recent change impact
   - **Agent 2**: Environment and dependency analysis
   - **Agent 3**: Integration and data flow validation
+  - **Agent 4**: Performance and resource analysis
+  - **Agent 5**: Historical and timeline analysis
 - Synthesize findings from all agents
 - Correlate timeline with deployment and configuration changes
 
 WHEN "complex" (system-wide, intermittent, or performance-related):
 
-- Execute comprehensive multi-agent investigation:
-  - **Agent 1**: Deep code analysis across all potentially affected systems
-  - **Agent 2**: Performance profiling and resource utilization analysis
-  - **Agent 3**: Data integrity and flow validation across services
-  - **Agent 4**: Security and authentication pathway analysis
-  - **Agent 5**: Infrastructure and deployment environment analysis
+- Execute comprehensive 8-agent investigation (as defined above)
 - Think harder about race conditions, timing issues, and edge cases
 - Correlate findings across all analysis dimensions
 

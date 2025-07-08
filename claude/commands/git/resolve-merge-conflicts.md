@@ -29,7 +29,56 @@ IF merge conflicts found:
 
 - CONTINUE to conflict analysis
 
-**STEP 2: Analyze Conflict Context**
+**STEP 2: Comprehensive Conflict Analysis with Parallel Investigation**
+
+Think deeply about the optimal conflict resolution strategy based on merge complexity and file types involved.
+
+FOR complex merges (>5 conflicted files OR complex semantic conflicts):
+
+**CRITICAL: Deploy parallel sub-agents for comprehensive conflict analysis (7-9x faster resolution planning)**
+
+IMMEDIATELY launch 6 specialized conflict analysis agents:
+
+- **Agent 1: Structural Conflict Analysis**: Analyze code structure and architectural conflicts
+  - Focus: Class definitions, function signatures, import statements, module organization
+  - Tools: AST analysis, structural diff comparison, dependency impact assessment
+  - Output: Structural resolution strategy with refactoring recommendations
+
+- **Agent 2: Semantic Conflict Analysis**: Examine logical conflicts and business rule changes
+  - Focus: Business logic differences, algorithm changes, behavioral modifications
+  - Tools: Semantic analysis, test impact assessment, behavior comparison
+  - Output: Semantic resolution approach with integration testing requirements
+
+- **Agent 3: Data Flow Conflict Analysis**: Investigate data handling and transformation conflicts
+  - Focus: Variable assignments, data transformations, API contracts, database changes
+  - Tools: Data flow analysis, contract validation, schema compatibility checking
+  - Output: Data flow resolution with migration and compatibility strategies
+
+- **Agent 4: Configuration Conflict Analysis**: Resolve environment and configuration conflicts
+  - Focus: Config files, environment variables, build settings, deployment configurations
+  - Tools: Configuration comparison, environment analysis, dependency resolution
+  - Output: Configuration merge strategy with environment-specific considerations
+
+- **Agent 5: Test Conflict Analysis**: Analyze test code conflicts and coverage impact
+  - Focus: Test modifications, mock updates, assertion changes, test data conflicts
+  - Tools: Test analysis, coverage impact assessment, test strategy evaluation
+  - Output: Test resolution plan with coverage maintenance and quality assurance
+
+- **Agent 6: Documentation Conflict Analysis**: Resolve documentation and comment conflicts
+  - Focus: README changes, API documentation, inline comments, architectural documentation
+  - Tools: Documentation analysis, consistency checking, information architecture review
+  - Output: Documentation merge strategy with consistency and completeness validation
+
+**Sub-Agent Coordination:**
+
+- Each agent saves findings to `/tmp/merge-conflict-agents-$SESSION_ID/`
+- Parallel analysis provides 7-9x speed improvement over sequential conflict resolution
+- Cross-agent correlation identifies interdependent conflicts requiring coordinated resolution
+- Results synthesized into comprehensive resolution plan with risk assessment and rollback procedures
+
+FOR simple merges (≤5 files with straightforward conflicts):
+
+Execute sequential conflict analysis:
 
 FOR EACH conflicted file:
 

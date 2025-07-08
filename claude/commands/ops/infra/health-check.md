@@ -48,40 +48,56 @@ STEP 2: Comprehensive system discovery using parallel analysis
 
 IF system_complexity == "distributed" OR target_system contains "kubernetes|docker|microservices":
 
-**Launch parallel sub-agents for comprehensive health assessment:**
+**CRITICAL: Deploy parallel sub-agents for comprehensive health assessment (8-10x faster system analysis)**
 
-- **Agent 1: Infrastructure Health**: Analyze Kubernetes cluster, nodes, networking
-  - Focus: Pod status, node health, resource allocation, network connectivity
-  - Tools: kubectl with JSON output, cluster-level health indicators
-  - Output: Infrastructure readiness and capacity analysis
+IMMEDIATELY launch 8 specialized health monitoring agents:
 
-- **Agent 2: Container Health**: Assess Docker containers, images, volumes
-  - Focus: Container status, resource usage, health check configurations
-  - Tools: docker commands, container inspection, log analysis
-  - Output: Container ecosystem health and resource utilization
+- **Agent 1: Infrastructure Health Analysis**: Analyze Kubernetes cluster, nodes, networking, and orchestration
+  - Focus: Pod status, node health, resource allocation, network connectivity, cluster-level services
+  - Tools: kubectl with JSON output, cluster-level health indicators, network testing, service mesh analysis
+  - Output: Infrastructure readiness and capacity analysis with resource optimization recommendations
 
-- **Agent 3: Application Health**: Evaluate application-level health endpoints
-  - Focus: HTTP health checks, API availability, service dependencies
-  - Tools: curl, API testing, response validation
-  - Output: Application service availability and response metrics
+- **Agent 2: Container Ecosystem Health**: Assess Docker containers, images, volumes, and container orchestration
+  - Focus: Container status, resource usage, health check configurations, image vulnerabilities, volume health
+  - Tools: docker commands, container inspection, log analysis, image scanning, volume monitoring
+  - Output: Container ecosystem health and resource utilization with security and performance insights
 
-- **Agent 4: System Resources**: Monitor system-level resources and performance
-  - Focus: CPU, memory, disk, network utilization and capacity
-  - Tools: system monitoring commands, resource analysis
-  - Output: Resource availability and performance bottlenecks
+- **Agent 3: Application Service Health**: Evaluate application-level health endpoints, APIs, and service dependencies
+  - Focus: HTTP health checks, API availability, service dependencies, response times, error rates
+  - Tools: curl, API testing, response validation, load testing, dependency mapping
+  - Output: Application service availability and response metrics with performance optimization recommendations
 
-- **Agent 5: Configuration Analysis**: Review monitoring and alerting setup
-  - Focus: Existing monitoring tools, alert configurations, dashboards
-  - Tools: file analysis, configuration validation
-  - Output: Current monitoring coverage and improvement opportunities
+- **Agent 4: System Resource Monitoring**: Monitor system-level resources, performance, and capacity planning
+  - Focus: CPU, memory, disk, network utilization and capacity, system performance metrics
+  - Tools: system monitoring commands, resource analysis, performance profiling, capacity planning
+  - Output: Resource availability and performance bottlenecks with scaling recommendations
+
+- **Agent 5: Configuration & Alerting Analysis**: Review monitoring and alerting setup, configuration drift
+  - Focus: Existing monitoring tools, alert configurations, dashboards, configuration management
+  - Tools: file analysis, configuration validation, alert testing, dashboard analysis
+  - Output: Current monitoring coverage and improvement opportunities with alerting optimization
+
+- **Agent 6: Security & Compliance Health**: Assess security posture, compliance status, and vulnerability management
+  - Focus: Security configurations, compliance checks, vulnerability scanning, access controls
+  - Tools: security scanning, compliance validation, vulnerability assessment, access auditing
+  - Output: Security health assessment with compliance gaps and vulnerability remediation
+
+- **Agent 7: Performance & Scalability Analysis**: Analyze performance metrics, scalability patterns, and optimization opportunities
+  - Focus: Performance trends, scalability bottlenecks, resource optimization, load patterns
+  - Tools: performance monitoring, scalability testing, resource optimization, trend analysis
+  - Output: Performance insights with scalability recommendations and optimization strategies
+
+- **Agent 8: Operational Readiness Assessment**: Evaluate operational procedures, backup systems, and disaster recovery
+  - Focus: Backup systems, disaster recovery, operational procedures, monitoring coverage
+  - Tools: backup validation, DR testing, operational procedure analysis, monitoring gap analysis
+  - Output: Operational readiness assessment with DR improvements and operational optimization
 
 **Sub-Agent Coordination:**
 
-```bash
-echo "Parallel health assessment agents launched..."
-echo "Each agent analyzes specific system domain independently"
-echo "Results aggregated for comprehensive health report"
-```
+- Each agent saves findings to `/tmp/health-monitoring-agents-$SESSION_ID/`
+- Parallel execution provides 8-10x speed improvement over sequential health assessment
+- Cross-agent correlation identifies systemic issues across infrastructure domains
+- Results synthesized into comprehensive health report with prioritized action items
 
 ELSE:
 

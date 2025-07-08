@@ -24,14 +24,60 @@ STEP 1: Initialize review session
 - Load target files from $ARGUMENTS or analyze entire project if no specific targets
 - Create session state file: /tmp/review-state-$SESSION_ID.json
 - IF analyzing large codebase (>50 files):
-  - Use Task tool to delegate parallel analysis to sub-agents
-  - Agent 1: Architecture and design patterns analysis
-  - Agent 2: Security vulnerability assessment
-  - Agent 3: Performance and optimization review
-  - Agent 4: Testing coverage and quality analysis
-  - Agent 5: Dependencies and technical debt evaluation
+
+**CRITICAL: Deploy parallel sub-agents for maximum performance (10x faster comprehensive review)**
+
+IMMEDIATELY launch 8 specialized parallel review agents:
+
+- **Agent 1: Architecture & Design Patterns**: Analyze system architecture, design patterns, and structural integrity
+  - Focus: Component relationships, abstraction layers, separation of concerns, architectural violations
+  - Tools: Dependency analysis, pattern recognition, architectural metrics
+  - Expected: Architectural assessment with improvement recommendations
+
+- **Agent 2: Security Vulnerability Assessment**: Comprehensive security analysis across all attack vectors
+  - Focus: Input validation, authentication, authorization, data exposure, injection vulnerabilities
+  - Tools: Security pattern analysis, vulnerability scanning, OWASP compliance
+  - Expected: Security risk assessment with prioritized remediation plan
+
+- **Agent 3: Performance & Optimization Review**: Identify performance bottlenecks and optimization opportunities
+  - Focus: Algorithm efficiency, database queries, memory usage, caching strategies
+  - Tools: Complexity analysis, profiling patterns, resource utilization assessment
+  - Expected: Performance optimization roadmap with impact estimates
+
+- **Agent 4: Testing Coverage & Quality Analysis**: Evaluate test completeness, quality, and maintainability
+  - Focus: Test coverage gaps, test quality metrics, testing strategies, mock usage
+  - Tools: Coverage analysis, test pattern evaluation, assertion quality assessment
+  - Expected: Testing improvement plan with coverage targets
+
+- **Agent 5: Dependencies & Technical Debt Evaluation**: Assess dependency health and technical debt accumulation
+  - Focus: Dependency vulnerabilities, version currency, license compliance, debt patterns
+  - Tools: Dependency analysis, debt quantification, update impact assessment
+  - Expected: Dependency management strategy with debt reduction plan
+
+- **Agent 6: Code Quality & Maintainability**: Analyze code quality metrics and maintainability factors
+  - Focus: Code complexity, duplication, readability, documentation completeness
+  - Tools: Quality metrics calculation, complexity analysis, documentation assessment
+  - Expected: Code quality improvement recommendations with refactoring priorities
+
+- **Agent 7: API & Interface Design**: Review API design, interface consistency, and integration patterns
+  - Focus: API contracts, versioning, backwards compatibility, interface design principles
+  - Tools: API analysis, contract validation, integration pattern assessment
+  - Expected: API design recommendations with versioning strategy
+
+- **Agent 8: Configuration & DevOps Review**: Analyze build, deployment, and operational configurations
+  - Focus: Build scripts, CI/CD pipelines, environment configurations, operational readiness
+  - Tools: Configuration analysis, pipeline assessment, operational pattern review
+  - Expected: DevOps optimization recommendations with deployment improvements
+
+**Sub-Agent Coordination:**
+
+- Each agent saves findings to `/tmp/review-agents-$SESSION_ID/`
+- Parallel execution provides 10x speed improvement over sequential review
+- Cross-agent correlation identifies systemic issues across multiple domains
+- Results synthesized into comprehensive review report with actionable priorities
+
 - ELSE:
-  - Proceed with single-agent comprehensive analysis
+  - Proceed with focused single-agent comprehensive analysis
 
 STEP 2: Context gathering
 

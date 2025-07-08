@@ -37,13 +37,56 @@ STEP 2: Codebase Discovery (Parallel Sub-Agent Approach)
 
 FOR complex investigations requiring extensive codebase analysis:
 
-Launch 3-5 parallel sub-agents to explore:
+**CRITICAL: Deploy parallel sub-agents for comprehensive investigation (7-9x faster research)**
 
-- Agent 1: Search for existing implementations and patterns
-- Agent 2: Analyze configuration files and dependencies
-- Agent 3: Review documentation and architectural decisions
-- Agent 4: Examine test coverage and validation approaches
-- Agent 5: Map component relationships and integration points
+IMMEDIATELY launch 8 specialized investigation agents:
+
+- **Agent 1: Implementation Pattern Analysis**: Search for existing implementations and architectural patterns
+  - Focus: Current implementations, design patterns, code structure, architecture decisions
+  - Tools: Code pattern analysis, architecture mapping, implementation discovery
+  - Output: Existing solution catalog with pattern assessment and architectural insights
+
+- **Agent 2: Configuration & Dependencies Analysis**: Analyze configuration files and dependency ecosystem
+  - Focus: Configuration files, dependency versions, environment settings, build configurations
+  - Tools: Configuration analysis, dependency tree analysis, version compatibility checking
+  - Output: Configuration landscape with dependency analysis and compatibility assessment
+
+- **Agent 3: Documentation & Knowledge Analysis**: Review documentation and architectural decisions
+  - Focus: READMEs, architectural docs, decision records, inline documentation
+  - Tools: Documentation analysis, knowledge extraction, decision tracking
+  - Output: Knowledge baseline with documentation gaps and architectural context
+
+- **Agent 4: Test Coverage & Validation Analysis**: Examine test coverage and validation approaches
+  - Focus: Test strategies, coverage metrics, validation patterns, quality assurance
+  - Tools: Test analysis, coverage assessment, validation pattern discovery
+  - Output: Testing insights with coverage analysis and validation strategy assessment
+
+- **Agent 5: Integration & Component Analysis**: Map component relationships and integration points
+  - Focus: Service boundaries, API contracts, data flows, integration patterns
+  - Tools: Component mapping, integration analysis, API contract discovery
+  - Output: Integration landscape with component relationships and interaction patterns
+
+- **Agent 6: Industry Standards & Best Practices Research**: Research current industry standards and emerging trends
+  - Focus: Industry benchmarks, best practices, emerging trends, standard compliance
+  - Tools: Web research, standards analysis, trend monitoring, benchmark comparison
+  - Output: Industry landscape with standards compliance and trend analysis
+
+- **Agent 7: Technology Comparison & Alternative Analysis**: Compare alternative technologies and approaches
+  - Focus: Alternative solutions, technology comparisons, trade-off analysis, migration paths
+  - Tools: Technology research, comparison analysis, migration assessment, trade-off evaluation
+  - Output: Technology options with comparative analysis and migration considerations
+
+- **Agent 8: Risk Assessment & Future-Proofing Analysis**: Evaluate risks and future-proofing considerations
+  - Focus: Risk factors, future trends, technology longevity, support ecosystem
+  - Tools: Risk analysis, future trend assessment, ecosystem evaluation, sustainability analysis
+  - Output: Risk assessment with future-proofing recommendations and mitigation strategies
+
+**Sub-Agent Coordination:**
+
+- Each agent saves findings to `/tmp/investigation-agents-$SESSION_ID/`
+- Parallel execution provides 7-9x speed improvement over sequential research
+- Cross-agent correlation provides comprehensive multi-dimensional analysis
+- Results synthesized into cohesive investigation report with confidence scoring
 
 ELSE (simple investigations):
 

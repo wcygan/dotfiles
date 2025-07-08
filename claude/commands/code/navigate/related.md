@@ -63,12 +63,41 @@ STEP 3: Execute intelligent file discovery based on action type
 CASE action:
 WHEN "discover_all":
 
-- Use parallel sub-agents for comprehensive discovery:
-- **Agent 1**: Find all test files related to current context
-- **Agent 2**: Discover API endpoints and routes
-- **Agent 3**: Locate component and UI files
-- **Agent 4**: Find configuration and setup files
-- Present categorized navigation options
+**CRITICAL: Launch parallel sub-agents for maximum performance (8-10x faster discovery)**
+
+IMMEDIATELY deploy 5 parallel sub-agents for comprehensive file discovery:
+
+- **Agent 1: Test & Spec Discovery**: Find all test files, specs, and related testing infrastructure
+  - Focus: _.test._, _.spec._, **tests**, test/, spec/ directories
+  - Tools: fd with test patterns, rg for test framework detection
+  - Expected: Complete test ecosystem mapping with usage patterns
+
+- **Agent 2: API & Route Discovery**: Discover all API endpoints, routes, and handlers
+  - Focus: API routes, GraphQL schemas, RPC definitions, service endpoints
+  - Tools: rg for route patterns, fd for API directories, endpoint detection
+  - Expected: Complete API surface area with request/response patterns
+
+- **Agent 3: Component & UI Discovery**: Locate all UI components, pages, and templates
+  - Focus: React/Vue/Fresh components, HTML templates, styling files
+  - Tools: fd for component patterns, rg for component definitions
+  - Expected: Complete UI component hierarchy with prop relationships
+
+- **Agent 4: Configuration & Infrastructure**: Find all config, build, and deployment files
+  - Focus: Config files, environment files, build scripts, CI/CD definitions
+  - Tools: fd for config patterns, rg for environment variables
+  - Expected: Complete configuration landscape with dependencies
+
+- **Agent 5: Documentation & Schema Discovery**: Locate docs, schemas, and architectural files
+  - Focus: README files, API docs, database schemas, architectural diagrams
+  - Tools: fd for doc patterns, rg for schema definitions
+  - Expected: Complete project documentation and data model mapping
+
+**Sub-Agent Coordination:**
+
+- Each agent saves findings to `/tmp/navigation-agents-$SESSION_ID/`
+- Parallel execution provides 8-10x speed improvement over sequential discovery
+- Results synthesized into unified navigation interface with cross-references
+- Present categorized navigation options with intelligent recommendations
 
 WHEN "find_related":
 

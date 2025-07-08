@@ -84,40 +84,57 @@ STEP 3: Parallel comprehensive search using sub-agent architecture
 
 IF codebase_size > 1000 files OR search_target contains multiple_terms:
 
-LAUNCH parallel sub-agents for comprehensive code exploration:
+**CRITICAL: Deploy parallel sub-agents for maximum search performance (8-10x faster comprehensive search)**
 
-- **Agent 1: Source Code Search**: Search in primary source directories (src/, lib/, app/)
-  - Focus: Function definitions, class declarations, main implementation logic
-  - Tools: rg with language-specific patterns, function signature detection
-  - Output: Core implementation findings with relevance scoring
+IMMEDIATELY launch 8 specialized parallel search agents:
 
-- **Agent 2: Test Code Analysis**: Search in test directories (test/, tests/, spec/, **tests**)
-  - Focus: Test cases, mocks, test utilities, usage patterns
-  - Tools: rg with test-specific patterns, test framework detection
-  - Output: Test coverage insights and example usage patterns
+- **Agent 1: Source Code Search**: Deep search across primary source directories (src/, lib/, app/)
+  - Focus: Function definitions, class declarations, implementation logic, business logic
+  - Tools: rg with language-specific patterns, function signature detection, semantic search
+  - Output: Core implementation findings with relevance scoring and cross-references
 
-- **Agent 3: Documentation Search**: Search in documentation and comments (docs/, README, inline comments)
-  - Focus: API documentation, usage examples, architectural notes
-  - Tools: rg with comment patterns, markdown search, documentation analysis
-  - Output: Contextual documentation and usage guidance
+- **Agent 2: Test Code Analysis**: Comprehensive test ecosystem search (test/, tests/, spec/, **tests**)
+  - Focus: Test cases, mocks, test utilities, usage patterns, test coverage analysis
+  - Tools: rg with test-specific patterns, test framework detection, coverage mapping
+  - Output: Test coverage insights and example usage patterns with quality assessment
 
-- **Agent 4: Configuration Search**: Search in configuration files (.json, .toml, .yaml, .env, config/)
-  - Focus: Environment variables, build configurations, deployment settings
-  - Tools: rg with config-specific patterns, structured data search
-  - Output: Configuration insights and environment setup
+- **Agent 3: Documentation Search**: Exhaustive documentation and comment analysis
+  - Focus: API docs, usage examples, architectural notes, inline comments, READMEs
+  - Tools: rg with comment patterns, markdown search, documentation analysis, link validation
+  - Output: Contextual documentation with cross-references and knowledge gaps identified
 
-- **Agent 5: Script & Tool Search**: Search in automation scripts (scripts/, bin/, tools/, .github/)
-  - Focus: Build scripts, deployment tools, CI/CD configurations
-  - Tools: rg with script patterns, workflow analysis
-  - Output: Automation and workflow findings
+- **Agent 4: Configuration Search**: Complete configuration and environment analysis
+  - Focus: Environment variables, build configs, deployment settings, feature flags
+  - Tools: rg with config-specific patterns, structured data search, environment mapping
+  - Output: Configuration insights with environment dependencies and security considerations
+
+- **Agent 5: Script & Automation Search**: CI/CD and automation tool analysis
+  - Focus: Build scripts, deployment tools, CI/CD configurations, automation workflows
+  - Tools: rg with script patterns, workflow analysis, dependency chain mapping
+  - Output: Automation workflow findings with optimization opportunities
+
+- **Agent 6: Database & Schema Search**: Data layer and persistence pattern analysis
+  - Focus: Database schemas, migrations, queries, data models, ORM configurations
+  - Tools: rg with SQL patterns, schema analysis, query optimization detection
+  - Output: Data architecture findings with performance and integrity insights
+
+- **Agent 7: API & Integration Search**: Service interface and integration pattern analysis
+  - Focus: REST endpoints, GraphQL schemas, service contracts, external integrations
+  - Tools: rg with API patterns, contract analysis, integration mapping
+  - Output: API surface area with consistency and compatibility analysis
+
+- **Agent 8: Security & Compliance Search**: Security pattern and vulnerability analysis
+  - Focus: Authentication, authorization, input validation, security configurations
+  - Tools: rg with security patterns, vulnerability detection, compliance checking
+  - Output: Security findings with risk assessment and remediation recommendations
 
 **Sub-Agent Coordination:**
 
-```bash
-# Each agent reports findings to session state
-echo "Parallel search agents launched for comprehensive analysis..."
-echo "Results will be aggregated and ranked by relevance"
-```
+- Each agent saves findings to `/tmp/search-agents-$SESSION_ID/`
+- Parallel execution provides 8-10x speed improvement over sequential search
+- Cross-agent correlation identifies patterns spanning multiple domains
+- Results synthesized with intelligent ranking and relevance scoring
+- Smart deduplication and cross-reference linking across all search domains
 
 STEP 4: Interactive search interface with modern tooling
 

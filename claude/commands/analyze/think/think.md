@@ -17,11 +17,41 @@ STEP 1: Initialize Thinking Session
 - Initialize with topic: $ARGUMENTS
 - Set thinking depth based on complexity assessment
 
-STEP 2: Engage Sequential Thinking
+STEP 2: Adaptive Deep Thinking Strategy
 
-Use the sequential thinking tool to explore $ARGUMENTS through multiple perspectives:
+**FOR complex multi-dimensional problems requiring comprehensive analysis:**
 
-- Start with 5-10 initial thoughts for problem exploration
+**CRITICAL: Combine sequential thinking with parallel perspective analysis for maximum insight generation**
+
+EXECUTE hybrid approach:
+
+1. **Initial Sequential Thinking Phase**: Use sequential thinking tool for core problem exploration
+   - Start with 8-12 initial thoughts for comprehensive problem mapping
+   - Allow thinking to evolve organically - adjust total_thoughts as needed
+   - Question and revise previous thoughts when new insights emerge
+   - Generate multiple solution hypotheses and verify them systematically
+
+2. **Parallel Perspective Analysis**: Deploy specialized thinking agents for different analytical dimensions
+   - **Agent 1: First Principles Analysis**: Break down problem to fundamental components and build up solutions
+   - **Agent 2: Systems Thinking**: Analyze interconnections, feedback loops, and emergent properties
+   - **Agent 3: Stakeholder Analysis**: Examine multiple stakeholder viewpoints, incentives, and constraints
+   - **Agent 4: Temporal Analysis**: Investigate past trends, current state, and future implications
+   - **Agent 5: Risk & Scenario Analysis**: Explore potential failure modes, edge cases, and alternative scenarios
+
+3. **Integration & Synthesis**: Combine sequential insights with parallel perspectives for breakthrough understanding
+
+**Sub-Thinking Coordination:**
+
+- Sequential thinking provides deep logical progression and insight evolution
+- Parallel agents provide comprehensive perspective coverage and analytical rigor
+- Combined approach delivers both depth and breadth for complex problem solving
+- Results synthesized into actionable insights with multiple validation approaches
+
+**FOR straightforward problems requiring focused analysis:**
+
+Use enhanced sequential thinking approach:
+
+- Start with 5-8 initial thoughts for problem exploration
 - Allow thinking to evolve organically - adjust total_thoughts as needed
 - Question and revise previous thoughts when new insights emerge
 - Generate solution hypotheses and verify them

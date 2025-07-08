@@ -27,11 +27,11 @@
     "agent": "deno run --allow-all scripts/launch-agent.ts",
     "claim-task": "deno run --allow-all scripts/claim-next-task.ts",
     "clean-backups": "deno run --allow-all scripts/clean-backups.ts",
-    "docs:dev": "cd docs-prototype && npm start",
-    "docs:build": "cd docs-prototype && npm run build",
-    "docs:serve": "cd docs-prototype && npm run serve",
-    "docs:typecheck": "cd docs-prototype && npm run typecheck",
-    "docs:install": "cd docs-prototype && npm install"
+    "docs:dev": "cd docs && npm start",
+    "docs:build": "cd docs && npm run build",
+    "docs:serve": "cd docs && npm run serve",
+    "docs:typecheck": "cd docs && npm run typecheck",
+    "docs:install": "cd docs && npm install"
   },
   "lint": {
     "rules": {
@@ -47,6 +47,6 @@
     "semiColons": true,
     "singleQuote": false,
     "proseWrap": "preserve",
-    "exclude": ["docs-prototype/", "claude/commands/*.md"]
+    "exclude": ["docs/", "claude/commands/*.md"]
   }
 }

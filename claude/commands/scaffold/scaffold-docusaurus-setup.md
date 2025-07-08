@@ -34,7 +34,8 @@ After project creation, update the key configuration files to match the minimal 
 
 1. **Update docusaurus.config.ts** with:
    - Simple title and tagline
-   - GitHub Pages configuration (if git remote exists)
+   - GitHub Pages configuration with automatic URL detection from git remote
+   - Support for both GitHub Actions and branch deployment methods
    - Classic preset with minimal navbar
    - Light mode by default (defaultMode: "light")
    - Comprehensive syntax highlighting with additionalLanguages:
@@ -223,7 +224,120 @@ If the current directory is not a git repository, initialize one:
 cd docs && git init
 ```
 
-### Step 9: Configure Deno tasks for documentation
+### Step 9: Configure GitHub Pages deployment
+
+Set up GitHub Pages deployment using one of two methods:
+
+#### Option A: GitHub Actions Workflow (Recommended)
+
+Create `.github/workflows/deploy-docs.yml` for automatic deployment on push:
+
+```yaml
+name: Deploy Docusaurus to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: docs
+      - name: Build website
+        run: npm run build
+        working-directory: docs
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/build
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+Then enable GitHub Pages in repository settings:
+
+1. Go to Settings → Pages
+2. Under "Build and deployment", select "GitHub Actions" as the source
+3. The workflow will automatically deploy on the next push to main
+
+#### Option B: Branch Deployment (Legacy)
+
+For branch-based deployment:
+
+1. Build the site locally: `cd docs && npm run build`
+2. Deploy to gh-pages branch: `cd docs && npm run deploy`
+3. In repository settings → Pages:
+   - Source: "Deploy from a branch"
+   - Branch: "gh-pages"
+   - Folder: "/ (root)"
+
+**Note**: The `npm run deploy` command requires the following in docusaurus.config.ts:
+
+```typescript
+const config: Config = {
+  // ... other config ...
+  url: "https://username.github.io",
+  baseUrl: "/repository-name/",
+  organizationName: "username", // GitHub org/user name
+  projectName: "repository-name", // repo name
+  deploymentBranch: "gh-pages",
+  trailingSlash: false,
+};
+```
+
+### Step 10: Configure custom domain (optional)
+
+To use a custom domain:
+
+1. **Add CNAME file**: Create `docs/static/CNAME` with your domain:
+   ```
+   docs.example.com
+   ```
+
+2. **Configure DNS**:
+   - For apex domain (example.com): Add A records pointing to GitHub's IPs
+   - For subdomain (docs.example.com): Add CNAME record pointing to `username.github.io`
+
+3. **Update docusaurus.config.ts**:
+   ```typescript
+   url: 'https://docs.example.com',
+   baseUrl: '/',
+   ```
+
+4. **Enable in GitHub**:
+   - Go to Settings → Pages
+   - Add custom domain and verify
+   - Enable "Enforce HTTPS"
+
+### Step 11: Configure Deno tasks for documentation
 
 Update or create `deno.json` in the project root to include documentation tasks:
 
@@ -235,7 +349,8 @@ Update or create `deno.json` in the project root to include documentation tasks:
     "docs:build": "cd docs && npm run build",
     "docs:serve": "cd docs && npm run serve",
     "docs:deploy": "cd docs && npm run deploy",
-    "docs:install": "cd docs && npm install"
+    "docs:install": "cd docs && npm install",
+    "docs:typecheck": "cd docs && npm run typecheck"
   }
 }
 ```
@@ -245,16 +360,21 @@ This allows you to run documentation commands using Deno:
 - `deno task docs` - Start the development server
 - `deno task docs:build` - Build the static site
 - `deno task docs:serve` - Serve the built site locally
-- `deno task docs:deploy` - Deploy to GitHub Pages
+- `deno task docs:deploy` - Deploy to GitHub Pages (branch method)
 
-### Step 10: Final setup instructions
+### Step 12: Final setup instructions
 
 Provide the user with:
 
-1. Commands to start the development server: `deno task docs` or `cd docs && npm start`
-2. Build command: `deno task docs:build` or `cd docs && npm run build`
-3. Deployment instructions for GitHub Pages
-4. How to use Mermaid diagrams in markdown files
+1. **Development server**: `deno task docs` or `cd docs && npm start`
+2. **Build command**: `deno task docs:build` or `cd docs && npm run build`
+3. **Deployment**:
+   - GitHub Actions: Push to main branch (automatic)
+   - Manual: `deno task docs:deploy` (requires GH_TOKEN or SSH)
+4. **Site URL**:
+   - Default: `https://username.github.io/repository-name/`
+   - Custom domain: Configure in repository settings
+5. **Mermaid diagrams**: Use in any markdown file (see example below)
 
 ### Example Mermaid diagram usage:
 
@@ -268,7 +388,18 @@ graph TD;
 ```
 ````
 
-The site should be minimal, clean, and ready for documentation with full TypeScript support and diagram capabilities.
+The site should be minimal, clean, and ready for documentation with full TypeScript support, diagram capabilities, and GitHub Pages deployment.
+
+### GitHub Pages Configuration Details
+
+Docusaurus will automatically configure for GitHub Pages when it detects a GitHub remote. The configuration includes:
+
+- **URL Structure**: `https://[username].github.io/[repository-name]/`
+- **Base URL**: Set to `/[repository-name]/` for project sites
+- **Organization/User**: Extracted from git remote
+- **Deployment Branch**: Default to `gh-pages`
+
+For user/organization sites (username.github.io repos), set baseUrl to `/`.
 
 ### Troubleshooting Common Issues
 

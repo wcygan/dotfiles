@@ -1,6 +1,6 @@
 ---
-allowed-tools: Write, Read, Bash(gdate:*), Bash(date:*), Bash(pwd:*), Bash(fd:*), Bash(rg:*)
-description: Generate strategic roadmap for initiatives with session-based state management
+allowed-tools: Write, Read, Bash(gdate:*), Bash(date:*), Bash(pwd:*), Bash(fd:*), Bash(rg:*), Task
+description: Ultra-fast strategic roadmap generation using 8 parallel sub-agents for comprehensive analysis
 ---
 
 ## Context
@@ -12,16 +12,30 @@ description: Generate strategic roadmap for initiatives with session-based state
 
 ## Your task
 
-Generate a comprehensive strategic roadmap for the given initiative using a systematic, programmatic approach.
+**IMMEDIATELY DEPLOY 8 PARALLEL SUB-AGENTS** for instant comprehensive roadmap generation
 
 STEP 1: Initialize planning session
 
 - Create session ID for state tracking
-- Parse initiative description from $ARGUMENTS
-- Validate input completeness and clarity
+- Initialize results directory: /tmp/roadmap-results-$SESSION_ID/
 - Set up state file: /tmp/strategic-planning-state-$SESSION_ID.json
 
-STEP 2: Analyze initiative scope
+STEP 2: **LAUNCH ALL 8 AGENTS SIMULTANEOUSLY**
+
+**NO SEQUENTIAL ANALYSIS** - All agents work in parallel:
+
+1. **Scope Analysis Agent**: Analyze initiative boundaries and constraints
+2. **Goals Strategy Agent**: Generate SMART goals and success metrics
+3. **Milestone Planning Agent**: Break down goals into actionable milestones
+4. **Risk Assessment Agent**: Identify risks and mitigation strategies
+5. **Resource Planning Agent**: Estimate resources, skills, and budget
+6. **Timeline Agent**: Create realistic schedules with dependencies
+7. **Stakeholder Agent**: Map stakeholders and communication plans
+8. **Success Metrics Agent**: Define KPIs and measurement frameworks
+
+Each agent saves analysis to: /tmp/roadmap-results-$SESSION_ID/agent-N.json
+
+**Expected speedup: 8x faster roadmap generation**
 
 IF $ARGUMENTS is vague or incomplete:
 

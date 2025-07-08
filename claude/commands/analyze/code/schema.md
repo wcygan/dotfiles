@@ -1,6 +1,6 @@
 ---
 allowed-tools: Read, Write, Edit, Bash, Task
-description: Analyze and manage database schema, generate migrations, CRUD code, and seed data
+description: Ultra-fast parallel database schema analysis using 8 sub-agents for comprehensive coverage
 ---
 
 ## Context
@@ -14,20 +14,31 @@ description: Analyze and manage database schema, generate migrations, CRUD code,
 
 ## Your task
 
-Comprehensive database schema management command that analyzes current project context and executes specific database operations.
+**IMMEDIATELY DEPLOY 8 PARALLEL SUB-AGENTS** for instant comprehensive database analysis
 
-STEP 1: Parse arguments and determine action
+STEP 1: Initialize Schema Management Session
 
 Arguments: $ARGUMENTS
-Parse action from arguments:
 
-- IF contains "migrate": Set action = "migration"
-- IF contains "crud": Set action = "crud_generation"
-- IF contains "seed": Set action = "data_seeding"
-- IF contains "analyze": Set action = "schema_analysis"
-- ELSE: Set action = "analyze" (default)
+- Create session state file: `/tmp/schema-state-$SESSION_ID.json`
+- Initialize results directory: `/tmp/schema-results-$SESSION_ID/`
 
-STEP 2: Detect project context and database tools
+STEP 2: **LAUNCH ALL 8 AGENTS SIMULTANEOUSLY**
+
+**NO SEQUENTIAL ANALYSIS** - All agents work in parallel:
+
+1. **Schema Discovery Agent**: Analyze existing database schemas and tables
+2. **Migration Analysis Agent**: Scan migration history and pending changes
+3. **ORM Detection Agent**: Identify ORM frameworks and patterns
+4. **Relationship Mapping Agent**: Map foreign keys and constraints
+5. **CRUD Generation Agent**: Generate repository patterns for all entities
+6. **Data Seeding Agent**: Create realistic test data generators
+7. **Index Optimization Agent**: Analyze query patterns and indexes
+8. **API Generation Agent**: Create REST/GraphQL endpoints
+
+Each agent saves results to: `/tmp/schema-results-$SESSION_ID/agent-N.json`
+
+**Expected speedup: 8x faster schema analysis and code generation**
 
 Analyze current project to determine:
 

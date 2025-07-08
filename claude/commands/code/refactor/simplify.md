@@ -1,6 +1,6 @@
 ---
-allowed-tools: Read, Write, Edit, MultiEdit, Bash(rg:*), Bash(fd:*), Bash(git:*), Bash(wc:*), Bash(gdate:*), Bash(head:*), Bash(grep:*), Bash(xargs:*)
-description: Systematic code simplification with complexity analysis and refactoring automation
+allowed-tools: Read, Write, Edit, MultiEdit, Bash(rg:*), Bash(fd:*), Bash(git:*), Bash(wc:*), Bash(gdate:*), Bash(head:*), Bash(grep:*), Bash(xargs:*), Task
+description: Ultra-fast parallel code simplification using 10 sub-agents for 10x speedup
 ---
 
 # /simplify
@@ -20,9 +20,33 @@ description: Systematic code simplification with complexity analysis and refacto
 
 ## Your Task
 
-STEP 1: Complexity Analysis and Target Identification
+**IMMEDIATELY DEPLOY 10 PARALLEL SUB-AGENTS** for instant comprehensive simplification
 
-Think deeply about code complexity patterns and systematic simplification approaches.
+STEP 1: Initialize Simplification Session
+
+- Create session state file: `/tmp/simplify-$SESSION_ID.json`
+- Initialize results directory: `/tmp/simplify-results-$SESSION_ID/`
+
+STEP 2: **LAUNCH ALL 10 AGENTS SIMULTANEOUSLY**
+
+**NO SEQUENTIAL ANALYSIS** - All agents work in parallel:
+
+1. **Complexity Analysis Agent**: Identify cyclomatic complexity hotspots
+2. **Method Extraction Agent**: Find long functions to decompose
+3. **Conditional Logic Agent**: Simplify complex boolean expressions
+4. **Loop Modernization Agent**: Convert imperative to functional patterns
+5. **Naming Analysis Agent**: Identify cryptic names and abbreviations
+6. **Code Duplication Agent**: Find repeated patterns for extraction
+7. **Nesting Reduction Agent**: Eliminate deep nesting structures
+8. **Dead Code Agent**: Find unused code and redundant logic
+9. **Test Coverage Agent**: Identify untested complex code
+10. **Architecture Agent**: Analyze module coupling and cohesion
+
+Each agent saves findings to: `/tmp/simplify-results-$SESSION_ID/agent-N.json`
+
+Think deeply about code complexity patterns while maximizing parallel execution.
+
+**Expected speedup: 10x faster analysis and refactoring planning**
 
 IF $ARGUMENTS specifies file or directory:
 

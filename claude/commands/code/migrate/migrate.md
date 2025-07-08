@@ -1,6 +1,6 @@
 ---
 allowed-tools: Read, Write, Task, Bash(gdate:*), Bash(date:*), Bash(pwd:*), Bash(fd:*), Bash(rg:*), Bash(git:*)
-description: Create comprehensive migration strategy with automated implementation plans
+description: Ultra-fast parallel migration planning using 10 sub-agents for comprehensive impact analysis
 ---
 
 ## Context
@@ -15,16 +15,33 @@ description: Create comprehensive migration strategy with automated implementati
 
 ## Your task
 
-Generate a comprehensive migration strategy and implementation plan for the specified target using a systematic, multi-phase approach.
+**IMMEDIATELY DEPLOY 10 PARALLEL SUB-AGENTS** for instant comprehensive migration planning
 
-STEP 1: Migration Type Analysis and Discovery
+STEP 1: Initialize Migration Planning Session
 
-TRY:
+- Create session state file: `/tmp/migration-strategy-$SESSION_ID.json`
+- Initialize results directory: `/tmp/migration-results-$SESSION_ID/`
 
-- Parse migration target from $ARGUMENTS
-- Analyze project structure and technology stack
-- Detect existing migration infrastructure
-- Identify migration complexity and scope
+STEP 2: **LAUNCH ALL 10 AGENTS SIMULTANEOUSLY**
+
+**NO SEQUENTIAL ANALYSIS** - All agents work in parallel:
+
+1. **Impact Analysis Agent**: Assess breaking changes and affected systems
+2. **Risk Assessment Agent**: Identify risks and mitigation strategies
+3. **Database Migration Agent**: Analyze schema changes and data migration
+4. **API Migration Agent**: Map endpoint changes and client impacts
+5. **Dependency Agent**: Analyze package updates and compatibility
+6. **Testing Strategy Agent**: Create comprehensive test plans
+7. **Rollback Planning Agent**: Design rollback procedures and checkpoints
+8. **Performance Impact Agent**: Analyze migration performance implications
+9. **Security Review Agent**: Assess security implications of changes
+10. **Documentation Agent**: Generate migration guides and runbooks
+
+Each agent saves analysis to: `/tmp/migration-results-$SESSION_ID/agent-N.json`
+
+Think deeply about migration complexity while maximizing parallel execution.
+
+**Expected speedup: 10x faster migration planning and risk assessment**
 
 IF $ARGUMENTS contains "database":
 

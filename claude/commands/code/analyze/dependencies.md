@@ -1,6 +1,6 @@
 ---
 allowed-tools: Bash(fd:*), Bash(rg:*), Bash(git:*), Bash(npm:*), Bash(cargo:*), Bash(go:*), Bash(jq:*), Bash(gdate:*), Read, Write, Task
-description: Comprehensive dependency analysis with relationship mapping, impact assessment, and optimization recommendations
+description: Ultra-fast parallel dependency analysis using 10 sub-agents for 10x speedup
 ---
 
 # /dependencies
@@ -19,39 +19,39 @@ Analyze and visualize dependency relationships, impact analysis, and coupling pa
 
 ## Your Task
 
-Perform comprehensive dependency analysis for the specified scope: $ARGUMENTS
+**IMMEDIATELY DEPLOY 10 PARALLEL SUB-AGENTS** for lightning-fast dependency analysis of: $ARGUMENTS
 
-Think hard about complex dependency relationships, architectural implications, and optimization opportunities.
+Think hard about complex dependency relationships while maximizing parallel execution.
 
-## STEP-Based Execution Framework
+## Parallel Sub-Agent Execution Framework
 
 STEP 1: Initialize Analysis Session
 
 - Create session state file: /tmp/dependency-analysis-$SESSION_ID.json
-- Initialize analysis scope and project context
-- Set up checkpoint system for resumable analysis
+- Initialize results directory: /tmp/dependency-results-$SESSION_ID/
+- Set up checkpoint system for parallel agent coordination
 - Determine analysis scope: $ARGUMENTS
 
-STEP 2: Technology Stack Discovery
+STEP 2: **LAUNCH ALL 10 AGENTS SIMULTANEOUSLY**
 
-TRY:
+**NO SEQUENTIAL PROCESSING** - Deploy these agents in parallel:
 
-- Detect primary technology stack from available files
-- Identify dependency management tools (npm, cargo, go mod, maven, etc.)
-- Discover configuration files and build scripts
-- Map project structure and module organization
-- Save checkpoint: technology_detection_complete
+1. **Technology Stack Agent**: Detect all languages, frameworks, and build tools
+2. **Direct Dependencies Agent**: Analyze explicit package dependencies
+3. **Transitive Dependencies Agent**: Map entire dependency tree
+4. **Import Analysis Agent**: Scan all import/require statements
+5. **Infrastructure Dependencies Agent**: Find Docker, K8s, cloud dependencies
+6. **Runtime Dependencies Agent**: Identify DB, API, service dependencies
+7. **Security Analysis Agent**: Scan for vulnerabilities and outdated packages
+8. **Coupling Analysis Agent**: Measure component interdependencies
+9. **Circular Dependencies Agent**: Detect dependency cycles
+10. **License Compliance Agent**: Check license compatibility
 
-CATCH (missing_dependency_files):
+Each agent operates independently to maximize performance.
 
-- Use code analysis to infer technology stack
-- Search for import/require patterns across files
-- Document assumptions about detected technologies
-- Proceed with generic dependency analysis approach
+STEP 3: Parallel Dependency Discovery
 
-STEP 3: Dependency Discovery and Mapping
-
-FOR EACH detected technology:
+**ALL AGENTS WORK CONCURRENTLY:**
 
 **Code-Level Dependencies Discovery:**
 

@@ -1,6 +1,6 @@
 ---
-allowed-tools: WebSearch, WebFetch, Write, Bash(gdate:*)
-description: Perform fast web research with structured analysis and result synthesis
+allowed-tools: Task, WebSearch, WebFetch, Write, Bash(gdate:*)
+description: Ultra-fast parallel web research using sub-agents for 5-10x speedup
 ---
 
 ## Context
@@ -13,7 +13,7 @@ description: Perform fast web research with structured analysis and result synth
 
 ## Your Task
 
-Execute a systematic web research workflow for the query: "$ARGUMENTS"
+**IMMEDIATELY DEPLOY 8 PARALLEL SUB-AGENTS** for lightning-fast research on: "$ARGUMENTS"
 
 STEP 1: Initialize Research Session
 
@@ -21,44 +21,61 @@ STEP 1: Initialize Research Session
 - Initialize results directory: /tmp/research-results-$SESSION_ID/
 - Log research parameters and timestamp
 
-STEP 2: Primary Web Search
+STEP 2: Parallel Research Execution
 
-- Execute WebSearch with query: "$ARGUMENTS"
-- Analyze search results for relevance and authority
-- Identify top 3-5 most relevant sources
-- Filter for development-related, current, and authoritative content
+**LAUNCH ALL 8 AGENTS SIMULTANEOUSLY:**
 
-STEP 3: Content Extraction
+1. **Primary Search Agent**: Execute main WebSearch for "$ARGUMENTS"
+2. **Alternative Search Agent**: Search with refined/alternative query terms
+3. **Technical Docs Agent**: Focus on official documentation and APIs
+4. **Best Practices Agent**: Find current industry best practices
+5. **Tutorial Agent**: Locate practical tutorials and examples
+6. **Community Agent**: Search Stack Overflow, forums, discussions
+7. **Security Agent**: Research security considerations and vulnerabilities
+8. **Performance Agent**: Find performance benchmarks and optimizations
 
-FOR EACH selected source:
+Each agent should:
 
-- Use WebFetch to extract detailed content
-- Focus on technical documentation, best practices, and current information
-- Save individual source analysis to /tmp/research-results-$SESSION_ID/source-N.md
-- Rate content quality and relevance (1-10 scale)
+- Perform independent searches with domain-specific focus
+- Extract and analyze 2-3 top sources
+- Rate content quality and relevance
+- Save findings to /tmp/research-results-$SESSION_ID/agent-N.md
+
+STEP 3: Parallel Content Analysis
+
+**NO SEQUENTIAL PROCESSING** - All agents work concurrently:
+
+- Each agent uses WebFetch on their discovered sources
+- Focus on their specific domain expertise
+- Extract actionable insights and patterns
+- Identify current vs outdated information
 
 STEP 4: Synthesis and Analysis
 
-- Combine findings from all sources
-- Identify common patterns and recommendations
-- Highlight conflicting information or outdated practices
-- Create comprehensive summary with actionable insights
+After all agents complete:
+
+- Aggregate findings from all 8 parallel research streams
+- Cross-reference information for validation
+- Identify consensus recommendations
+- Flag conflicting or outdated information
+- Create unified knowledge base
 
 STEP 5: Structured Output
 
-Generate final research report containing:
+Generate comprehensive report with:
 
-- Executive summary (2-3 sentences)
-- Key findings (bulleted list)
-- Recommended actions or next steps
-- Source quality assessment
-- Confidence level in findings
+- Executive summary from multi-agent findings
+- Key insights by category (technical, security, performance, etc.)
+- Confidence scores based on source agreement
+- Recommended next steps with priority ranking
+- Source quality matrix
 
 STEP 6: Session Cleanup
 
-- Save final report to /tmp/research-results-$SESSION_ID/final-report.md
-- Update session state with completion status
-- Provide file locations for future reference
+- Save final synthesized report
+- Archive individual agent findings
+- Update session state with completion metrics
+- Report performance gain (expected 5-10x faster)
 
 ## Error Handling
 

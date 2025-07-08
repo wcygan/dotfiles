@@ -1,6 +1,6 @@
 ---
-allowed-tools: Read, Write, Bash(git:*), Bash(jq:*), Bash(rg:*), Bash(fd:*), Bash(gdate:*)
-description: Generate comprehensive changelog from git commits with intelligent commit classification and versioning
+allowed-tools: Read, Write, Bash(git:*), Bash(jq:*), Bash(rg:*), Bash(fd:*), Bash(gdate:*), Task
+description: Ultra-fast parallel changelog generation using 10 sub-agents for instant comprehensive analysis
 ---
 
 ## Context
@@ -18,23 +18,31 @@ description: Generate comprehensive changelog from git commits with intelligent 
 
 ## Your Task
 
+**IMMEDIATELY DEPLOY 10 PARALLEL SUB-AGENTS** for instant changelog generation
+
 STEP 1: Initialize changelog generation session
 
 - CREATE session state file: `/tmp/changelog-$SESSION_ID.json`
-- SET initial state:
-  ```json
-  {
-    "sessionId": "$SESSION_ID",
-    "phase": "discovery",
-    "target_range": "$ARGUMENTS",
-    "git_status": "unknown",
-    "commits_analyzed": 0,
-    "changelog_sections": {},
-    "version_info": {}
-  }
-  ```
+- Initialize results directory: `/tmp/changelog-results-$SESSION_ID/`
 
-STEP 2: Determine changelog scope and range
+STEP 2: **LAUNCH ALL 10 AGENTS SIMULTANEOUSLY**
+
+**NO SEQUENTIAL ANALYSIS** - All agents work in parallel:
+
+1. **Commit Analysis Agent**: Extract and classify all commits in range
+2. **Breaking Changes Agent**: Identify breaking changes and migration needs
+3. **Feature Detection Agent**: Find all new features and enhancements
+4. **Bug Fix Agent**: Catalog all bug fixes and patches
+5. **Security Analysis Agent**: Identify security-related commits
+6. **Version Calculation Agent**: Determine semantic version bump
+7. **Contributor Analysis Agent**: Analyze contributor statistics
+8. **PR/Issue Agent**: Extract PR and issue references
+9. **Performance Agent**: Find performance improvements
+10. **Documentation Agent**: Track documentation changes
+
+Each agent saves results to: `/tmp/changelog-results-$SESSION_ID/agent-N.json`
+
+**Expected speedup: 10x faster than sequential analysis**
 
 IF $ARGUMENTS provided:
 

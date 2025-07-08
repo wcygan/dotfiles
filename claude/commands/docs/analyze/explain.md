@@ -1,6 +1,6 @@
 ---
 allowed-tools: Read, Write, Bash(fd:*), Bash(rg:*), Bash(git:*), Bash(gdate:*), Bash(jq:*), Bash(wc:*), Task, WebFetch
-description: Provide comprehensive technical explanations with adaptive analysis depth and project-specific context
+description: Ultra-fast parallel technical explanations using 10 sub-agents for comprehensive multi-angle analysis
 ---
 
 ## Context
@@ -18,29 +18,33 @@ description: Provide comprehensive technical explanations with adaptive analysis
 
 ## Your Task
 
+**IMMEDIATELY DEPLOY 10 PARALLEL SUB-AGENTS** for instant comprehensive explanation
+
 STEP 1: Initialize comprehensive explanation session
 
 - CREATE session state file: `/tmp/explain-session-$SESSION_ID.json`
-- SET initial state:
-  ```json
-  {
-    "sessionId": "$SESSION_ID",
-    "target": "$ARGUMENTS",
-    "phase": "initialization",
-    "explanation_type": "auto-detect",
-    "complexity_level": "unknown",
-    "analysis_domains": [],
-    "project_context": {},
-    "artifacts_created": [],
-    "checkpoints": []
-  }
-  ```
-- DOCUMENT explanation target: $ARGUMENTS
-- ANALYZE project context for technology stack and scope
+- Initialize results directory: `/tmp/explain-results-$SESSION_ID/`
 
-STEP 2: Determine explanation strategy and complexity
+STEP 2: **LAUNCH ALL 10 AGENTS SIMULTANEOUSLY**
 
-Think deeply about the optimal explanation approach based on the target and project context.
+**NO SEQUENTIAL ANALYSIS** - All agents work in parallel:
+
+1. **Code Analysis Agent**: Analyze syntax, structure, and patterns
+2. **Architecture Agent**: Examine system design and integration
+3. **Algorithm Agent**: Explain computational complexity and logic
+4. **Pattern Recognition Agent**: Identify design patterns and idioms
+5. **Security Analysis Agent**: Assess vulnerabilities and best practices
+6. **Performance Agent**: Analyze efficiency and optimization opportunities
+7. **Usage Examples Agent**: Generate practical implementation examples
+8. **Testing Strategy Agent**: Create comprehensive test scenarios
+9. **Documentation Agent**: Research related concepts and resources
+10. **Visual Explanation Agent**: Create diagrams and visual aids
+
+Each agent saves analysis to: `/tmp/explain-results-$SESSION_ID/agent-N.json`
+
+Think deeply about the optimal explanation approach while maximizing parallel execution.
+
+**Expected speedup: 10x faster comprehensive explanation generation**
 
 **Extended Thinking Areas:**
 

@@ -1,6 +1,6 @@
 ---
 allowed-tools: Read, Write, Bash(fd:*), Bash(rg:*), Bash(which:*), Bash(cargo:*), Bash(go:*), Bash(deno:*), Bash(docker:*), Bash(kubectl:*), Bash(gdate:*), Bash(cp:*), Bash(ln:*), Bash(git:*), Task
-description: Set up complete development environment for new team members with automated toolchain validation
+description: Lightning-fast parallel environment setup using 10 sub-agents for 10x speedup
 ---
 
 ## Context
@@ -16,14 +16,31 @@ description: Set up complete development environment for new team members with a
 
 ## Your Task
 
-STEP 1: Initialize onboarding session and analyze project requirements
+**IMMEDIATELY DEPLOY 10 PARALLEL SUB-AGENTS** for ultra-fast onboarding setup
+
+STEP 1: Initialize onboarding session
 
 - CREATE session state file: `/tmp/onboard-session-$SESSION_ID.json`
-- ANALYZE project structure from Context section
-- DETERMINE primary technology stack and complexity level
-- IDENTIFY existing onboarding resources and gaps
+- Initialize results directory: `/tmp/onboard-results-$SESSION_ID/`
 
-STEP 2: Comprehensive environment detection and validation
+STEP 2: **LAUNCH ALL 10 AGENTS SIMULTANEOUSLY**
+
+**NO SEQUENTIAL SETUP** - All agents work in parallel:
+
+1. **Toolchain Agent**: Install/verify modern CLI tools (rg, fd, bat, eza, etc.)
+2. **Language Agent**: Set up language-specific toolchains (Rust, Go, Deno, Java)
+3. **Dependencies Agent**: Resolve and cache all project dependencies
+4. **Infrastructure Agent**: Start databases, containers, and services
+5. **Editor Agent**: Configure VSCode, Zed, and editor integrations
+6. **Git Agent**: Set up hooks, config, and version control
+7. **Environment Agent**: Create .env files and configure secrets
+8. **Build Agent**: Validate project builds successfully
+9. **Documentation Agent**: Analyze and organize learning materials
+10. **Integration Agent**: Set up team tools and communication
+
+Each agent saves results to `/tmp/onboard-results-$SESSION_ID/agent-N.json`
+
+**Expected completion: 5-10x faster than sequential setup**
 
 TRY:
 

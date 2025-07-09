@@ -57,5 +57,5 @@ export PATH="$HOME/.deno/bin:$PATH"
 
 # Source cargo env if it exists (handles PATH for us)
 if [ -f "$HOME/.cargo/env" ]; then
-    . "$HOME/.cargo/env"
+    source "$HOME/.cargo/env"
 fi

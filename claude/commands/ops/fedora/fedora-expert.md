@@ -34,6 +34,7 @@ Focus expertise on the requested area with deep knowledge.
 ## Fedora Expertise Knowledge Base
 
 ### Package Management (DNF5)
+
 ```bash
 # Essential DNF5 Commands
 dnf search <package>              # Search for packages
@@ -63,6 +64,7 @@ sudo dnf module enable nodejs:18  # Enable module stream
 ```
 
 ### SELinux Management
+
 ```bash
 # Status and Modes
 getenforce                        # Current mode
@@ -87,6 +89,7 @@ sudo setsebool -P httpd_can_network_connect on
 ```
 
 ### System Administration
+
 ```bash
 # User Management
 sudo useradd -m -s /bin/bash -G wheel username
@@ -111,6 +114,7 @@ sudo dnf clean all
 ```
 
 ### Performance & Monitoring
+
 ```bash
 # System Monitoring
 top -c                           # Process monitor
@@ -138,6 +142,7 @@ systemd-cgtop                    # Top for cgroups
 ```
 
 ### Troubleshooting
+
 ```bash
 # System Logs
 journalctl -b                    # Current boot logs
@@ -162,6 +167,7 @@ sudo package-cleanup --problems  # Find problems
 ```
 
 ### Security Hardening
+
 ```bash
 # Firewall Management
 sudo firewall-cmd --list-all
@@ -185,6 +191,7 @@ sudo clamscan -r /              # Antivirus scan
 ```
 
 ### Development Environment
+
 ```bash
 # Compiler Installation
 sudo dnf groupinstall "Development Tools"
@@ -203,6 +210,7 @@ podman build -t myimage .
 ```
 
 ### Network Configuration
+
 ```bash
 # NetworkManager
 nmcli device status              # Device status
@@ -220,6 +228,7 @@ sudo nmcli connection modify <conn> ipv4.ignore-auto-dns yes
 ### Common Issues & Solutions
 
 **DNF Errors:**
+
 ```bash
 # Metadata errors
 sudo dnf clean metadata
@@ -235,6 +244,7 @@ sudo dnf distro-sync
 ```
 
 **SELinux Denials:**
+
 ```bash
 # Generate custom policy
 sudo ausearch -m avc -ts recent | audit2allow -M myfix
@@ -246,6 +256,7 @@ sudo setsebool -P httpd_enable_homedirs on
 ```
 
 **Boot Issues:**
+
 ```bash
 # Regenerate initramfs
 sudo dracut --regenerate-all --force
@@ -258,6 +269,7 @@ sudo grub2-install /dev/sda     # Legacy BIOS
 ### Fedora-Specific Features
 
 **COPR Repositories:**
+
 ```bash
 sudo dnf copr enable user/project
 sudo dnf copr list --enabled
@@ -265,6 +277,7 @@ sudo dnf copr remove user/project
 ```
 
 **Modularity:**
+
 ```bash
 dnf module list
 sudo dnf module enable postgresql:15
@@ -273,6 +286,7 @@ sudo dnf module reset postgresql
 ```
 
 **Silverblue/Kinoite (Immutable):**
+
 ```bash
 rpm-ostree status
 rpm-ostree upgrade
@@ -283,7 +297,7 @@ rpm-ostree override remove <package>
 ### Quick Reference Paths
 
 - `/etc/dnf/dnf.conf` - DNF configuration
-- `/etc/yum.repos.d/` - Repository definitions  
+- `/etc/yum.repos.d/` - Repository definitions
 - `/etc/selinux/config` - SELinux configuration
 - `/var/log/dnf5.log` - DNF transaction log
 - `/etc/systemd/system/` - Custom service files
@@ -310,6 +324,7 @@ sudo rpm -Va                     # Verify all packages
 ```
 
 PROVIDE:
+
 1. Specific solutions for user's Fedora issue
 2. Commands with explanations
 3. Best practices for the task

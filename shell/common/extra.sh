@@ -64,6 +64,16 @@ if command -v fzf >/dev/null 2>&1; then
         export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
         export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
     fi
+    
+    # Fedora-specific fzf keybindings setup
+    if [ "$DOTFILES_DISTRO" = "fedora" ]; then
+        # Generate and source fzf keybindings if not already present
+        if [ -n "$BASH_VERSION" ] && [ ! -f ~/.fzf.bash ]; then
+            fzf --bash > ~/.fzf.bash 2>/dev/null
+        elif [ -n "$ZSH_VERSION" ] && [ ! -f ~/.fzf.zsh ]; then
+            fzf --zsh > ~/.fzf.zsh 2>/dev/null
+        fi
+    fi
 fi
 
 # direnv integration (if available)

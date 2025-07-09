@@ -49,10 +49,20 @@ case "$DOTFILES_OS" in
         # Linux specific settings
         if command -v apt >/dev/null 2>&1; then
             export DOTFILES_PACKAGE_MANAGER="apt"
+            export DOTFILES_DISTRO="debian"
+        elif command -v dnf >/dev/null 2>&1; then
+            export DOTFILES_PACKAGE_MANAGER="dnf"
+            if [ -f "/etc/fedora-release" ]; then
+                export DOTFILES_DISTRO="fedora"
+            else
+                export DOTFILES_DISTRO="rhel"
+            fi
         elif command -v yum >/dev/null 2>&1; then
             export DOTFILES_PACKAGE_MANAGER="yum"
+            export DOTFILES_DISTRO="rhel"
         elif command -v pacman >/dev/null 2>&1; then
             export DOTFILES_PACKAGE_MANAGER="pacman"
+            export DOTFILES_DISTRO="arch"
         fi
         ;;
 esac
@@ -97,6 +107,9 @@ dotfiles_info() {
     echo "🔧 Dotfiles Environment Information"
     echo "=================================="
     echo "OS: $DOTFILES_OS"
+    if [ -n "$DOTFILES_DISTRO" ]; then
+        echo "Distribution: $DOTFILES_DISTRO"
+    fi
     echo "Shell: $DOTFILES_SHELL ($DOTFILES_SHELL_VERSION)"
     echo "Config: $DOTFILES_SHELL_CONFIG"
     echo "Terminal: $DOTFILES_TERMINAL"

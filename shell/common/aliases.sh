@@ -71,6 +71,8 @@ alias mn='cd $HOME/Development/manning'
 alias oss='cd $HOME/Development/oss'
 alias lab='edit $HOME/Development/development-workspace/anton'
 
+alias exa='exa'
+
 # Modern CLI tool replacements
 # Use modern tools if available, fallback to traditional ones
 if command -v bat > /dev/null; then

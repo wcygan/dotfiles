@@ -8,7 +8,6 @@ description: Comprehensive Fedora Linux expertise with instant parallel analysis
 - Fedora Version: !`cat /etc/fedora-release 2>/dev/null || echo "Not Fedora"`
 - Kernel: !`uname -r`
 - SELinux Status: !`getenforce 2>/dev/null || echo "No SELinux"`
-- Current Issues: !`journalctl -p err -n 5 --no-pager 2>/dev/null | head -20`
 
 ## Your task
 

@@ -71,8 +71,6 @@ alias mn='cd $HOME/Development/manning'
 alias oss='cd $HOME/Development/oss'
 alias lab='edit $HOME/Development/development-workspace/anton'
 
-alias exa='exa'
-
 # Modern CLI tool replacements
 # Use modern tools if available, fallback to traditional ones
 if command -v bat > /dev/null; then
@@ -81,9 +79,9 @@ fi
 if command -v fd > /dev/null; then
     alias find='fd'
 fi
-if command -v exa > /dev/null; then
-    alias ls='exa'
-    alias l='exa -l'
+if command -v eza > /dev/null; then
+    alias ls='eza'
+    alias l='eza -l'
 else
     alias l='ls -l'
 fi

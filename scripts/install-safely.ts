@@ -47,6 +47,7 @@ const FILE_MAPPINGS: Record<string, string> = {
   "shell/common/extra.sh": ".extra.sh",
   "shell/common/platform.sh": ".platform.sh",
   "shell/vim/vimrc": ".vimrc",
+  "tmux/tmux.conf": ".tmux.conf",
 };
 
 // Files to manage (for backward compatibility)
@@ -1772,6 +1773,7 @@ This script will:
       console.log("   ✅ Installed Claude configuration files and custom commands");
       console.log("   ✅ Configured Claude MCP servers from mcp.json");
       console.log("   ✅ Installed Gemini configuration files");
+      console.log("   ✅ Installed tmux configuration");
       console.log("   ✅ Installed scripts to ~/.tools directory");
       if (Deno.build.os === "darwin") {
         console.log("   ✅ Installed Ghostty terminal configuration");
@@ -1800,6 +1802,9 @@ This script will:
       );
       console.log(
         `   • Try: ${colors.yellow}hello.ts${colors.reset} (test script from ~/.tools)`,
+      );
+      console.log(
+        `   • Try: ${colors.yellow}tmux${colors.reset} (terminal multiplexer with new config)`,
       );
       console.log();
       printBlue("🔄 If you need to rollback:");

@@ -65,22 +65,37 @@ alias src='source ~/.$(basename $SHELL)rc'
 alias ddd='edit ~/Development/development-workspace'
 alias dev='cd ~/Development'
 alias will='cd ~'
-alias n='edit /Users/wcygan/Development/development-workspace/notes'
-alias cs='edit /Users/wcygan/Development/csgo-config'
-alias mn='cd /Users/wcygan/Development/manning'
-alias oss='cd /Users/wcygan/Development/oss'
-alias lab='edit /Users/wcygan/Development/development-workspace/anton'
+alias n='edit $HOME/Development/development-workspace/notes'
+alias cs='edit $HOME/Development/csgo-config'
+alias mn='cd $HOME/Development/manning'
+alias oss='cd $HOME/Development/oss'
+alias lab='edit $HOME/Development/development-workspace/anton'
 
 # Modern CLI tool replacements
-alias cat='bat --paging=never'
-alias find='fd'
-alias ls='exa'
-alias l='exa -l'
+# Use modern tools if available, fallback to traditional ones
+if command -v bat > /dev/null; then
+    alias cat='bat --paging=never'
+fi
+if command -v fd > /dev/null; then
+    alias find='fd'
+fi
+if command -v exa > /dev/null; then
+    alias ls='exa'
+    alias l='exa -l'
+else
+    alias l='ls -l'
+fi
 
 # File operations
 alias listdir='find ${1:-.} -type f -not -path "*/.*/*" -print0 | xargs -0 -I {} bash -c '\''echo "$(dirname "{}")/$(basename "{}")"'\'' | sort -t/ -k2 -k3'
 # Disk Space Usage
-alias ds='du -sh * | sort -rh | awk '\''{sum+=$1; print} END {print "Total Size: " sum}'\'
+# Platform-specific sort options
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    alias ds='du -sh * | sort -rh | awk '\''{sum+=$1; print} END {print "Total Size: " sum}'\'
+else
+    # Linux sort might not have -h flag on older systems
+    alias ds='du -sh * | sort -hr 2>/dev/null || du -sh * | sort -nr | awk '\''{sum+=$1; print} END {print "Total Size: " sum}'\'
+fi
 # Platform-specific clipboard command
 if [[ "$OSTYPE" == "darwin"* ]]; then
     alias copydir='rg --no-ignore --no-heading --with-filename --line-number --text --max-columns 500 --binary "" | nl -ba | tee >(pbcopy) | cat'
@@ -114,6 +129,7 @@ alias binary='xxd'
 alias py='/usr/bin/python3'
 
 # SSH and remote connections
+# Note: Consider adding these hosts to ~/.ssh/config for better portability
 alias m0='ssh -i ~/.ssh/trudy_key.pem wcygan@20.51.124.200'
 alias trudy='ssh -i ~/.ssh/trudy_key.pem wcygan@20.51.124.200'
 alias m1='ssh wcygan@betty'
@@ -137,8 +153,8 @@ git config --global user.email "wcygan.io@gmail.com"
 git config --global core.editor "vim"
 
 # Dotfile management
-alias cfg='/usr/bin/git --git-dir=/Users/wcygan/.cfg/ --work-tree=/Users/wcygan'
-alias config='/usr/bin/git --git-dir=/Users/wcygan/.cfg/ --work-tree=/Users/wcygan'
+alias cfg='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 
 # Git aliases
 alias gaa='git add .'
@@ -206,7 +222,7 @@ alias gof='go format'
 alias goi='go install'
 alias gofix='go fix'
 alias god='go doc'
-alias gcu='/Users/wcygan/go/bin/go-coreutils'
+alias gcu='$HOME/go/bin/go-coreutils'
 
 # Java
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -240,14 +256,26 @@ alias o='ollama'
 
 # IP addresses
 alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
-alias localip="ipconfig getifaddr en0"
-alias ips="ifconfig -a | grep -o 'inet6\? \(addr:\)\?\s\?\(\(\([0-9]\+\.\)\{3\}[0-9]\+\)\|[a-fA-F0-9:]\+\)' | awk '{ sub(/inet6? (addr:)? ?/, \"\"); print }'"
+# Platform-specific local IP
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    alias localip="ipconfig getifaddr en0"
+else
+    # Linux - get IP of default interface
+    alias localip="ip route get 1 | awk '{print \$7; exit}' 2>/dev/null || hostname -I | awk '{print \$1}'"
+fi
+alias ips="ifconfig -a 2>/dev/null | grep -o 'inet6\? \(addr:\)\?\s\?\(\(\([0-9]\+\.\)\{3\}[0-9]\+\)\|[a-fA-F0-9:]\+\)' | awk '{ sub(/inet6? (addr:)? ?/, \"\"); print }' || ip -o addr show | awk '{print \$4}' | cut -d/ -f1"
 
 # Show active network interfaces
-alias ifactive="ifconfig | pcregrep -M -o '^[^\t:]+:([^\n]|\n\t)*status: active'"
-
-# Flush Directory Service cache
-alias flush="dscacheutil -flushcache && killall -HUP mDNSResponder"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    alias ifactive="ifconfig | pcregrep -M -o '^[^\t:]+:([^\n]|\n\t)*status: active'"
+    # Flush Directory Service cache
+    alias flush="dscacheutil -flushcache && killall -HUP mDNSResponder"
+else
+    # Linux
+    alias ifactive="ip link show | grep 'state UP' | cut -d: -f2 | tr -d ' '"
+    # Linux DNS cache flush (systemd-resolved)
+    alias flush="sudo systemctl restart systemd-resolved 2>/dev/null || sudo service nscd restart 2>/dev/null || echo 'DNS cache flush not available'"
+fi
 
 for method in GET HEAD POST PUT DELETE TRACE OPTIONS; do
 	alias "${method}"="lwp-request -m '${method}'"
@@ -346,11 +374,13 @@ alias fl='fleet'
 # Canonical hex dump; some systems have this symlinked
 command -v hd > /dev/null || alias hd="hexdump -C"
 
-# macOS has no `md5sum`, so use `md5` as a fallback
-command -v md5sum > /dev/null || alias md5sum="md5"
-
-# macOS has no `sha1sum`, so use `shasum` as a fallback
-command -v sha1sum > /dev/null || alias sha1sum="shasum"
+# Cross-platform hash commands
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS has no `md5sum`, so use `md5` as a fallback
+    command -v md5sum > /dev/null || alias md5sum="md5"
+    # macOS has no `sha1sum`, so use `shasum` as a fallback
+    command -v sha1sum > /dev/null || alias sha1sum="shasum"
+fi
 
 # Recursively delete `.DS_Store` files
 alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
@@ -384,7 +414,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 # URL-encode strings
-alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'
+# Python 3 compatible version
+alias urlencode='python3 -c "import sys, urllib.parse; print(urllib.parse.quote_plus(sys.argv[1]));"'
 
 # Intuitive map function
 # For example, to list all directories that contain a certain file:

@@ -1215,17 +1215,35 @@ async function reloadShell(shellType: string, homeDir: string): Promise<void> {
     if (shellType === "zsh") {
       const zshrcPath = join(homeDir, ".zshrc");
       if (await exists(zshrcPath)) {
+        // Note: This won't affect the parent shell, but we'll provide instructions
         await runCommand(["zsh", "-c", `source ${zshrcPath}`]);
+        console.log();
+        console.log(
+          `   ${colors.blue}Note:${colors.reset} To apply changes in your current shell, run:`,
+        );
+        console.log(`   ${colors.yellow}source ~/.zshrc${colors.reset}`);
       }
     } else if (shellType === "bash") {
       const bashrcPath = join(homeDir, ".bashrc");
       if (await exists(bashrcPath)) {
+        // Note: This won't affect the parent shell, but we'll provide instructions
         await runCommand(["bash", "-c", `source ${bashrcPath}`]);
+        console.log();
+        console.log(
+          `   ${colors.blue}Note:${colors.reset} To apply changes in your current shell, run:`,
+        );
+        console.log(`   ${colors.yellow}source ~/.bashrc${colors.reset}`);
       }
     }
-    printStatus("Shell configuration reloaded");
+    printStatus("Shell configuration reloaded in subshell");
   } catch {
     printWarning("Could not reload shell configuration automatically");
+    console.log(`   ${colors.blue}Note:${colors.reset} Manually reload your shell with:`);
+    if (shellType === "zsh") {
+      console.log(`   ${colors.yellow}source ~/.zshrc${colors.reset}`);
+    } else if (shellType === "bash") {
+      console.log(`   ${colors.yellow}source ~/.bashrc${colors.reset}`);
+    }
   }
 }
 

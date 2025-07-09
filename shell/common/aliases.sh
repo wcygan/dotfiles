@@ -18,7 +18,19 @@
 ##############################################################################
 
 alias c='clear'
-alias .='open .'
+
+# Platform-specific open command
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    alias .='open .'
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Linux
+    alias .='xdg-open .'
+else
+    # Default fallback
+    alias .='echo "Open command not configured for this platform"'
+fi
+
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
@@ -69,11 +81,35 @@ alias l='exa -l'
 alias listdir='find ${1:-.} -type f -not -path "*/.*/*" -print0 | xargs -0 -I {} bash -c '\''echo "$(dirname "{}")/$(basename "{}")"'\'' | sort -t/ -k2 -k3'
 # Disk Space Usage
 alias ds='du -sh * | sort -rh | awk '\''{sum+=$1; print} END {print "Total Size: " sum}'\'
-alias copydir='rg --no-ignore --no-heading --with-filename --line-number --text --max-columns 500 --binary "" | nl -ba | tee >(pbcopy) | cat'
+# Platform-specific clipboard command
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    alias copydir='rg --no-ignore --no-heading --with-filename --line-number --text --max-columns 500 --binary "" | nl -ba | tee >(pbcopy) | cat'
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Use xclip or xsel on Linux
+    if command -v xclip > /dev/null; then
+        alias copydir='rg --no-ignore --no-heading --with-filename --line-number --text --max-columns 500 --binary "" | nl -ba | tee >(xclip -selection clipboard) | cat'
+    elif command -v xsel > /dev/null; then
+        alias copydir='rg --no-ignore --no-heading --with-filename --line-number --text --max-columns 500 --binary "" | nl -ba | tee >(xsel --clipboard --input) | cat'
+    else
+        alias copydir='rg --no-ignore --no-heading --with-filename --line-number --text --max-columns 500 --binary "" | nl -ba | cat'
+    fi
+fi
 
 # System utilities
 alias ff='fastfetch'
-alias caf='caffeinate'
+# Platform-specific caffeinate command
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    alias caf='caffeinate'
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Linux alternatives to prevent sleep
+    if command -v systemd-inhibit > /dev/null; then
+        alias caf='systemd-inhibit --what=idle:sleep:shutdown'
+    elif command -v caffeine > /dev/null; then
+        alias caf='caffeine'
+    else
+        alias caf='echo "No sleep prevention tool found. Consider installing caffeine or using systemd-inhibit"'
+    fi
+fi
 alias binary='xxd'
 alias py='/usr/bin/python3'
 
@@ -173,7 +209,17 @@ alias god='go doc'
 alias gcu='/Users/wcygan/go/bin/go-coreutils'
 
 # Java
-alias java11='JAVA_HOME=/opt/homebrew/opt/openjdk@11/bin/java'
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS with Homebrew
+    alias java11='JAVA_HOME=/opt/homebrew/opt/openjdk@11/bin/java'
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Linux - common Java 11 locations
+    if [ -d "/usr/lib/jvm/java-11-openjdk" ]; then
+        alias java11='JAVA_HOME=/usr/lib/jvm/java-11-openjdk'
+    elif [ -d "/usr/lib/jvm/java-11" ]; then
+        alias java11='JAVA_HOME=/usr/lib/jvm/java-11'
+    fi
+fi
 alias j!=jbang
 
 # NPM/Node
@@ -276,7 +322,18 @@ alias nv='nvim'
 
 # File and content operations
 alias t='tree'
-alias rr='repomix && cat repomix-output.xml | pbcopy && rm repomix-output.xml'
+# Platform-specific repomix alias
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    alias rr='repomix && cat repomix-output.xml | pbcopy && rm repomix-output.xml'
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    if command -v xclip > /dev/null; then
+        alias rr='repomix && cat repomix-output.xml | xclip -selection clipboard && rm repomix-output.xml'
+    elif command -v xsel > /dev/null; then
+        alias rr='repomix && cat repomix-output.xml | xsel --clipboard --input && rm repomix-output.xml'
+    else
+        alias rr='repomix && cat repomix-output.xml && rm repomix-output.xml'
+    fi
+fi
 alias mcp='edit ~/.cursor/mcp.json'
 
 # Fleet (JetBrains)
@@ -298,18 +355,33 @@ command -v sha1sum > /dev/null || alias sha1sum="shasum"
 # Recursively delete `.DS_Store` files
 alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
 
-# Empty the Trash on all mounted volumes and the main HDD.
-# Also, clear Apple's System Logs to improve shell startup speed.
-# Finally, clear download history from quarantine. https://mths.be/bum
-alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl; sqlite3 ~/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV* 'delete from LSQuarantineEvent'"
+# Platform-specific trash management
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # Empty the Trash on all mounted volumes and the main HDD.
+    # Also, clear Apple's System Logs to improve shell startup speed.
+    # Finally, clear download history from quarantine. https://mths.be/bum
+    alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl; sqlite3 ~/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV* 'delete from LSQuarantineEvent'"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Linux trash management
+    if command -v trash-empty > /dev/null; then
+        alias emptytrash="trash-empty"
+    elif command -v gio > /dev/null; then
+        alias emptytrash="gio trash --empty"
+    else
+        alias emptytrash="rm -rf ~/.local/share/Trash/*"
+    fi
+fi
 
-# Show/hide hidden files in Finder
-alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
-alias hide="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
+# macOS-specific Finder commands
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # Show/hide hidden files in Finder
+    alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
+    alias hide="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
 
-# Hide/show all desktop icons (useful when presenting)
-alias hidedesktop="defaults write com.apple.finder CreateDesktop -bool false && killall Finder"
-alias showdesktop="defaults write com.apple.finder CreateDesktop -bool true && killall Finder"
+    # Hide/show all desktop icons (useful when presenting)
+    alias hidedesktop="defaults write com.apple.finder CreateDesktop -bool false && killall Finder"
+    alias showdesktop="defaults write com.apple.finder CreateDesktop -bool true && killall Finder"
+fi
 
 # URL-encode strings
 alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'

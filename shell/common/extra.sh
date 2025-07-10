@@ -19,9 +19,6 @@ if [ -n "$ZSH_VERSION" ]; then
         source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
     fi
 
-    # fzf integration for zsh (if available)
-    [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
     # mise activation for zsh
     if command -v mise >/dev/null 2>&1; then
         eval "$(/opt/homebrew/bin/mise activate zsh)"
@@ -29,9 +26,6 @@ if [ -n "$ZSH_VERSION" ]; then
 
 elif [ -n "$BASH_VERSION" ]; then
     # Bash-specific configurations
-    
-    # fzf integration for bash (if available)
-    [ -f ~/.fzf.bash ] && source ~/.fzf.bash
     
     # mise activation for bash
     if command -v mise >/dev/null 2>&1; then
@@ -65,14 +59,44 @@ if command -v fzf >/dev/null 2>&1; then
         export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
     fi
     
-    # Fedora-specific fzf keybindings setup
-    if [ "$DOTFILES_DISTRO" = "fedora" ]; then
-        # Generate and source fzf keybindings if not already present
-        if [ -n "$BASH_VERSION" ] && [ ! -f ~/.fzf.bash ]; then
-            fzf --bash > ~/.fzf.bash 2>/dev/null
-        elif [ -n "$ZSH_VERSION" ] && [ ! -f ~/.fzf.zsh ]; then
-            fzf --zsh > ~/.fzf.zsh 2>/dev/null
+    # Ensure fzf keybindings are available and loaded
+    if [ -n "$BASH_VERSION" ]; then
+        # Generate fzf keybindings file if missing
+        if [ ! -f ~/.fzf.bash ]; then
+            if fzf --bash > ~/.fzf.bash 2>/dev/null; then
+                echo "✓ Generated fzf keybindings at ~/.fzf.bash"
+            else
+                echo "⚠️  Failed to generate fzf keybindings. Run: fzf --bash > ~/.fzf.bash"
+            fi
         fi
+        # Always try to source the keybindings
+        if [ -f ~/.fzf.bash ]; then
+            source ~/.fzf.bash
+        fi
+    elif [ -n "$ZSH_VERSION" ]; then
+        # Generate fzf keybindings file if missing
+        if [ ! -f ~/.fzf.zsh ]; then
+            if fzf --zsh > ~/.fzf.zsh 2>/dev/null; then
+                echo "✓ Generated fzf keybindings at ~/.fzf.zsh"
+            else
+                echo "⚠️  Failed to generate fzf keybindings. Run: fzf --zsh > ~/.fzf.zsh"
+            fi
+        fi
+        # Always try to source the keybindings
+        if [ -f ~/.fzf.zsh ]; then
+            source ~/.fzf.zsh
+        fi
+    fi
+else
+    # Warn if fzf is not installed
+    if [ "$DOTFILES_DISTRO" = "fedora" ]; then
+        echo "⚠️  fzf is not installed. Install with: sudo dnf install fzf"
+    elif [ "$DOTFILES_OS" = "macos" ]; then
+        echo "⚠️  fzf is not installed. Install with: brew install fzf"
+    elif [ "$DOTFILES_PACKAGE_MANAGER" = "apt" ]; then
+        echo "⚠️  fzf is not installed. Install with: sudo apt install fzf"
+    else
+        echo "⚠️  fzf is not installed. Please install it for enhanced shell features."
     fi
 fi
 

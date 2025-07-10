@@ -11,14 +11,15 @@ description: Load essential Fedora Linux knowledge for daily system usage
 ## Your task
 
 IF the system is not Fedora:
-  PRINT "This command is designed for Fedora Linux systems."
-  EXIT
+PRINT "This command is designed for Fedora Linux systems."
+EXIT
 
 PRINT "📚 Loading Fedora Linux Essentials..."
 
 **Essential Fedora Commands Reference:**
 
 ### Package Management (DNF)
+
 ```bash
 # Update system
 sudo dnf update
@@ -43,6 +44,7 @@ sudo dnf clean all
 ```
 
 ### Service Management (systemctl)
+
 ```bash
 # Start/stop/restart service
 sudo systemctl start|stop|restart [service_name]
@@ -58,6 +60,7 @@ systemctl list-units --type=service
 ```
 
 ### System Information
+
 ```bash
 # System info
 hostnamectl
@@ -73,6 +76,7 @@ top
 ```
 
 ### Log Viewing
+
 ```bash
 # View system logs
 journalctl
@@ -88,6 +92,7 @@ journalctl -b
 ```
 
 ### Network Commands
+
 ```bash
 # Show network interfaces
 ip addr
@@ -103,6 +108,7 @@ nslookup [hostname]
 ```
 
 ### File Permissions & SELinux
+
 ```bash
 # Change file permissions
 chmod [permissions] [file]
@@ -121,6 +127,7 @@ sudo restorecon -Rv [path]
 ```
 
 ### User Management
+
 ```bash
 # Add user
 sudo useradd [username]
@@ -136,6 +143,7 @@ su - [username]
 ```
 
 ### Firewall (firewalld)
+
 ```bash
 # Check firewall status
 sudo firewall-cmd --state
@@ -153,6 +161,7 @@ sudo firewall-cmd --reload
 ```
 
 ### Quick Tips:
+
 - Use `Tab` for command completion
 - Use `Ctrl+R` to search command history
 - Use `man [command]` for detailed help

@@ -351,6 +351,8 @@ alias nv='nvim'
 
 # File and content operations
 alias t='ssh wcygan@betty -t "tmux attach -t main || tmux new -s main"'
+alias t2='ssh wcygan@betty -t "tmux attach -t secondary || tmux new -s secondary"'
+
 # Platform-specific repomix alias
 if [[ "$OSTYPE" == "darwin"* ]]; then
     alias rr='repomix && cat repomix-output.xml | pbcopy && rm repomix-output.xml'

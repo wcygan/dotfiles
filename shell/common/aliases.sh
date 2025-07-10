@@ -350,7 +350,7 @@ alias z='zed'
 alias nv='nvim'
 
 # File and content operations
-alias t='tree'
+alias t='ssh wcygan@betty -t "tmux attach -t main || tmux new -s main"'
 # Platform-specific repomix alias
 if [[ "$OSTYPE" == "darwin"* ]]; then
     alias rr='repomix && cat repomix-output.xml | pbcopy && rm repomix-output.xml'

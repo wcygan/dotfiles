@@ -36,7 +36,7 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 
 # Editor and shell configuration
-alias edit='zed'
+alias edit="${EDITOR:-vim}"
 alias g='gemini'
 alias x='claude'
 alias xs'claude --model sonnet'

@@ -38,8 +38,6 @@ Include relevant files from your project to understand the structure and convent
 
 **Source Code**: Include relevant source directories and files for context
 
-#file:README.md
-
 ## TDD Workflow
 
 ### Step 1: Project Analysis and Language Detection

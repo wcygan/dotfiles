@@ -236,7 +236,3 @@ Provide a comprehensive project plan including:
 5. **Risk Management Plan**: Risk assessment and mitigation strategies
 6. **Quality Assurance Plan**: Testing strategy and quality measures
 7. **Success Criteria**: Measurable objectives and evaluation metrics
-
-## Context Files
-
-#file:package.json #file:deno.json #file:Cargo.toml #file:go.mod #file:pom.xml #file:build.gradle #file:Makefile #file:CMakeLists.txt #file:README.md #file:CONTRIBUTING.md #file:CHANGELOG.md #file:LICENSE #file:.gitignore #file:tsconfig.json #file:jest.config.js #file:src/index.ts #file:src/main.js #file:src/app.py #file:src/main.go #file:src/lib.rs #file:docs/architecture.md #file:docs/api.md #file:tests/ #file:.github/workflows/

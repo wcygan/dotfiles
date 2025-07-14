@@ -167,8 +167,4 @@ Provide a structured report including:
 - Provide rollback procedures for each major refactoring
 - Document architectural decisions and trade-offs made
 
-## Context Files
-
-#file:package.json #file:deno.json #file:Cargo.toml #file:go.mod #file:pom.xml #file:build.gradle #file:requirements.txt #file:tsconfig.json #file:README.md #file:.gitignore
-
 Include the specific source files you want to analyze for refactoring opportunities.

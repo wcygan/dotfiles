@@ -199,10 +199,6 @@ Ensure the generated prompt meets VS Code prompt file requirements:
 - [ ] Quality criteria are specified
 - [ ] Error handling guidance is included
 
-## Context Files
-
-#file:/Users/wcygan/Development/development-workspace/dotfiles/deno.json #file:/Users/wcygan/Development/development-workspace/dotfiles/README.md #file:/Users/wcygan/Development/development-workspace/dotfiles/.github/context/prompt-files.md #file:/Users/wcygan/Development/development-workspace/dotfiles/.github/context/claude-commands-to-vscode-prompts.md #file:/Users/wcygan/Development/development-workspace/dotfiles/docs/
-
 Include additional relevant files based on the prompt's domain and your project structure.
 
 ## File Reference Patterns

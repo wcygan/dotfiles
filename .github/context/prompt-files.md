@@ -49,6 +49,7 @@ Reusable prompt templates stored in your workspace that you can reference in Cop
 
 - Markdown files with `.prompt.md` extension
 - Can be stored anywhere in your workspace
+- Can also be stored globally in `~/Library/Application Support/Code/User/prompts/` for access across all workspaces
 - Mimic the existing Copilot Chat prompt format
 - Can reference other files and even other prompt files as dependencies
 - Allow blending natural language with context and references
@@ -59,6 +60,26 @@ Reusable prompt templates stored in your workspace that you can reference in Cop
 - **Domain expertise**: Share specialized knowledge like security practices
 - **Team collaboration**: Document patterns with references to specs
 - **Onboarding**: Create step-by-step guides for complex processes
+
+### Global Prompt Files
+
+Prompt files can be stored globally in `~/Library/Application Support/Code/User/prompts/` on macOS. This allows you to:
+
+- **Access prompts across all workspaces**: Global prompts are available in any VS Code workspace
+- **Share personal templates**: Keep your frequently used prompt templates in one location
+- **Organize by domain**: Create prompts for general development tasks that aren't project-specific
+
+**Location**: `~/Library/Application Support/Code/User/prompts/`
+
+**Usage**: Global prompt files work the same as workspace-specific ones but are accessible from any project.
+
+**Example global prompt file structure**:
+
+```text
+~/Library/Application Support/Code/User/prompts/
+├── code-review.prompt.md
+└── testing-strategy.prompt.md
+```
 
 ### Example Prompt File (`New React form.prompt.md`)
 
@@ -92,11 +113,15 @@ Requirements for the form:
 - Include relevant file references using `#file:` syntax
 - Structure prompts with clear goals and requirements
 - Store commonly used prompts in a dedicated directory for easy discovery
+- **Workspace-specific prompts**: Store in your project for team sharing and project-specific context
+- **Global prompts**: Store in `~/Library/Application Support/Code/User/prompts/` for personal templates used across projects
 
 ## Usage Tips
 
 1. **Start with repository instructions** for general project context
 2. **Create prompt files** for repeatable tasks and patterns
-3. **Reference relevant files** in prompt files to provide context
-4. **Keep prompts focused** on specific tasks or domains
-5. **Version control** both types of files to share with your team
+3. **Use global prompts** (`~/Library/Application Support/Code/User/prompts/`) for personal templates across all projects
+4. **Use workspace prompts** for team-shared and project-specific templates
+5. **Reference relevant files** in prompt files to provide context
+6. **Keep prompts focused** on specific tasks or domains
+7. **Version control** workspace prompt files to share with your team

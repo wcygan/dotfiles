@@ -156,11 +156,11 @@ Choose the appropriate category for your prompt:
 
 Use descriptive names that indicate purpose:
 
-- `Generate React Component.prompt.md`
-- `API Security Review.prompt.md`
-- `Database Migration Planning.prompt.md`
-- `Test Coverage Analysis.prompt.md`
-- `Documentation Update.prompt.md`
+- `Generate-React-Component.prompt.md`
+- `API-Security-Review.prompt.md`
+- `Database-Migration-Planning.prompt.md`
+- `Test-Coverage-Analysis.prompt.md`
+- `Documentation-Update.prompt.md`
 
 ## Quality Standards
 

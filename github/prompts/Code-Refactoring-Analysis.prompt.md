@@ -6,12 +6,12 @@ Ask for the target code files or directory if not provided.
 
 ### Step 1: Project Context Assessment
 
-Analyze the project structure and technology stack:
+Analyze the Java microservices project structure:
 
-- Review project configuration files to understand frameworks and dependencies
-- Identify the primary programming language and architectural patterns
-- Assess codebase size and complexity indicators
-- Evaluate existing test coverage and quality metrics
+- Review Gradle build files and dependency configurations
+- Assess microservices architecture patterns and component boundaries
+- Evaluate existing JUnit Jupiter test coverage and quality metrics
+- Identify gRPC service interfaces and Protocol Buffer definitions
 
 ### Step 2: Multi-Domain Code Analysis
 
@@ -49,8 +49,10 @@ Perform systematic analysis across these key areas:
 
 - Identify inefficient algorithms and O(n²) complexity
 - Find potential memory leaks and resource management issues
-- Detect database query optimization opportunities
-- Analyze collection usage and data structure choices
+- Detect database query optimization opportunities with jOOQ
+- Analyze MySQL query patterns and connection pooling
+- Review Kafka producer/consumer performance patterns
+- Identify Temporal workflow efficiency improvements
 
 #### Design Pattern Assessment
 
@@ -61,10 +63,12 @@ Perform systematic analysis across these key areas:
 
 ### Step 3: Test Quality Inspection
 
-- Analyze test coverage gaps and blind spots
-- Find brittle tests and flaky test patterns
-- Identify missing edge case coverage
+- Analyze JUnit Jupiter test coverage gaps and blind spots
+- Find brittle tests and flaky test patterns in microservices
+- Identify missing edge case coverage for gRPC services
 - Detect test code smells and duplication
+- Review integration test patterns for Kafka and MySQL
+- Assess Temporal workflow testing strategies
 
 ### Step 4: Dependency and Security Analysis
 
@@ -103,40 +107,16 @@ Rank refactoring opportunities using:
 
 ## Language-Specific Patterns
 
-### Java Refactorings
+### Java Microservices Refactorings
 
 - Convert anemic domain models to rich domain models
 - Replace conditionals with strategy pattern
-- Extract interfaces for better abstraction
-- Implement dependency injection patterns
-
-### TypeScript/JavaScript Refactorings
-
-- Add comprehensive type annotations
-- Convert callback patterns to async/await
-- Extract custom hooks for React components
-- Implement proper error boundaries
-
-### Python Refactorings
-
-- Add type hints and improve documentation
-- Replace nested loops with comprehensions
-- Extract dataclasses for structured data
-- Implement context managers for resource handling
-
-### Go Refactorings
-
-- Replace empty interfaces with type-safe alternatives
-- Implement functional options pattern
-- Add proper error handling and context propagation
-- Extract interfaces for better testability
-
-### Rust Refactorings
-
-- Replace Rc/RefCell with better ownership patterns
-- Convert manual loops to iterator chains
-- Implement proper error propagation with ?
-- Add comprehensive documentation and examples
+- Extract interfaces for better gRPC service abstraction
+- Implement dependency injection patterns with Spring
+- Optimize jOOQ query patterns and database access
+- Improve Temporal workflow and activity organization
+- Enhance Kafka producer/consumer error handling
+- Refactor Flyway migration scripts for better maintainability
 
 ## Quality Validation
 

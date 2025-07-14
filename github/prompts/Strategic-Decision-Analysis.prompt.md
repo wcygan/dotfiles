@@ -168,4 +168,4 @@ Deliver a structured analysis document containing:
 4. **Implementation Plan**: Actionable roadmap with milestones
 5. **Risk Register**: Identified risks with mitigation strategies
 
-#file:package.json #file:deno.json #file:Cargo.toml #file:go.mod #file:README.md #file:docs/architecture.md #file:tsconfig.json #file:.gitignore
+#file:build.gradle #file:gradle.properties #file:settings.gradle #file:README.md #file:docs/architecture.md #file:src/main/resources/application.yml #file:.gitignore

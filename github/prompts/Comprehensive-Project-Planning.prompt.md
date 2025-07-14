@@ -6,12 +6,12 @@ Ask for the project name, scope (micro/small/medium/large), and specific require
 
 ### Step 1: Project Discovery and Context Analysis
 
-Analyze the project structure and technology stack from the referenced files to understand:
+Analyze the Java microservices project structure to understand:
 
-- **Project Type**: Identify the primary technology stack and architecture
-- **Complexity Level**: Assess codebase size and organizational complexity
+- **Project Type**: Java microservices with gRPC communication
+- **Complexity Level**: Assess codebase size and service boundaries
 - **Development Stage**: Determine current state and development phase
-- **Technology Stack**: Map frameworks, dependencies, and build systems
+- **Technology Stack**: Java, Gradle, JUnit Jupiter, gRPC, MySQL, jOOQ, Flyway, Temporal, Kafka
 - **Documentation State**: Evaluate existing documentation and standards
 
 ### Step 2: Architecture and Structure Assessment
@@ -26,23 +26,23 @@ Examine the project organization and design patterns:
 
 ### Step 3: Technology and Dependencies Evaluation
 
-Review the technology landscape and requirements:
+Review the Java microservices technology landscape:
 
-- **Build Systems**: Analyze package managers and build configurations
-- **Runtime Requirements**: Identify platform and version constraints
-- **Dependencies**: Map external libraries and internal modules
-- **Development Tools**: Assess tooling for development and testing
-- **Compatibility Matrix**: Evaluate version and platform compatibility
+- **Build Systems**: Analyze Gradle build configurations and multi-project setup
+- **Runtime Requirements**: Java version, JVM settings, and deployment constraints
+- **Dependencies**: Map gRPC services, MySQL databases, Kafka topics, Temporal workflows
+- **Development Tools**: Assess tooling for development, testing, and monitoring
+- **Compatibility Matrix**: Evaluate version compatibility across the tech stack
 
 ### Step 4: Quality and Testing Strategy Analysis
 
-Assess current quality measures and testing approaches:
+Assess current quality measures and Java testing approaches:
 
-- **Test Structure**: Analyze existing test organization and coverage
-- **Quality Gates**: Identify code quality measures and standards
-- **CI/CD Configuration**: Review automation and deployment processes
-- **Testing Strategy**: Evaluate unit, integration, and end-to-end testing
-- **Performance Considerations**: Assess performance testing and optimization
+- **Test Structure**: Analyze existing JUnit Jupiter test organization and coverage
+- **Quality Gates**: Identify code quality measures and static analysis tools
+- **CI/CD Configuration**: Review Gradle-based automation and deployment processes
+- **Testing Strategy**: Evaluate unit, integration, and gRPC service testing
+- **Performance Considerations**: Assess performance testing for microservices architecture
 
 ### Step 5: Development Workflow Assessment
 
@@ -92,21 +92,21 @@ Based on project scope, select the appropriate planning approach:
 
 **Priority**: High | **Dependencies**: None
 
-- **Project Structure**: Establish directory organization and conventions
-- **Development Environment**: Configure tools, dependencies, and build systems
-- **Version Control**: Set up repository structure and branching strategy
-- **Documentation Framework**: Create documentation standards and templates
-- **Quality Foundation**: Establish linting, formatting, and testing frameworks
+- **Project Structure**: Establish Gradle multi-project setup and Java package conventions
+- **Development Environment**: Configure Java, Gradle, database connections, and IDE settings
+- **Version Control**: Set up repository structure and GitFlow branching strategy
+- **Documentation Framework**: Create documentation standards and API documentation templates
+- **Quality Foundation**: Establish Checkstyle, SpotBugs, JUnit Jupiter frameworks
 
 ### Phase 2: Core Development
 
 **Priority**: High | **Dependencies**: Foundation Setup
 
-- **Architecture Implementation**: Build core system components and interfaces
-- **Business Logic**: Implement primary functionality and data models
-- **API Development**: Create service interfaces and data access layers
-- **User Interface**: Develop user-facing components and interactions
-- **Integration Points**: Establish connections between system components
+- **Architecture Implementation**: Build core microservices components and gRPC interfaces
+- **Business Logic**: Implement domain models and service layer with Spring Framework
+- **API Development**: Create gRPC service definitions and Protocol Buffer schemas
+- **Data Access**: Implement jOOQ repositories and MySQL database connections
+- **Integration Points**: Establish Kafka producers/consumers and Temporal workflows
 
 ### Phase 3: Feature Enhancement
 
@@ -144,19 +144,19 @@ For each phase, create specific, actionable tasks:
 
 ### Foundation Setup Tasks
 
-- [ ] Initialize project structure and directories
-- [ ] Configure build system and dependency management
-- [ ] Set up development environment and tooling
-- [ ] Create repository structure and initial documentation
-- [ ] Establish code quality standards and automation
+- [ ] Initialize Gradle multi-project structure with submodules
+- [ ] Configure Java build settings and dependency management
+- [ ] Set up development environment with database and Kafka
+- [ ] Create repository structure and Flyway migration framework
+- [ ] Establish code quality standards with Checkstyle and SpotBugs
 
 ### Core Development Tasks
 
-- [ ] Design and implement core architecture
-- [ ] Create data models and business logic
-- [ ] Develop API endpoints and service interfaces
-- [ ] Build user interface components
-- [ ] Implement component integration and communication
+- [ ] Design and implement microservices architecture with Spring Boot
+- [ ] Create Protocol Buffer definitions and generate gRPC services
+- [ ] Develop jOOQ-based data access layer with MySQL
+- [ ] Build domain models and business logic components
+- [ ] Implement Kafka integration for event-driven communication
 
 ### Feature Enhancement Tasks
 
@@ -168,11 +168,11 @@ For each phase, create specific, actionable tasks:
 
 ### Quality Assurance Tasks
 
-- [ ] Create unit tests for all components
-- [ ] Develop integration and end-to-end tests
-- [ ] Perform performance and load testing
-- [ ] Conduct security testing and vulnerability assessment
-- [ ] Execute user acceptance testing and validation
+- [ ] Create JUnit Jupiter unit tests for all service components
+- [ ] Develop integration tests for gRPC services and database operations
+- [ ] Perform load testing on Kafka consumers and MySQL queries
+- [ ] Conduct security testing for microservices endpoints
+- [ ] Execute user acceptance testing for Temporal workflow processes
 
 ### Production Readiness Tasks
 

@@ -33,27 +33,27 @@ Conduct comprehensive multi-dimensional analysis:
 
 1. **Technical Analysis**
 
-   - System failures, infrastructure issues, code problems
-   - Focus: Logs, error traces, performance metrics, configurations
-   - Output: Technical root causes with evidence
+   - Java application failures, microservice infrastructure issues, database problems
+   - Focus: Application logs, stack traces, JVM metrics, Gradle build failures, gRPC errors
+   - Output: Technical root causes with evidence from monitoring and logging
 
 2. **Process Analysis**
 
-   - Workflow failures, procedural gaps, operational issues
-   - Focus: Process documentation, workflow analysis, communication
+   - CI/CD workflow failures, deployment issues, development process gaps
+   - Focus: Gradle build processes, deployment pipelines, team communication
    - Output: Process improvements and organizational causes
 
-3. **Human Factors Analysis**
+3. **Infrastructure Analysis**
 
-   - Decision-making, knowledge gaps, behavioral patterns
-   - Focus: Training needs, cognitive biases, expertise gaps
-   - Output: Human-centered causes and support requirements
+   - MySQL database performance, Kafka cluster issues, service mesh problems
+   - Focus: Database queries, message queue latency, network connectivity
+   - Output: Infrastructure-centered causes and capacity requirements
 
-4. **Environmental Analysis**
+4. **Integration Analysis**
 
-   - External factors, market conditions, contextual influences
-   - Focus: Regulatory changes, competitive pressures, constraints
-   - Output: External factors beyond direct control
+   - gRPC service communication failures, Kafka event processing issues
+   - Focus: Service contracts, event schemas, cross-service dependencies
+   - Output: Integration patterns requiring architectural solutions
 
 5. **Historical Pattern Analysis**
    - Past incidents, recurring patterns, trend analysis
@@ -132,4 +132,4 @@ Provide a comprehensive analysis following this structure:
 - **Be comprehensive**: Consider technical, process, human, and environmental factors
 - **Be preventive**: Include measures to avoid future occurrences
 
-#file:docs/configuration/troubleshooting.md #file:README.md
+#file:docs/configuration/troubleshooting.md #file:README.md #file:build.gradle #file:src/main/resources/application.yml

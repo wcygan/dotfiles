@@ -6,46 +6,37 @@ Ask for the target component, function, or module name if not provided.
 
 ### Step 1: Project Analysis and Framework Detection
 
-Analyze the project structure to determine:
+Analyze the Java microservices project structure to determine:
 
-- Primary programming language and testing frameworks
-- Existing test patterns and coverage gaps
-- Project type (web app, API, library, etc.)
-- Available testing tools and dependencies
+- Java version and Gradle build configuration
+- JUnit Jupiter testing framework and existing test patterns
+- Project type: microservices with gRPC, MySQL, Kafka, Temporal integration
+- Available testing tools: Testcontainers, MockK, WireMock dependencies
 
-### Step 2: Multi-Language Framework Detection
+### Step 2: Java Microservices Testing Strategy
 
-Based on project files, identify the appropriate testing approach:
+Based on the established tech stack, implement comprehensive testing approach:
 
-**JavaScript/TypeScript Projects:**
+**JUnit Jupiter Unit Tests:**
 
-- Detect frameworks: Jest, Vitest, Mocha, Deno Test
-- Check for E2E tools: Playwright, Cypress
-- Analyze package.json dependencies
+- Service layer testing with dependency injection
+- Domain object testing with validation
+- jOOQ repository testing with database mocks
+- Temporal workflow and activity testing
 
-**Rust Projects:**
+**Integration Tests with Testcontainers:**
 
-- Check Cargo.toml for test dependencies
-- Look for existing test modules with `#[cfg(test)]`
-- Identify web frameworks: Axum, Actix-web, Warp
+- MySQL database integration testing
+- Kafka producer/consumer integration testing
+- gRPC service integration testing
+- End-to-end workflow testing with Temporal
 
-**Go Projects:**
+**Performance and Load Tests:**
 
-- Find `_test.go` files and testing patterns
-- Check for web frameworks: Gin, Echo, Fiber
-- Analyze module structure
-
-**Python Projects:**
-
-- Detect pytest, unittest, or other frameworks
-- Check requirements.txt or pyproject.toml
-- Look for existing test files
-
-**Java Projects:**
-
-- Analyze Maven/Gradle dependencies
-- Check for JUnit, TestNG, Mockito
-- Find existing test classes
+- Database query performance with jOOQ
+- Kafka throughput and latency testing
+- gRPC service load testing
+- Temporal workflow scalability testing
 
 ### Step 3: Test Generation Strategy
 
@@ -60,17 +51,18 @@ Generate comprehensive tests including:
 
 2. **Integration Tests**
 
-   - API endpoint testing
-   - Database interaction tests
-   - Service integration testing
-   - External dependency mocking
+   - gRPC service endpoint testing with protocol buffer validation
+   - MySQL database interaction tests with Testcontainers
+   - Kafka producer/consumer integration testing
+   - Temporal workflow integration testing
+   - jOOQ repository integration with real database
 
 3. **End-to-End Tests**
 
-   - User workflow testing
-   - Critical path validation
-   - UI interaction testing
-   - Performance testing
+   - Complete microservice workflow testing
+   - Cross-service communication validation via gRPC
+   - Event-driven process testing through Kafka
+   - Database migration testing with Flyway
 
 4. **Test Data Management**
    - Realistic test data generation
@@ -92,23 +84,23 @@ Generate comprehensive tests including:
 
 ### Unit Test Templates
 
-Create tests that cover:
+Create JUnit Jupiter tests that cover:
 
-- Function input/output validation
-- Error condition handling
-- Edge cases and boundary conditions
-- State management and side effects
-- Asynchronous operation testing
+- Spring service components with dependency injection
+- Domain model validation and business logic
+- jOOQ repository methods with mock databases
+- Kafka producer/consumer logic with embedded brokers
+- Temporal workflow and activity implementations
 
 ### API Test Templates
 
 Generate tests for:
 
-- HTTP endpoint validation
-- Request/response testing
-- Authentication and authorization
-- Error status code handling
-- Rate limiting and timeout testing
+- gRPC service endpoint validation with protocol buffers
+- Request/response testing for microservice APIs
+- Authentication and authorization via Spring Security
+- Error status code handling in gRPC services
+- Service mesh communication and timeout testing
 
 ### E2E Test Templates
 
@@ -124,11 +116,11 @@ Include scenarios for:
 
 Create realistic mocks for:
 
-- Database operations
-- External API services
-- File system operations
-- Network requests
-- Time-dependent functions
+- MySQL database operations with jOOQ
+- External gRPC service dependencies
+- Kafka message brokers and topics
+- Temporal workflow clients and workers
+- File system and configuration services
 
 ## Output Requirements
 
@@ -145,26 +137,22 @@ Provide:
 
 Reference the following types of files to understand the project structure:
 
-**Configuration Files (include relevant ones):**
+**Configuration Files:**
 
-- `#file:package.json` - Node.js projects
-- `#file:deno.json` - Deno projects
-- `#file:Cargo.toml` - Rust projects
-- `#file:go.mod` - Go projects
-- `#file:pom.xml` or `#file:build.gradle` - Java projects
-- `#file:pyproject.toml` or `#file:requirements.txt` - Python projects
+- `#file:build.gradle` - Gradle build configuration and dependencies
+- `#file:gradle.properties` - Gradle project properties
+- `#file:settings.gradle` - Multi-project Gradle settings
 
 **Test Configuration Files (if they exist):**
 
-- `#file:jest.config.js` - Jest configuration
-- `#file:vitest.config.ts` - Vitest configuration
-- `#file:playwright.config.ts` - Playwright configuration
-- `#file:cypress.config.js` - Cypress configuration
+- `#file:src/test/resources/application-test.yml` - Test application configuration
+- `#file:testcontainers.properties` - Testcontainers configuration
+- `#file:src/test/resources/logback-test.xml` - Test logging configuration
 
-**Source Files to Test:** Include the specific files or directories you want to generate tests for, such as:
+**Source Files to Test:** Include the specific Java files or directories you want to generate tests for, such as:
 
-- Component files: `#file:src/components/ComponentName.tsx`
-- Service files: `#file:src/services/ServiceName.ts`
-- Utility functions: `#file:src/utils/utilityName.ts`
-- Type definitions: `#file:src/types/TypeName.ts`
-- Existing tests: `#file:tests/` or `#file:__tests__/` directories
+- Service classes: `#file:src/main/java/com/example/service/UserService.java`
+- Repository classes: `#file:src/main/java/com/example/repository/UserRepository.java`
+- gRPC services: `#file:src/main/java/com/example/grpc/UserGrpcService.java`
+- Domain models: `#file:src/main/java/com/example/domain/User.java`
+- Existing tests: `#file:src/test/java/` directories

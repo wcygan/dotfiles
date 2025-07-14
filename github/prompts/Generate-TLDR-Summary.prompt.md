@@ -17,15 +17,14 @@ Include relevant files from your project to understand the structure and content
 **Project Overview**: Include files that provide project context
 
 - README.md
-- package.json (Node.js projects)
-- deno.json (Deno projects)
-- Cargo.toml (Rust projects)
-- go.mod (Go projects)
+- build.gradle (Gradle project configuration)
+- gradle.properties (Project properties)
+- settings.gradle (Multi-project settings)
 
 **Documentation**: Include files that contain the content to summarize
 
 - docs/ directory
-- src/ directory (for code analysis)
+- src/ directory (for Java code analysis)
 - Any specific files mentioned by the user
 
 ## Analysis Process
@@ -221,4 +220,4 @@ Ensure the TL;DR:
 - [ ] Uses bullet points and short sentences consistently
 - [ ] Follows appropriate template for content type
 
-#file:README.md #file:package.json #file:deno.json #file:docs/ #file:src/
+#file:README.md #file:build.gradle #file:gradle.properties #file:docs/ #file:src/

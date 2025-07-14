@@ -5,22 +5,20 @@ Ask for the target component/feature name and expected behavior if not provided.
 ## Requirements
 
 - Follow Red-Green-Refactor cycle strictly
-- Generate language-appropriate test patterns
+- Generate JUnit Jupiter test patterns for Java microservices
 - Ensure tests fail meaningfully before implementation
-- Write minimal code to pass tests
+- Write minimal Spring service code to pass tests
 - Refactor while maintaining green tests
 
 ## Context Files
 
 Include relevant files from your project to understand the structure and conventions. Examples:
 
-**Build/Config Files**: Include your project's build configuration
+**Build/Config Files**: Include your Java project's build configuration
 
-- package.json (Node.js/TypeScript)
-- Cargo.toml (Rust)
-- go.mod (Go)
-- pom.xml or build.gradle (Java)
-- deno.json (Deno)
+- build.gradle (Gradle build configuration)
+- gradle.properties (Gradle project properties)
+- settings.gradle (Multi-project settings)
 
 **Project Documentation**: Include files that describe testing conventions
 
@@ -28,15 +26,14 @@ Include relevant files from your project to understand the structure and convent
 - CONTRIBUTING.md
 - docs/testing.md
 
-**Existing Test Examples**: Reference existing test files to understand patterns
+**Existing Test Examples**: Reference existing Java test files to understand patterns
 
-- tests/ directory
-- \*\_test.go files
-- \*.test.ts files
+- src/test/java/ directory
 - \*Test.java files
-- #[cfg(test)] modules in Rust
+- Integration test classes
+- Testcontainers configurations
 
-**Source Code**: Include relevant source directories and files for context
+**Source Code**: Include relevant Java source directories and files for context
 
 ## TDD Workflow
 
@@ -44,107 +41,114 @@ Include relevant files from your project to understand the structure and convent
 
 Analyze the provided context files to determine:
 
-- **Primary language**: Based on build files and project structure
-- **Testing framework**: Existing test patterns and dependencies
-- **Project conventions**: Naming, organization, and testing strategies
-- **Test location**: Where tests should be created (inline vs separate files)
+- **Java version**: Based on Gradle build files and project structure
+- **Testing framework**: JUnit Jupiter with Spring Boot Test integration
+- **Project conventions**: Package naming, Spring annotations, testing strategies
+- **Test location**: Tests in `src/test/java/` with parallel package structure
 
-### Step 2: Language-Specific Setup
+### Step 2: Java Spring Boot TDD Setup
 
-Based on detected language, follow the appropriate pattern:
+Configure Java-specific TDD environment:
 
-#### Rust Projects
-
-- **Test location**: Inline (`#[cfg(test)]` modules) or `tests/` directory
-- **Framework**: Built-in `cargo test` with potential `criterion` for benchmarks
-- **Patterns**: Unit tests in modules, integration tests in separate files
-
-#### Go Projects
-
-- **Test location**: `*_test.go` files alongside source
-- **Framework**: Standard library `testing` package, possibly `testify`
-- **Patterns**: Table-driven tests, subtests with `t.Run()`
-
-#### Java Projects
-
-- **Test location**: `src/test/java/` directory
-- **Framework**: JUnit 5, TestNG, or legacy JUnit 4 (check dependencies)
-- **Patterns**: Class-based tests with setup/teardown methods
-
-#### TypeScript/JavaScript Projects
-
-- **Deno**: Built-in `Deno.test()` with `@std/assert`
-- **Node.js**: Jest, Vitest, Mocha (check package.json)
-- **Patterns**: Describe/it blocks or function-based tests
+- **Test location**: `src/test/java/` directory with package structure matching source
+- **Framework**: JUnit Jupiter with Spring Boot Test, Testcontainers for integration
+- **Patterns**: Service layer tests with dependency injection, repository tests with database
 
 ### Step 3: RED Phase - Write Failing Tests
 
-Create comprehensive test files using language-specific patterns:
+Create comprehensive test files using JUnit Jupiter patterns:
 
-#### Rust Test Template
+#### Java Spring Boot Test Template
 
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
+```java
+package com.example.service;
 
-    #[test]
-    fn test_${component}_${expected_behavior}() {
-        // Arrange
-        let input = create_test_input();
-        let expected = create_expected_output();
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
+import static org.junit.jupiter.api.Assertions.*;
 
-        // Act
-        let actual = ${component}(input);
+@SpringBootTest
+@TestPropertySource(properties = {"spring.profiles.active=test"})
+class ${ComponentName}Test {
 
-        // Assert
-        assert_eq!(actual, expected);
+    private ${ComponentName} ${componentName};
+
+    @BeforeEach
+    void setUp() {
+        // Arrange - Initialize test dependencies
+        ${componentName} = new ${ComponentName}();
     }
 
-    #[test]
-    fn test_${component}_edge_cases() {
-        // Test boundary conditions and error cases
-        assert!(${component}(invalid_input).is_err());
+    @Test
+    @DisplayName("Should ${expected_behavior} when ${condition}")
+    void test${ComponentName}_${ExpectedBehavior}() {
+        // Arrange
+        var input = createTestInput();
+        var expected = createExpectedOutput();
+
+        // Act
+        var actual = ${componentName}.${methodName}(input);
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("Should throw exception when input is invalid")
+    void test${ComponentName}_ThrowsException_WhenInputInvalid() {
+        // Arrange
+        var invalidInput = createInvalidInput();
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+            () -> ${componentName}.${methodName}(invalidInput));
     }
 }
 ```
 
-#### Go Test Template
+#### Spring Boot Integration Test Template
 
-```go
-func Test${Component}_${ExpectedBehavior}(t *testing.T) {
-    tests := []struct {
-        name     string
-        input    InputType
-        expected ExpectedType
-        wantErr  bool
-    }{
-        {
-            name:     "valid input",
-            input:    validInput,
-            expected: expectedOutput,
-            wantErr:  false,
-        },
-        {
-            name:     "invalid input",
-            input:    invalidInput,
-            expected: zeroValue,
-            wantErr:  true,
-        },
+```java
+package com.example.integration;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Testcontainers
+@TestPropertySource(properties = {"spring.profiles.active=test"})
+class ${ComponentName}IntegrationTest {
+
+    @Container
+    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+            .withDatabaseName("testdb")
+            .withUsername("test")
+            .withPassword("test");
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", mysql::getJdbcUrl);
+        registry.add("spring.datasource.username", mysql::getUsername);
+        registry.add("spring.datasource.password", mysql::getPassword);
     }
 
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            result, err := ${component}(tt.input)
+    @Test
+    @DisplayName("Should perform end-to-end ${workflow_name} successfully")
+    void testEndToEndWorkflow() {
+        // Arrange - Set up test data and dependencies
 
-            if tt.wantErr {
-                assert.Error(t, err)
-                return
-            }
+        // Act - Execute the workflow
 
-            assert.NoError(t, err)
-            assert.Equal(t, tt.expected, result)
-        })
+        // Assert - Verify expected outcomes
     }
 }
 ```
@@ -224,23 +228,23 @@ Deno.test({
 
 ### Step 4: Run Tests and Verify Failure
 
-Execute tests using language-specific commands:
+Execute tests using Gradle commands:
 
-- **Rust**: `cargo test ${component} --lib`
-- **Go**: `go test -v -run Test${Component}`
-- **Java**: `mvn test -Dtest=${Component}Test` or `./gradlew test --tests "*${Component}Test"`
-- **Deno**: `deno test --filter "${component}" --fail-fast`
+- **All tests**: `./gradlew test`
+- **Specific test class**: `./gradlew test --tests "*${Component}Test"`
+- **Specific test method**: `./gradlew test --tests "${Component}Test.test${methodName}"`
+- **Integration tests**: `./gradlew integrationTest`
 
 Ensure tests fail with meaningful error messages, not compilation errors.
 
 ### Step 5: GREEN Phase - Minimal Implementation
 
-Create the simplest possible implementation that makes tests pass:
+Create the simplest possible Spring service implementation that makes tests pass:
 
-1. **Create skeleton structure** that compiles
-2. **Implement minimal logic** to satisfy test assertions
-3. **Avoid over-engineering** - resist adding features not tested
-4. **Run tests** to verify they pass
+1. **Create Spring service skeleton** with proper annotations
+2. **Implement minimal business logic** to satisfy test assertions
+3. **Add dependency injection** only for tested components
+4. **Run tests** to verify they pass with `./gradlew test`
 
 ### Step 6: REFACTOR Phase - Improve Code Quality
 
@@ -254,22 +258,21 @@ While keeping tests green:
 
 ### Step 7: Watch Mode Setup (Optional)
 
-For continuous testing, set up watch mode:
+For continuous testing with Gradle:
 
-- **Rust**: `cargo install cargo-watch && cargo watch -x "test ${component} --lib"`
-- **Go**: `go install github.com/cespare/reflex@latest && reflex -r '\.go$' go test -v ./...`
-- **Java**: `mvn test-compile compile && mvn surefire:test -Dtest=${Component}Test` (or Gradle continuous)
-- **Deno**: `deno test --watch --filter "${component}"`
+- **Continuous build**: `./gradlew test --continuous`
+- **Specific test watching**: `./gradlew test --tests "*${Component}Test" --continuous`
+- **File watching**: Use IDE integration or `entr` command-line tool
 
 ## Output Format
 
 Provide:
 
-1. **Test file(s)** with comprehensive test cases following language conventions
-2. **Minimal implementation** that passes all tests
-3. **Refactored version** with improved code quality
-4. **Next steps** for additional test cases or features
-5. **Testing commands** specific to the detected language/framework
+1. **Test file(s)** with comprehensive JUnit Jupiter test cases following Spring Boot conventions
+2. **Minimal Spring service implementation** that passes all tests
+3. **Refactored version** with improved code quality and Spring best practices
+4. **Next steps** for additional test cases or gRPC/Kafka integration features
+5. **Gradle testing commands** for continuous development
 
 ## TDD Best Practices
 
@@ -291,7 +294,10 @@ Provide:
 
 ### Language-Specific Tips
 
-- **Rust**: Use `#[should_panic]` for error testing, consider `proptest` for property-based testing
+- **Java/Spring Boot**: Use `@MockBean` for Spring context mocking, leverage `@TestPropertySource` for test configuration
+- **JUnit Jupiter**: Take advantage of `@DisplayName`, `@ParameterizedTest`, and lifecycle annotations
+- **Integration Testing**: Use Testcontainers for database and Kafka testing in realistic environments
+- **gRPC Testing**: Use gRPC testing utilities and in-process servers for service testing
 - **Go**: Leverage table-driven tests, use build tags for integration tests
 - **Java**: Use `@ParameterizedTest` for multiple inputs, consider Mockito for mocking
 - **TypeScript/Deno**: Take advantage of built-in assertions, consider using test doubles for external dependencies

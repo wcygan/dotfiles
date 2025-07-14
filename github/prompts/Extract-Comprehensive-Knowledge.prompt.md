@@ -6,48 +6,48 @@ Ask for the target project or directory path if not provided.
 
 ### Step 1: Project Structure Assessment
 
-Analyze the project foundation:
+Analyze the Java microservices project foundation:
 
-- Identify primary technology stacks and build systems
-- Assess codebase size and complexity
-- Evaluate existing documentation completeness
-- Determine architectural boundaries and scope
+- Identify Gradle multi-project structure and build configurations
+- Assess microservices architecture and service boundaries
+- Evaluate existing documentation for gRPC, Kafka, and Temporal components
+- Determine architectural patterns and Spring Framework usage
 
 ### Step 2: Domain Model Discovery
 
-Extract core business entities and concepts:
+Extract core business entities and concepts from Java domain objects:
 
-- Analyze struct/class/interface definitions, enums, data transfer objects
-- Extract business terminology, entity relationships, data constraints
-- Document domain entities, business rules, validation logic
-- Map business workflows and state transitions
+- Analyze Java domain classes, entities, value objects, and enums
+- Extract business terminology from gRPC Protocol Buffer definitions
+- Document domain entities, JPA annotations, and validation constraints
+- Map business workflows implemented through Temporal activities
 
 ### Step 3: Service Architecture Analysis
 
-Map service layers and business logic patterns:
+Map service layers and business logic patterns in Spring-based microservices:
 
-- Examine service implementations, controllers, handlers, repositories
-- Extract service boundaries, dependency patterns, integration points
-- Document service interfaces, business workflows, architectural layers
-- Identify cross-cutting concerns and shared patterns
+- Examine Spring service implementations, controllers, gRPC service handlers
+- Extract service boundaries, dependency injection patterns, cross-service communication
+- Document gRPC service interfaces, Kafka event handlers, Temporal workflow definitions
+- Identify cross-cutting concerns like security, monitoring, and error handling
 
 ### Step 4: API & Interface Documentation
 
-Discover all external and internal APIs:
+Discover all gRPC and internal service APIs:
 
-- Analyze REST endpoints, RPC services, GraphQL schemas, OpenAPI specs
-- Extract API contracts, request/response patterns, authentication flows
-- Document endpoint inventory, API documentation, integration guides
-- Map external dependencies and integration points
+- Analyze Protocol Buffer service definitions and generated Java classes
+- Extract gRPC service contracts, streaming patterns, error handling
+- Document service endpoint inventory, request/response schemas, authentication
+- Map Kafka topic schemas and event-driven communication patterns
 
 ### Step 5: Data Architecture Mapping
 
-Analyze database schemas and data flow:
+Analyze MySQL database schemas and jOOQ data access patterns:
 
-- Review migration files, ORM models, SQL queries, data transformations
-- Extract schema evolution, data relationships, query patterns
-- Document database design, data flow diagrams, migration strategies
-- Identify data consistency and synchronization patterns
+- Review Flyway migration files, jOOQ generated classes, and MySQL schema
+- Extract database relationships, jOOQ query patterns, transaction boundaries
+- Document database design, data flow through Kafka events, migration strategies
+- Identify data consistency patterns and eventual consistency via event sourcing
 
 ### Step 6: Configuration & Infrastructure Discovery
 
@@ -69,12 +69,12 @@ Document error patterns and observability:
 
 ### Step 8: Testing & Quality Patterns
 
-Analyze testing strategies and quality assurance:
+Analyze JUnit Jupiter testing strategies and quality assurance:
 
-- Examine test structure, mock patterns, integration tests, quality gates
-- Extract testing methodologies, quality standards, coverage patterns
-- Document testing guides, quality documentation, best practices
-- Review code review processes and static analysis configurations
+- Examine JUnit Jupiter test structure, Testcontainers integration, mock patterns
+- Extract testing methodologies for gRPC services, Kafka consumers, database operations
+- Document testing guides for microservices, Temporal workflows, integration patterns
+- Review code quality tools (Checkstyle, SpotBugs), Gradle test configurations
 
 ## Documentation Generation
 
@@ -134,4 +134,4 @@ Provide structured documentation in the following format:
 - Establish documentation maintenance and update procedures
 - Integrate with existing development workflows
 
-#file:package.json #file:deno.json #file:Cargo.toml #file:go.mod #file:README.md #file:ARCHITECTURE.md #file:docs/ #file:src/ #file:tests/ #file:config/
+#file:build.gradle #file:gradle.properties #file:settings.gradle #file:README.md #file:ARCHITECTURE.md #file:docs/ #file:src/ #file:tests/ #file:config/ #file:proto/ #file:migrations/

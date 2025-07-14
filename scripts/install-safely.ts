@@ -71,6 +71,9 @@ const GEMINI_CONFIG_FILES = ["GEMINI.md", "settings.json"];
 // Ghostty configuration file
 const GHOSTTY_CONFIG_FILE = "config";
 
+// GitHub prompts directory name
+const GITHUB_PROMPTS_DIR = "github/prompts";
+
 // Scripts directory name
 const SCRIPTS_DIR = "tools";
 
@@ -1208,6 +1211,134 @@ async function copyScripts(
   }
 }
 
+async function backupVSCodePrompts(
+  homeDir: string,
+  backupDir: string,
+): Promise<string[]> {
+  const vscodePromptsDir = join(
+    homeDir,
+    "Library",
+    "Application Support",
+    "Code",
+    "User",
+    "prompts",
+  );
+  const vscodePromptsBackupDir = join(
+    backupDir,
+    "Library",
+    "Application Support",
+    "Code",
+    "User",
+    "prompts",
+  );
+  const backedUpFiles: string[] = [];
+
+  const promptsDirExists = await exists(vscodePromptsDir);
+  if (!promptsDirExists) {
+    console.log(
+      `   ${colors.yellow}No existing VS Code prompts directory found${colors.reset}`,
+    );
+    return backedUpFiles;
+  }
+
+  try {
+    await ensureDir(vscodePromptsBackupDir);
+
+    // Backup all .prompt.md files
+    for await (const entry of Deno.readDir(vscodePromptsDir)) {
+      if (entry.isFile && entry.name.endsWith(".prompt.md")) {
+        const sourcePath = join(vscodePromptsDir, entry.name);
+        const backupPath = join(vscodePromptsBackupDir, entry.name);
+
+        try {
+          await copy(sourcePath, backupPath, { overwrite: true });
+          printStatus(`Backed up VS Code prompt: ${entry.name}`);
+          backedUpFiles.push(entry.name);
+        } catch (error) {
+          printWarning(
+            `Could not backup VS Code prompt ${entry.name}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+      }
+    }
+  } catch (error) {
+    printWarning(
+      `Could not backup VS Code prompts: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+
+  return backedUpFiles;
+}
+
+async function copyVSCodePrompts(
+  dotfilesDir: string,
+  homeDir: string,
+): Promise<boolean> {
+  printBlue("💬 Copying GitHub prompt files to VS Code global prompts...");
+  const promptsSourceDir = join(dotfilesDir, GITHUB_PROMPTS_DIR);
+  const vscodePromptsDir = join(
+    homeDir,
+    "Library",
+    "Application Support",
+    "Code",
+    "User",
+    "prompts",
+  );
+
+  // Check if github/prompts directory exists in dotfiles
+  const promptsDirExists = await exists(promptsSourceDir);
+  if (!promptsDirExists) {
+    printWarning(
+      "No github/prompts directory found in dotfiles, skipping VS Code prompts installation",
+    );
+    return true;
+  }
+
+  try {
+    // Ensure VS Code prompts directory exists
+    await ensureDir(vscodePromptsDir);
+    printStatus(`Created VS Code prompts directory: ${vscodePromptsDir}`);
+
+    let copiedCount = 0;
+    for await (const entry of Deno.readDir(promptsSourceDir)) {
+      if (entry.isFile && entry.name.endsWith(".prompt.md")) {
+        const sourcePath = join(promptsSourceDir, entry.name);
+        const destPath = join(vscodePromptsDir, entry.name);
+
+        try {
+          await copy(sourcePath, destPath, { overwrite: true });
+          printStatus(`Copied VS Code prompt: ${entry.name}`);
+          copiedCount++;
+        } catch (error) {
+          printWarning(
+            `Could not copy VS Code prompt ${entry.name}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+      }
+    }
+
+    if (copiedCount > 0) {
+      printStatus(`Successfully copied ${copiedCount} prompt files to VS Code global prompts`);
+      console.log();
+      console.log(
+        `   ${colors.blue}Note:${colors.reset} These prompts are now available globally in VS Code across all workspaces.`,
+      );
+    } else {
+      printWarning("No .prompt.md files found in github/prompts directory");
+    }
+    return true;
+  } catch (error) {
+    printError(
+      `Failed to copy VS Code prompts: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return false;
+  }
+}
+
 async function reloadShell(shellType: string, homeDir: string): Promise<void> {
   printBlue("🔃 Reloading shell configuration...");
 
@@ -1474,6 +1605,26 @@ This script will:
         }
       )());
 
+      // Backup VS Code prompts (macOS only)
+      if (Deno.build.os === "darwin") {
+        backupTasks.push((
+          async () => {
+            try {
+              printBlue("💬 Backing up VS Code global prompts...");
+              const files = await backupVSCodePrompts(config.homeDir, config.backupDir);
+              return { type: "vscode-prompts", files };
+            } catch (error) {
+              printWarning(
+                `Error backing up VS Code prompts: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              );
+              return { type: "vscode-prompts", files: [] };
+            }
+          }
+        )());
+      }
+
       // PARALLEL BACKUP EXECUTION:
       // Using Promise.allSettled to run all backup tasks concurrently while ensuring graceful error handling.
       // Unlike Promise.all, Promise.allSettled never rejects - it waits for all promises to settle
@@ -1694,6 +1845,24 @@ This script will:
           })(),
         );
 
+        // Copy VS Code prompts (macOS only)
+        if (Deno.build.os === "darwin") {
+          installationTasks.push(
+            (async () => {
+              try {
+                const success = await copyVSCodePrompts(config.dotfilesDir, config.homeDir);
+                return { task: "copyVSCodePrompts", success };
+              } catch (error) {
+                return {
+                  task: "copyVSCodePrompts",
+                  success: false,
+                  error: error instanceof Error ? error.message : String(error),
+                };
+              }
+            })(),
+          );
+        }
+
         // PARALLEL INSTALLATION EXECUTION:
         // Promise.allSettled is employed here to execute all installation tasks concurrently, enhancing performance
         // and efficiency. By allowing each promise to settle, we can:
@@ -1794,6 +1963,7 @@ This script will:
       console.log("   ✅ Installed tmux configuration");
       console.log("   ✅ Installed scripts to ~/.tools directory");
       if (Deno.build.os === "darwin") {
+        console.log("   ✅ Installed VS Code global prompt files");
         console.log("   ✅ Installed Ghostty terminal configuration");
       }
       if (Deno.build.os === "windows") {

@@ -160,7 +160,9 @@ async function validateDotfilesDirectory(
   // Check if the shell directory structure exists
   const shellDirExists = await exists(join(dotfilesDir, "shell"));
   const zshrcExists = await exists(join(dotfilesDir, "shell", "zsh", "zshrc"));
-  const aliasesExists = await exists(join(dotfilesDir, "shell", "common", "aliases.sh"));
+  const aliasesExists = await exists(
+    join(dotfilesDir, "shell", "common", "aliases.sh"),
+  );
 
   return shellDirExists && (zshrcExists || aliasesExists);
 }
@@ -358,7 +360,12 @@ async function backupGhosttyConfig(
   homeDir: string,
   backupDir: string,
 ): Promise<string[]> {
-  const ghosttyConfigDir = join(homeDir, "Library", "Application Support", "com.mitchellh.ghostty");
+  const ghosttyConfigDir = join(
+    homeDir,
+    "Library",
+    "Application Support",
+    "com.mitchellh.ghostty",
+  );
   const ghosttyBackupDir = join(
     backupDir,
     "Library",
@@ -367,7 +374,9 @@ async function backupGhosttyConfig(
   );
   const backedUpFiles: string[] = [];
 
-  const ghosttyConfigExists = await exists(join(ghosttyConfigDir, GHOSTTY_CONFIG_FILE));
+  const ghosttyConfigExists = await exists(
+    join(ghosttyConfigDir, GHOSTTY_CONFIG_FILE),
+  );
   if (!ghosttyConfigExists) {
     console.log(
       `   ${colors.yellow}No existing Ghostty configuration found${colors.reset}`,
@@ -465,8 +474,13 @@ async function copyDotfiles(
     // Also check for optional files in the shell directory structure
     for (const optFile of OPTIONAL_FILES) {
       // Check in common directory first
-      let sourcePath = join(dotfilesDir, "shell", "common", optFile.substring(1));
-      if (!await exists(sourcePath)) {
+      let sourcePath = join(
+        dotfilesDir,
+        "shell",
+        "common",
+        optFile.substring(1),
+      );
+      if (!(await exists(sourcePath))) {
         // Try root directory for backward compatibility
         sourcePath = join(dotfilesDir, optFile);
       }
@@ -629,7 +643,9 @@ async function copyClaudeConfig(
     }
 
     if (copiedCount > 0) {
-      printStatus(`Successfully copied ${copiedCount} Claude configuration items`);
+      printStatus(
+        `Successfully copied ${copiedCount} Claude configuration items`,
+      );
     }
     return true;
   } catch (error) {
@@ -687,7 +703,11 @@ async function copyGeminiConfig(
     }
 
     // Copy discover_tools.ts script
-    const discoverToolsSource = join(dotfilesDir, "gemini", "discover_tools.ts");
+    const discoverToolsSource = join(
+      dotfilesDir,
+      "gemini",
+      "discover_tools.ts",
+    );
     const discoverToolsDest = join(geminiConfigDir, "discover_tools.ts");
     if (await exists(discoverToolsSource)) {
       try {
@@ -741,7 +761,10 @@ async function copyGeminiConfig(
     };
 
     try {
-      await Deno.writeTextFile(settingsPath, JSON.stringify(updatedSettings, null, 2));
+      await Deno.writeTextFile(
+        settingsPath,
+        JSON.stringify(updatedSettings, null, 2),
+      );
       printStatus("Updated Gemini settings.json for tool discovery");
     } catch (error) {
       printWarning(
@@ -752,7 +775,9 @@ async function copyGeminiConfig(
     }
 
     if (copiedCount > 0) {
-      printStatus(`Successfully copied ${copiedCount} Gemini configuration items`);
+      printStatus(
+        `Successfully copied ${copiedCount} Gemini configuration items`,
+      );
     }
     return true;
   } catch (error) {
@@ -779,7 +804,9 @@ interface InstalledServer {
   args: string[];
 }
 
-async function getInstalledUserServers(): Promise<Map<string, InstalledServer>> {
+async function getInstalledUserServers(): Promise<
+  Map<string, InstalledServer>
+> {
   const servers = new Map<string, InstalledServer>();
 
   const listResult = await runCommand(["claude", "mcp", "list"]);
@@ -812,7 +839,10 @@ async function getInstalledUserServers(): Promise<Map<string, InstalledServer>> 
   return servers;
 }
 
-function areServerConfigsEqual(installed: InstalledServer, desired: McpServer): boolean {
+function areServerConfigsEqual(
+  installed: InstalledServer,
+  desired: McpServer,
+): boolean {
   // Compare command
   if (installed.command !== desired.command) {
     return false;
@@ -860,15 +890,13 @@ function computeMcpDiff(
   };
 }
 
-async function configureMcpServers(
-  claudeConfigDir: string,
-): Promise<boolean> {
+async function configureMcpServers(claudeConfigDir: string): Promise<boolean> {
   printBlue("🔧 Configuring Claude MCP servers...");
 
   const mcpConfigPath = join(claudeConfigDir, "mcp.json");
 
   // Check if mcp.json exists
-  if (!await exists(mcpConfigPath)) {
+  if (!(await exists(mcpConfigPath))) {
     printWarning("No mcp.json found, skipping MCP server configuration");
     return true;
   }
@@ -897,7 +925,9 @@ async function configureMcpServers(
 
     // Missing servers section
     if (diff.missing.length > 0) {
-      console.log(`\n${colors.yellow}❌ Missing servers (${diff.missing.length})${colors.reset}`);
+      console.log(
+        `\n${colors.yellow}❌ Missing servers (${diff.missing.length})${colors.reset}`,
+      );
       console.log("─".repeat(30));
       for (const serverName of diff.missing) {
         console.log(`   • ${serverName} - Will be installed`);
@@ -908,7 +938,9 @@ async function configureMcpServers(
 
     // Servers to update section
     if (diff.toUpdate.length > 0) {
-      console.log(`\n${colors.blue}🔄 Servers to update (${diff.toUpdate.length})${colors.reset}`);
+      console.log(
+        `\n${colors.blue}🔄 Servers to update (${diff.toUpdate.length})${colors.reset}`,
+      );
       console.log("─".repeat(30));
       for (const serverName of diff.toUpdate) {
         const installed = installedServers.get(serverName);
@@ -916,7 +948,9 @@ async function configureMcpServers(
         console.log(`   • ${serverName}`);
         if (installed && desired) {
           if (installed.command !== desired.command) {
-            console.log(`     - Command: ${installed.command} → ${desired.command}`);
+            console.log(
+              `     - Command: ${installed.command} → ${desired.command}`,
+            );
           }
           const installedArgs = installed.args.join(" ");
           const desiredArgs = (desired.args || []).join(" ");
@@ -939,7 +973,9 @@ async function configureMcpServers(
         console.log(`   • ${serverName} - Up to date`);
       }
     } else {
-      console.log(`\n${colors.yellow}ℹ️  Already configured: None${colors.reset}`);
+      console.log(
+        `\n${colors.yellow}ℹ️  Already configured: None${colors.reset}`,
+      );
     }
 
     console.log("\n" + "═".repeat(50));
@@ -968,9 +1004,18 @@ async function configureMcpServers(
       printWarning(`Updating configuration for: ${serverName}`);
 
       // Remove old configuration
-      const removeResult = await runCommand(["claude", "mcp", "remove", serverName, "-s", "user"]);
+      const removeResult = await runCommand([
+        "claude",
+        "mcp",
+        "remove",
+        serverName,
+        "-s",
+        "user",
+      ]);
       if (!removeResult.success) {
-        printWarning(`Failed to remove old config for ${serverName}: ${removeResult.output}`);
+        printWarning(
+          `Failed to remove old config for ${serverName}: ${removeResult.output}`,
+        );
         failedCount++;
         continue;
       }
@@ -984,7 +1029,15 @@ async function configureMcpServers(
       const config = mcpConfig.mcpServers[serverName] as McpServer;
 
       // Build the claude mcp add command with user scope for global availability
-      const args = ["claude", "mcp", "add", "-s", "user", serverName, config.command];
+      const args = [
+        "claude",
+        "mcp",
+        "add",
+        "-s",
+        "user",
+        serverName,
+        config.command,
+      ];
 
       // Add transport type if specified
       if (config.type && config.type !== "stdio") {
@@ -1007,7 +1060,9 @@ async function configureMcpServers(
         printStatus(`Configured MCP server: ${serverName}`);
         configuredCount++;
       } else {
-        printWarning(`Failed to configure MCP server ${serverName}: ${result.output}`);
+        printWarning(
+          `Failed to configure MCP server ${serverName}: ${result.output}`,
+        );
         failedCount++;
       }
     }
@@ -1040,7 +1095,12 @@ async function copyGhosttyConfig(
 ): Promise<boolean> {
   printBlue("👻 Copying Ghostty configuration file...");
   const ghosttySourceFile = join(dotfilesDir, "ghostty", GHOSTTY_CONFIG_FILE);
-  const ghosttyConfigDir = join(homeDir, "Library", "Application Support", "com.mitchellh.ghostty");
+  const ghosttyConfigDir = join(
+    homeDir,
+    "Library",
+    "Application Support",
+    "com.mitchellh.ghostty",
+  );
   const ghosttyDestFile = join(ghosttyConfigDir, GHOSTTY_CONFIG_FILE);
 
   // Check if Ghostty config exists in dotfiles
@@ -1085,7 +1145,7 @@ async function copyPowerShellProfile(
   const psSourcePath = join(dotfilesDir, "shell", "powershell", "profile.ps1");
 
   // Check if PowerShell profile exists in dotfiles
-  if (!await exists(psSourcePath)) {
+  if (!(await exists(psSourcePath))) {
     printWarning("No PowerShell profile found in dotfiles, skipping");
     return true;
   }
@@ -1094,7 +1154,10 @@ async function copyPowerShellProfile(
     // Get PowerShell profile directory
     const documentsDir = join(homeDir, "Documents");
     const psProfileDir = join(documentsDir, "WindowsPowerShell");
-    const psProfilePath = join(psProfileDir, "Microsoft.PowerShell_profile.ps1");
+    const psProfilePath = join(
+      psProfileDir,
+      "Microsoft.PowerShell_profile.ps1",
+    );
 
     // Ensure PowerShell profile directory exists
     await ensureDir(psProfileDir);
@@ -1170,7 +1233,10 @@ async function copyScripts(
     // Get all script files
     let copiedCount = 0;
     for await (const entry of Deno.readDir(scriptsSourceDir)) {
-      if (entry.isFile && (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))) {
+      if (
+        entry.isFile &&
+        (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))
+      ) {
         const sourcePath = join(scriptsSourceDir, entry.name);
         const destPath = join(scriptsDestDir, entry.name);
 
@@ -1200,7 +1266,9 @@ async function copyScripts(
       console.log(
         `   ${colors.blue}Note:${colors.reset} Add ~/.tools to your PATH to run these scripts from anywhere.`,
       );
-      console.log(`   ${colors.yellow}export PATH="$HOME/.tools:$PATH"${colors.reset}`);
+      console.log(
+        `   ${colors.yellow}export PATH="$HOME/.tools:$PATH"${colors.reset}`,
+      );
     }
     return true;
   } catch (error) {
@@ -1322,7 +1390,9 @@ async function copyVSCodePrompts(
     }
 
     if (copiedCount > 0) {
-      printStatus(`Successfully copied ${copiedCount} prompt files to VS Code global prompts`);
+      printStatus(
+        `Successfully copied ${copiedCount} prompt files to VS Code global prompts`,
+      );
       console.log();
       console.log(
         `   ${colors.blue}Note:${colors.reset} These prompts are now available globally in VS Code across all workspaces.`,
@@ -1369,7 +1439,9 @@ async function reloadShell(shellType: string, homeDir: string): Promise<void> {
     printStatus("Shell configuration reloaded in subshell");
   } catch {
     printWarning("Could not reload shell configuration automatically");
-    console.log(`   ${colors.blue}Note:${colors.reset} Manually reload your shell with:`);
+    console.log(
+      `   ${colors.blue}Note:${colors.reset} Manually reload your shell with:`,
+    );
     if (shellType === "zsh") {
       console.log(`   ${colors.yellow}source ~/.zshrc${colors.reset}`);
     } else if (shellType === "bash") {
@@ -1477,11 +1549,15 @@ This script will:
 
       // Backup regular dotfiles - create individual promises for each file
       for (const file of DOTFILES) {
-        backupTasks.push((
-          async () => {
+        backupTasks.push(
+          (async () => {
             try {
               printBlue(`💾 Backing up ${file}...`);
-              const success = await backupFile(file, config.homeDir, config.backupDir);
+              const success = await backupFile(
+                file,
+                config.homeDir,
+                config.backupDir,
+              );
               return { type: "dotfiles", files: success ? [file] : [] };
             } catch (error) {
               printWarning(
@@ -1491,17 +1567,21 @@ This script will:
               );
               return { type: "dotfiles", files: [] };
             }
-          }
-        )());
+          })(),
+        );
       }
 
       // Backup optional files - create individual promises for each file
       for (const file of OPTIONAL_FILES) {
-        backupTasks.push((
-          async () => {
+        backupTasks.push(
+          (async () => {
             try {
               printBlue(`🔍 Checking for optional file ${file}...`);
-              const success = await backupFile(file, config.homeDir, config.backupDir);
+              const success = await backupFile(
+                file,
+                config.homeDir,
+                config.backupDir,
+              );
               return { type: "optional", files: success ? [file] : [] };
             } catch (error) {
               printWarning(
@@ -1511,16 +1591,19 @@ This script will:
               );
               return { type: "optional", files: [] };
             }
-          }
-        )());
+          })(),
+        );
       }
 
       // Backup Zed configuration
-      backupTasks.push((
-        async () => {
+      backupTasks.push(
+        (async () => {
           try {
             printBlue("🎯 Backing up Zed configuration...");
-            const files = await backupZedConfig(config.homeDir, config.backupDir);
+            const files = await backupZedConfig(
+              config.homeDir,
+              config.backupDir,
+            );
             return { type: "zed", files };
           } catch (error) {
             printWarning(
@@ -1530,15 +1613,18 @@ This script will:
             );
             return { type: "zed", files: [] };
           }
-        }
-      )());
+        })(),
+      );
 
       // Backup Claude configuration
-      backupTasks.push((
-        async () => {
+      backupTasks.push(
+        (async () => {
           try {
             printBlue("🤖 Backing up Claude configuration...");
-            const files = await backupClaudeConfig(config.homeDir, config.backupDir);
+            const files = await backupClaudeConfig(
+              config.homeDir,
+              config.backupDir,
+            );
             return { type: "claude", files };
           } catch (error) {
             printWarning(
@@ -1548,15 +1634,18 @@ This script will:
             );
             return { type: "claude", files: [] };
           }
-        }
-      )());
+        })(),
+      );
 
       // Backup Gemini configuration
-      backupTasks.push((
-        async () => {
+      backupTasks.push(
+        (async () => {
           try {
             printBlue("♊️ Backing up Gemini configuration...");
-            const files = await backupGeminiConfig(config.homeDir, config.backupDir);
+            const files = await backupGeminiConfig(
+              config.homeDir,
+              config.backupDir,
+            );
             return { type: "gemini", files };
           } catch (error) {
             printWarning(
@@ -1566,16 +1655,19 @@ This script will:
             );
             return { type: "gemini", files: [] };
           }
-        }
-      )());
+        })(),
+      );
 
       // Backup Ghostty configuration (macOS only)
       if (Deno.build.os === "darwin") {
-        backupTasks.push((
-          async () => {
+        backupTasks.push(
+          (async () => {
             try {
               printBlue("👻 Backing up Ghostty configuration...");
-              const files = await backupGhosttyConfig(config.homeDir, config.backupDir);
+              const files = await backupGhosttyConfig(
+                config.homeDir,
+                config.backupDir,
+              );
               return { type: "ghostty", files };
             } catch (error) {
               printWarning(
@@ -1585,13 +1677,13 @@ This script will:
               );
               return { type: "ghostty", files: [] };
             }
-          }
-        )());
+          })(),
+        );
       }
 
       // Backup scripts directory
-      backupTasks.push((
-        async () => {
+      backupTasks.push(
+        (async () => {
           try {
             printBlue("📜 Backing up scripts directory...");
             const files = await backupScripts(config.homeDir, config.backupDir);
@@ -1602,16 +1694,19 @@ This script will:
             );
             return { type: "scripts", files: [] };
           }
-        }
-      )());
+        })(),
+      );
 
       // Backup VS Code prompts (macOS only)
       if (Deno.build.os === "darwin") {
-        backupTasks.push((
-          async () => {
+        backupTasks.push(
+          (async () => {
             try {
               printBlue("💬 Backing up VS Code global prompts...");
-              const files = await backupVSCodePrompts(config.homeDir, config.backupDir);
+              const files = await backupVSCodePrompts(
+                config.homeDir,
+                config.backupDir,
+              );
               return { type: "vscode-prompts", files };
             } catch (error) {
               printWarning(
@@ -1621,8 +1716,8 @@ This script will:
               );
               return { type: "vscode-prompts", files: [] };
             }
-          }
-        )());
+          })(),
+        );
       }
 
       // PARALLEL BACKUP EXECUTION:
@@ -1727,13 +1822,20 @@ This script will:
 
       try {
         // Create array of installation task promises for parallel execution
-        const installationTasks: Promise<{ task: string; success: boolean; error?: string }>[] = [];
+        const installationTasks: Promise<{
+          task: string;
+          success: boolean;
+          error?: string;
+        }>[] = [];
 
         // Copy dotfiles
         installationTasks.push(
           (async () => {
             try {
-              const success = await copyDotfiles(config.dotfilesDir, config.homeDir);
+              const success = await copyDotfiles(
+                config.dotfilesDir,
+                config.homeDir,
+              );
               return { task: "copyDotfiles", success };
             } catch (error) {
               return {
@@ -1749,7 +1851,10 @@ This script will:
         installationTasks.push(
           (async () => {
             try {
-              const success = await copyZedConfig(config.dotfilesDir, config.homeDir);
+              const success = await copyZedConfig(
+                config.dotfilesDir,
+                config.homeDir,
+              );
               return { task: "copyZedConfig", success };
             } catch (error) {
               return {
@@ -1765,7 +1870,10 @@ This script will:
         installationTasks.push(
           (async () => {
             try {
-              const success = await copyClaudeConfig(config.dotfilesDir, config.homeDir);
+              const success = await copyClaudeConfig(
+                config.dotfilesDir,
+                config.homeDir,
+              );
               return { task: "copyClaudeConfig", success };
             } catch (error) {
               return {
@@ -1781,7 +1889,10 @@ This script will:
         installationTasks.push(
           (async () => {
             try {
-              const success = await copyGeminiConfig(config.dotfilesDir, config.homeDir);
+              const success = await copyGeminiConfig(
+                config.dotfilesDir,
+                config.homeDir,
+              );
               return { task: "copyGeminiConfig", success };
             } catch (error) {
               return {
@@ -1798,7 +1909,10 @@ This script will:
           installationTasks.push(
             (async () => {
               try {
-                const success = await copyGhosttyConfig(config.dotfilesDir, config.homeDir);
+                const success = await copyGhosttyConfig(
+                  config.dotfilesDir,
+                  config.homeDir,
+                );
                 return { task: "copyGhosttyConfig", success };
               } catch (error) {
                 return {
@@ -1816,7 +1930,10 @@ This script will:
           installationTasks.push(
             (async () => {
               try {
-                const success = await copyPowerShellProfile(config.dotfilesDir, config.homeDir);
+                const success = await copyPowerShellProfile(
+                  config.dotfilesDir,
+                  config.homeDir,
+                );
                 return { task: "copyPowerShellProfile", success };
               } catch (error) {
                 return {
@@ -1833,7 +1950,10 @@ This script will:
         installationTasks.push(
           (async () => {
             try {
-              const success = await copyScripts(config.dotfilesDir, config.homeDir);
+              const success = await copyScripts(
+                config.dotfilesDir,
+                config.homeDir,
+              );
               return { task: "copyScripts", success };
             } catch (error) {
               return {
@@ -1850,7 +1970,10 @@ This script will:
           installationTasks.push(
             (async () => {
               try {
-                const success = await copyVSCodePrompts(config.dotfilesDir, config.homeDir);
+                const success = await copyVSCodePrompts(
+                  config.dotfilesDir,
+                  config.homeDir,
+                );
                 return { task: "copyVSCodePrompts", success };
               } catch (error) {
                 return {
@@ -1957,7 +2080,9 @@ This script will:
       );
       console.log("   ✅ Installed new dotfiles from repository");
       console.log("   ✅ Installed Zed configuration files");
-      console.log("   ✅ Installed Claude configuration files and custom commands");
+      console.log(
+        "   ✅ Installed Claude configuration files and custom commands",
+      );
       console.log("   ✅ Configured Claude MCP servers from mcp.json");
       console.log("   ✅ Installed Gemini configuration files");
       console.log("   ✅ Installed tmux configuration");

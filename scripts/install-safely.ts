@@ -65,6 +65,9 @@ const CLAUDE_CONFIG_FILES = ["CLAUDE.md", "settings.json", "mcp.json"];
 // Claude commands directory to manage
 const CLAUDE_COMMANDS_DIR = "commands";
 
+// Claude agents directory to manage
+const CLAUDE_AGENTS_DIR = "agents";
+
 // Gemini configuration files to manage
 const GEMINI_CONFIG_FILES = ["GEMINI.md", "settings.json"];
 
@@ -291,6 +294,24 @@ async function backupClaudeConfig(
       } catch (error) {
         printWarning(
           `Could not backup Claude commands directory: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    }
+
+    // Backup agents directory if it exists
+    const agentsSourceDir = join(claudeConfigDir, CLAUDE_AGENTS_DIR);
+    const agentsBackupDir = join(claudeBackupDir, CLAUDE_AGENTS_DIR);
+
+    if (await exists(agentsSourceDir)) {
+      try {
+        await copy(agentsSourceDir, agentsBackupDir, { overwrite: true });
+        printStatus(`Backed up Claude agents directory`);
+        backedUpFiles.push(`claude/${CLAUDE_AGENTS_DIR}`);
+      } catch (error) {
+        printWarning(
+          `Could not backup Claude agents directory: ${
             error instanceof Error ? error.message : String(error)
           }`,
         );
@@ -639,6 +660,28 @@ async function copyClaudeConfig(
     } else {
       console.log(
         `   ${colors.yellow}No commands directory found in claude directory${colors.reset}`,
+      );
+    }
+
+    // Copy agents directory if it exists
+    const agentsSourceDir = join(claudeSourceDir, CLAUDE_AGENTS_DIR);
+    const agentsDestDir = join(claudeConfigDir, CLAUDE_AGENTS_DIR);
+
+    if (await exists(agentsSourceDir)) {
+      try {
+        await copy(agentsSourceDir, agentsDestDir, { overwrite: true });
+        printStatus(`Copied Claude agents directory`);
+        copiedCount++;
+      } catch (error) {
+        printWarning(
+          `Could not copy Claude agents directory: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    } else {
+      console.log(
+        `   ${colors.yellow}No agents directory found in claude directory${colors.reset}`,
       );
     }
 
@@ -2081,7 +2124,7 @@ This script will:
       console.log("   ✅ Installed new dotfiles from repository");
       console.log("   ✅ Installed Zed configuration files");
       console.log(
-        "   ✅ Installed Claude configuration files and custom commands",
+        "   ✅ Installed Claude configuration files, custom commands, and agents",
       );
       console.log("   ✅ Configured Claude MCP servers from mcp.json");
       console.log("   ✅ Installed Gemini configuration files");

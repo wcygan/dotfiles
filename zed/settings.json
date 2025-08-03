@@ -7,6 +7,8 @@
 // custom settings, run `zed: open default settings` from the
 // command palette
 {
+  "preferred_line_length": 200,
+  "soft_wrap": "preferred_line_length",
   "icon_theme": "Catppuccin Frappé",
   "features": {
     "edit_prediction_provider": "zed"
@@ -26,8 +28,7 @@
     "default_model": {
       "provider": "google",
       "model": "gemini-2.5-pro-exp-03-25"
-    },
-    "version": "2"
+    }
   },
   "ui_font_size": 20,
   "buffer_font_size": 20,

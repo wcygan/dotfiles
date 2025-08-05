@@ -68,7 +68,6 @@ alias will='cd ~'
 alias n='edit $HOME/Development/development-workspace/notes'
 alias cs='edit $HOME/Development/csgo-config'
 alias mn='cd $HOME/Development/manning'
-alias oss='cd $HOME/Development/oss'
 alias lab='edit $HOME/Development/development-workspace/anton'
 
 # Modern CLI tool replacements
@@ -189,6 +188,7 @@ alias gbddd='git branch | grep -v "main" | xargs git branch -d'
 # 03. Programming                                                            #
 ##############################################################################
 
+
 # Deno
 alias d='deno'
 alias dt='d task'
@@ -250,7 +250,7 @@ alias aider='py -m aider --cache-prompts'
 alias a='aider'
 alias ad='aider'
 alias o='ollama'
-
+alias oss='ollama run gpt-oss:20b'
 ##############################################################################
 # 04. Networking                                                             #
 ##############################################################################

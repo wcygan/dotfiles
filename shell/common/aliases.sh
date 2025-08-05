@@ -188,6 +188,7 @@ alias gbddd='git branch | grep -v "main" | xargs git branch -d'
 # 03. Programming                                                            #
 ##############################################################################
 
+alias lg='lazygit'
 
 # Deno
 alias d='deno'

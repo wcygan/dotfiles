@@ -39,8 +39,11 @@ alias ....='cd ../../..'
 alias edit="${EDITOR:-vim}"
 alias g='gemini'
 alias x='claude'
-alias xs'claude --model sonnet'
+alias xs='claude --model sonnet'
 alias xx='cd ~/Development/development-workspace'
+
+# let's goooooooooo... yolo!
+alias lfg='claude --model sonnet --dangerously-skip-permissions'
 
 # Shell-agnostic aliases - detect current shell and use appropriate config
 if [ -n "$ZSH_VERSION" ]; then

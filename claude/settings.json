@@ -127,5 +127,9 @@
     "GIT_EDITOR": "zed --wait"
   },
   "cleanupPeriodDays": 90,
-  "includeCoAuthoredBy": false
+  "includeCoAuthoredBy": false,
+  "statusLine": {
+    "type": "command",
+    "command": "~/.tools/claude-statusline.ts"
+  }
 }

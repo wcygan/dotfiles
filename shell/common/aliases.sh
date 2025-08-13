@@ -43,7 +43,7 @@ alias xs='claude --model sonnet'
 alias xx='cd ~/Development/development-workspace'
 
 # let's goooooooooo... yolo!
-alias lfg='claude --model sonnet --dangerously-skip-permissions'
+alias lfg='claude --model opusplan --dangerously-skip-permissions'
 
 # Shell-agnostic aliases - detect current shell and use appropriate config
 if [ -n "$ZSH_VERSION" ]; then

@@ -1,0 +1,181 @@
+# Enhanced Rust configuration
+[[language]]
+name = "rust"
+language-servers = ["rust-analyzer"]
+auto-format = true
+formatter = { command = "rustfmt", args = ["--edition", "2021"] }
+
+[language-server.rust-analyzer.config]
+checkOnSave = { command = "clippy", allTargets = false }
+cargo = { buildScripts = { enable = true } }
+procMacro = { enable = true }
+rustfmt = { rangeFormatting = { enable = true } }
+
+# TypeScript/JavaScript configuration
+[[language]]
+name = "typescript"
+language-servers = ["typescript-language-server"]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+[[language]]
+name = "javascript"
+language-servers = ["typescript-language-server"]
+formatter = { command = "prettier", args = ["--parser", "javascript"] }
+auto-format = true
+
+[[language]]
+name = "jsx"
+language-servers = ["typescript-language-server"]
+formatter = { command = "prettier", args = ["--parser", "babel"] }
+auto-format = true
+
+[[language]]
+name = "tsx"
+language-servers = ["typescript-language-server"]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+# Go configuration
+[[language]]
+name = "go"
+language-servers = ["gopls"]
+formatter = { command = "goimports" }
+auto-format = true
+
+[language-server.gopls.config]
+gofumpt = true
+staticcheck = true
+
+# Python configuration
+[[language]]
+name = "python"
+language-servers = ["ruff", "pyright"]
+formatter = { command = "ruff", args = ["format", "-"] }
+auto-format = true
+
+[language-server.ruff.config]
+settings = { args = ["--ignore", "E501"] }
+
+[language-server.pyright.config]
+python = { analysis = { typeCheckingMode = "strict" } }
+
+# JSON configuration
+[[language]]
+name = "json"
+language-servers = ["vscode-json-language-server"]
+formatter = { command = "jq" }
+auto-format = true
+
+# YAML configuration
+[[language]]
+name = "yaml"
+language-servers = ["yaml-language-server"]
+formatter = { command = "prettier", args = ["--parser", "yaml"] }
+auto-format = true
+
+# TOML configuration
+[[language]]
+name = "toml"
+language-servers = ["taplo"]
+formatter = { command = "taplo", args = ["fmt", "-"] }
+auto-format = true
+
+# Markdown configuration
+[[language]]
+name = "markdown"
+language-servers = ["marksman"]
+formatter = { command = "prettier", args = ["--parser", "markdown"] }
+auto-format = true
+
+# Dockerfile configuration
+[[language]]
+name = "dockerfile"
+language-servers = ["docker-langserver"]
+formatter = { command = "prettier", args = ["--parser", "dockerfile"] }
+
+# SQL configuration
+[[language]]
+name = "sql"
+language-servers = ["sql-language-server"]
+
+# CSS configuration
+[[language]]
+name = "css"
+language-servers = ["vscode-css-language-server"]
+formatter = { command = "prettier", args = ["--parser", "css"] }
+auto-format = true
+
+# HTML configuration
+[[language]]
+name = "html"
+language-servers = ["vscode-html-language-server"]
+formatter = { command = "prettier", args = ["--parser", "html"] }
+auto-format = true
+
+# Bash/Shell configuration
+[[language]]
+name = "bash"
+language-servers = ["bash-language-server"]
+formatter = { command = "shfmt", args = ["-i", "2"] }
+
+# Lua configuration
+[[language]]
+name = "lua"
+language-servers = ["lua-language-server"]
+formatter = { command = "stylua", args = ["-"] }
+
+# Language server definitions
+[language-server.typescript-language-server]
+command = "typescript-language-server"
+args = ["--stdio"]
+
+[language-server.gopls]
+command = "gopls"
+
+[language-server.ruff]
+command = "ruff"
+args = ["server", "--preview"]
+
+[language-server.pyright]
+command = "pyright-langserver"
+args = ["--stdio"]
+
+[language-server.vscode-json-language-server]
+command = "vscode-json-language-server"
+args = ["--stdio"]
+
+[language-server.yaml-language-server]
+command = "yaml-language-server"
+args = ["--stdio"]
+
+[language-server.taplo]
+command = "taplo"
+args = ["lsp", "stdio"]
+
+[language-server.marksman]
+command = "marksman"
+args = ["server"]
+
+[language-server.docker-langserver]
+command = "docker-langserver"
+args = ["--stdio"]
+
+[language-server.sql-language-server]
+command = "sql-language-server"
+args = ["up", "--method", "stdio"]
+
+[language-server.vscode-css-language-server]
+command = "vscode-css-language-server"
+args = ["--stdio"]
+
+[language-server.vscode-html-language-server]
+command = "vscode-html-language-server"
+args = ["--stdio"]
+
+[language-server.bash-language-server]
+command = "bash-language-server"
+args = ["start"]
+
+[language-server.lua-language-server]
+command = "lua-language-server"

@@ -71,6 +71,9 @@ const CLAUDE_AGENTS_DIR = "agents";
 // Gemini configuration files to manage
 const GEMINI_CONFIG_FILES = ["GEMINI.md", "settings.json"];
 
+// Helix configuration files to manage
+const HELIX_CONFIG_FILES = ["config.toml", "languages.toml"];
+
 // Ghostty configuration file
 const GHOSTTY_CONFIG_FILE = "config";
 
@@ -369,6 +372,54 @@ async function backupGeminiConfig(
   } catch (error) {
     printWarning(
       `Could not backup Gemini configuration: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+
+  return backedUpFiles;
+}
+
+async function backupHelixConfig(
+  homeDir: string,
+  backupDir: string,
+): Promise<string[]> {
+  const helixConfigDir = join(homeDir, ".config", "helix");
+  const helixBackupDir = join(backupDir, ".config", "helix");
+  const backedUpFiles: string[] = [];
+
+  const helixDirExists = await exists(helixConfigDir);
+  if (!helixDirExists) {
+    console.log(
+      `   ${colors.yellow}No existing Helix configuration found${colors.reset}`,
+    );
+    return backedUpFiles;
+  }
+
+  try {
+    await ensureDir(helixBackupDir);
+
+    for (const configFile of HELIX_CONFIG_FILES) {
+      const sourcePath = join(helixConfigDir, configFile);
+      const backupPath = join(helixBackupDir, configFile);
+
+      if (await exists(sourcePath)) {
+        try {
+          await copy(sourcePath, backupPath, { overwrite: true });
+          printStatus(`Backed up Helix ${configFile}`);
+          backedUpFiles.push(`helix/${configFile}`);
+        } catch (error) {
+          printWarning(
+            `Could not backup Helix ${configFile}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+      }
+    }
+  } catch (error) {
+    printWarning(
+      `Could not backup Helix configuration: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
@@ -826,6 +877,66 @@ async function copyGeminiConfig(
   } catch (error) {
     printError(
       `Failed to copy Gemini configuration: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    return false;
+  }
+}
+
+async function copyHelixConfig(
+  dotfilesDir: string,
+  homeDir: string,
+): Promise<boolean> {
+  printBlue("🧬 Copying Helix configuration files...");
+  const helixSourceDir = join(dotfilesDir, "helix");
+  const helixConfigDir = join(homeDir, ".config", "helix");
+
+  // Check if helix directory exists in dotfiles
+  const helixDirExists = await exists(helixSourceDir);
+  if (!helixDirExists) {
+    printWarning(
+      "No helix directory found in dotfiles, skipping Helix configuration",
+    );
+    return true;
+  }
+
+  try {
+    // Ensure Helix config directory exists
+    await ensureDir(helixConfigDir);
+    printStatus(`Created Helix config directory: ${helixConfigDir}`);
+
+    let copiedCount = 0;
+    for (const configFile of HELIX_CONFIG_FILES) {
+      const sourcePath = join(helixSourceDir, configFile);
+      const destPath = join(helixConfigDir, configFile);
+
+      if (await exists(sourcePath)) {
+        try {
+          await copy(sourcePath, destPath, { overwrite: true });
+          printStatus(`Copied ${configFile} to Helix config`);
+          copiedCount++;
+        } catch (error) {
+          printWarning(
+            `Could not copy ${configFile}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+      } else {
+        console.log(
+          `   ${colors.yellow}No ${configFile} found in helix directory${colors.reset}`,
+        );
+      }
+    }
+
+    if (copiedCount > 0) {
+      printStatus(`Successfully copied ${copiedCount} Helix configuration files`);
+    }
+    return true;
+  } catch (error) {
+    printError(
+      `Failed to copy Helix configuration: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
@@ -1701,6 +1812,27 @@ This script will:
         })(),
       );
 
+      // Backup Helix configuration
+      backupTasks.push(
+        (async () => {
+          try {
+            printBlue("🧬 Backing up Helix configuration...");
+            const files = await backupHelixConfig(
+              config.homeDir,
+              config.backupDir,
+            );
+            return { type: "helix", files };
+          } catch (error) {
+            printWarning(
+              `Error backing up Helix configuration: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+            return { type: "helix", files: [] };
+          }
+        })(),
+      );
+
       // Backup Ghostty configuration (macOS only)
       if (Deno.build.os === "darwin") {
         backupTasks.push(
@@ -1947,6 +2079,25 @@ This script will:
           })(),
         );
 
+        // Copy Helix configuration
+        installationTasks.push(
+          (async () => {
+            try {
+              const success = await copyHelixConfig(
+                config.dotfilesDir,
+                config.homeDir,
+              );
+              return { task: "copyHelixConfig", success };
+            } catch (error) {
+              return {
+                task: "copyHelixConfig",
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+              };
+            }
+          })(),
+        );
+
         // Copy Ghostty configuration (macOS only)
         if (Deno.build.os === "darwin") {
           installationTasks.push(
@@ -2128,6 +2279,7 @@ This script will:
       );
       console.log("   ✅ Configured Claude MCP servers from mcp.json");
       console.log("   ✅ Installed Gemini configuration files");
+      console.log("   ✅ Installed Helix editor configuration files");
       console.log("   ✅ Installed tmux configuration");
       console.log("   ✅ Installed scripts to ~/.tools directory");
       if (Deno.build.os === "darwin") {

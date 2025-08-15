@@ -20,6 +20,7 @@ Load relevant documentation and context for the specified technology:
 4. **Provide Context** - Key concepts, patterns, and gotchas to remember
 
 **Supported Technologies:**
+
 - **Languages**: go, rust, java, python, typescript, deno
 - **Web Frameworks**: gin, axum, spring, quarkus, fresh, express
 - **Databases**: postgres, mysql, redis, dragonfly, scylla
@@ -28,8 +29,9 @@ Load relevant documentation and context for the specified technology:
 - **Testing**: frameworks and patterns for any language
 
 **Context Sources:**
+
 - Official documentation websites
-- GitHub repositories and examples  
+- GitHub repositories and examples
 - Best practice guides
 - Common patterns and anti-patterns
 

@@ -20,6 +20,7 @@ Analyze the project's dependency structure and health:
 4. **Recommendations** - Suggest updates, removals, or security fixes
 
 **Analysis by Technology:**
+
 - **Node.js**: Use `npm audit`, `npm ls`, check package.json vs package-lock.json
 - **Deno**: Analyze JSR vs npm imports, check deno.lock consistency
 - **Rust**: Use `cargo audit` if available, check Cargo.toml vs Cargo.lock

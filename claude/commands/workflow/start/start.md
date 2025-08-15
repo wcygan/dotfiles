@@ -21,6 +21,7 @@ Help start working on the specified task:
 5. **Begin Implementation** - Start with the first actionable step
 
 **Common Workflows:**
+
 - **New Feature**: Create branch, write tests first, implement incrementally
 - **Bug Fix**: Reproduce issue, identify root cause, create minimal fix
 - **Refactoring**: Ensure tests exist, make small safe changes, verify

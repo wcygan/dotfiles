@@ -25,6 +25,7 @@ Conduct a focused pull request review:
 5. **Provide Feedback** - Suggest specific improvements or approve if ready
 
 **Review Process:**
+
 - If no PR specified, review the current branch PR or list PRs awaiting review
 - Focus on logic errors, code style, security issues, and maintainability
 - Provide constructive, actionable feedback

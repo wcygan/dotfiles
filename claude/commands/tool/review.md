@@ -22,6 +22,7 @@ Conduct a comprehensive code review focusing on:
 5. **Testing** - Test coverage, test quality, and missing test scenarios
 
 **Review Process:**
+
 - Analyze the overall project structure and architecture
 - Review recent changes and commits for context
 - Identify code smells, anti-patterns, and technical debt
@@ -29,6 +30,7 @@ Conduct a comprehensive code review focusing on:
 - Prioritize findings by impact and effort required
 
 **Focus Areas:**
+
 - Error handling and edge cases
 - Resource management and cleanup
 - API design and consistency

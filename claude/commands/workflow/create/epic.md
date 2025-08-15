@@ -21,6 +21,7 @@ Plan and coordinate a large-scale development epic:
 5. **Coordination** - Define communication and tracking approach
 
 **Epic Planning Process:**
+
 - Scope definition and success criteria
 - Technical design and architecture decisions
 - Task breakdown with effort estimates
@@ -28,6 +29,7 @@ Plan and coordinate a large-scale development epic:
 - Resource allocation and timeline
 
 **Common Epic Types:**
+
 - **Feature Rollouts**: Multi-service feature development
 - **Infrastructure Migration**: Technology stack changes
 - **Architecture Refactoring**: System-wide improvements

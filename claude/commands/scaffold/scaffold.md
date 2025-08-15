@@ -20,6 +20,7 @@ Generate project scaffolding for the specified technology:
 5. **Setup Instructions** - Provide next steps for development
 
 **Supported Stacks:**
+
 - **Deno**: Fresh web apps, CLI scripts, libraries
 - **Go**: HTTP servers, CLI tools, ConnectRPC services
 - **Rust**: Axum web services, CLI applications, libraries
@@ -28,6 +29,7 @@ Generate project scaffolding for the specified technology:
 - **Documentation**: Docusaurus sites, README templates
 
 **Generated Files:**
+
 - Project configuration (package.json, Cargo.toml, go.mod, pom.xml)
 - Basic source code structure
 - Test file templates

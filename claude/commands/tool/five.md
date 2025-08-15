@@ -18,6 +18,7 @@ Apply the Five Whys root cause analysis technique to understand the underlying c
 5. **Prevent Recurrence** - Recommend systemic improvements to prevent the issue
 
 **Five Whys Process:**
+
 - **Problem**: [State the initial problem]
 - **Why 1**: Why does this problem occur?
 - **Why 2**: Why does that cause occur?

@@ -24,6 +24,7 @@ Provide a comprehensive technical analysis of the specified target:
 6. **Considerations** - Performance, security, maintainability aspects
 
 **Analysis Approach:**
+
 - If analyzing code: Read the target files and trace through the logic
 - If analyzing a concept: Research and explain the technical implementation
 - Focus on practical, actionable insights

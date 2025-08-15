@@ -21,6 +21,7 @@ Generate visual representations of code, data, or system architecture:
 4. **Provide Context** - Explain the diagram and key insights
 
 **Visualization Types:**
+
 - **Code Architecture**: Component relationships, module dependencies
 - **Data Flow**: How data moves through the system
 - **Entity Relationships**: Database schemas, object models
@@ -28,6 +29,7 @@ Generate visual representations of code, data, or system architecture:
 - **Process Flow**: Business logic, user journeys
 
 **Output Formats:**
+
 - **Mermaid diagrams** for flowcharts, sequence diagrams, entity relationships
 - **ASCII art** for simple structures
 - **Structured text** for complex hierarchies

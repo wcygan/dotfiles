@@ -22,6 +22,7 @@ Generate comprehensive tests for the specified target:
 5. **Add Test Utilities** - Include mocks, fixtures, and helper functions
 
 **Test Types Generated:**
+
 - **Unit Tests**: Individual function/method testing
 - **Integration Tests**: Component interaction testing
 - **Error Handling**: Exception and edge case testing
@@ -29,6 +30,7 @@ Generate comprehensive tests for the specified target:
 - **Test Data**: Fixtures and sample data
 
 **Framework Support:**
+
 - **Deno**: Built-in test runner with assertions
 - **Rust**: Cargo test with unit and integration tests
 - **Go**: Go test with table-driven tests and testify

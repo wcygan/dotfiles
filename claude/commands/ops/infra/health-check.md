@@ -12,10 +12,12 @@ description: Quick infrastructure health assessment
 - Failed services: !`systemctl --failed --no-legend 2>/dev/null | wc -l | tr -d ' ' || echo "0"` failed systemd services
 
 **Resource Status:**
+
 - Memory: !`free -h 2>/dev/null | awk 'NR==2{print $3 "/" $2}' || echo "unavailable"`
 - Disk: !`df -h / 2>/dev/null | awk 'NR==2{print $3 "/" $2 " (" $5 " used)"}' || echo "unavailable"`
 
 **Service Health:**
+
 - Kubernetes nodes: !`kubectl get nodes --no-headers 2>/dev/null | wc -l | tr -d ' ' || echo "0"` nodes
 - Running containers: !`docker ps -q 2>/dev/null | wc -l | tr -d ' ' || echo "0"` containers
 - Health endpoint: !`curl -s --connect-timeout 3 http://localhost:8080/health 2>/dev/null | jq -r '.status // "unreachable"' || echo "unreachable"`

@@ -22,6 +22,7 @@ Generate comprehensive documentation for the specified target:
 5. **Ensure Completeness** - Cover all important aspects and edge cases
 
 **Documentation Types:**
+
 - **API Documentation**: Function/method signatures, parameters, return values
 - **README**: Project overview, installation, usage, examples
 - **Changelog**: Version history, features, breaking changes
@@ -29,6 +30,7 @@ Generate comprehensive documentation for the specified target:
 - **Component Docs**: Individual module/component documentation
 
 **Generated Content:**
+
 - Clear structure with headers and sections
 - Code examples with proper syntax highlighting
 - Installation and usage instructions

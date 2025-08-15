@@ -1,5 +1,22 @@
+##############################################################################
+#   Filename: .platform.sh                                                   #
+# Maintainer: Will Cygan <wcygan.io@gmail.com>                              #
+#        URL: http://github.com/wcygan/dotfiles                             #
+#                                                                            #
+# Sections:                                                                  #
+#   01. Operating System ......... OS detection and platform variables      #
+#   02. Shell Detection .......... Shell type and configuration paths       #
+#   03. Terminal Detection ........ Terminal capabilities and color support  #
+#   04. Platform Configuration ... Package managers and platform settings   #
+#   05. Environment Detection ..... Development environments and projects    #
+##############################################################################
+
 # Platform and shell detection utilities
 # This file is sourced by both bash and zsh configurations
+
+##############################################################################
+# 01. Operating System                                                       #
+##############################################################################
 
 # Detect operating system
 if [[ "$(uname)" == "Darwin" ]]; then
@@ -11,6 +28,10 @@ elif [[ "$(uname -s)" == CYGWIN* ]] || [[ "$(uname -s)" == MINGW* ]]; then
 else
     export DOTFILES_OS="unknown"
 fi
+
+##############################################################################
+# 02. Shell Detection                                                        #
+##############################################################################
 
 # Detect shell and set shell-specific environment
 if [ -n "$ZSH_VERSION" ]; then
@@ -27,6 +48,10 @@ else
     export DOTFILES_SHELL_VERSION=""
 fi
 
+##############################################################################
+# 03. Terminal Detection                                                     #
+##############################################################################
+
 # Set terminal capabilities
 if [ -t 1 ]; then
     export DOTFILES_TERMINAL="interactive"
@@ -35,6 +60,10 @@ else
     export DOTFILES_TERMINAL="non-interactive"
     export DOTFILES_COLORS_SUPPORTED="false"
 fi
+
+##############################################################################
+# 04. Platform Configuration                                                 #
+##############################################################################
 
 # Platform-specific configurations
 case "$DOTFILES_OS" in
@@ -66,6 +95,10 @@ case "$DOTFILES_OS" in
         fi
         ;;
 esac
+
+##############################################################################
+# 05. Environment Detection                                                  #
+##############################################################################
 
 # Shell-specific optimizations
 case "$DOTFILES_SHELL" in

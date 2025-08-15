@@ -1,4 +1,24 @@
+##############################################################################
+#   Filename: .path.sh                                                       #
+# Maintainer: Will Cygan <wcygan.io@gmail.com>                              #
+#        URL: http://github.com/wcygan/dotfiles                             #
+#                                                                            #
+# Sections:                                                                  #
+#   01. Base Path ................ System and local binaries                #
+#   02. macOS Paths .............. Homebrew and macOS-specific tools        #
+#   03. Linux Paths .............. Linux-specific development tools         #
+#   04. Development Tools ........ Cross-platform development paths         #
+##############################################################################
+
+##############################################################################
+# 01. Base Path                                                              #
+##############################################################################
+
 export PATH="/usr/local/bin:$PATH"
+
+##############################################################################
+# 02. macOS Paths                                                            #
+##############################################################################
 
 # Detect OS
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -25,6 +45,10 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     esac
 
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+##############################################################################
+# 03. Linux Paths                                                            #
+##############################################################################
+
     # Linux specific paths
 
     # Rust/Cargo
@@ -40,6 +64,10 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # System directories that might not be in default PATH
     export PATH="/usr/sbin:/sbin:$PATH"
 fi
+
+##############################################################################
+# 04. Development Tools                                                      #
+##############################################################################
 
 # Cross-platform development tools
 

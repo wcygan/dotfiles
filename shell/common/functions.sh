@@ -1,3 +1,21 @@
+##############################################################################
+#   Filename: .functions.sh                                                  #
+# Maintainer: Will Cygan <wcygan.io@gmail.com>                              #
+#        URL: http://github.com/wcygan/dotfiles                             #
+#                                                                            #
+# Sections:                                                                  #
+#   01. Utility Functions ........ Random, filesystem, and system utils     #
+#   02. Network Tools ............ DNS, SSL certificate, and web utilities  #
+#   03. Directory Operations ..... Navigation and file management           #
+#   04. Development Helpers ...... Git, Docker, and language-specific tools #
+#   05. Container Operations ..... Docker Compose helpers                   #
+#   06. Shell Enhancements ....... Shell-specific completions and prompts  #
+##############################################################################
+
+##############################################################################
+# 01. Utility Functions                                                      #
+##############################################################################
+
 # Create a string of random base64 characters (default length 64)
 rng() {
   local length="${1:-64}"
@@ -30,6 +48,10 @@ if [ $? -eq 0 ]; then
 		git diff --no-index --color-words "$@";
 	}
 fi;
+
+##############################################################################
+# 02. Network Tools                                                          #
+##############################################################################
 
 # Run `dig` and display the most useful info
 function digga() {
@@ -70,6 +92,10 @@ function getcertnames() {
 	fi;
 }
 
+##############################################################################
+# 03. Directory Operations                                                   #
+##############################################################################
+
 # `o` with no arguments opens the current directory, otherwise opens the given
 # location
 function o() {
@@ -87,6 +113,10 @@ function o() {
 function tre() {
 	tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX;
 }
+
+##############################################################################
+# 04. Development Helpers                                                    #
+##############################################################################
 
 # exec into a pod
 kx() {
@@ -140,6 +170,10 @@ copydirf() {
 
     rg "${rg_args[@]}" --no-ignore --no-heading --with-filename --line-number --text --max-columns 500 --binary "" | nl -ba | tee >(pbcopy) | cat
 }
+
+##############################################################################
+# 05. Container Operations                                                   #
+##############################################################################
 
 # Docker compose rebuild and restart specific service
 dcr() {
@@ -232,6 +266,10 @@ EOF
   # Hint for the next step
   echo "Run 'buf push proto' to push your schemas."
 }
+
+##############################################################################
+# 06. Shell Enhancements                                                     #
+##############################################################################
 
 # Shell-specific enhancements
 if [ -n "$BASH_VERSION" ]; then

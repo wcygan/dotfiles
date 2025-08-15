@@ -1,3 +1,18 @@
+##############################################################################
+#   Filename: .extra.sh                                                      #
+# Maintainer: Will Cygan <wcygan.io@gmail.com>                              #
+#        URL: http://github.com/wcygan/dotfiles                             #
+#                                                                            #
+# Sections:                                                                  #
+#   01. Git Configuration ........ Universal Git settings                   #
+#   02. Shell Configuration ...... ZSH and Bash specific settings           #
+#   03. Tool Integrations ......... FZF, direnv, and development tools      #
+##############################################################################
+
+##############################################################################
+# 01. Git Configuration                                                      #
+##############################################################################
+
 # Git configuration (universal)
 GIT_AUTHOR_NAME="Will Cygan"
 GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
@@ -5,6 +20,10 @@ git config --global user.name "$GIT_AUTHOR_NAME"
 GIT_AUTHOR_EMAIL="wcygan.io@gmail.com"
 GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
 git config --global user.email "$GIT_AUTHOR_EMAIL"
+
+##############################################################################
+# 02. Shell Configuration                                                    #
+##############################################################################
 
 # Shell-specific configurations
 if [ -n "$ZSH_VERSION" ]; then
@@ -45,6 +64,10 @@ elif [ -n "$BASH_VERSION" ]; then
         fi
     fi
 fi
+
+##############################################################################
+# 03. Tool Integrations                                                      #
+##############################################################################
 
 # Universal tool integrations (work in both shells)
 

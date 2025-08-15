@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, Read, Bash(fd:*), Bash(rg:*), Bash(jq:*), Bash(gdate:*)
-description: Universal high-performance parallel analysis template with 8-10 sub-agents
+description: Universal high-performance parallel analysis template with 2-3 sub-agents
 ---
 
 # Universal Sub-Agent Optimization Template
@@ -30,50 +30,25 @@ CATCH:
 ### STEP 2: **IMMEDIATE PARALLEL DEPLOYMENT**
 
 ```yaml
-**DEPLOY 8-10 AGENTS SIMULTANEOUSLY** - NO SEQUENTIAL PROCESSING:
+**DEPLOY 2-3 AGENTS SIMULTANEOUSLY** - NO SEQUENTIAL PROCESSING:
 
-1. **Agent 1: [Domain-Specific Analysis]**
-   - Focus: [Specific responsibility]
+1. **Agent 1: [Primary Analysis]**
+   - Focus: [Core responsibility - e.g., architecture and patterns]
    - Tools: [Relevant tools]
    - Output: [Expected deliverable]
 
-2. **Agent 2: [Domain-Specific Analysis]**
-   - Focus: [Specific responsibility] 
+2. **Agent 2: [Secondary Analysis]**
+   - Focus: [Complementary responsibility - e.g., quality and security]
    - Tools: [Relevant tools]
    - Output: [Expected deliverable]
 
-3. **Agent 3: [Domain-Specific Analysis]**
-   - Focus: [Specific responsibility]
+3. **Agent 3: [Supporting Analysis]** (Optional)
+   - Focus: [Additional responsibility - e.g., testing and documentation]
    - Tools: [Relevant tools]
    - Output: [Expected deliverable]
 
-4. **Agent 4: [Domain-Specific Analysis]**
-   - Focus: [Specific responsibility]
-   - Tools: [Relevant tools]
-   - Output: [Expected deliverable]
-
-5. **Agent 5: [Domain-Specific Analysis]**
-   - Focus: [Specific responsibility]
-   - Tools: [Relevant tools]
-   - Output: [Expected deliverable]
-
-6. **Agent 6: [Domain-Specific Analysis]**
-   - Focus: [Specific responsibility]
-   - Tools: [Relevant tools]
-   - Output: [Expected deliverable]
-
-7. **Agent 7: [Domain-Specific Analysis]**
-   - Focus: [Specific responsibility]
-   - Tools: [Relevant tools]
-   - Output: [Expected deliverable]
-
-8. **Agent 8: [Domain-Specific Analysis]**
-   - Focus: [Specific responsibility]
-   - Tools: [Relevant tools]
-   - Output: [Expected deliverable]
-
-**CRITICAL**: Launch ALL agents simultaneously for maximum efficiency.
-**Expected speedup**: 8-10x faster than sequential analysis.
+**CRITICAL**: Launch agents simultaneously for efficient parallel processing.
+**Expected speedup**: 2-3x faster than sequential analysis.
 ```
 
 ### STEP 3: Result Synthesis
@@ -90,12 +65,12 @@ GENERATE structured output
 ### 1. Eliminate Conditional Parallelization
 
 - **NEVER** use `IF complex THEN parallel ELSE sequential`
-- **ALWAYS** default to 8-10 parallel agents
+- **ALWAYS** default to 2-3 parallel agents
 - **REMOVE** size-based thresholds and complexity conditions
 
 ### 2. Technology-Agnostic Parallelization
 
-- **LAUNCH** one agent per detected technology simultaneously
+- **LAUNCH** 2-3 agents to cover key analysis areas simultaneously
 - **AVOID** sequential CASE statements for languages/frameworks
 - **USE** parallel technology detection instead of sequential scanning
 
@@ -128,7 +103,7 @@ FINALLY:
 
 - **Structured output formats** for efficient synthesis
 - **Focused agent contexts** (2000-4000 tokens per agent)
-- **Parallel processing** reduces total token usage by 40-60%
+- **Parallel processing** reduces total token usage by 20-40%
 - **State serialization** minimizes context window pressure
 
 ## Command-Specific Customization
@@ -179,11 +154,11 @@ Agent Focus Areas:
 
 ### Performance Gains by Command Type
 
-- **Complex Analysis**: 8-10x speedup
-- **Multi-Technology Projects**: 10x speedup
-- **Documentation Generation**: 6-8x speedup
-- **Status Checking**: 5-8x speedup
-- **Security Audits**: 8-10x speedup
+- **Complex Analysis**: 2-3x speedup
+- **Multi-Technology Projects**: 3x speedup
+- **Documentation Generation**: 2-3x speedup
+- **Status Checking**: 2-3x speedup
+- **Security Audits**: 2-3x speedup
 
 ### Quality Improvements
 
@@ -227,4 +202,4 @@ Agent Focus Areas:
 - **State Persistence**: Enable resumability and debugging
 - **Error Recovery**: Graceful handling of partial failures
 
-This template transforms any sequential command into a high-performance parallel analysis engine, delivering the 5-10x performance improvements expected from modern sub-agent architecture.
+This template transforms any sequential command into a high-performance parallel analysis engine, delivering the 2-3x performance improvements expected from modern sub-agent architecture.

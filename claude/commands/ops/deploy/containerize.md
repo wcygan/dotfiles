@@ -8,7 +8,7 @@ description: Production-ready containerization orchestrator with multi-stage bui
 - Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
 - Target project: $ARGUMENTS
 - Current directory: !`pwd`
-- Project structure: !`eza -la --tree --level=2 2>/dev/null | head -15 || fd . -t d -d 2 | head -10`
+- Project structure: !`eza -la . --tree --level=2 2>/dev/null | head -15 || fd . -t d -d 2 | head -10`
 - Build files detected: !`fd "(Dockerfile|docker-compose|package\.json|Cargo\.toml|go\.mod|pom\.xml|build\.gradle|deno\.json)" . -d 3 | head -10 || echo "No build files detected"`
 - Container tools status: !`echo "docker: $(which docker >/dev/null && echo ✓ || echo ✗) | kubectl: $(which kubectl >/dev/null && echo ✓ || echo ✗) | hadolint: $(which hadolint >/dev/null && echo ✓ || echo ✗)"`
 - Existing containers: !`docker ps -a --format "table {{.Names}}\t{{.Image}}\t{{.Status}}" 2>/dev/null | head -5 || echo "No Docker daemon or containers found"`

@@ -10,7 +10,7 @@ description: Intelligent project organization orchestrator with language-specifi
 - Current working directory: !`pwd`
 - Git repository status: !`git status --porcelain 2>/dev/null | wc -l | tr -d ' '` uncommitted changes
 - Project build files: !`fd "(package\.json|Cargo\.toml|go\.mod|deno\.json|pom\.xml|build\.gradle|Makefile|CMakeLists\.txt)" "$ARGUMENTS" -d 3 | head -10 || echo "No build files detected"`
-- Directory structure: !`eza -la --tree --level=2 "$ARGUMENTS" 2>/dev/null | head -15 || fd . -t d "$ARGUMENTS" -d 2 | head -10`
+- Directory structure: !`eza -la . --tree --level=2 "$ARGUMENTS" 2>/dev/null | head -15 || fd . -t d "$ARGUMENTS" -d 2 | head -10`
 - File count by type: !`fd "\.(js|ts|jsx|tsx|rs|go|java|py|rb|php|c|cpp|h|hpp|cs|kt|swift|scala)" "$ARGUMENTS" | wc -l | tr -d ' '` source files
 - Configuration files: !`fd "\.(json|yaml|yml|toml|ini|conf|config)" "$ARGUMENTS" | head -10 || echo "No config files found"`
 

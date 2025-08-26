@@ -8,7 +8,7 @@ description: Comprehensive load testing orchestrator with intelligent scenario g
 - Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
 - Load test target: $ARGUMENTS
 - Current directory: !`pwd`
-- Project structure: !`eza -la --tree --level=2 2>/dev/null | head -15 || fd . -t d -d 2 | head -10`
+- Project structure: !`eza -la . --tree --level=2 2>/dev/null | head -15 || fd . -t d -d 2 | head -10`
 - Technology stack: !`fd "(package\.json|Cargo\.toml|go\.mod|deno\.json|pom\.xml|build\.gradle)" . -d 3 | head -10 || echo "No build files detected"`
 - Load testing tools: !`echo "k6: $(which k6 >/dev/null && echo ✓ || echo ✗) | artillery: $(which artillery >/dev/null && echo ✓ || echo ✗) | docker: $(which docker >/dev/null && echo ✓ || echo ✗)"`
 - Existing endpoints: !`rg "(app|router|handler)\.(get|post|put|delete|patch)" --type js --type ts -m 5 2>/dev/null | head -5 || echo "No API routes detected"`

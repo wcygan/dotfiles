@@ -8,7 +8,7 @@ description: Comprehensive code coverage orchestrator with intelligent gap analy
 - Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
 - Target project: $ARGUMENTS
 - Current directory: !`pwd`
-- Project structure: !`eza -la --tree --level=2 2>/dev/null | head -10 || fd . -t d -d 2 | head -8`
+- Project structure: !`eza -la . --tree --level=2 2>/dev/null | head -10 || fd . -t d -d 2 | head -8`
 - Build files detected: !`fd "(package\.json|Cargo\.toml|go\.mod|deno\.json|pom\.xml|pyproject\.toml|requirements\.txt)" . -d 3 | head -8 || echo "No build files detected"`
 - Existing coverage files: !`fd "(coverage|tarpaulin-report|coverage\.out|\.coverage)" . -d 3 | head -5 || echo "No coverage reports found"`
 - Language detection: !`echo "Languages: $(fd "\.(js|ts|jsx|tsx)" . | head -1 >/dev/null && echo "JS/TS") $(fd "\.rs$" . | head -1 >/dev/null && echo "Rust") $(fd "\.go$" . | head -1 >/dev/null && echo "Go") $(fd "\.py$" . | head -1 >/dev/null && echo "Python") $(fd "\.java$" . | head -1 >/dev/null && echo "Java")"`

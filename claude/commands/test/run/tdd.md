@@ -8,7 +8,7 @@ description: Comprehensive test-driven development orchestrator with language-aw
 - Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
 - TDD target: $ARGUMENTS
 - Current directory: !`pwd`
-- Project structure: !`eza -la --tree --level=2 2>/dev/null | head -10 || fd . -t d -d 2 | head -8`
+- Project structure: !`eza -la . --tree --level=2 2>/dev/null | head -10 || fd . -t d -d 2 | head -8`
 - Build files detected: !`fd "(package\.json|Cargo\.toml|go\.mod|pom\.xml|build\.gradle|deno\.json)" . -d 3 | head -5 || echo "No build files detected"`
 - Existing test files: !`fd "(test|spec)" . -t f | head -5 || echo "No test files found"`
 - Language tools status: !`echo "deno: $(which deno >/dev/null && echo ✓ || echo ✗) | cargo: $(which cargo >/dev/null && echo ✓ || echo ✗) | go: $(which go >/dev/null && echo ✓ || echo ✗) | mvn: $(which mvn >/dev/null && echo ✓ || echo ✗)"`

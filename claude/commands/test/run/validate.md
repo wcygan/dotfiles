@@ -8,7 +8,7 @@ description: Comprehensive validation orchestrator with intelligent project dete
 - Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
 - Target project: $ARGUMENTS
 - Current directory: !`pwd`
-- Project structure: !`eza -la --tree --level=2 2>/dev/null | head -10 || fd . -t d -d 2 | head -8`
+- Project structure: !`eza -la . --tree --level=2 2>/dev/null | head -10 || fd . -t d -d 2 | head -8`
 - Build configurations: !`fd "(package\.json|deno\.json|Cargo\.toml|go\.mod|pom\.xml|build\.gradle|tsconfig\.json|docker-compose\.)" . -d 3 | head -8 || echo "No build files detected"`
 - JSON validity: !`fd "\.json$" . | head -5 | xargs -I {} sh -c 'jq empty {} >/dev/null 2>&1 && echo "✓ {}" || echo "❌ {}"' 2>/dev/null | head -5`
 - YAML validity: !`fd "\.ya?ml$" . | head -5 | xargs -I {} sh -c 'yq eval . {} >/dev/null 2>&1 && echo "✓ {}" || echo "❌ {}"' 2>/dev/null | head -5`

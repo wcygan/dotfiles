@@ -8,7 +8,7 @@ description: Intelligent integration orchestrator for services, APIs, databases,
 - Session ID: !`gdate +%s%N 2>/dev/null || date +%s%N 2>/dev/null || echo "$(date +%s)$(jot -r 1 100000 999999 2>/dev/null || shuf -i 100000-999999 -n 1 2>/dev/null || echo $RANDOM$RANDOM)"`
 - Integration target: $ARGUMENTS
 - Current directory: !`pwd`
-- Project structure: !`eza -la --tree --level=2 2>/dev/null | head -10 || fd . -t d -d 2 | head -5`
+- Project structure: !`eza -la . --tree --level=2 2>/dev/null | head -10 || fd . -t d -d 2 | head -5`
 - Existing integrations: !`fd "(client|connector|adapter|integration|api)" --type f -d 3 | head -10 || echo "No integration files detected"`
 - Configuration files: !`fd "(.env|config|settings)" --type f -d 2 | head -5 || echo "No config files found"`
 - Running services: !`docker ps --format "table {{.Names}}\t{{.Status}}" 2>/dev/null | head -5 || echo "No Docker services running"`

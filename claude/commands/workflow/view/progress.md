@@ -12,7 +12,7 @@ description: Development progress tracker with timestamped entries and intellige
 - Current time: !`gdate "+%H:%M:%S %Z" 2>/dev/null || date "+%H:%M:%S %Z"`
 - Existing progress structure: !`fd "progress" . -t d -d 2 2>/dev/null | head -3 || echo "No progress directory found"`
 - Recent progress entries: !`fd "\.md$" ./progress/ -d 3 2>/dev/null | tail -5 || echo "No progress entries found"`
-- Modern tools status: !`echo "fd: $(which fd >/dev/null && echo ✓ || echo ✗) | bat: $(which bat >/dev/null && echo ✓ || echo ✗) | eza: $(which eza >/dev/null && echo ✗ || echo ✗)"`
+- Modern tools status: !`echo "fd: $(which fd >/dev/null && echo ✓ || echo ✗) | bat: $(which bat >/dev/null && echo ✓ || echo ✗) | eza: $(which eza >/dev/null && echo ✓ || echo ✗)"`
 
 ## Your Task
 

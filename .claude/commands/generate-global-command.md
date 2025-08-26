@@ -7,7 +7,7 @@ description: Interactive generator for global Claude slash commands with namespa
 
 - Session ID: !`gdate +%s%N`
 - Current directory: !`pwd`
-- Claude commands directory: !`eza -la claude/commands 2>/dev/null | head -10 || echo "Not in dotfiles directory"`
+- Claude commands directory: !`eza -la . claude/commands 2>/dev/null | head -10 || echo "Not in dotfiles directory"`
 - Existing namespaces: !`fd -t d -d 1 . claude/commands 2>/dev/null | sort || echo "claude/commands not found"`
 - Total commands: !`fd "\.md$" claude/commands 2>/dev/null | wc -l || echo "0"`
 - Git status: !`git status --porcelain 2>/dev/null | head -3 || echo "Not a git repository"`

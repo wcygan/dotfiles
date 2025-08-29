@@ -1,6 +1,6 @@
 ---
-mode: 'agent'
-description: 'Translate a Claude Command into a VSCode Github Copilot Prompt File'
+mode: "agent"
+description: "Translate a Claude Command into a VSCode Github Copilot Prompt File"
 ---
 
 Your goal is to translate a Claude command file into a VS Code prompt file (.prompt.md).

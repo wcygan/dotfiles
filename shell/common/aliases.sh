@@ -44,6 +44,12 @@ alias xx='cd ~/Development/development-workspace'
 
 # let's goooooooooo... yolo!
 alias lfg='claude --model opusplan --dangerously-skip-permissions'
+# Codex Version
+alias lfgc='codex --ask-for-approval never'
+alias lfgcl='codex --ask-for-approval never --sandbox danger-full-access -c model_reasoning_effort="low"'
+alias lfgcm='codex --ask-for-approval never --sandbox danger-full-access -c model_reasoning_effort="medium"'
+alias lfgch='codex --ask-for-approval never --sandbox danger-full-access -c model_reasoning_effort="high"'
+
 
 # Shell-agnostic aliases - detect current shell and use appropriate config
 if [ -n "$ZSH_VERSION" ]; then

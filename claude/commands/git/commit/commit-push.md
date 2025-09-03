@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git push:*), Bash(git branch:*), Bash(git log:*), Bash(git remote:*), Bash(git rev-parse:*)
+allowed-tools: Bash(gdate:*), Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git push:*), Bash(git branch:*), Bash(git log:*), Bash(git remote:*), Bash(git rev-parse:*), Bash(git diff:*)
 description: Create a git commit and push to remote
 ---
 

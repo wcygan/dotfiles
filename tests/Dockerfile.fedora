@@ -1,0 +1,28 @@
+FROM fedora:40
+
+# Install basic dependencies
+RUN dnf update -y && \
+    dnf install -y \
+    curl \
+    git \
+    sudo \
+    which \
+    xz \
+    tar \
+    procps-ng \
+    make \
+    && dnf clean all
+
+# Create test user with sudo access
+RUN useradd -m -s /bin/bash testuser && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Copy the entire dotfiles repository
+COPY --chown=testuser:testuser . /home/testuser/dotfiles
+
+# Switch to test user
+USER testuser
+WORKDIR /home/testuser/dotfiles
+
+# Default to bash - user can run installation manually
+CMD ["/bin/bash"]

@@ -164,31 +164,40 @@ echo ""
 echo -e "${BLUE}Next steps:${NC}"
 echo ""
 
-# Shell-specific instructions
-CURRENT_SHELL=$(basename "$SHELL")
-case "$CURRENT_SHELL" in
-    fish)
-        echo "1. Restart your shell or run:"
-        echo -e "   ${YELLOW}exec fish -l${NC}"
-        ;;
-    bash|zsh)
-        echo "1. Add this line to your ~/.${CURRENT_SHELL}rc:"
-        echo -e "   ${YELLOW}source ~/.config/shell-nix.sh${NC}"
-        echo ""
-        echo "2. Then restart your shell or run:"
-        echo -e "   ${YELLOW}source ~/.${CURRENT_SHELL}rc${NC}"
-        echo ""
-        echo "3. (Optional) Switch to fish shell:"
-        echo -e "   ${YELLOW}fish${NC}"
-        ;;
-    *)
-        echo "1. For bash/zsh, add to your shell rc file:"
-        echo -e "   ${YELLOW}source ~/.config/shell-nix.sh${NC}"
-        echo ""
-        echo "2. Or try fish shell:"
-        echo -e "   ${YELLOW}fish${NC}"
-        ;;
-esac
+# Check if we're in a container
+if [ -f /.dockerenv ] || [ -n "${container:-}" ] || ! command -v systemctl &>/dev/null; then
+    echo "1. Source Nix environment first:"
+    echo -e "   ${YELLOW}source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh${NC}"
+    echo ""
+    echo "2. Then start fish shell:"
+    echo -e "   ${YELLOW}make fish${NC} or ${YELLOW}fish${NC}"
+else
+    # Shell-specific instructions
+    CURRENT_SHELL=$(basename "$SHELL")
+    case "$CURRENT_SHELL" in
+        fish)
+            echo "1. Restart your shell or run:"
+            echo -e "   ${YELLOW}exec fish -l${NC}"
+            ;;
+        bash|zsh)
+            echo "1. Add this line to your ~/.${CURRENT_SHELL}rc:"
+            echo -e "   ${YELLOW}source ~/.config/shell-nix.sh${NC}"
+            echo ""
+            echo "2. Then restart your shell or run:"
+            echo -e "   ${YELLOW}source ~/.${CURRENT_SHELL}rc${NC}"
+            echo ""
+            echo "3. (Optional) Switch to fish shell:"
+            echo -e "   ${YELLOW}fish${NC}"
+            ;;
+        *)
+            echo "1. For bash/zsh, add to your shell rc file:"
+            echo -e "   ${YELLOW}source ~/.config/shell-nix.sh${NC}"
+            echo ""
+            echo "2. Or try fish shell:"
+            echo -e "   ${YELLOW}fish${NC}"
+            ;;
+    esac
+fi
 
 if [ ${#MISSING_TOOLS[@]} -ne 0 ]; then
     echo ""

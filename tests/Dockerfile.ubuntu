@@ -1,0 +1,28 @@
+FROM ubuntu:22.04
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install basic dependencies
+RUN apt-get update && \
+    apt-get install -y \
+    curl \
+    git \
+    sudo \
+    xz-utils \
+    make \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create test user with sudo access
+RUN useradd -m -s /bin/bash testuser && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Copy the entire dotfiles repository
+COPY --chown=testuser:testuser . /home/testuser/dotfiles
+
+# Switch to test user
+USER testuser
+WORKDIR /home/testuser/dotfiles
+
+# Default to bash - user can run installation manually
+CMD ["/bin/bash"]

@@ -18,6 +18,8 @@ help:
 	@echo "  make test-pre   - Pre-flight checks only"
 	@echo "  make test-local - Local isolated test"
 	@echo "  make test-docker- Docker isolated test"
+	@echo "  make docker-fedora - Interactive Fedora container"
+	@echo "  make docker-ubuntu - Interactive Ubuntu container"
 	@echo ""
 	@echo "Package Management:"
 	@echo "  make update     - Update flake and upgrade packages"
@@ -27,6 +29,7 @@ help:
 	@echo "Development:"
 	@echo "  make shell      - Enter Nix development shell"
 	@echo "  make fish       - Start fish shell"
+	@echo "  make source     - Show command to source Nix environment"
 	@echo ""
 	@echo "Troubleshooting:"
 	@echo "  make verify     - Verify Nix installation"
@@ -69,6 +72,33 @@ test-docker:
 	@echo "🐳 Running Docker matrix…"
 	@cd tests && ./test-matrix.sh
 
+# Build and run Fedora test container
+docker-fedora:
+	@echo "🐳 Building Fedora test container..."
+	@docker build -t dotfiles-fedora -f tests/Dockerfile.fedora .
+	@echo "✅ Container built! Starting interactive session..."
+	@echo ""
+	@echo "To test the installation, run:"
+	@echo "  ./install.sh"
+	@echo "  make test"
+	@echo ""
+	@docker run --rm -it dotfiles-fedora
+
+# Build and run Ubuntu test container
+docker-ubuntu:
+	@echo "🐳 Building Ubuntu test container..."
+	@docker build -t dotfiles-ubuntu -f tests/Dockerfile.ubuntu .
+	@echo "✅ Container built! Starting interactive session..."
+	@echo ""
+	@echo "To test the installation, run:"
+	@echo "  ./install.sh"
+	@echo "  make test"
+	@echo ""
+	@docker run --rm -it dotfiles-ubuntu
+
+# Run both Docker containers for testing
+docker-test: docker-fedora docker-ubuntu
+
 # Update packages
 update:
 	@echo "📦 Updating flake and packages..."
@@ -95,7 +125,31 @@ shell:
 # Start fish shell
 fish:
 	@echo "🐠 Starting fish shell..."
-	@fish -l
+	@bash -c 'source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh 2>/dev/null || true; \
+		if command -v fish >/dev/null 2>&1; then \
+			if [ -f .envrc ] && command -v direnv >/dev/null 2>&1; then \
+				echo "🔓 Allowing direnv for this directory..."; \
+				direnv allow; \
+			fi; \
+			exec fish -l; \
+		else \
+			echo "❌ Fish not found in PATH."; \
+			echo ""; \
+			echo "Try running:"; \
+			echo "  source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"; \
+			echo "  fish"; \
+			echo ""; \
+			echo "Or run '\''make install'\'' if you haven'\''t already."; \
+			exit 1; \
+		fi'
+
+# Source Nix environment (useful in containers)
+source:
+	@echo "📦 To source Nix environment, run:"
+	@echo ""
+	@echo "  source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+	@echo ""
+	@echo "Then you can use 'fish' or any Nix-installed tools."
 
 # Verify Nix installation
 verify:

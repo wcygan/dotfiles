@@ -1,0 +1,64 @@
+# Minimal Ubuntu userland to validate install scripts via install.sh (cold + warm)
+FROM ubuntu:25.04
+
+ARG USER=tester
+ARG UID=1001
+ARG GID=1001
+
+# Base tools needed by your scripts and sanity checks
+RUN apt-get update && \
+    apt-get install -y \
+      curl git make bash sudo findutils coreutils procps \
+      systemd ca-certificates && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Non-root user
+RUN groupadd -g ${GID} ${USER} && \
+    useradd -m -u ${UID} -g ${GID} -s /bin/bash ${USER} && \
+    echo "${USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/99-${USER}
+
+USER ${USER}
+WORKDIR /home/${USER}/app
+
+# Copy repo (honors .dockerignore)
+COPY --chown=${USER}:${USER} . .
+
+# Ensure scripts are executable (git may not preserve +x on all hosts)
+RUN chmod +x install.sh || true && \
+    chmod +x rm.sh || true && \
+    find scripts -type f -name "*.sh" -exec chmod +x {} \; || true && \
+    find tests   -type f -name "*.sh"  -exec chmod +x {} \; || true && \
+    # fish test file is in tests/, not repo root
+    chmod +x tests/docker-test-commands.fish || true
+
+# Install Nix (Determinate Systems) single-user mode; non-interactive
+RUN curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix \
+  | sh -s -- install --no-confirm
+
+# Fix permissions (installer may have used sudo)
+RUN sudo chown -R ${USER}:${USER} /nix
+
+# Source daemon profile in future shells
+RUN echo '. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' >> ~/.bashrc
+
+# Environment (flakes on; ensure Nix bins present)
+ENV NIX_CONFIG="experimental-features = nix-command flakes"
+ENV PATH="/home/${USER}/.nix-profile/bin:/nix/var/nix/profiles/default/bin:${PATH}"
+
+# === Cold run === drive the single entrypoint
+RUN . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && \
+  echo ">>> nix version:" && nix --version && \
+  ./install.sh && \
+  make test-pre
+
+# === Warm run === prove idempotency (Nix present; install.sh must short-circuit safely)
+RUN . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && \
+  ./install.sh
+
+# Run fish tests non-interactively to fail on misconfigurations
+# (fish is installed by your flake during ./install.sh)
+RUN . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && \
+    fish -lc './tests/docker-test-commands.fish'
+
+# Keep the image useful for interactive debugging
+CMD ["/bin/bash", "-lc", "echo 'Container ready (Ubuntu). Try: fish -l && ./tests/docker-test-commands.fish'; bash"]

@@ -1,0 +1,91 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette
+{
+  "show_edit_predictions": false,
+  "edit_predictions": {
+    "mode": "eager",
+    "copilot": {
+      "proxy": null,
+      "proxy_no_verify": null,
+      "enterprise_uri": null
+    },
+    "enabled_in_text_threads": false
+  },
+  "terminal": {
+    "shell": {
+      "program": "fish"
+    }
+  },
+  "show_completions_on_input": false,
+  "preferred_line_length": 200,
+  "soft_wrap": "preferred_line_length",
+  "icon_theme": "Catppuccin Frappé",
+  "features": {
+    "edit_prediction_provider": "zed"
+  },
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 200
+    }
+  },
+  "base_keymap": "JetBrains",
+  "agent": {
+    "always_allow_tool_actions": true,
+    "use_modifier_to_send": true,
+    "play_sound_when_agent_done": true,
+    "default_profile": "write",
+    "profiles": {
+      "agent": {
+        "name": "Agent",
+        "tools": {},
+        "enable_all_context_servers": false,
+        "context_servers": {}
+      }
+    },
+    "default_model": {
+      "provider": "google",
+      "model": "gemini-2.5-pro-exp-03-25"
+    }
+  },
+  "ui_font_size": 20,
+  "buffer_font_size": 20,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "Zedokai"
+  },
+  "tabs": {
+    // Show git status colors in the editor tabs.
+    "git_status": true,
+    // Whether to show the file icon for a tab.
+    "file_icons": true
+  },
+  "lsp": {
+    "deno": {
+      "settings": {
+        "deno": {
+          "enable": true
+        }
+      }
+    }
+  },
+  "languages": {
+    "Python": {
+      "show_edit_predictions": false
+    },
+    "TypeScript": {
+      "language_servers": ["deno", "!typescript-language-server", "!vtsls", "!eslint"],
+      "formatter": "language_server"
+    },
+    "TSX": {
+      "language_servers": ["deno", "!typescript-language-server", "!vtsls", "!eslint"],
+      "formatter": "language_server"
+    }
+  }
+}

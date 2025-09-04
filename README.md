@@ -1,40 +1,56 @@
 # Dotfiles
 
-[![Mentioned in Awesome Claude Code](https://awesome.re/mentioned-badge.svg)](https://github.com/hesreallyhim/awesome-claude-code)
+Modern developer configuration with safe installation and Nix package management.
 
 ## Installation
 
-1. Install Deno: https://docs.deno.com/runtime/getting_started/installation/
+```bash
+git clone https://github.com/wcygan/dotfiles.git
+cd dotfiles
+./install.sh
+```
 
-2. Clone and install:
-   ```bash
-   git clone https://github.com/wcygan/dotfiles.git && cd dotfiles
-   deno task install
-   ```
+Full documentation available at: https://wcygan.github.io/dotfiles/
 
-## Agentic Prompt Guidelines
+## What You Get
 
-**TL;DR:** Treat slash commands as executable programs, not conversations. Use minimal permissions, unique session IDs (`!`gdate +%s%N``), and explicit control flow (STEP, IF/ELSE, FOR EACH). Follow the `/commit` command as the gold standard example.
+- **🚀 Modern CLI tools**: ripgrep, fd, bat, eza, fzf, delta, and more
+- **🐟 Fish shell**: Full configuration with functions and abbreviations
+- **⭐ Starship prompt**: Beautiful, fast, and informative
+- **📦 Nix packages**: Reproducible across macOS, Ubuntu, and Fedora
+- **🔗 Safe symlinks**: Automatic backups before any changes
 
-### Core Principles
+## Project Structure
 
-- **Think "Program" not "Conversation"** - Design deterministic workflows with clear inputs/outputs
-- **Security First** - Only allow necessary tools with minimal permissions
-- **State Management** - Use unique session IDs to prevent conflicts between concurrent sessions
-- **Programming Constructs** - Use explicit control flow: sequential steps, conditionals, loops, error handling
+```
+dotfiles/
+├── config/             # Configuration files
+|   ├── zed/            # Zed config
+|   ├── ghostty/        # Ghostty config
+│   ├── fish/           # Fish shell config
+│   ├── starship.toml   # Starship prompt
+│   └── shell-nix.sh    # Bash/zsh compatibility
+├── scripts/            # Installation scripts
+├── flake.nix           # Nix package definitions
+├── install.sh          # One-command installer
+└── docs/               # Documentation site
+```
 
-### Key Requirements
+## Quick Reference
 
-1. **Session Isolation** - Every command MUST include: `Session ID: !`gdate +%s%N``
-2. **Dynamic Context** - Use `!`command`` for real-time data injection
-3. **Minimal Permissions** - Only allow required commands in `allowed-tools`
-4. **Clear Structure** - Front matter → Context → Task definition with examples
+```bash
+# Update packages
+nix flake update
+nix profile upgrade '.*'
 
-### Best Practices
+# Add new packages
+# Edit flake.nix, then:
+nix profile install .
 
-- **Sub-Agents** - Use for parallel research/analysis, not sequential operations
-- **Token Efficiency** - Reference files, use precise tools (jq, rg, fd)
-- **Error Handling** - Provide fallbacks for all dynamic commands
-- **Human Checkpoints** - AWAIT approval for critical operations
+# Uninstall (configs only, keeps Nix)
+make uninstall
 
-See the full guidelines in `.claude/commands/improve-slash-commands.md` and the `/commit` command as the reference implementation.
+# Run tests
+make test-pre
+make test-local
+```

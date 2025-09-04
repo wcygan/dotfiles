@@ -1,0 +1,517 @@
+###
+# Starship configuration
+###
+
+###
+# Configures the starship schema
+###
+"$schema" = 'https://starship.rs/config-schema.json'
+
+###
+# Configures the add newline
+###
+add_newline = true
+
+###
+# Configures the format
+###
+format = """
+[╭](fg:current_line)\
+$directory\
+$fossil_branch\
+$git_branch\
+$git_status\
+$hg_branch\
+$pijul_channel\
+$vcsh\
+$fill\
+$package\
+$bun\
+$c\
+$cmake\
+$cobol\
+$crystal\
+$daml\
+$dart\
+$deno\
+$dotnet\
+$elixir\
+$elm\
+$erlang\
+$fennel\
+$gleam\
+$golang\
+$gradle\
+$haskell\
+$haxe\
+$helm\
+$java\
+$julia\
+$kotlin\
+$lua\
+$mojo\
+$nim\
+$nodejs\
+$ocaml\
+$odin\
+$perl\
+$php\
+$purescript\
+$python\
+$quarto\
+$raku\
+$red\
+$rlang\
+$ruby\
+$rust\
+$scala\
+$solidity\
+$swift\
+$typst\
+$vlang\
+$zig\
+$fill\
+$time\
+$username\
+$line_break\
+[╰─](fg:current_line)\
+$character
+"""
+
+###
+# Configures the palette
+###
+palette = 'rainbow'
+
+###
+# Configures the rainbow palette
+###
+[palettes.rainbow]
+background   = '#282A36'
+box          = '#44475A'
+color1       = '#008080'
+color2       = '#3CB44B'
+color3       = '#FFE119'
+color4       = '#0082C8'
+color5       = '#F58231'
+color6       = '#911EB4'
+color7       = '#F032E6'
+current_line = '#44475A'
+error        = '#E6194B'
+foreground   = '#F8F8F2'
+primary      = '#1E1F29'
+success      = '#3CB44B'
+
+###
+# Configures the bun module
+###
+[bun]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the c module
+###
+[c]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the character module
+###
+[character]
+error_symbol   = '[χ](bold fg:error)'
+format         = '$symbol '
+success_symbol = '[λ](bold fg:success)'
+
+###
+# Configures the cmake module
+###
+[cmake]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the cobol module
+###
+[cobol]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'COBOL'
+
+###
+# Configures the crystal module
+###
+[crystal]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the daml module
+###
+[daml]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'DAML'
+
+###
+# Configures the dart module
+###
+[dart]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the deno module
+###
+[deno]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the directory module
+###
+[directory]
+format            = '[─](fg:current_line)[ 󰉋 ](fg:primary bg:color2)[ $read_only$truncation_symbol$path ](fg:foreground bg:box)'
+home_symbol       = "󱂵 ~/"
+read_only         = '󰌾 '
+read_only_style   = ''
+truncation_length = 2
+truncation_symbol = '󰝰 '
+
+###
+# Configures the dotnet module
+###
+[dotnet]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the elixir module
+###
+[elixir]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the elm module
+###
+[elm]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the erlang module
+###
+[erlang]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the fennel module
+###
+[fennel]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'FENNEL'
+
+###
+# Configures the fill module
+###
+[fill]
+style  = 'fg:current_line'
+symbol = '─'
+
+###
+# Configures the fossil branch module
+###
+[fossil_branch]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color3)[ $branch ](fg:foreground bg:box)'
+symbol = '󰘬'
+
+###
+# Configures the git branch module
+###
+[git_branch]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color3)[ $branch ](fg:foreground bg:box)'
+symbol = '󰘬'
+
+###
+# Configures the git commit module
+###
+[git_commit]
+commit_hash_length = 4
+format             = "([─](fg:current_line)[ 󰓹 ](fg:primary bg:color3)[ $tag ](fg:foreground bg:box))([─](fg:current_line)[ 󰜘 ](fg:primary bg:color3)[ $hash ](fg:foreground bg:box))"
+only_detached      = false
+tag_disabled       = false
+tag_symbol         = ''
+
+###
+# Configures the git status module
+###
+[git_status]
+format = '([─](fg:current_line)[ 󱓎 ](fg:primary bg:color3)[ $all_status$ahead_behind ](fg:foreground bg:box))'
+
+###
+# Configures the gleam module
+###
+[gleam]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'GLEAM'
+
+###
+# Configures the golang module
+###
+[golang]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the gradle module
+###
+[gradle]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the haskell module
+###
+[haskell]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the haxe module
+###
+[haxe]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the helm module
+###
+[helm]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the hg branch module
+###
+[hg_branch]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color3)[ $branch(:$topic) ](fg:foreground bg:box)'
+symbol = '󰘬'
+
+###
+# Configures the java module
+###
+[java]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the julia module
+###
+[julia]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the kotlin module
+###
+[kotlin]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the lua module
+###
+[lua]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the mojo module
+###
+[mojo]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'MOJO'
+
+###
+# Configures the nim module
+###
+[nim]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the nodejs module
+###
+[nodejs]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the ocaml module
+###
+[ocaml]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the odin module
+###
+[odin]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'ODIN'
+
+###
+# Configures the perl module
+###
+[perl]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the php module
+###
+[php]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the pijul channel module
+###
+[pijul_channel]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color3)[ $channel ](fg:foreground bg:box)'
+symbol = '󰘬'
+
+###
+# Configures the purescript module
+###
+[purescript]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the python module
+###
+[python]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the quarto module
+###
+[quarto]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'QUARTO'
+
+###
+# Configures the raku module
+###
+[raku]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'RAKU'
+
+###
+# Configures the red module
+###
+[red]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'RED'
+
+###
+# Configures the rlang module
+###
+[rlang]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the ruby module
+###
+[ruby]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the rust module
+###
+[rust]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the scala module
+###
+[scala]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the solidity module
+###
+[solidity]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the swift module
+###
+[swift]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = ''
+
+###
+# Configures the package module
+###
+[package]
+format = '[─](fg:current_line)[ 󰏖 ](fg:primary bg:color4)[ $version ](fg:foreground bg:box)'
+
+###
+# Configures the shell module
+###
+[shell]
+disabled             = false
+format               = '[─](fg:current_line)[ 󰆍 ](fg:primary bg:color5)[ $indicator ](fg:foreground bg:box)'
+unknown_indicator    = 'shell'
+
+###
+# Configures the time module
+###
+[time]
+disabled    = false
+format      = '[─](fg:current_line)[ 󰥔 ](fg:primary bg:color6)[ $time ](fg:foreground bg:box)'
+time_format = '%H:%M'
+
+###
+# Configures the typst module
+###
+[typst]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'TYPST'
+
+###
+# Configures the username module
+###
+[username]
+format      = '[─](fg:current_line)[ 󰀄 ](fg:primary bg:color7)[ $user ](fg:foreground bg:box) '
+show_always = true
+
+###
+# Configures the vcsh module
+###
+[vcsh]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color3)[ $repo ](fg:foreground bg:box)'
+symbol = '󰘬'
+
+###
+# Configures the vlang module
+###
+[vlang]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'V'
+
+###
+# Configures the zig module
+###
+[zig]
+format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](fg:foreground bg:box))'
+symbol = 'ZIG'

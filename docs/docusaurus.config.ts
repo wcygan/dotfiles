@@ -9,7 +9,7 @@ const config: Config = {
 
   // GitHub Pages deployment config
   url: "https://wcygan.github.io",
-  baseUrl: "/dotfiles/", // Critical for project sites
+  baseUrl: "/dotfiles/",
 
   organizationName: "wcygan",
   projectName: "dotfiles",
@@ -31,7 +31,7 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           editUrl: "https://github.com/wcygan/dotfiles/tree/main/docs/",
-          routeBasePath: "docs",
+          routeBasePath: "/", // Serve docs at root
         },
         blog: false,
         theme: {
@@ -51,12 +51,6 @@ const config: Config = {
       },
       items: [
         {
-          type: "docSidebar",
-          sidebarId: "tutorialSidebar",
-          position: "left",
-          label: "Documentation",
-        },
-        {
           href: "https://github.com/wcygan/dotfiles",
           label: "GitHub",
           position: "right",
@@ -70,12 +64,8 @@ const config: Config = {
           title: "Docs",
           items: [
             {
-              label: "Quick Start",
-              to: "/docs/getting-started/quick-start",
-            },
-            {
-              label: "Configuration",
-              to: "/docs/configuration/shell",
+              label: "Introduction",
+              to: "/",
             },
           ],
         },
@@ -96,7 +86,16 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
-      additionalLanguages: ["bash", "typescript", "rust", "go", "java", "python", "yaml", "docker"],
+      additionalLanguages: [
+        "bash",
+        "typescript",
+        "rust",
+        "go",
+        "java",
+        "python",
+        "yaml",
+        "docker",
+      ],
     },
     colorMode: {
       defaultMode: "light",

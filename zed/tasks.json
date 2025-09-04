@@ -1,8 +1,0 @@
-[
-  {
-    "label": "Open Claude",
-    "command": "claude",
-    "use_new_terminal": true,
-    "reveal": "always"
-  }
-]

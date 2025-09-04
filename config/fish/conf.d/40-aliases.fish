@@ -74,6 +74,7 @@ alias gpu 'eval git push -u origin $(git rev-parse --abbrev-ref HEAD)'
 alias gds 'gd --stat'
 alias gca 'git commit --amend --no-edit'
 alias grco 'git rebase --continue'
+alias gpr 'git pull --rebase'
 
 # General
 alias z 'zed'

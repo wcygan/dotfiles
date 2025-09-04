@@ -1,7 +1,7 @@
 # Nix Dotfiles Makefile
 # Run 'make help' for available commands
 
-.PHONY: help install test test-pre test-local test-docker link clean update shell
+.PHONY: help install test test-pre test-local test-docker link git-user clean update shell
 
 # Default target
 help:
@@ -12,6 +12,7 @@ help:
 	@echo "  make install    - Full installation (Nix + packages + configs)"
 	@echo "  make link       - Link configs only (fish, etc.)"
 	@echo "  make link-dry   - Preview what link will do"
+	@echo "  make git-user   - Set up git user name and email"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test       - Run all tests (pre-flight + local)"
@@ -47,11 +48,18 @@ link:
 	@echo "🔗 Linking configurations..."
 	@./scripts/link-config.sh
 	@echo "✅ Configs linked!"
+	@echo ""
+	@echo "💡 Run 'make git-user' to set up your git identity"
 
 # Dry run for linking
 link-dry:
 	@echo "🔍 Preview of link changes..."
 	@./scripts/link-config.sh --dry-run
+
+# Set up git user configuration
+git-user:
+	@echo "👤 Setting up git user configuration..."
+	@./scripts/setup-git-user.sh
 
 # Run all non-docker tests
 test: test-pre test-local
@@ -188,6 +196,9 @@ quickstart:
 	@echo ""
 	@echo "3. Linking configurations..."
 	@$(MAKE) --no-print-directory link
+	@echo ""
+	@echo "4. Setting up git user..."
+	@$(MAKE) --no-print-directory git-user
 	@echo ""
 	@echo "🎉 Setup complete! Start fish with: make fish"
 

@@ -1,0 +1,125 @@
+# Global Git configuration
+# User-specific settings (name, email) should be in ~/.config/git/config.local
+# Create that file with:
+#   git config --file ~/.config/git/config.local user.name "Your Name"
+#   git config --file ~/.config/git/config.local user.email "your.email@example.com"
+
+[include]
+    path = ~/.config/git/config.local
+
+[core]
+    editor = nvim
+    pager = delta
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true
+    line-numbers = true
+    side-by-side = false
+    syntax-theme = Dracula
+    file-style = bold yellow ul
+    file-decoration-style = none
+    commit-decoration-style = bold yellow box ul
+    hunk-header-decoration-style = blue box
+    line-numbers-left-style = cyan
+    line-numbers-right-style = cyan
+    line-numbers-minus-style = 124
+    line-numbers-plus-style = 28
+
+[merge]
+    conflictstyle = diff3
+
+[diff]
+    colorMoved = default
+
+[init]
+    defaultBranch = main
+
+[push]
+    default = current
+    autoSetupRemote = true
+
+[pull]
+    rebase = true
+
+[fetch]
+    prune = true
+
+[rebase]
+    autoStash = true
+
+[color]
+    ui = auto
+
+[color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+
+[color "diff"]
+    meta = yellow bold
+    frag = magenta bold
+    old = red
+    new = green
+
+[color "status"]
+    added = green
+    changed = yellow
+    untracked = cyan
+
+[alias]
+    # Status
+    s = status -sb
+    st = status
+
+    # Logs
+    l = log --oneline --graph --decorate
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    ll = log --pretty=format:'%C(yellow)%h%Cred%d %Creset%s%Cblue [%cn]' --decorate --numstat
+
+    # Branches
+    b = branch
+    ba = branch -a
+    bd = branch -d
+    bD = branch -D
+    co = checkout
+    cob = checkout -b
+
+    # Commits
+    c = commit
+    cm = commit -m
+    ca = commit --amend
+    can = commit --amend --no-edit
+
+    # Diffs
+    d = diff
+    ds = diff --staged
+    dt = difftool
+
+    # Working with remotes
+    f = fetch
+    pl = pull
+    ps = push
+    psu = push -u origin HEAD
+
+    # Stash
+    ss = stash save
+    sp = stash pop
+    sl = stash list
+    sd = stash drop
+
+    # Reset
+    unstage = reset HEAD --
+    undo = reset HEAD~1 --mixed
+
+    # Show
+    last = show HEAD
+
+    # Useful shortcuts
+    wip = commit -am "WIP"
+    fixup = commit --fixup
+
+    # Clean
+    cleanup = !git branch --merged | grep -v '\\*\\|main\\|master\\|develop' | xargs -n 1 git branch -d

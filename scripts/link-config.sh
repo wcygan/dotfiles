@@ -34,9 +34,8 @@ link() {
   fi
 }
 
-# examples you can grow over time:
-# link "$CFG_SRC/nvim" "$CFG_DST/nvim"
-# link "$CFG_SRC/gitconfig" "$HOME/.gitconfig"
+# Git config (XDG-compliant location)
+link "$CFG_SRC/git" "$CFG_DST/git"
 
 # tmux config
 link "$CFG_SRC/tmux/tmux.conf" "$HOME/.tmux.conf"

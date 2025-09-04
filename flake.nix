@@ -108,6 +108,24 @@
                 zip
                 rsync
                 repomix
+                broot
+                du-dust
+                ast-grep
+                sd
+                dive
+
+                # Kubernetes
+                k9s
+
+                # gRPC tools
+                grpcurl
+                grpcui
+
+                # DNS tools
+                dogdns
+
+                # Terminal multiplexer
+                zellij
               ];
             };
         }

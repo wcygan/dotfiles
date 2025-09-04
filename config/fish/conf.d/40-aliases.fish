@@ -37,7 +37,7 @@ abbr -a gd 'git diff'
 abbr -a dc 'docker compose'
 abbr -a l 'eza -la'
 abbr -a gcl 'git clone'
-abbr -a gco 'git checkout'
+abbr -a gc 'git commit'
 abbr -a d 'deno'
 abbr -a dt 'deno task'
 

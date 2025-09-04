@@ -56,6 +56,9 @@ link "$CFG_SRC/zed" "$HOME/.config/zed"
 # ghostty config
 link "$CFG_SRC/ghostty" "$HOME/.config/ghostty"
 
+# Claude configuration (for Claude Code CLI)
+link "$CFG_SRC/claude" "$HOME/.claude"
+
 # VSCode config
 # Determine VSCode config location based on platform
 if [[ "$OSTYPE" == "darwin"* ]]; then

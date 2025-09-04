@@ -3,9 +3,9 @@ sidebar_position: 1
 slug: /
 ---
 
-# Introduction
+# Dotfiles
 
-Welcome to my dotfiles repository! This collection provides modern developer configuration files with safe installation and easy management.
+Welcome to my dotfiles repository
 
 ## Features
 
@@ -13,9 +13,6 @@ Welcome to my dotfiles repository! This collection provides modern developer con
 - **🐟 Fish Shell**: Full fish configuration with functions, abbreviations, and aliases  
 - **📦 Nix Package Management**: Reproducible tool installation via flake.nix
 - **🔗 Safe Symlink Management**: Automated config linking with backup/restore
-- **🎯 Per-Project Environments**: nix-direnv pattern for isolated development
-- **✅ CI/CD Ready**: GitHub Actions with matrix testing across macOS, Ubuntu, Fedora
-- **🛡️ Idempotent Scripts**: All operations safe to run multiple times
 
 ## Quick Start
 
@@ -52,9 +49,3 @@ dotfiles/
 - **Minimal surface area**: Simple configs under `config/`, packages in `flake.nix`
 - **Test-first operations**: Pre-flight checks before any changes
 - **Rollbackable**: All changes can be reverted
-
-## Getting Help
-
-- Check the [README](https://github.com/wcygan/dotfiles) for detailed setup instructions
-- Open an [issue](https://github.com/wcygan/dotfiles/issues) for bugs or questions
-- Submit a [pull request](https://github.com/wcygan/dotfiles/pulls) for improvements

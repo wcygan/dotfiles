@@ -13,3 +13,8 @@ result-*
 *.swp
 *.log
 tmp/
+config/claude/plugins/
+config/claude/projects/
+config/claude/shell-snapshots/
+config/claude/statsig/
+config/claude/todos/

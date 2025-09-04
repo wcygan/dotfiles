@@ -25,6 +25,7 @@ Reproducible tools with Nix; portable, editable configs via symlinks; fast onboa
 * **Need a tool?** Add it to `flake.nix` → `nix profile install .`.
 * **Need a config?** Add under `config/**` → wire in `scripts/link-config.sh`.
   * **Note**: Only symlink to `~/.config/` for programs that follow XDG Base Directory spec (e.g., fish, starship, zed). Legacy programs like tmux expect configs in `~/` directly (e.g., `~/.tmux.conf`). Check where each program looks for its config before adding symlinks.
+* **Need per-project dev environment?** Use nix-direnv pattern (see Development Environments below).
 * **Unsure?** Prefer plain files + symlinks over bespoke derivations.
 
 ---
@@ -55,11 +56,60 @@ Rollback: re-link configs (script backs up physical dirs), or `nix profile rollb
 
 ---
 
+## Development Environments (nix-direnv Pattern)
+
+For reproducible per-project development environments, we use [nix-direnv](https://determinate.systems/blog/nix-direnv/) as our standard pattern:
+
+### Setup (once per machine)
+
+1. Ensure `direnv` is in `flake.nix` packages
+2. Fish hook already configured in `config/fish/conf.d/20-direnv.fish`
+3. Global direnv config should allow nix-direnv
+
+### Per-repository setup
+
+1. Create `.envrc` with:
+   ```bash
+   use flake
+   ```
+
+2. Create `flake.nix` with development shell:
+   ```nix
+   {
+     inputs.nixpkgs.url = "github:NixOS/nixpkgs";
+     outputs = { self, nixpkgs }: {
+       devShells.x86_64-darwin.default = nixpkgs.legacyPackages.x86_64-darwin.mkShell {
+         packages = [ /* project-specific tools */ ];
+       };
+     };
+   }
+   ```
+
+3. Run `direnv allow` to trust the environment
+
+### Benefits
+
+* **Auto-activation**: cd into project → environment loads automatically
+* **Cached builds**: nix-direnv caches evaluation results, instant reloads
+* **Project isolation**: each project gets its exact tool versions
+* **No shell pollution**: tools only available in project directory
+* **Git-friendly**: commit `.envrc` and `flake.nix`, ignore `.direnv/`
+
+### Example patterns
+
+* **Language toolchains**: Node.js 20 for one project, Node.js 18 for another
+* **Database clients**: project-specific psql/redis-cli versions
+* **Build tools**: exact make/cmake/cargo versions per project
+* **Cloud CLIs**: locked AWS/GCP/Azure CLI versions
+
+---
+
 ## Troubleshooting Canon
 
 * Source daemon: `. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`
 * Fish not seeing Nix? `exec fish -l` and confirm `config/fish/conf.d/10-nix.fish`.
 * Fedora: keep SELinux enforcing; Determinate installer provides policy.
+* Direnv not loading? Check `direnv status` and ensure `.envrc` is allowed.
 
 ---
 

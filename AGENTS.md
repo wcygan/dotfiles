@@ -24,6 +24,7 @@ Reproducible tools with Nix; portable, editable configs via symlinks; fast onboa
 
 * **Need a tool?** Add it to `flake.nix` → `nix profile install .`.
 * **Need a config?** Add under `config/**` → wire in `scripts/link-config.sh`.
+  * **Note**: Only symlink to `~/.config/` for programs that follow XDG Base Directory spec (e.g., fish, starship, zed). Legacy programs like tmux expect configs in `~/` directly (e.g., `~/.tmux.conf`). Check where each program looks for its config before adding symlinks.
 * **Unsure?** Prefer plain files + symlinks over bespoke derivations.
 
 ---

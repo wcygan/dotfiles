@@ -5,47 +5,138 @@ slug: /
 
 # Dotfiles
 
-Welcome to my dotfiles repository
+Modern developer configuration with safe installation and Nix package management.
 
-## Features
+## Installation
 
-- **🚀 Modern CLI Tools**: Configurations for ripgrep, fd, bat, eza, fzf, and more
-- **🐟 Fish Shell**: Full fish configuration with functions, abbreviations, and aliases  
-- **📦 Nix Package Management**: Reproducible tool installation via flake.nix
-- **🔗 Safe Symlink Management**: Automated config linking with backup/restore
-
-## Quick Start
+Just three commands:
 
 ```bash
-# Clone the repository
 git clone https://github.com/wcygan/dotfiles.git
 cd dotfiles
+./install.sh
+```
 
-# Install Nix package manager (if not already installed)
-curl -L https://nixos.org/nix/install | sh
+That's it!
 
-# Run tests
-make test-pre
+## What Happens During Installation
 
-# Link configurations
-make link-config
+The `install.sh` script performs:
+
+### Pre-flight Checks
+- Detects your OS (macOS, Ubuntu, or Fedora)
+- Verifies required tools (curl, git)
+- Confirms sudo access if needed
+
+### Installation Steps
+1. **Nix Setup**: Installs Nix package manager via Determinate Systems
+2. **Package Installation**: Installs all tools from `flake.nix`
+3. **Configuration Linking**: Symlinks configs to appropriate locations
+
+### Post-flight Verification
+- Confirms all tools are installed
+- Validates configuration files
+- Provides shell-specific next steps
+
+## What You Get
+
+- **🚀 Modern CLI Tools**: ripgrep, fd, bat, eza, fzf, delta, and more
+- **🐟 Fish Shell**: Full configuration with functions and abbreviations  
+- **⭐ Starship Prompt**: Beautiful, fast, and context-aware
+- **📦 Nix Packages**: Reproducible installations across all platforms
+- **🔗 Safe Symlinks**: Automatic backups before any changes
+
+## Supported Platforms
+
+| Platform | Version | Status |
+|----------|---------|--------|
+| macOS | 12+ (Intel & Apple Silicon) | ✅ Fully supported |
+| Ubuntu | 20.04+ | ✅ Fully supported |
+| Fedora | 38+ | ✅ Fully supported |
+
+## After Installation
+
+Depending on your shell:
+
+### Fish (Recommended)
+```bash
+exec fish -l
+```
+
+### Bash/Zsh
+Add to your `~/.bashrc` or `~/.zshrc`:
+```bash
+source ~/.config/shell-nix.sh
+```
+
+Then reload:
+```bash
+source ~/.bashrc  # or ~/.zshrc
 ```
 
 ## Repository Structure
 
 ```
 dotfiles/
-├── config/           # Configuration files (fish, starship, etc.)
-├── scripts/          # Installation and utility scripts
-├── flake.nix         # Nix package definitions
-├── tests/            # Test suites
-└── docs/             # This documentation site
+├── config/              # Configuration files
+│   ├── fish/           # Fish shell config
+│   ├── starship.toml   # Starship prompt
+│   └── shell-nix.sh    # Bash/zsh compatibility
+├── scripts/            # Installation scripts
+├── flake.nix          # Nix package definitions
+├── install.sh         # One-command installer
+└── docs/              # This documentation
 ```
 
-## Principles
+## Core Principles
 
-- **Idempotent**: Every script is safe to run twice
-- **Cross-platform**: Works on macOS, Ubuntu, and Fedora
-- **Minimal surface area**: Simple configs under `config/`, packages in `flake.nix`
-- **Test-first operations**: Pre-flight checks before any changes
-- **Rollbackable**: All changes can be reverted
+- **Idempotent**: Every operation is safe to run multiple times
+- **Cross-platform**: Same experience on macOS, Ubuntu, and Fedora
+- **Minimal**: Clean configs under `config/`, packages in `flake.nix`
+- **Safe**: Pre-flight checks prevent problems, backups enable rollback
+- **Reproducible**: Nix ensures identical tool versions everywhere
+
+## Common Tasks
+
+### Update Packages
+```bash
+nix flake update
+nix profile upgrade '.*'
+```
+
+### Add New Tools
+Edit `flake.nix`, then:
+```bash
+nix profile install .
+```
+
+### Uninstall Configs
+```bash
+make uninstall
+```
+
+### Run Tests
+```bash
+make test-pre    # Pre-flight checks
+make test-local  # Full test suite
+```
+
+## Troubleshooting
+
+### Command Not Found
+After installation, restart your shell or source the appropriate config file.
+
+### Nix Commands Not Working
+```bash
+# Multi-user installations
+source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+```
+
+### Permission Denied
+The installer will request sudo when needed. Ensure you're in the sudoers group on Linux.
+
+## Getting Help
+
+- [GitHub Issues](https://github.com/wcygan/dotfiles/issues) - Report bugs or ask questions
+- [GitHub Discussions](https://github.com/wcygan/dotfiles/discussions) - General discussion
+- [Source Code](https://github.com/wcygan/dotfiles) - Browse the repository

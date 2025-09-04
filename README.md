@@ -1,108 +1,80 @@
-# Nix + Dotfiles (Cross‑Platform)
+# Dotfiles
 
-Reproducible tooling via **Nix (flakes)**, portable configs via **symlinks**.
+Modern developer configuration with safe installation and Nix package management.
 
-* **Platforms**: macOS (Intel/Apple Silicon), Ubuntu, Fedora
-* **Installer**: [Determinate Systems Nix Installer](https://github.com/DeterminateSystems/nix-installer)
-* **Shells supported**: fish (native), bash/zsh (via `config/shell-nix.sh`)
-
----
-
-## Prerequisites
-
-* macOS 12+ or a recent Ubuntu/Fedora
-* `curl` and a POSIX shell available (default on all three)
-* For Ubuntu/Fedora: user must be in the `sudoers` group
-
-> The Determinate installer handles `/nix` mount setup, users/groups, and SELinux policy (Fedora) automatically.
-
----
-
-## Quick Start
-
-### 1) Install Nix (all platforms)
+## Installation
 
 ```bash
-# Determinate Systems – single, cross‑platform command
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-```
-
-**After install**: open a **new shell** or source the daemon profile if present:
-
-```bash
-# multi‑user daemon (preferred on macOS + most Linux)
-[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ] \
-  && . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-```
-
-Verify:
-
-```bash
-nix --version
-```
-
-### 2) Clone and bootstrap
-
-```bash
-# Clone this repo
-REPO_DIR="$HOME/nix-dotfiles"   # change if you want
-git clone <YOUR-REPO-URL> "$REPO_DIR"
-cd "$REPO_DIR"
-
-# One‑shot: install Nix (if missing), install packages, link configs
+git clone https://github.com/wcygan/dotfiles.git
+cd dotfiles
 ./install.sh
 ```
 
-What `./install.sh` does:
+That's it! The installer handles everything:
+- ✅ Pre-flight checks (OS detection, dependencies)
+- ✅ Nix installation (if needed)
+- ✅ Package installation from flake
+- ✅ Configuration symlinking
+- ✅ Post-flight verification
 
-1. Runs `scripts/install-nix.sh` (idempotent) using Determinate installer
-2. Installs packages from `flake.nix` via `scripts/install-packages.sh`
-3. Symlinks configs via `scripts/link-config.sh`
+## What You Get
 
-### 3) Shell integration
+- **🚀 Modern CLI tools**: ripgrep, fd, bat, eza, fzf, delta, and more
+- **🐟 Fish shell**: Full configuration with functions and abbreviations
+- **⭐ Starship prompt**: Beautiful, fast, and informative
+- **📦 Nix packages**: Reproducible across macOS, Ubuntu, and Fedora
+- **🔗 Safe symlinks**: Automatic backups before any changes
 
-**fish (recommended)**
+## Supported Platforms
 
-* Config is symlinked into `~/.config/fish` (see `config/fish/*`).
-* Open a new **login** fish, or run:
+- macOS (Intel & Apple Silicon)
+- Ubuntu (20.04+)
+- Fedora (38+)
 
-```fish
-exec fish -l
-```
+## Documentation
 
----
+Full documentation available at: https://wcygan.github.io/dotfiles/
 
-## Project Layout
-
-```
-config/
-  fish/                 # fish config (conf.d, functions, config.fish)
-  shell-nix.sh          # bash/zsh helper to load Nix env
-scripts/
-  install-nix.sh        # Determinate Nix installer wrapper
-  install-packages.sh   # install packages from flake.nix
-  link-config.sh        # symlink configs into ~/.config and $HOME
-flake.nix               # package set (cross‑platform)
-install.sh              # orchestrated installer
-Makefile                # common tasks (install, test, update, etc.)
-```
-
----
-
-## Uninstall / Clean Up (Selective)
-
-* Remove symlinks only:
+## Quick Reference
 
 ```bash
+# Update packages
+nix flake update
+nix profile upgrade '.*'
+
+# Add new packages
+# Edit flake.nix, then:
+nix profile install .
+
+# Uninstall (configs only, keeps Nix)
 make uninstall
+
+# Run tests
+make test-pre
+make test-local
 ```
 
-* Reclaim space from old package generations:
+## Project Structure
 
-```bash
-nix-collect-garbage -d
+```
+dotfiles/
+├── config/              # Configuration files
+│   ├── fish/           # Fish shell config
+│   ├── starship.toml   # Starship prompt
+│   └── shell-nix.sh    # Bash/zsh compatibility
+├── scripts/            # Installation scripts
+├── flake.nix          # Nix package definitions
+├── install.sh         # One-command installer
+└── docs/              # Documentation site
 ```
 
-> Full Nix removal differs by OS; use the official uninstaller from Determinate/NixOS docs if you truly want to remove `/nix`.
+## Contributing
 
----
+PRs welcome! Please ensure:
+- Changes work on all supported platforms
+- Tests pass (`make test-pre`)
+- Idempotent operations (safe to run multiple times)
+
+## License
+
+MIT

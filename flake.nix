@@ -107,6 +107,7 @@
                 unzip
                 zip
                 rsync
+                repomix
               ];
             };
         }

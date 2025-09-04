@@ -50,6 +50,13 @@ end
 # Global editor default if unset (harmless if already set elsewhere)
 set -q EDITOR; or set -gx EDITOR nvim
 
+# Initialize zoxide if available and replace cd
+if type -q zoxide
+    zoxide init fish | source
+    # Replace cd with zoxide's z function
+    alias cd="z"
+end
+
 # User-specific aliases
 alias c clear
 alias dev 'cd ~/Development/'
@@ -77,7 +84,6 @@ alias grco 'git rebase --continue'
 alias gpr 'git pull --rebase'
 
 # General
-alias z 'zed'
 alias nv 'nvim'
 
 # Intuitive map function

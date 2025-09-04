@@ -80,25 +80,36 @@ echo ""
 # ============================================================================
 echo -e "${BLUE}=== Starting installation ===${NC}"
 
-echo -e "\n${BLUE}Step 1: Installing Nix (if needed)${NC}"
+echo -e "\n${BLUE}Step 1: Checking for Nix${NC}"
 if ! command -v nix >/dev/null 2>&1; then
-    echo "Nix not found. Installing via Determinate Systems installer..."
-    "$ROOT/scripts/install-nix.sh"
+    echo -e "${RED}✗${NC} Nix is not installed"
+    echo ""
+    echo -e "${YELLOW}Please install Nix first using the Determinate Systems installer:${NC}"
+    echo ""
+    echo "1. Opening the Determinate Systems documentation..."
 
-    # Source daemon profile for multi-user installations
-    if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
-        echo "Sourcing Nix daemon..."
-        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-    fi
-
-    # Verify Nix installation
-    if command -v nix >/dev/null 2>&1; then
-        echo -e "${GREEN}✓${NC} Nix installed successfully ($(nix --version))"
+    # Try to open the URL in the default browser
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        open "https://docs.determinate.systems/" 2>/dev/null || echo "   Visit: https://docs.determinate.systems/"
+    elif command -v xdg-open >/dev/null 2>&1; then
+        xdg-open "https://docs.determinate.systems/" 2>/dev/null || echo "   Visit: https://docs.determinate.systems/"
     else
-        echo -e "${RED}✗${NC} Nix installation failed"
-        echo "Please try opening a new terminal or manually source the Nix profile"
-        exit 1
+        echo "   Visit: https://docs.determinate.systems/"
     fi
+
+    echo ""
+    echo "2. Download and install the macOS installer from the website"
+    echo ""
+    echo "3. After installation completes, run this script again:"
+    echo -e "   ${GREEN}./install.sh${NC}"
+    echo ""
+    echo -e "${BLUE}The Determinate Systems installer provides:${NC}"
+    echo "   • Better macOS integration"
+    echo "   • Automatic updates"
+    echo "   • Improved performance"
+    echo "   • GUI management tools"
+    echo ""
+    exit 1
 else
     echo -e "${GREEN}✓${NC} Nix already installed ($(nix --version))"
 fi

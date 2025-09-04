@@ -22,3 +22,7 @@ config/claude/todos/
 # User-specific local configs
 **/config.local
 **/*.local
+
+config/zed/conversations
+config/zed/themes
+config/zed/prompts

@@ -58,9 +58,13 @@ fi
 echo "Installing Nix..."
 
 # Detect if we're in a container (Docker, Podman, etc.)
+# Note: macOS doesn't have systemctl, so we need to check for that specifically
 INSTALL_FLAGS=""
-if [ -f /.dockerenv ] || [ -n "${container:-}" ] || ! command -v systemctl &>/dev/null; then
-    echo "Container environment detected (no systemd). Using --init none flag..."
+if [ -f /.dockerenv ] || [ -n "${container:-}" ]; then
+    echo "Container environment detected. Using --init none flag..."
+    INSTALL_FLAGS="--init none"
+elif [ "$OS" = "Linux" ] && ! command -v systemctl &>/dev/null; then
+    echo "Linux without systemd detected. Using --init none flag..."
     INSTALL_FLAGS="--init none"
 fi
 
@@ -71,6 +75,7 @@ fi
 if [ -f /nix/receipt.json ]; then
     echo "Using existing Nix installation..."
     if [ -n "$INSTALL_FLAGS" ]; then
+        # Only use 'linux' planner when actually on Linux with special flags
         curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install linux $INSTALL_FLAGS --no-confirm --force 2>/dev/null || {
             echo "Note: Installer detected existing installation. Attempting to use it."
         }
@@ -81,8 +86,10 @@ if [ -f /nix/receipt.json ]; then
     fi
 else
     if [ -n "$INSTALL_FLAGS" ]; then
+        # Only use 'linux' planner when we have special init flags (meaning we're on Linux)
         curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install linux $INSTALL_FLAGS --no-confirm
     else
+        # For standard installations (including macOS), let the installer auto-detect
         curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
     fi
 fi

@@ -104,12 +104,31 @@ For reproducible per-project development environments, we use [nix-direnv](https
 
 ---
 
+## Nix Installation (macOS Preferred Method)
+
+For macOS users, we recommend using the **Determinate Systems macOS Installer** instead of the shell script method. The installer provides:
+
+* **Better macOS integration**: Native app with proper permissions and security settings
+* **Automatic updates**: Keeps Nix up-to-date without manual intervention  
+* **Improved performance**: Optimized for Apple Silicon and Intel Macs
+* **GUI management tools**: Visual interface for managing Nix installations
+
+### Installation Steps (macOS)
+
+1. Visit [Determinate Systems documentation](https://docs.determinate.systems/)
+2. Download the macOS installer from the website
+3. Run the installer app (follows standard macOS installation flow)
+4. After installation completes, run `./install.sh` to set up dotfiles
+
+**Note**: The `install.sh` script will now detect if Nix is missing and guide you to the Determinate Systems installer rather than attempting an automated shell installation.
+
 ## Troubleshooting Canon
 
 * Source daemon: `. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`
 * Fish not seeing Nix? `exec fish -l` and confirm `config/fish/conf.d/10-nix.fish`.
 * Fedora: keep SELinux enforcing; Determinate installer provides policy.
 * Direnv not loading? Check `direnv status` and ensure `.envrc` is allowed.
+* macOS installer issues? Check System Settings → Privacy & Security for any blocked components.
 
 ---
 

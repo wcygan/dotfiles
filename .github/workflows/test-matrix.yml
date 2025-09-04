@@ -1,0 +1,97 @@
+name: Test Matrix
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  test-ubuntu:
+    name: Test Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and test Ubuntu
+        run: |
+          docker build --pull -f Dockerfile.ubuntu -t nixdotfiles:test-ubuntu .
+          docker run --rm nixdotfiles:test-ubuntu \
+            /bin/bash -lc ". /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && fish -lc './tests/docker-test-commands.fish'"
+
+  test-fedora:
+    name: Test Fedora
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and test Fedora
+        run: |
+          docker build --pull -f Dockerfile.fedora -t nixdotfiles:test-fedora .
+          docker run --rm nixdotfiles:test-fedora \
+            /bin/bash -lc ". /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && fish -lc './tests/docker-test-commands.fish'"
+
+  test-local:
+    name: Test Local Environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Run install script
+        run: ./install.sh
+
+      - name: Run pre-flight tests
+        run: make test-pre
+
+      - name: Test fish configuration
+        run: |
+          # Source Nix environment and run fish tests
+          . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh || true
+          fish -lc './tests/docker-test-commands.fish'
+
+  test-matrix-summary:
+    name: Test Matrix Summary
+    needs: [test-ubuntu, test-fedora, test-local]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          echo "Test Matrix Results:"
+          echo "===================="
+          if [ "${{ needs.test-ubuntu.result }}" = "success" ]; then
+            echo "✅ Ubuntu: PASSED"
+          else
+            echo "❌ Ubuntu: FAILED (${{ needs.test-ubuntu.result }})"
+          fi
+
+          if [ "${{ needs.test-fedora.result }}" = "success" ]; then
+            echo "✅ Fedora: PASSED"
+          else
+            echo "❌ Fedora: FAILED (${{ needs.test-fedora.result }})"
+          fi
+
+          if [ "${{ needs.test-local.result }}" = "success" ]; then
+            echo "✅ Local: PASSED"
+          else
+            echo "❌ Local: FAILED (${{ needs.test-local.result }})"
+          fi
+
+          # Fail if any test failed
+          if [ "${{ needs.test-ubuntu.result }}" != "success" ] || \
+             [ "${{ needs.test-fedora.result }}" != "success" ] || \
+             [ "${{ needs.test-local.result }}" != "success" ]; then
+            echo ""
+            echo "❌ Test matrix failed"
+            exit 1
+          else
+            echo ""
+            echo "✅ All tests passed!"
+          fi

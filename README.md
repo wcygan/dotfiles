@@ -10,12 +10,7 @@ cd dotfiles
 ./install.sh
 ```
 
-That's it! The installer handles everything:
-- ✅ Pre-flight checks (OS detection, dependencies)
-- ✅ Nix installation (if needed)
-- ✅ Package installation from flake
-- ✅ Configuration symlinking
-- ✅ Post-flight verification
+Full documentation available at: https://wcygan.github.io/dotfiles/
 
 ## What You Get
 
@@ -25,15 +20,21 @@ That's it! The installer handles everything:
 - **📦 Nix packages**: Reproducible across macOS, Ubuntu, and Fedora
 - **🔗 Safe symlinks**: Automatic backups before any changes
 
-## Supported Platforms
+## Project Structure
 
-- macOS (Intel & Apple Silicon)
-- Ubuntu (20.04+)
-- Fedora (38+)
-
-## Documentation
-
-Full documentation available at: https://wcygan.github.io/dotfiles/
+```
+dotfiles/
+├── config/             # Configuration files
+|   ├── zed/            # Zed config
+|   ├── ghostty/        # Ghostty config
+│   ├── fish/           # Fish shell config
+│   ├── starship.toml   # Starship prompt
+│   └── shell-nix.sh    # Bash/zsh compatibility
+├── scripts/            # Installation scripts
+├── flake.nix           # Nix package definitions
+├── install.sh          # One-command installer
+└── docs/               # Documentation site
+```
 
 ## Quick Reference
 
@@ -53,28 +54,3 @@ make uninstall
 make test-pre
 make test-local
 ```
-
-## Project Structure
-
-```
-dotfiles/
-├── config/              # Configuration files
-│   ├── fish/           # Fish shell config
-│   ├── starship.toml   # Starship prompt
-│   └── shell-nix.sh    # Bash/zsh compatibility
-├── scripts/            # Installation scripts
-├── flake.nix          # Nix package definitions
-├── install.sh         # One-command installer
-└── docs/              # Documentation site
-```
-
-## Contributing
-
-PRs welcome! Please ensure:
-- Changes work on all supported platforms
-- Tests pass (`make test-pre`)
-- Idempotent operations (safe to run multiple times)
-
-## License
-
-MIT

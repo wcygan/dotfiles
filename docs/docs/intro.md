@@ -17,8 +17,6 @@ cd dotfiles
 ./install.sh
 ```
 
-That's it!
-
 ## What Happens During Installation
 
 The `install.sh` script performs:
@@ -48,11 +46,15 @@ The `install.sh` script performs:
 
 ## Supported Platforms
 
+I am personally test the dotfiles on these Operating Systems:
+
 | Platform | Version | Status |
 |----------|---------|--------|
 | macOS | 12+ (Intel & Apple Silicon) | ✅ Fully supported |
 | Ubuntu | 20.04+ | ✅ Fully supported |
 | Fedora | 38+ | ✅ Fully supported |
+
+Note: Other Operating Systems may "just work".
 
 ## After Installation
 
@@ -78,14 +80,14 @@ source ~/.bashrc  # or ~/.zshrc
 
 ```
 dotfiles/
-├── config/              # Configuration files
+├── config/             # Configuration files
 │   ├── fish/           # Fish shell config
 │   ├── starship.toml   # Starship prompt
 │   └── shell-nix.sh    # Bash/zsh compatibility
 ├── scripts/            # Installation scripts
-├── flake.nix          # Nix package definitions
-├── install.sh         # One-command installer
-└── docs/              # This documentation
+├── flake.nix           # Nix package definitions
+├── install.sh          # One-command installer
+└── docs/               # This documentation
 ```
 
 ## Core Principles
@@ -134,9 +136,3 @@ source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 
 ### Permission Denied
 The installer will request sudo when needed. Ensure you're in the sudoers group on Linux.
-
-## Getting Help
-
-- [GitHub Issues](https://github.com/wcygan/dotfiles/issues) - Report bugs or ask questions
-- [GitHub Discussions](https://github.com/wcygan/dotfiles/discussions) - General discussion
-- [Source Code](https://github.com/wcygan/dotfiles) - Browse the repository

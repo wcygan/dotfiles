@@ -140,10 +140,15 @@ quickstart:
 # Clean everything (use with caution!)
 .PHONY: uninstall
 uninstall:
-	@echo "⚠️  This will remove all Nix-related configurations"
+	@echo "⚠️  This will remove all symlinks created by the installer"
 	@echo "Press Ctrl+C to cancel, or Enter to continue..."
 	@read dummy
-	@test -L ~/.config/fish && rm ~/.config/fish && echo "Removed fish config symlink" || true
-	@test -L ~/.config/shell-nix.sh && rm ~/.config/shell-nix.sh && echo "Removed shell-nix.sh symlink" || true
-	@echo "✅ Configurations unlinked (Nix packages remain installed)"
+	@./scripts/cleanup-symlinks.sh
+	@echo ""
 	@echo "To remove Nix completely, run the official Nix uninstaller"
+
+# Dry-run cleanup to preview what will be removed
+.PHONY: uninstall-dry
+uninstall-dry:
+	@echo "🔍 Preview of what 'make uninstall' will remove:"
+	@./scripts/cleanup-symlinks.sh --dry-run

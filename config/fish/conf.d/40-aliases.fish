@@ -17,6 +17,18 @@ __maybe_alias d docker
 __maybe_alias dc docker-compose
 __maybe_alias ll eza
 
+# Modern replacements for traditional tools
+__maybe_alias cat bat       # cat -> bat (syntax highlighting)
+__maybe_alias ls eza        # ls -> eza (better listing)
+__maybe_alias find fd       # find -> fd (faster, friendlier)
+__maybe_alias grep rg       # grep -> ripgrep (faster)
+__maybe_alias sed sd        # sed -> sd (simpler syntax)
+__maybe_alias du dust       # du -> dust (better disk usage)
+__maybe_alias ps procs      # ps -> procs (if available)
+__maybe_alias top btop      # top -> btop (better monitoring)
+__maybe_alias htop btop     # htop -> btop (even better)
+__maybe_alias dig dog       # dig -> dog (DNS lookup)
+
 # Decorated examples using functions (more robust than raw alias)
 if type -q eza
     functions -q la; or function la --wraps='eza -la' --description 'list all'

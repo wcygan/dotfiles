@@ -72,6 +72,7 @@ $vlang\
 $zig\
 $fill\
 $time\
+$hostname\
 $username\
 $line_break\
 [╰─](fg:current_line)\
@@ -87,20 +88,20 @@ palette = 'rainbow'
 # Configures the rainbow palette
 ###
 [palettes.rainbow]
-background   = '#282A36'
-box          = '#44475A'
-color1       = '#008080'
-color2       = '#3CB44B'
-color3       = '#FFE119'
-color4       = '#0082C8'
-color5       = '#F58231'
-color6       = '#911EB4'
-color7       = '#F032E6'
+background = '#282A36'
+box = '#44475A'
+color1 = '#008080'
+color2 = '#3CB44B'
+color3 = '#FFE119'
+color4 = '#0082C8'
+color5 = '#F58231'
+color6 = '#911EB4'
+color7 = '#F032E6'
 current_line = '#44475A'
-error        = '#E6194B'
-foreground   = '#F8F8F2'
-primary      = '#1E1F29'
-success      = '#3CB44B'
+error = '#E6194B'
+foreground = '#F8F8F2'
+primary = '#1E1F29'
+success = '#3CB44B'
 
 ###
 # Configures the bun module
@@ -120,8 +121,8 @@ symbol = ''
 # Configures the character module
 ###
 [character]
-error_symbol   = '[χ](bold fg:error)'
-format         = '$symbol '
+error_symbol = '[χ](bold fg:error)'
+format = '$symbol '
 success_symbol = '[λ](bold fg:success)'
 
 ###
@@ -170,10 +171,10 @@ symbol = ''
 # Configures the directory module
 ###
 [directory]
-format            = '[─](fg:current_line)[ 󰉋 ](fg:primary bg:color2)[ $read_only$truncation_symbol$path ](fg:foreground bg:box)'
-home_symbol       = "󱂵 ~/"
-read_only         = '󰌾 '
-read_only_style   = ''
+format = '[─](fg:current_line)[ 󰉋 ](fg:primary bg:color2)[ $read_only$truncation_symbol$path ](fg:foreground bg:box)'
+home_symbol = "󱂵 ~/"
+read_only = '󰌾 '
+read_only_style = ''
 truncation_length = 2
 truncation_symbol = '󰝰 '
 
@@ -216,7 +217,7 @@ symbol = 'FENNEL'
 # Configures the fill module
 ###
 [fill]
-style  = 'fg:current_line'
+style = 'fg:current_line'
 symbol = '─'
 
 ###
@@ -238,10 +239,10 @@ symbol = '󰘬'
 ###
 [git_commit]
 commit_hash_length = 4
-format             = "([─](fg:current_line)[ 󰓹 ](fg:primary bg:color3)[ $tag ](fg:foreground bg:box))([─](fg:current_line)[ 󰜘 ](fg:primary bg:color3)[ $hash ](fg:foreground bg:box))"
-only_detached      = false
-tag_disabled       = false
-tag_symbol         = ''
+format = "([─](fg:current_line)[ 󰓹 ](fg:primary bg:color3)[ $tag ](fg:foreground bg:box))([─](fg:current_line)[ 󰜘 ](fg:primary bg:color3)[ $hash ](fg:foreground bg:box))"
+only_detached = false
+tag_disabled = false
+tag_symbol = ''
 
 ###
 # Configures the git status module
@@ -469,16 +470,16 @@ format = '[─](fg:current_line)[ 󰏖 ](fg:primary bg:color4)[ $version ](fg:fo
 # Configures the shell module
 ###
 [shell]
-disabled             = false
-format               = '[─](fg:current_line)[ 󰆍 ](fg:primary bg:color5)[ $indicator ](fg:foreground bg:box)'
-unknown_indicator    = 'shell'
+disabled = false
+format = '[─](fg:current_line)[ 󰆍 ](fg:primary bg:color5)[ $indicator ](fg:foreground bg:box)'
+unknown_indicator = 'shell'
 
 ###
 # Configures the time module
 ###
 [time]
-disabled    = false
-format      = '[─](fg:current_line)[ 󰥔 ](fg:primary bg:color6)[ $time ](fg:foreground bg:box)'
+disabled = false
+format = '[─](fg:current_line)[ 󰥔 ](fg:primary bg:color6)[ $time ](fg:foreground bg:box)'
 time_format = '%H:%M'
 
 ###
@@ -489,10 +490,20 @@ format = '[─](fg:current_line)[ $symbol ](fg:primary bg:color4)([ $version ](f
 symbol = 'TYPST'
 
 ###
+# Configures the hostname module
+###
+[hostname]
+disabled = false
+format = '[─](fg:current_line)[ 󰒋 ](fg:primary bg:color1)[ $hostname ](fg:foreground bg:box)'
+ssh_only = false
+ssh_symbol = '󰣀 '
+trim_at = '.local'
+
+###
 # Configures the username module
 ###
 [username]
-format      = '[─](fg:current_line)[ 󰀄 ](fg:primary bg:color7)[ $user ](fg:foreground bg:box) '
+format = '[─](fg:current_line)[ 󰀄 ](fg:primary bg:color7)[ $user ](fg:foreground bg:box) '
 show_always = true
 
 ###

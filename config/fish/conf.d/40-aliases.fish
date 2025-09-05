@@ -68,8 +68,10 @@ alias lfgc 'claude --model opusplan --dangerously-skip-permissions'
 alias reload 'exec fish -l'
 
 # Computers
-alias t 'ssh wcygan@betty -t "tmux attach -t main || tmux new -s main"'
+alias t 'ssh wcygan@betty -t "zellij attach main || zellij -s main"'
 alias m1 'ssh wcygan@betty'
+alias zt 'ssh wcygan@betty -t "zellij attach main || zellij -s main"'
+alias zd 'ssh wcygan@betty -t "zellij attach dev || zellij -s dev --layout dev"'
 alias ts 'tailscale status'
 alias td 'talosctl dashboard'
 
@@ -86,7 +88,22 @@ alias gpr 'git pull --rebase'
 # General
 alias nv 'nvim'
 
+# Zellij (when using locally)
+if type -q zellij
+    alias zj 'zellij'
+    alias zja 'zellij attach'
+    alias zjl 'zellij list-sessions'
+    alias zjk 'zellij kill-session'
+    alias zjka 'zellij kill-all-sessions'
+    abbr -a zjs 'zellij -s'
+    abbr -a zjd 'zellij delete-session'
+end
+
 # Intuitive map function
 # For example, to list all directories that contain a certain file:
 # find . -name .gitattributes | map dirname
 alias map "xargs -n1"
+
+# Projects
+alias dotfiles = 'zed /Users/wcygan/Development/dotfiles'
+alias n = 'zed /Users/wcygan/Development/notes'

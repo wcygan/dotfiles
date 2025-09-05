@@ -1,0 +1,33 @@
+// Development layout with editor, terminal, and monitoring panes
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+
+    tab name="main" focus=true {
+        pane split_direction="vertical" {
+            pane size="70%" name="editor"
+            pane split_direction="horizontal" size="30%" {
+                pane size="50%" name="terminal"
+                pane size="50%" name="logs"
+            }
+        }
+    }
+
+    tab name="git" {
+        pane name="lazygit" command="lazygit"
+    }
+
+    tab name="monitor" {
+        pane split_direction="horizontal" {
+            pane size="50%" command="btop" name="btop"
+            pane size="50%" name="services"
+        }
+    }
+}

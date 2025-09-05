@@ -1,0 +1,122 @@
+// Zellij configuration for betty
+keybinds clear-defaults=true {
+    normal {
+        // Navigation
+        bind "Ctrl h" { MoveFocusOrTab "Left"; }
+        bind "Ctrl l" { MoveFocusOrTab "Right"; }
+        bind "Ctrl j" { MoveFocus "Down"; }
+        bind "Ctrl k" { MoveFocus "Up"; }
+
+        // Pane management
+        bind "Ctrl n" { NewPane; }
+        bind "Ctrl s" { NewPane "Down"; }
+        bind "Ctrl v" { NewPane "Right"; }
+        bind "Ctrl x" { CloseFocus; }
+        bind "Ctrl z" { ToggleFocusFullscreen; }
+
+        // Tab management
+        bind "Ctrl t" { NewTab; }
+        bind "Ctrl w" { CloseTab; }
+        bind "Ctrl 1" { GoToTab 1; }
+        bind "Ctrl 2" { GoToTab 2; }
+        bind "Ctrl 3" { GoToTab 3; }
+        bind "Ctrl 4" { GoToTab 4; }
+        bind "Ctrl 5" { GoToTab 5; }
+
+        // Session management
+        bind "Ctrl o" { SessionManager; }
+        bind "Ctrl q" { Quit; }
+        bind "Ctrl d" { Detach; }
+
+        // Modes
+        bind "Ctrl p" { SwitchToMode "Pane"; }
+        bind "Ctrl r" { SwitchToMode "Resize"; }
+        bind "Ctrl m" { SwitchToMode "Move"; }
+        bind "Ctrl g" { SwitchToMode "Locked"; }
+        bind "Ctrl b" { SwitchToMode "Scroll"; }
+    }
+
+    locked {
+        bind "Ctrl g" { SwitchToMode "Normal"; }
+    }
+
+    pane {
+        bind "h" { MoveFocus "Left"; }
+        bind "l" { MoveFocus "Right"; }
+        bind "j" { MoveFocus "Down"; }
+        bind "k" { MoveFocus "Up"; }
+        bind "n" { NewPane; }
+        bind "x" { CloseFocus; }
+        bind "f" { ToggleFocusFullscreen; }
+        bind "w" { ToggleFloatingPanes; }
+        bind "e" { TogglePaneEmbedOrFloating; }
+        bind "r" { SwitchToMode "RenamePane"; PaneNameInput 0; }
+        bind "Esc" { SwitchToMode "Normal"; }
+    }
+
+    resize {
+        bind "h" { Resize "Left"; }
+        bind "j" { Resize "Down"; }
+        bind "k" { Resize "Up"; }
+        bind "l" { Resize "Right"; }
+        bind "H" { Resize "Increase Left"; }
+        bind "J" { Resize "Increase Down"; }
+        bind "K" { Resize "Increase Up"; }
+        bind "L" { Resize "Increase Right"; }
+        bind "=" { Resize "Increase"; }
+        bind "-" { Resize "Decrease"; }
+        bind "Esc" { SwitchToMode "Normal"; }
+    }
+
+    move {
+        bind "h" { MovePane "Left"; }
+        bind "j" { MovePane "Down"; }
+        bind "k" { MovePane "Up"; }
+        bind "l" { MovePane "Right"; }
+        bind "Esc" { SwitchToMode "Normal"; }
+    }
+
+    scroll {
+        bind "j" { ScrollDown; }
+        bind "k" { ScrollUp; }
+        bind "Ctrl d" { HalfPageScrollDown; }
+        bind "Ctrl u" { HalfPageScrollUp; }
+        bind "g" { ScrollToTop; }
+        bind "G" { ScrollToBottom; }
+        bind "Esc" { SwitchToMode "Normal"; }
+    }
+}
+
+themes {
+    default {
+        fg "#D8D8D8"
+        bg "#181818"
+        black "#181818"
+        red "#AB4642"
+        green "#A1B56C"
+        yellow "#F7CA88"
+        blue "#7CAFC2"
+        magenta "#BA8BAF"
+        cyan "#86C1B9"
+        white "#D8D8D8"
+        orange "#DC9656"
+    }
+}
+
+// UI configuration
+default_layout "compact"
+pane_frames false
+theme "default"
+default_shell "/home/wcygan/.nix-profile/bin/fish"
+copy_on_select true
+scrollback_editor "/usr/bin/nvim"
+
+// Session configuration
+session_serialization true
+serialize_pane_viewport true
+
+// Performance
+max_panes 100
+
+// Layout templates
+layout_dir "/home/wcygan/.config/zellij/layouts"

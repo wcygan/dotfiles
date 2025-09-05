@@ -497,7 +497,7 @@ disabled = false
 format = '[─](fg:current_line)[ 󰒋 ](fg:primary bg:color1)[ $hostname ](fg:foreground bg:box)'
 ssh_only = false
 ssh_symbol = '󰣀 '
-trim_at = '.local'
+trim_at = '.'
 
 ###
 # Configures the username module

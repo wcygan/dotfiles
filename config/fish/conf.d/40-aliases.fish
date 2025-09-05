@@ -105,5 +105,5 @@ end
 alias map "xargs -n1"
 
 # Projects
-alias dotfiles = 'zed /Users/wcygan/Development/dotfiles'
-alias n = 'zed /Users/wcygan/Development/notes'
+alias dotfiles 'zed /Users/wcygan/Development/dotfiles'
+alias n 'zed /Users/wcygan/Development/notes'

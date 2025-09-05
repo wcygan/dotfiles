@@ -24,7 +24,6 @@ keybinds clear-defaults=true {
         bind "Ctrl 5" { GoToTab 5; }
 
         // Session management
-        bind "Ctrl o" { SessionManager; }
         bind "Ctrl q" { Quit; }
         bind "Ctrl d" { Detach; }
 

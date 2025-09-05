@@ -41,6 +41,7 @@ abbr -a gcl 'git clone'
 abbr -a gc 'git commit'
 abbr -a d 'deno'
 abbr -a dt 'deno task'
+abbr -a br 'broot'
 
 # Guard example: only add k* abbr if kubectl is present
 if not type -q kubectl

@@ -52,6 +52,7 @@
                 go
                 python3
                 deno
+                bun
 
                 # Shell and terminal
                 fish

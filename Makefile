@@ -15,9 +15,10 @@ help:
 	@echo "  make git-user   - Set up git user name and email"
 	@echo ""
 	@echo "Testing:"
-	@echo "  make test       - Run all tests (pre-flight + local)"
+	@echo "  make test       - Run all tests (pre-flight + local + shell)"
 	@echo "  make test-pre   - Pre-flight checks only"
 	@echo "  make test-local - Local isolated test"
+	@echo "  make test-shell - Shell handoff test (bash/zsh → fish)"
 	@echo "  make test-docker- Docker isolated test"
 	@echo "  make docker-fedora - Interactive Fedora container"
 	@echo "  make docker-ubuntu - Interactive Ubuntu container"
@@ -62,7 +63,7 @@ git-user:
 	@./scripts/setup-git-user.sh
 
 # Run all non-docker tests
-test: test-pre test-local
+test: test-pre test-local test-shell
 	@echo "✅ All tests completed!"
 
 # Pre-flight checks
@@ -74,6 +75,11 @@ test-pre:
 test-local:
 	@echo "🧪 Running local isolated test..."
 	@cd tests && ./test-ephemeral.sh
+
+# Shell handoff test
+test-shell:
+	@echo "🔄 Testing shell handoff (bash/zsh → fish)..."
+	@cd tests && ./test-shell-handoff.sh
 
 # Docker isolated test
 test-docker:

@@ -1,6 +1,6 @@
 # Test Suite
 
-Three levels of testing to verify fish configuration before installation.
+Comprehensive testing for fish configuration and shell compatibility.
 
 ## Quick Start
 
@@ -12,6 +12,9 @@ cd tests/
 
 # Local isolated test (temp HOME)
 ./test-ephemeral.sh
+
+# Shell handoff test (bash/zsh → fish)
+./test-shell-handoff.sh
 
 # Docker test (full isolation)
 ./test-docker.sh
@@ -28,6 +31,12 @@ cd tests/
 - Creates temporary HOME directory
 - Tests fish config loading in isolation
 - No system changes, automatic cleanup
+
+### `test-shell-handoff.sh`
+- Tests bash/zsh → fish handoff for interactive sessions
+- Verifies non-interactive commands stay in bash/zsh
+- Validates VAR=value syntax compatibility
+- Helps verify setup before running `chsh`
 
 ### `test-docker.sh`
 - Complete isolation in Docker container

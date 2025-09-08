@@ -26,3 +26,4 @@ config/claude/todos/
 config/zed/conversations
 config/zed/themes
 config/zed/prompts
+config/claude/ide/

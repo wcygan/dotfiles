@@ -130,6 +130,13 @@ else
     exit 1
 fi
 
+echo -e "\n${BLUE}Step 4: Configuring shell handoff (bash/zsh → fish)${NC}"
+if "$ROOT/scripts/setup-shell-handoff.sh"; then
+    echo -e "${GREEN}✓${NC} Shell handoff configured"
+else
+    echo -e "${YELLOW}⚠${NC} Unable to configure shell handoff automatically"
+fi
+
 echo ""
 
 # ============================================================================

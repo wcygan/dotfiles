@@ -40,13 +40,14 @@ touch "$BASHRC"
 ensure_line "$BASHRC" "DOTFILES:NIX_SHELL_HELPERS" "source \"$HOME/.config/shell-nix.sh\" 2>/dev/null || true"
 
 # 2) Interactive exec to fish
-read -r -d '' BASH_EXEC_FISH <<'EOF'
+# Multi-line block to exec fish only in interactive bash
+BASH_EXEC_FISH='
 if case $- in *i*) true;; *) false;; esac; then
   if command -v fish >/dev/null 2>&1; then
     exec fish -l
   fi
 fi
-EOF
+'
 ensure_line "$BASHRC" "DOTFILES:EXEC_FISH" "$BASH_EXEC_FISH"
 
 # Zsh
@@ -57,13 +58,13 @@ touch "$ZSHRC"
 ensure_line "$ZSHRC" "DOTFILES:NIX_SHELL_HELPERS" "source \"$HOME/.config/shell-nix.sh\" 2>/dev/null || true"
 
 # 2) Interactive exec to fish
-read -r -d '' ZSH_EXEC_FISH <<'EOF'
+# Multi-line block to exec fish only in interactive zsh
+ZSH_EXEC_FISH='
 if [[ -o interactive ]] && command -v fish >/dev/null 2>&1; then
   exec fish -l
 fi
-EOF
+'
 ensure_line "$ZSHRC" "DOTFILES:EXEC_FISH" "$ZSH_EXEC_FISH"
 
 echo "✅ Shell handoff configured. Open a new terminal to verify, or run:"
 echo "  make test-shell"
-

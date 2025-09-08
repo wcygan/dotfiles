@@ -19,6 +19,7 @@ help:
 	@echo "  make test-pre   - Pre-flight checks only"
 	@echo "  make test-local - Local isolated test"
 	@echo "  make test-shell - Shell handoff test (bash/zsh → fish)"
+	@echo "  make setup-shell-handoff - Configure bash/zsh → fish handoff"
 	@echo "  make test-docker- Docker isolated test"
 	@echo "  make docker-fedora - Interactive Fedora container"
 	@echo "  make docker-ubuntu - Interactive Ubuntu container"
@@ -81,6 +82,13 @@ test-local:
 test-shell:
 	@echo "🔄 Testing shell handoff (bash/zsh → fish)..."
 	@cd tests && ./test-shell-handoff.sh
+
+# Configure bash/zsh to hand off interactive sessions to fish
+setup-shell-handoff:
+	@echo "🛠️  Configuring shell handoff (bash/zsh → fish)..."
+	@./scripts/setup-shell-handoff.sh
+	@echo ""
+	@echo "Run 'make test-shell' to verify."
 
 # Docker isolated test
 test-docker:

@@ -46,7 +46,8 @@ fi
 
 # Test that bash -i would exec to fish
 echo -n "Testing bash interactive handoff: "
-RESULT=$(echo 'echo $FISH_VERSION' | bash -i 2>&1 | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
+# Be resilient: if grep finds no match, don't exit due to set -euo pipefail.
+RESULT=$(echo 'echo $FISH_VERSION' | bash -i 2>&1 | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1 || true)
 if [[ -n "$RESULT" ]]; then
     test_pass "Interactive bash launches fish (version: $RESULT)"
 else

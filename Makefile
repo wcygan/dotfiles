@@ -1,7 +1,7 @@
 # Nix Dotfiles Makefile
 # Run 'make help' for available commands
 
-.PHONY: help install test test-pre test-local test-docker link git-user clean update shell
+.PHONY: help install test test-pre test-local test-docker link git-user clean update latest shell
 
 # Default target
 help:
@@ -24,6 +24,7 @@ help:
 	@echo "  make docker-ubuntu - Interactive Ubuntu container"
 	@echo ""
 	@echo "Package Management:"
+	@echo "  make latest     - Pull latest changes and reinstall"
 	@echo "  make update     - Update flake and upgrade packages"
 	@echo "  make list       - List installed packages"
 	@echo "  make clean      - Garbage collect old packages"
@@ -112,6 +113,16 @@ docker-ubuntu:
 
 # Run both Docker containers for testing
 docker-test: docker-fedora docker-ubuntu
+
+# Pull latest changes and reinstall (for syncing remote machines)
+latest:
+	@echo "🔄 Pulling latest changes from git..."
+	@git pull --rebase
+	@echo ""
+	@echo "📦 Installing latest configuration..."
+	@$(MAKE) --no-print-directory install
+	@echo ""
+	@echo "✅ Successfully synced to latest version!"
 
 # Update packages
 update:

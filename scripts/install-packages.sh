@@ -11,7 +11,7 @@ fi
 # Check if package is already installed
 if nix profile list | grep -q "dotfiles"; then
   echo "Package already installed, upgrading..."
-  nix profile upgrade '.*dotfiles.*' --impure
+  nix profile upgrade dotfiles --impure
 else
   echo "Installing packages from flake..."
   nix profile add . --impure

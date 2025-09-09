@@ -121,6 +121,7 @@
                 # gRPC tools
                 grpcurl
                 grpcui
+                buf
 
                 # DNS tools
                 dogdns

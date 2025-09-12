@@ -43,8 +43,15 @@ help:
 install:
 	@echo "🚀 Running full installation..."
 	@./install.sh
+	@echo ""
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "✅ Installation complete!"
-	@echo "Run 'make fish' to start fish shell"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo ""
+	@echo "🐠 To start using your new environment:"
+	@echo "   exec fish -l"
+	@echo ""
+	@echo "Or use 'make fish' if exec doesn't work"
 
 # Link configurations only
 link:

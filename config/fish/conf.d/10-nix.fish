@@ -20,6 +20,11 @@ if test -d $HOME/bin
   fish_add_path --path --prepend $HOME/bin
 end
 
+# Deno binaries (manual install takes precedence)
+if test -d $HOME/.deno/bin
+  fish_add_path --path --prepend $HOME/.deno/bin
+end
+
 # Cargo/Rust binaries
 if test -d $HOME/.cargo/bin
   fish_add_path --path --prepend $HOME/.cargo/bin

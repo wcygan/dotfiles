@@ -194,24 +194,28 @@ else
     CURRENT_SHELL=$(basename "$SHELL")
     case "$CURRENT_SHELL" in
         fish)
-            echo "1. Restart your shell or run:"
-            echo -e "   ${YELLOW}exec fish -l${NC}"
+            echo "🐠 You're already using Fish!"
+            echo ""
+            echo "Reload your shell to apply all changes:"
+            echo -e "   ${GREEN}exec fish -l${NC}"
             ;;
         bash|zsh)
-            echo "1. Add this line to your ~/.${CURRENT_SHELL}rc:"
-            echo -e "   ${YELLOW}source ~/.config/shell-nix.sh${NC}"
+            echo "You have two options:"
             echo ""
-            echo "2. Then restart your shell or run:"
+            echo -e "${GREEN}Option 1: Start Fish directly (recommended)${NC}"
+            echo -e "   ${YELLOW}exec fish -l${NC}"
+            echo ""
+            echo -e "${BLUE}Option 2: Stay in ${CURRENT_SHELL} with automatic handoff${NC}"
+            echo "   Restart your terminal, or run:"
             echo -e "   ${YELLOW}source ~/.${CURRENT_SHELL}rc${NC}"
-            echo ""
-            echo "3. (Optional) Switch to fish shell:"
-            echo -e "   ${YELLOW}fish${NC}"
+            echo "   (This will auto-switch to Fish for interactive sessions)"
             ;;
         *)
-            echo "1. For bash/zsh, add to your shell rc file:"
-            echo -e "   ${YELLOW}source ~/.config/shell-nix.sh${NC}"
+            echo "Start Fish shell:"
+            echo -e "   ${GREEN}exec fish -l${NC}"
             echo ""
-            echo "2. Or try fish shell:"
+            echo "Or if Fish isn't found, first run:"
+            echo -e "   ${YELLOW}source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh${NC}"
             echo -e "   ${YELLOW}fish${NC}"
             ;;
     esac
@@ -220,9 +224,12 @@ fi
 if [ ${#MISSING_TOOLS[@]} -ne 0 ]; then
     echo ""
     echo -e "${YELLOW}Note:${NC} Some tools were not found in PATH: ${MISSING_TOOLS[*]}"
-    echo "They may become available after restarting your shell."
+    echo "They will be available after reloading your shell."
 fi
 
+echo ""
+echo -e "${BLUE}Important:${NC} If Homebrew/system packages aren't found after starting Fish:"
+echo -e "   Run: ${YELLOW}exec fish -l${NC} to reload with all configurations"
 echo ""
 echo -e "${GREEN}Enjoy your new development environment!${NC}"
 echo ""

@@ -131,5 +131,6 @@
   "statusLine": {
     "type": "command",
     "command": "~/.tools/claude-statusline.ts"
-  }
+  },
+  "model": "opusplan"
 }

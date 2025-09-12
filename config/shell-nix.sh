@@ -2,6 +2,30 @@
 # Shell configuration for Nix package manager
 # Source this file in your .bashrc/.zshrc
 
+# Priority PATH setup - system packages take precedence over Nix
+# First, ensure system and user paths are prioritized
+
+# macOS: Add Homebrew paths with higher priority
+if [ -d "/opt/homebrew/bin" ]; then
+    export PATH="/opt/homebrew/bin:$PATH"
+elif [ -d "/usr/local/bin" ]; then
+    export PATH="/usr/local/bin:$PATH"
+fi
+
+# User-specific binary locations (for manual installs)
+[ -d "$HOME/.local/bin" ] && export PATH="$HOME/.local/bin:$PATH"
+[ -d "$HOME/bin" ] && export PATH="$HOME/bin:$PATH"
+
+# Language-specific paths
+[ -d "$HOME/.cargo/bin" ] && export PATH="$HOME/.cargo/bin:$PATH"
+[ -d "$HOME/go/bin" ] && export PATH="$HOME/go/bin:$PATH"
+
+# Now add Nix paths at the END (lower priority)
+# Store original PATH to avoid duplication
+if [ -z "${_ORIGINAL_PATH_BEFORE_NIX+x}" ]; then
+    export _ORIGINAL_PATH_BEFORE_NIX="$PATH"
+fi
+
 # Nix single-user installation
 if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
     . "$HOME/.nix-profile/etc/profile.d/nix.sh"
@@ -12,8 +36,9 @@ if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
     . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
 fi
 
-# Add Nix profile binaries to PATH
-export PATH="$HOME/.nix-profile/bin:$PATH"
+# Append Nix profile binaries to PATH (instead of prepending)
+# This ensures system packages take precedence
+export PATH="${_ORIGINAL_PATH_BEFORE_NIX}:$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin"
 
 # Nix flakes configuration
 export NIX_CONFIG="experimental-features = nix-command flakes"
@@ -49,4 +74,39 @@ nix-install() {
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         nix profile install "nixpkgs#$1"
     fi
+}
+
+# Function to show which version of a command will be used
+which-version() {
+    if [ -z "$1" ]; then
+        echo "Usage: which-version <command>"
+        echo "Shows which version of a command will be used (system vs Nix)"
+        return 1
+    fi
+
+    local cmd="$1"
+    local path=$(which "$cmd" 2>/dev/null)
+
+    if [ -z "$path" ]; then
+        echo "Command '$cmd' not found"
+        return 1
+    fi
+
+    echo "Active: $path"
+
+    # Check if it's from Nix
+    if [[ "$path" == *"/nix/"* ]] || [[ "$path" == *"/.nix-profile/"* ]]; then
+        echo "Source: Nix package"
+    elif [[ "$path" == *"/opt/homebrew/"* ]] || [[ "$path" == *"/usr/local/"* ]]; then
+        echo "Source: Homebrew"
+    elif [[ "$path" == "$HOME/.local/bin"* ]] || [[ "$path" == "$HOME/bin"* ]]; then
+        echo "Source: User install"
+    else
+        echo "Source: System package"
+    fi
+
+    # Show all available versions
+    echo ""
+    echo "All available:"
+    type -a "$cmd" 2>/dev/null | sed 's/^/  /'
 }

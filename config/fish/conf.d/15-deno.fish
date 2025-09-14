@@ -1,9 +1,12 @@
 # Deno configuration for Fish shell
 # Adds Deno to PATH and sets up completions
 
-# Add Deno to PATH if installed
+# Add Deno to PATH if installed (ensure it takes priority over Nix)
 if test -d $HOME/.deno/bin
-    fish_add_path --path --prepend $HOME/.deno/bin
+    # Remove any existing Deno path entries and add with highest priority
+    set -l deno_path $HOME/.deno/bin
+    set -gx PATH (string match -v $deno_path $PATH)
+    set -gx PATH $deno_path $PATH
 end
 
 # Set Deno environment variables

@@ -62,7 +62,7 @@
   "window.restoreFullscreen": true,
   "go.toolsManagement.autoUpdate": true,
   "github.copilot.chat.search.semanticTextResults": true,
-  "workbench.colorTheme": "Pale Fire",
+  "workbench.colorTheme": "One Monokai",
   "vs-kubernetes": {
     "vs-kubernetes.minikube-show-information-expiration": "2024-10-25T03:45:25.984Z",
     "vs-kubernetes.crd-code-completion": "disabled"
@@ -74,11 +74,19 @@
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
   "github.copilot.chat.inlineChatCompletionTrigger.enabled": true,
   "github.copilot.chat.inlineChatHint.enabled": true,
-  "terminal.integrated.enableMultiLinePasteWarning": false,
   "python.analysis.aiCodeActions": {},
   "update.showReleaseNotes": false,
   "[markdown]": {
     "editor.wordWrap": "off"
   },
-  "github.copilot.chat.editor.temporalContext.enabled": true
+  "github.copilot.chat.editor.temporalContext.enabled": true,
+  "terminal.integrated.profiles.osx": {
+    "fish (nix)": {
+      "path": "/Users/wcygan/.nix-profile/bin/fish",
+      "args": ["-l"], // start as a login shell (optional)
+      "env": {} // don't put KEY=VALUE here unless you really need to
+    }
+  },
+  "terminal.integrated.defaultProfile.osx": "fish (nix)",
+  "docker.extension.enableComposeLanguageServer": false
 }

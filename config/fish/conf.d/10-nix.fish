@@ -20,10 +20,7 @@ if test -d $HOME/bin
   fish_add_path --path --prepend $HOME/bin
 end
 
-# Deno binaries (manual install takes precedence)
-if test -d $HOME/.deno/bin
-  fish_add_path --path --prepend $HOME/.deno/bin
-end
+
 
 # Cargo/Rust binaries
 if test -d $HOME/.cargo/bin
@@ -35,7 +32,7 @@ if test -d $HOME/go/bin
   fish_add_path --path --prepend $HOME/go/bin
 end
 
-# 2. Now add Nix paths at the END (lower priority)
+# 2. Now add Nix paths with lower priority (after manual installs)
 # Ensure Nix bins are on PATH (works for both single- and multi-user)
 if test -d $HOME/.nix-profile/bin
   fish_add_path --path --append $HOME/.nix-profile/bin

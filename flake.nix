@@ -2,7 +2,7 @@
   description = "System packages";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/master";
   };
 
   outputs =

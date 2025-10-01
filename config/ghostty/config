@@ -1,7 +1,7 @@
 command = /Users/wcygan/.nix-profile/bin/fish
 
 # Visuals
-theme = idleToes
+theme = Idle Toes
 font-size = 22
 unfocused-split-opacity = 1.0
 window-inherit-font-size = false

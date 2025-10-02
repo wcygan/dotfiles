@@ -27,3 +27,5 @@ config/zed/conversations
 config/zed/themes
 config/zed/prompts
 config/claude/ide/
+config/claude/file-history/
+config/claude/history.jsonl

@@ -12,9 +12,7 @@
       "host": "betty",
       "projects": [
         {
-          "paths": [
-            "/home/wcygan/Development/immich-infra"
-          ]
+          "paths": ["/home/wcygan/Development/immich-infra"]
         }
       ]
     }
@@ -65,8 +63,8 @@
       "model": "gemini-2.5-pro-exp-03-25"
     }
   },
-  "ui_font_size": 20,
-  "buffer_font_size": 20,
+  "ui_font_size": 14,
+  "buffer_font_size": 16,
   "theme": {
     "mode": "system",
     "light": "One Light",
@@ -85,11 +83,26 @@
           "enable": true
         }
       }
+    },
+
+    "ruff": {
+      "initialization_options": {
+        "settings": {}
+      }
     }
   },
   "languages": {
     "Python": {
-      "show_edit_predictions": false
+      "show_edit_predictions": true,
+      "language_servers": ["ty", "ruff"],
+      "format_on_save": "on",
+      "formatter": [
+        {
+          "language_server": {
+            "name": "ruff"
+          }
+        }
+      ]
     },
     "TypeScript": {
       "language_servers": ["deno", "!typescript-language-server", "!vtsls", "!eslint"],

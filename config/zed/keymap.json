@@ -21,7 +21,7 @@
       "cmd-alt-right": "pane::ActivateNextItem",
       // 🤖 AI Assistant
       "cmd-k": "assistant::InlineAssist",
-      "cmd-3": "agent::QuoteSelection"
+      "cmd-3": ["agent::NewExternalAgentThread", { "agent": "claude_code" }]
     }
   }
 ]

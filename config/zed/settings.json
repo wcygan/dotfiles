@@ -7,7 +7,20 @@
 // custom settings, run `zed: open default settings` from the
 // command palette
 {
-  "show_edit_predictions": false,
+  "ssh_connections": [
+    {
+      "host": "betty",
+      "projects": [
+        {
+          "paths": [
+            "/home/wcygan/Development/immich-infra"
+          ]
+        }
+      ]
+    }
+  ],
+  "show_completions_on_input": true,
+  "show_edit_predictions": true,
   "edit_predictions": {
     "mode": "eager",
     "copilot": {
@@ -22,7 +35,6 @@
       "program": "fish"
     }
   },
-  "show_completions_on_input": false,
   "preferred_line_length": 200,
   "soft_wrap": "preferred_line_length",
   "icon_theme": "Catppuccin Frappé",

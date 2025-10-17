@@ -18,7 +18,7 @@
     }
   ],
   "show_completions_on_input": true,
-  "show_edit_predictions": true,
+  "show_edit_predictions": false,
   "edit_predictions": {
     "mode": "eager",
     "copilot": {
@@ -116,7 +116,7 @@
   },
   "languages": {
     "Python": {
-      "show_edit_predictions": true,
+      "show_edit_predictions": false,
       "language_servers": ["ty", "ruff"],
       "format_on_save": "on",
       "formatter": [

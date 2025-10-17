@@ -23,6 +23,7 @@ config/claude/todos/
 **/config.local
 **/*.local
 
+config/claude/debug
 config/zed/conversations
 config/zed/themes
 config/zed/prompts

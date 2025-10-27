@@ -16,6 +16,7 @@ __maybe_alias k kubectl
 __maybe_alias d docker
 __maybe_alias dc docker-compose
 __maybe_alias ll eza
+__maybe_alias j just
 
 # Modern replacements for traditional tools
 __maybe_alias cat bat       # cat -> bat (syntax highlighting)

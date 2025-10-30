@@ -1,5 +1,11 @@
 {
-  "model": "default",
+  "cleanupPeriodDays": 90,
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
+    "EDITOR": "zed",
+    "GIT_EDITOR": "zed --wait"
+  },
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "Bash(deno task:*)",
@@ -120,16 +126,22 @@
       "Bash(> /dev/sda*)"
     ]
   },
-  "env": {
-    "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
-    "EDITOR": "zed",
-    "GIT_EDITOR": "zed --wait"
-  },
-  "cleanupPeriodDays": 90,
-  "includeCoAuthoredBy": false,
   "statusLine": {
     "type": "command",
     "command": "~/.tools/claude-statusline.ts"
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/wcygan/Development/kneadybynaturebakery/scripts/hook-wrapper.sh"
+          }
+        ]
+      }
+    ]
+  }
 }

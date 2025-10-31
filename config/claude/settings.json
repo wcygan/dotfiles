@@ -126,11 +126,6 @@
       "Bash(> /dev/sda*)"
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.tools/claude-statusline.ts"
-  },
-  "alwaysThinkingEnabled": true,
   "hooks": {
     "PostToolUse": [
       {
@@ -143,5 +138,10 @@
         ]
       }
     ]
-  }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.tools/claude-statusline.ts"
+  },
+  "alwaysThinkingEnabled": false
 }

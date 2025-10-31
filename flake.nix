@@ -103,6 +103,9 @@
                 mtr
                 httpie
 
+                # Media tools
+                immich-go
+
                 # File management
                 tree
                 unzip

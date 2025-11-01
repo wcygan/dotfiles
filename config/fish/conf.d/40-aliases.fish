@@ -81,6 +81,24 @@ alias lfg 'codex --dangerously-bypass-approvals-and-sandbox'
 alias lfgc 'claude --model opusplan --dangerously-skip-permissions'
 alias reload 'exec fish -l'
 
+if type -q lsof
+    functions -q murder; or function murder --description 'Kill all processes bound to a TCP port'
+        if test (count $argv) -eq 0
+            echo "Usage: murder <port>" >&2
+            return 1
+        end
+
+        set -l port $argv[1]
+        set -l pids (lsof -ti "tcp:$port" 2>/dev/null)
+        if test -z "$pids"
+            echo "No process found on TCP port $port" >&2
+            return 0
+        end
+
+        command kill -9 $pids
+    end
+end
+
 # Computers
 alias t 'ssh wcygan@betty -t "zellij attach main || zellij -s main"'
 alias m1 'ssh wcygan@betty'

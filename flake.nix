@@ -2,7 +2,7 @@
   description = "System packages";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/master";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
   outputs =
@@ -135,5 +135,25 @@
             };
         }
       );
+
+      devShells = forAllSystems (
+        { pkgs }:
+        {
+          default = pkgs.mkShell {
+            packages = with pkgs; [
+              fish
+              nixpkgs-fmt
+              shellcheck
+            ];
+            inputsFrom = [ self.packages.${pkgs.system}.default ];
+            shellHook = ''
+              echo "🐠 Dotfiles development environment"
+              echo "Run: make test-pre"
+            '';
+          };
+        }
+      );
+
+      formatter = forAllSystems ({ pkgs }: pkgs.nixpkgs-fmt);
     };
 }

@@ -101,6 +101,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v14
         with:

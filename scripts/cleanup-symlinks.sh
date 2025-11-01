@@ -100,8 +100,10 @@ if $DRY_RUN; then
 else
     echo "✅ Cleanup complete!"
     echo ""
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    DOTFILES_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
     echo "Next steps for migration:"
-    echo "1. Clone/move your new dotfiles to: /Users/wcygan/Development/dotfiles"
+    echo "1. Clone/move your new dotfiles to: $DOTFILES_DIR"
     echo "2. Set up new symlinks from the new location"
     echo "3. Consider restoring any .backup.* files if needed"
 fi

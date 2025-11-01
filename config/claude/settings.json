@@ -143,5 +143,5 @@
     "type": "command",
     "command": "~/.tools/claude-statusline.ts"
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": false
 }

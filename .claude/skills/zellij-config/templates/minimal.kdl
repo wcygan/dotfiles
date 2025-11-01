@@ -1,0 +1,20 @@
+// Minimal Zellij Configuration
+// Location: ~/.config/zellij/config.kdl
+
+// Mouse and UI
+mouse_mode true
+pane_frames true
+
+// Behavior
+copy_on_select true
+scroll_buffer_size 10000
+
+// Shell and theme
+default_shell "fish"
+theme "catppuccin-mocha"
+
+// Session
+session_serialization true
+
+// Clipboard (macOS - change for Linux)
+copy_command "pbcopy"

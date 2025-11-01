@@ -1,0 +1,53 @@
+// Development Layout for Zellij
+// Usage: zellij --layout ~/.config/zellij/layouts/dev-layout.kdl
+
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+
+    tab name="editor" focus=true {
+        pane split_direction="vertical" {
+            // Main editor pane (70%)
+            pane size="70%"
+
+            // Side panel (30%) split horizontally
+            pane split_direction="horizontal" size="30%" {
+                // Terminal for commands
+                pane
+
+                // Logs or tests
+                pane
+            }
+        }
+    }
+
+    tab name="servers" {
+        pane split_direction="horizontal" {
+            pane name="dev-server" {
+                // Uncomment and modify for your project:
+                // command "npm"
+                // args "run" "dev"
+            }
+
+            pane name="logs" {
+                // Uncomment for docker logs:
+                // command "docker"
+                // args "compose" "logs" "-f"
+            }
+        }
+    }
+
+    tab name="monitoring" {
+        pane split_direction="vertical" {
+            pane command="htop"
+            pane command="btop"
+        }
+    }
+}

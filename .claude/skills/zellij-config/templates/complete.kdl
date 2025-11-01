@@ -1,0 +1,139 @@
+// Complete Zellij Configuration
+// Location: ~/.config/zellij/config.kdl
+
+// ============================================================================
+// General Settings
+// ============================================================================
+
+// Mouse support
+mouse_mode true
+
+// UI
+pane_frames true
+simplified_ui false
+default_mode "normal"
+
+// Copy/Paste
+copy_on_select true
+copy_command "pbcopy"  // macOS
+// copy_command "xclip -selection clipboard"  // Linux X11
+// copy_command "wl-copy"  // Linux Wayland
+
+// Scrollback
+scroll_buffer_size 10000
+
+// Shell
+default_shell "fish"
+
+// Session
+session_serialization true
+pane_viewport_serialization false
+
+// Layout and theme
+default_layout "compact"
+theme "catppuccin-mocha"
+
+// Auto-attach
+on_force_close "quit"
+attach_to_session true
+
+// ============================================================================
+// Keybindings
+// ============================================================================
+
+keybinds {
+    normal {
+        // Mode switching
+        bind "Ctrl g" { SwitchToMode "locked"; }
+        bind "Ctrl p" { SwitchToMode "pane"; }
+        bind "Ctrl t" { SwitchToMode "tab"; }
+        bind "Ctrl n" { SwitchToMode "resize"; }
+        bind "Ctrl s" { SwitchToMode "scroll"; }
+
+        // Quick navigation (vim-style)
+        bind "Ctrl h" { MoveFocus "Left"; }
+        bind "Ctrl j" { MoveFocus "Down"; }
+        bind "Ctrl k" { MoveFocus "Up"; }
+        bind "Ctrl l" { MoveFocus "Right"; }
+
+        // Quit
+        bind "Ctrl q" { Quit; }
+    }
+
+    pane {
+        bind "Esc" { SwitchToMode "normal"; }
+
+        // Navigation
+        bind "h" { MoveFocus "Left"; }
+        bind "j" { MoveFocus "Down"; }
+        bind "k" { MoveFocus "Up"; }
+        bind "l" { MoveFocus "Right"; }
+
+        // Create panes
+        bind "n" { NewPane; SwitchToMode "normal"; }
+        bind "d" { NewPane "Down"; SwitchToMode "normal"; }
+        bind "r" { NewPane "Right"; SwitchToMode "normal"; }
+
+        // Close
+        bind "x" { CloseFocus; SwitchToMode "normal"; }
+
+        // Fullscreen
+        bind "f" { ToggleFocusFullscreen; SwitchToMode "normal"; }
+    }
+
+    tab {
+        bind "Esc" { SwitchToMode "normal"; }
+
+        // New/close
+        bind "n" { NewTab; SwitchToMode "normal"; }
+        bind "x" { CloseTab; SwitchToMode "normal"; }
+
+        // Navigation
+        bind "h" { GoToPreviousTab; }
+        bind "l" { GoToNextTab; }
+        bind "1" { GoToTab 1; SwitchToMode "normal"; }
+        bind "2" { GoToTab 2; SwitchToMode "normal"; }
+        bind "3" { GoToTab 3; SwitchToMode "normal"; }
+        bind "4" { GoToTab 4; SwitchToMode "normal"; }
+        bind "5" { GoToTab 5; SwitchToMode "normal"; }
+
+        // Rename
+        bind "r" { SwitchToMode "renametab"; }
+    }
+
+    resize {
+        bind "Esc" { SwitchToMode "normal"; }
+
+        // Resize
+        bind "h" { Resize "Left"; }
+        bind "j" { Resize "Down"; }
+        bind "k" { Resize "Up"; }
+        bind "l" { Resize "Right"; }
+        bind "=" { Resize "Increase"; }
+        bind "-" { Resize "Decrease"; }
+    }
+
+    scroll {
+        bind "Esc" { SwitchToMode "normal"; }
+
+        // Navigation
+        bind "j" { ScrollDown; }
+        bind "k" { ScrollUp; }
+        bind "d" { HalfPageScrollDown; }
+        bind "u" { HalfPageScrollUp; }
+        bind "f" { PageScrollDown; }
+        bind "b" { PageScrollUp; }
+
+        // Edges
+        bind "g" { ScrollToTop; }
+        bind "G" { ScrollToBottom; }
+
+        // Search
+        bind "/" { Search "Down"; }
+        bind "?" { Search "Up"; }
+    }
+
+    locked {
+        bind "Ctrl g" { SwitchToMode "normal"; }
+    }
+}

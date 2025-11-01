@@ -119,6 +119,8 @@ alias gpr 'git pull --rebase'
 
 # General
 alias nv 'nvim'
+alias vim 'nvim'
+alias vi 'nvim'
 
 # Zellij (when using locally)
 if type -q zellij

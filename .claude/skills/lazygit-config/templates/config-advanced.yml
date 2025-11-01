@@ -1,0 +1,170 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/jesseduffield/lazygit/master/schema/config.json
+# Advanced lazygit config with multiple pagers and custom commands
+
+gui:
+  theme:
+    activeBorderColor:
+      - green
+      - bold
+    inactiveBorderColor:
+      - default
+    selectedLineBgColor:
+      - blue
+    selectedRangeBgColor:
+      - blue
+
+  # Display preferences
+  showRandomTip: false
+  showCommandLog: true
+  showFileTree: true
+  sidePanelWidth: 0.3333
+  expandFocusedSidePanel: false
+
+  # Scroll behavior
+  scrollHeight: 2
+  scrollPastBottom: true
+
+  # Mouse support
+  mouse: true
+
+git:
+  # Multiple pagers (cycle with '|' key)
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never --line-numbers
+
+  pagers:
+    - pager: delta --dark --paging=never --line-numbers
+    - pager: delta --dark --paging=never --side-by-side
+    - pager: delta --light --paging=never --line-numbers
+
+  # Branch settings
+  mainBranches:
+    - master
+    - main
+    - develop
+
+  # Auto-refresh
+  autoFetch: true
+  autoRefresh: true
+  fetchInterval: 60
+
+  # Commit settings
+  commit:
+    signOff: false
+    autoWrapCommitMessage: true
+    autoWrapWidth: 72
+
+  # Log display
+  log:
+    order: topo-order
+    showGraph: always
+    showWholeGraph: false
+
+  # Diffing
+  diff:
+    ignoreWhitespace: false
+
+os:
+  # Editor commands
+  edit: "nvim {{filename}}"
+  editAtLine: "nvim +{{line}} {{filename}}"
+  editAtLineAndWait: "nvim +{{line}} {{filename}}"
+
+  # Open commands
+  open: "open {{filename}}"
+  openLink: "open {{link}}"
+
+customCommands:
+  # Commitizen
+  - key: 'C'
+    command: 'git cz'
+    description: 'Commit with commitizen'
+    context: 'files'
+    subprocess: true
+    loadingText: 'Opening commitizen...'
+
+  # Force push with lease (safe force push)
+  - key: '<c-P>'
+    command: 'git push --force-with-lease'
+    description: 'Force push (safely)'
+    context: 'global'
+    loadingText: 'Force pushing...'
+    prompts:
+      - type: 'confirm'
+        title: 'Are you sure you want to force push?'
+
+  # Create GitHub PR
+  - key: '<c-o>'
+    command: 'gh pr create --web'
+    context: 'branches'
+    description: 'Create GitHub PR'
+    subprocess: true
+
+  # View GitHub PR
+  - key: 'O'
+    command: 'gh pr view --web'
+    context: 'branches'
+    description: 'View PR in browser'
+    subprocess: true
+
+  # Amend and force push
+  - key: '<c-a>'
+    command: 'git commit --amend --no-edit && git push --force-with-lease'
+    context: 'files'
+    description: 'Amend and force push'
+    loadingText: 'Amending and pushing...'
+    prompts:
+      - type: 'confirm'
+        title: 'Amend last commit and force push?'
+
+  # Create annotated tag
+  - key: 'T'
+    prompts:
+      - type: 'input'
+        title: 'Tag name'
+        key: 'TagName'
+      - type: 'input'
+        title: 'Tag message'
+        key: 'TagMessage'
+    command: 'git tag -a {{.Form.TagName}} -m "{{.Form.TagMessage}}"'
+    context: 'commits'
+    description: 'Create annotated tag'
+
+  # Open repo in GitHub
+  - key: '<c-g>'
+    command: 'gh repo view --web'
+    context: 'global'
+    description: 'Open repo in GitHub'
+    subprocess: true
+
+  # View file history
+  - key: 'H'
+    prompts:
+      - type: 'menuFromCommand'
+        title: 'File history'
+        command: 'git ls-files'
+        key: 'File'
+    command: 'git log --follow -- {{.Form.File}}'
+    context: 'global'
+    description: 'View file history'
+    subprocess: true
+
+keybinding:
+  # Override specific keybindings if needed
+  universal:
+    quit: 'q'
+    togglePanel: '<tab>'
+    prevItem: '<up>'
+    nextItem: '<down>'
+    prevItem-alt: 'k'
+    nextItem-alt: 'j'
+    prevBlock-alt: 'h'
+    nextBlock-alt: 'l'
+    gotoTop: '<'
+    gotoBottom: '>'
+    scrollUpMain-alt2: '<c-u>'
+    scrollDownMain-alt2: '<c-d>'
+    refresh: 'R'
+    filteringMenu: '<c-s>'
+    diffingMenu: 'W'

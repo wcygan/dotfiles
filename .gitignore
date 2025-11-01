@@ -18,7 +18,7 @@ config/claude/projects/
 config/claude/shell-snapshots/
 config/claude/statsig/
 config/claude/todos/
-
+config/claude/.credentials.json
 # User-specific local configs
 **/config.local
 **/*.local

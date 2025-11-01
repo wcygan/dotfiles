@@ -113,7 +113,7 @@
                 rsync
                 repomix
                 broot
-                du-dust
+                dust
                 ast-grep
                 sd
                 dive

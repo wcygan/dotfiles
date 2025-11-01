@@ -23,6 +23,7 @@ pass() {
 fail() {
     echo -e "${RED}✗${NC} $1"
     FAIL_COUNT=$((FAIL_COUNT + 1))
+    WARNINGS="${WARNINGS}\n  - FAILED: $1"
 }
 
 warn() {
@@ -66,13 +67,20 @@ done
 # Test 3: Validate fish syntax (if fish is available)
 section "Fish Syntax Validation"
 if command -v fish &> /dev/null; then
-    for file in ../config/fish/**/*.fish; do
-        if fish -n "$file" 2>/dev/null; then
-            pass "$(basename $file) syntax valid"
-        else
-            fail "$(basename $file) has syntax errors"
+    # Use find to recursively locate fish files, excluding broken symlinks
+    while IFS= read -r -d '' file; do
+        # Skip broken symlinks (e.g., OrbStack completions on non-macOS)
+        if [[ -L "$file" ]] && [[ ! -e "$file" ]]; then
+            warn "$(basename "$file") is a broken symlink (skipping)"
+            continue
         fi
-    done
+
+        if fish -n "$file" 2>/dev/null; then
+            pass "$(basename "$file") syntax valid"
+        else
+            fail "$(basename "$file") has syntax errors"
+        fi
+    done < <(find ../config/fish -name "*.fish" \( -type f -o -type l \) -print0)
 else
     warn "fish not installed yet - can't validate syntax"
 fi

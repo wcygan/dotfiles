@@ -11,9 +11,22 @@
   "ssh_connections": [
     {
       "host": "betty",
+      "args": [],
       "projects": [
         {
-          "paths": ["/home/wcygan/Development/immich-infra"]
+          "paths": [
+            "/home/wcygan/Development"
+          ]
+        },
+        {
+          "paths": [
+            "/home/wcygan/Development/immich-infra"
+          ]
+        },
+        {
+          "paths": [
+            "/home/wcygan/Development/lab-homepage/./"
+          ]
         }
       ]
     }

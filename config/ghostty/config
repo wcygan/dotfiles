@@ -1,5 +1,11 @@
 command = /Users/wcygan/.nix-profile/bin/fish
 
+# Shell Integration
+# ssh-terminfo: auto-copy terminfo to remote servers on first SSH
+# ssh-env: fallback to xterm-256color on servers without Ghostty terminfo (OpenSSH 8.7+)
+# sudo: preserve TERM environment when using sudo
+shell-integration-features = ssh-terminfo,ssh-env,sudo
+
 # Visuals
 theme = Idle Toes
 font-size = 22

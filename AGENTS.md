@@ -132,6 +132,74 @@ For macOS users, we recommend using the **Determinate Systems macOS Installer** 
 
 ---
 
+## Performance: Avoiding Concurrent Direnv Rebuilds
+
+**Problem**: When you update `flake.lock` in the dotfiles repo, all open terminals with direnv will attempt to rebuild simultaneously, causing:
+* Lock contention (Nix serializes operations)
+* Redundant downloads (each shell fetches same closures)
+* 3-10x slower rebuild times
+* High CPU/memory usage
+
+### Symptoms
+
+```bash
+# Multiple competing processes
+ps aux | grep -E 'direnv export|nix.*print-dev-env'
+# Shows 3+ concurrent sessions rebuilding the same flake
+```
+
+### Prevention
+
+**1. Close extra terminals before flake updates**
+
+```bash
+# Before running `nix flake update` or editing flake.lock:
+# - Keep ONE terminal in the dotfiles directory
+# - Close all other terminals (or cd out of dotfiles)
+# - Let the single shell complete the rebuild
+# - Reopen terminals after build completes
+```
+
+**2. Manual rebuild to prime cache**
+
+```bash
+cd ~/Development/dotfiles
+# Pre-build the dev environment once
+nix build --no-link '.#devShells.aarch64-darwin.default'
+# Now all shells will use cached result instantly
+```
+
+**3. Use impure mode for faster evaluation** (optional)
+
+```bash
+# Edit .envrc to add --impure flag for faster rebuilds
+echo 'use flake --impure' > .envrc
+direnv allow
+```
+
+### Emergency fix (slow rebuild in progress)
+
+```bash
+# Kill all competing processes
+pkill -f 'direnv export'
+pkill -f 'nix.*print-dev-env'
+
+# Verify they're gone
+ps aux | grep -E 'direnv|nix.*print-dev-env' | grep -v grep
+
+# Close extra terminals in dotfiles directory
+# Keep ONE terminal, rebuild will resume automatically
+```
+
+### Best practices
+
+* **Update flakes deliberately**: Run `nix flake update` in ONE terminal with others closed
+* **Check terminal count**: `ps aux | grep 'direnv export'` before updates
+* **Pre-build after updates**: Run `nix build` to prime cache before opening multiple shells
+* **Monitor first rebuild**: First build after flake update takes 2-5 min; subsequent shells are instant
+
+---
+
 # Fish Aliases & Abbreviations (Policy + Implementation)
 
 ## When to use what

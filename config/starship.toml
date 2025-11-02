@@ -35,13 +35,14 @@ format = "[$user]($style)"
 style_user = "bold cyan"
 
 ###
-# Hostname: always shown
+# Hostname: always shown with alias
 ###
 [hostname]
 ssh_only = false
 format = "[@$hostname]($style) "
 style = "bold cyan"
 trim_at = "."
+aliases = { "unknown32e23c6023e8" = "foobar" }
 
 ###
 # Directory: current path with home symbol

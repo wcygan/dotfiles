@@ -56,6 +56,23 @@ abbr -a d 'deno'
 abbr -a dt 'deno task'
 abbr -a br 'broot'
 
+# Cargo (Rust package manager)
+if type -q cargo
+    abbr -a cgc 'cargo check'
+    abbr -a cgr 'cargo run'
+    abbr -a cgb 'cargo build'
+    abbr -a cgbr 'cargo build --release'
+    abbr -a cgt 'cargo test'
+    abbr -a cgd 'cargo doc'
+    abbr -a cgdo 'cargo doc --open'
+    abbr -a cgcl 'cargo clean'
+    abbr -a cgf 'cargo fmt'
+    abbr -a cgcli 'cargo clippy'
+    abbr -a cga 'cargo add'
+    abbr -a cgu 'cargo update'
+    abbr -a cgw 'cargo watch'
+end
+
 # Guard example: only add k* abbr if kubectl is present
 if not type -q kubectl
     abbr -e kctx 2>/dev/null

@@ -143,5 +143,8 @@
     "type": "command",
     "command": "~/.tools/claude-statusline.ts"
   },
+  "enabledPlugins": {
+    "frontend-design@claude-code-plugins": true
+  },
   "alwaysThinkingEnabled": true
 }

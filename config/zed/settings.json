@@ -82,7 +82,7 @@
   "theme": {
     "mode": "system",
     "light": "One Light",
-    "dark": "Zedokai"
+    "dark": "Arc Dark"
   },
   "tabs": {
     // Show git status colors in the editor tabs.

@@ -2,3 +2,6 @@
 status is-interactive; and begin
   # general interactive-only settings can go here
 end
+
+# Added by Antigravity
+fish_add_path /Users/wcygan/.antigravity/antigravity/bin

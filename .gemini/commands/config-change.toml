@@ -1,0 +1,85 @@
+description = "Intelligently modify config files using specialized skills"
+
+prompt = """
+You are helping the user modify configuration files in this dotfiles repository.
+
+**User request:** {{args}}
+
+# Configuration File Mapping
+
+Based on the config change requested, identify which configuration area to modify:
+
+- **fish-shell** → `config/fish/` (config.fish, functions, abbreviations, prompts, env vars)
+- **ghostty** → `config/ghostty/` (themes, fonts, keybindings, performance)
+- **lazygit** → `config/git/lazygit/` (config.yml, delta integration, themes, keybindings)
+- **nvim** → `config/nvim/` (init.lua, plugins, LSP, keymaps)
+- **starship** → `config/starship.toml` (prompt modules, presets, performance)
+- **zed** → `config/zed/` (settings.json, keymap.json, themes, agents)
+- **zellij** → `config/zellij/` (layouts, themes, keybindings, KDL format)
+- **nix** → `flake.nix` (package management)
+
+# Execution Strategy
+
+1. **Analyze the request**: Determine which config area(s) are affected
+2. **Read relevant config files**: Use file reading to understand current state
+3. **Make targeted changes**: Modify only what's necessary
+4. **Ensure cross-platform compatibility**: Verify changes work on macOS, Ubuntu, Fedora
+5. **Maintain idempotency**: Changes should be safe to apply multiple times
+
+# Decision Tree
+
+```
+Is request about:
+├─ Fish shell (aliases, functions, prompts)? → config/fish/
+├─ Ghostty terminal settings? → config/ghostty/
+├─ Lazygit config? → config/git/lazygit/
+├─ Neovim editor? → config/nvim/
+├─ Starship prompt? → config/starship.toml
+├─ Zed editor? → config/zed/
+├─ Zellij multiplexer? → config/zellij/
+├─ Nix packages? → flake.nix
+└─ Unclear? → Ask user for clarification
+```
+
+# Examples
+
+**Example 1**: "add git alias for git log --oneline"
+→ Modify `config/fish/conf.d/40-aliases.fish` or create fish function
+
+**Example 2**: "change terminal font to JetBrains Mono"
+→ Modify `config/ghostty/config`
+
+**Example 3**: "add keybinding for split pane"
+→ Ask user: "Which tool? (ghostty, zellij, nvim, zed)"
+
+**Example 4**: "update lazygit to use delta pager"
+→ Modify `config/git/lazygit/config.yml`
+
+**Example 5**: "add typescript LSP to neovim"
+→ Modify `config/nvim/init.lua` or appropriate plugin config
+
+# Important Constraints
+
+- **Follow XDG Base Directory conventions** (configs in `~/.config/` when possible)
+- **Maintain idempotency** (changes should be safe to apply multiple times)
+- **Test changes** after applying (suggest appropriate test command)
+- **Cross-platform** - ensure changes work on macOS, Ubuntu, Fedora
+- **Version control friendly** - changes should produce clean diffs
+
+# After Making Changes
+
+1. **Summarize changes made** (which files modified)
+2. **Provide test command** (how to verify the change works)
+3. **Mention rollback** (how to undo if needed: `git restore <file>`)
+4. **Suggest related changes** (if applicable)
+
+# Current Directory Context
+
+!{pwd}
+
+# Available Config Files
+
+!{find config -type f -name '*.fish' -o -name '*.toml' -o -name '*.lua' -o -name '*.json' -o -name 'config' 2>/dev/null | head -20}
+
+Now proceed to help with: **{{args}}**
+"""

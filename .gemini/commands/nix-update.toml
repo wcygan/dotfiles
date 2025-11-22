@@ -1,0 +1,90 @@
+description = "Update Nix packages and show version changes summary"
+
+prompt = """
+Update all packages in the flake to their latest versions and provide a clear summary of what changed.
+
+# Step 1: Capture Current State
+
+Current nixpkgs commit before update:
+
+!{nix flake metadata --json | grep -o '"rev":"[^"]*"' | head -1 | cut -d'"' -f4}
+
+# Step 2: Update Flake
+
+Running update now...
+
+!{make update 2>&1}
+
+# Step 3: Capture New State
+
+New nixpkgs commit after update:
+
+!{nix flake metadata --json | grep -o '"rev":"[^"]*"' | head -1 | cut -d'"' -f4}
+
+Flake lock changes:
+
+!{git diff flake.lock | head -30}
+
+# Step 4: Key Package Versions
+
+Checking versions of important packages from flake.nix:
+
+**Core packages to check:**
+- git, gh, lazygit
+- rustup, go, python3, deno, bun
+- fish, zsh, tmux, starship, zellij
+- ripgrep, fd, bat, eza, delta, fzf, jq, yq
+- neovim, codex, claude-code
+- direnv, nix-direnv
+- docker-client, docker-compose, lazydocker, k9s
+- htop, btop, ncdu
+- just, buf, grpcurl, grpcui, dogdns
+
+# Step 5: Verify Update
+
+Running pre-flight tests:
+
+!{make test-pre 2>&1}
+
+# Step 6: Present Summary
+
+Based on the information above, provide a clear summary:
+
+## Output Format
+
+```
+✅ Flake updated successfully!
+
+📦 Package Updates:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[List notable package updates if visible in git diff]
+
+🔗 Full nixpkgs changelog:
+https://github.com/NixOS/nixpkgs/compare/OLD_COMMIT..NEW_COMMIT
+
+✅ Verification: make test-pre [PASSED/FAILED]
+
+💡 Next steps:
+git add flake.lock
+git commit -m "chore: update flake.lock"
+```
+
+## Guidelines
+
+- **If tests failed**: Show the error and recommend rolling back with `git restore flake.lock`
+- **If no changes**: Inform user they're already on latest
+- **Keep output concise**: Focus on actionable information
+- **Provide the GitHub compare link**: So user can review full changelog
+
+## Additional Context
+
+Current directory:
+
+!{pwd}
+
+Git status:
+
+!{git status --short}
+
+Now generate the update summary based on all the information gathered above.
+"""

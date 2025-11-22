@@ -63,7 +63,7 @@
     "always_allow_tool_actions": true,
     "use_modifier_to_send": true,
     "play_sound_when_agent_done": true,
-    "default_profile": "write",
+    "default_profile": "ask",
     "profiles": {
       "agent": {
         "name": "Agent",

@@ -32,7 +32,7 @@
     }
   ],
   "show_completions_on_input": true,
-  "show_edit_predictions": false,
+  "show_edit_predictions": true,
   "edit_predictions": {
     "mode": "eager",
     "copilot": {
@@ -73,8 +73,8 @@
       }
     },
     "default_model": {
-      "provider": "google",
-      "model": "gemini-2.5-pro-exp-03-25"
+      "provider": "zed.dev",
+      "model": "gemini-3-pro-preview"
     }
   },
   "ui_font_size": 14,

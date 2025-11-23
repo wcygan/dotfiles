@@ -55,7 +55,7 @@
   },
   "autosave": {
     "after_delay": {
-      "milliseconds": 200
+      "milliseconds": 50
     }
   },
   "base_keymap": "JetBrains",
@@ -91,13 +91,6 @@
     "file_icons": true
   },
   "lsp": {
-    "deno": {
-      "settings": {
-        "deno": {
-          "enable": true
-        }
-      }
-    },
     "rust-analyzer": {
       "initialization_options": {
         "inlayHints": {
@@ -114,40 +107,23 @@
           "analyzerTargetDir": true
         }
       },
-      "binary": {
-        "ignore_system_version": false,
-        "fetch": {
-          "pre_release": false
-        }
-      },
       "enable_lsp_tasks": true
-    },
-    "ruff": {
-      "initialization_options": {
-        "settings": {}
-      }
     }
   },
   "languages": {
-    "Python": {
-      "show_edit_predictions": false,
-      "language_servers": ["ty", "ruff"],
-      "format_on_save": "on",
-      "formatter": [
-        {
-          "language_server": {
-            "name": "ruff"
-          }
-        }
-      ]
-    },
-    "TypeScript": {
-      "language_servers": ["deno", "!typescript-language-server", "!vtsls", "!eslint"],
-      "formatter": "language_server"
-    },
-    "TSX": {
-      "language_servers": ["deno", "!typescript-language-server", "!vtsls", "!eslint"],
-      "formatter": "language_server"
+    "Rust": {
+      "tasks": {
+        "prefer_lsp": true
+      },
+      "inlay_hints": {
+        "edit_debounce_ms": 650,
+        "show_background": true,
+        "enabled": true
+      },
+      "indent_guides": {
+        "background_coloring": "indent_aware"
+      },
+      "hard_tabs": false
     }
   }
 }

@@ -142,7 +142,7 @@ latest:
 # Update packages
 update:
 	@echo "📦 Updating flake and packages..."
-	@nix flake update
+	@nix flake update --refresh
 	@nix profile upgrade '.*'
 	@echo "✅ Packages updated!"
 

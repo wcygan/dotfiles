@@ -14,19 +14,13 @@
       "args": [],
       "projects": [
         {
-          "paths": [
-            "/home/wcygan/Development"
-          ]
+          "paths": ["/home/wcygan/Development"]
         },
         {
-          "paths": [
-            "/home/wcygan/Development/immich-infra"
-          ]
+          "paths": ["/home/wcygan/Development/immich-infra"]
         },
         {
-          "paths": [
-            "/home/wcygan/Development/lab-homepage/./"
-          ]
+          "paths": ["/home/wcygan/Development/lab-homepage/./"]
         }
       ]
     }
@@ -78,7 +72,9 @@
     }
   },
   "ui_font_size": 14,
+  "ui_font_family": "JetBrainsMono Nerd Font",
   "buffer_font_size": 14.0,
+  "buffer_font_family": "JetBrainsMono Nerd Font",
   "theme": {
     "mode": "system",
     "light": "One Light",

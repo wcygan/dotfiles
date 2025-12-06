@@ -126,19 +126,6 @@
       "Bash(> /dev/sda*)"
     ]
   },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/wcygan/Development/kneadybynaturebakery/scripts/hook-wrapper.sh"
-          }
-        ]
-      }
-    ]
-  },
   "statusLine": {
     "type": "command",
     "command": "~/.tools/claude-statusline.ts"
@@ -146,5 +133,5 @@
   "enabledPlugins": {
     "frontend-design@claude-code-plugins": true
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": false
 }

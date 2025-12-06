@@ -95,7 +95,7 @@ alias lg lazygit
 alias ldc lazydocker
 alias py python3
 alias lfg 'codex --dangerously-bypass-approvals-and-sandbox'
-alias lfgc 'claude --model opusplan --dangerously-skip-permissions'
+alias lfgc 'claude --dangerously-skip-permissions'
 alias reload 'exec fish -l'
 
 if type -q lsof

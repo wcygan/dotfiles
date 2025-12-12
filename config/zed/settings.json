@@ -108,6 +108,7 @@
   },
   "languages": {
     "Rust": {
+      "colorize_brackets": true,
       "tasks": {
         "prefer_lsp": true
       },
@@ -115,9 +116,6 @@
         "edit_debounce_ms": 650,
         "show_background": true,
         "enabled": true
-      },
-      "indent_guides": {
-        "background_coloring": "indent_aware"
       },
       "hard_tabs": false
     }

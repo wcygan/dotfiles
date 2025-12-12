@@ -27,6 +27,7 @@ help:
 	@echo "Package Management:"
 	@echo "  make latest     - Pull latest changes and reinstall"
 	@echo "  make update     - Update flake and upgrade packages"
+	@echo "  make install-packages - Install/upgrade packages from current flake"
 	@echo "  make list       - List installed packages"
 	@echo "  make clean      - Garbage collect old packages"
 	@echo ""
@@ -145,6 +146,12 @@ update:
 	@nix flake update --refresh
 	@nix profile upgrade '.*'
 	@echo "✅ Packages updated!"
+
+# Install/upgrade packages from flake
+install-packages:
+	@echo "📦 Installing packages from flake..."
+	@nix profile install . --priority 5
+	@echo "✅ Packages installed!"
 
 # List installed packages
 list:

@@ -26,6 +26,8 @@ Update all packages in the flake to their latest versions and provide a clear su
 
 3. **Verify the update**
    - Run `make test-pre` to ensure flake is still valid
+   - Run `nix build .#default --dry-run` to check if packages can be built
+   - If dry-run fails with build errors, recommend reverting: `git checkout HEAD -- flake.lock`
    - Report any failures with clear error messages
 
 4. **Present summary**
@@ -77,3 +79,15 @@ git commit -m "chore: update flake.lock to nixpkgs MMM DD"
 - Use emojis sparingly for visual scanning
 - Provide actionable next steps
 - Include the commit message suggestion
+
+**IMPORTANT - Final reminder:**
+After the user commits the flake.lock changes, remind them to actually install the updated packages:
+```bash
+make install-packages
+```
+or:
+```bash
+nix profile install . --priority 5
+```
+
+This step is REQUIRED to upgrade the installed packages to match the new flake.lock. Simply updating flake.lock does NOT upgrade installed packages.

@@ -60,9 +60,9 @@
                 tmux
                 starship
 
-                # Coding agents
-                codex
-                claude-code
+                # Coding agents - installed via Homebrew for latest versions
+                # codex         # brew install --cask codex
+                # claude-code   # brew install --cask claude-code
 
                 # Modern CLI tools
                 curl

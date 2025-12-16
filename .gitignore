@@ -25,6 +25,7 @@ config/claude/.credentials.json
 **/*.local
 
 config/claude/debug
+config/claude/stats-cache.json
 config/zed/conversations
 config/zed/themes
 config/zed/prompts

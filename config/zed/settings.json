@@ -72,9 +72,7 @@
     }
   },
   "ui_font_size": 14,
-  "ui_font_family": "JetBrainsMono Nerd Font",
   "buffer_font_size": 14.0,
-  "buffer_font_family": "JetBrainsMono Nerd Font",
   "theme": {
     "mode": "system",
     "light": "One Light",

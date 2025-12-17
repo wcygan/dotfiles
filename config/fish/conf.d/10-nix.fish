@@ -32,6 +32,11 @@ if test -d $HOME/go/bin
   fish_add_path --path --prepend $HOME/go/bin
 end
 
+# Bun binaries
+if test -d $HOME/.bun/bin
+  fish_add_path --path --prepend $HOME/.bun/bin
+end
+
 # 2. Now add Nix paths with lower priority (after manual installs)
 # Ensure Nix bins are on PATH (works for both single- and multi-user)
 if test -d $HOME/.nix-profile/bin

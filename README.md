@@ -53,4 +53,7 @@ make uninstall
 # Run tests
 make test-pre
 make test-local
+
+# Start documentation dev server
+make docs
 ```

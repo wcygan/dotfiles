@@ -1,7 +1,7 @@
 # Nix Dotfiles Makefile
 # Run 'make help' for available commands
 
-.PHONY: help install test test-pre test-local test-docker link git-user clean update latest shell
+.PHONY: help install test test-pre test-local test-docker link git-user clean update latest shell docs
 
 # Default target
 help:
@@ -35,6 +35,7 @@ help:
 	@echo "  make shell      - Enter Nix development shell"
 	@echo "  make fish       - Start fish shell"
 	@echo "  make source     - Show command to source Nix environment"
+	@echo "  make docs       - Start documentation dev server"
 	@echo ""
 	@echo "Troubleshooting:"
 	@echo "  make verify     - Verify Nix installation"
@@ -189,6 +190,11 @@ fish:
 			echo "Or run '\''make install'\'' if you haven'\''t already."; \
 			exit 1; \
 		fi'
+
+# Start documentation dev server
+docs:
+	@echo "📚 Starting documentation server..."
+	@npm --prefix docs start
 
 # Source Nix environment (useful in containers)
 source:

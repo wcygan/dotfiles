@@ -15,6 +15,9 @@ window-inherit-font-size = false
 cursor-style-blink = false
 keybind = shift+enter=text:\n
 
+# Left Option key acts as Alt (for word deletion, navigation, etc.)
+macos-option-as-alt = left
+
 # Copy text to clipboard when highlighting:
 copy-on-select = clipboard
 

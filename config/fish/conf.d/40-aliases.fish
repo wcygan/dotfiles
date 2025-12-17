@@ -17,6 +17,7 @@ __maybe_alias d docker
 __maybe_alias dc docker-compose
 __maybe_alias ll eza
 __maybe_alias j just
+__maybe_alias o opencode
 
 # Modern replacements for traditional tools
 __maybe_alias cat bat       # cat -> bat (syntax highlighting)

@@ -105,6 +105,9 @@
     }
   },
   "languages": {
+    "Python": {
+      "language_servers": ["ty", "!basedpyright", "..."]
+    },
     "Rust": {
       "colorize_brackets": true,
       "tasks": {

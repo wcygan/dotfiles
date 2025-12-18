@@ -3,7 +3,8 @@
   "env": {
     "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
     "EDITOR": "zed",
-    "GIT_EDITOR": "zed --wait"
+    "GIT_EDITOR": "zed --wait",
+    "USE_BUILTIN_RIPGREP": "0"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -130,8 +131,6 @@
     "type": "command",
     "command": "~/.tools/claude-statusline.ts"
   },
-  "enabledPlugins": {
-    "frontend-design@claude-code-plugins": true
-  },
+  "enabledPlugins": {},
   "alwaysThinkingEnabled": true
 }

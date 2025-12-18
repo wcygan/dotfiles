@@ -51,6 +51,7 @@
                 rustup
                 go
                 python3
+                uv
                 deno
                 bun
 

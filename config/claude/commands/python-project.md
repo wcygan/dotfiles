@@ -56,12 +56,6 @@ description = "Project description"
 requires-python = ">=3.12"
 dependencies = []
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=8.0",
-    "pytest-cov",
-    "ruff",
-]
 
 [build-system]
 requires = ["hatchling"]
@@ -73,6 +67,7 @@ dev-dependencies = [
     "pytest>=8.0",
     "pytest-cov",
     "ruff",
+    "ty",
 ]
 
 # ─── RUFF ─────────────────────────────────────────────────────────────────────
@@ -108,8 +103,9 @@ indent-style = "space"
 docstring-code-format = true
 
 # ─── TY ───────────────────────────────────────────────────────────────────────
-[tool.ty]
+[tool.ty.environment]
 python-version = "3.12"
+python = ".venv"
 
 # ─── PYTEST ───────────────────────────────────────────────────────────────────
 [tool.pytest.ini_options]
@@ -167,7 +163,7 @@ fmt-check:
 
 # Type check
 typecheck:
-    uvx ty check
+    uv run ty check
 
 # Run all checks
 check: lint fmt-check typecheck

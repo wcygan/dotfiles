@@ -127,6 +127,7 @@
       "Bash(> /dev/sda*)"
     ]
   },
+  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "~/.tools/claude-statusline.ts"

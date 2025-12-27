@@ -23,6 +23,7 @@ config/claude/.credentials.json
 # User-specific local configs
 **/config.local
 **/*.local
+config/claude/security_warnings_state*
 
 config/claude/debug
 config/claude/stats-cache.json

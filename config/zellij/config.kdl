@@ -11,6 +11,8 @@ keybinds clear-defaults=true {
         bind "Ctrl n" { NewPane; }
         bind "Ctrl s" { NewPane "Down"; }
         bind "Ctrl v" { NewPane "Right"; }
+        bind "Ctrl -" { NewPane "Down"; }
+        bind "Ctrl /" { NewPane "Right"; }
         bind "Ctrl x" { CloseFocus; }
         bind "Ctrl z" { ToggleFocusFullscreen; }
 

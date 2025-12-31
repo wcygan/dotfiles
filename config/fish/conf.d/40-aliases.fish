@@ -74,6 +74,39 @@ if type -q cargo
     abbr -a cgw 'cargo watch'
 end
 
+# JJ (Jujutsu VCS)
+if type -q jj
+    # Core daily commands (aliases)
+    alias js 'jj st'
+    alias jd 'jj diff'
+    alias jl 'jj log'
+    alias jn 'jj new'
+    alias ju 'jj undo'
+
+    # Abbreviations for commands with args
+    abbr -a jde 'jj describe -m'
+    abbr -a jed 'jj edit'
+    abbr -a jsq 'jj squash'
+    abbr -a jrb 'jj rebase -d'
+    abbr -a jrs 'jj restore'
+    abbr -a jab 'jj abandon'
+
+    # Git interop
+    abbr -a jgf 'jj git fetch'
+    abbr -a jgp 'jj git push'
+    abbr -a jgc 'jj git clone'
+
+    # Branch management
+    abbr -a jbc 'jj branch create'
+    abbr -a jbs 'jj branch set'
+    abbr -a jbl 'jj branch list'
+
+    # Useful combos
+    alias jll 'jj log -r ::@'           # log ancestors only
+    alias jla 'jj log -r "all()"'       # log everything
+    alias jds 'jj diff --stat'          # diff with stats (like gds)
+end
+
 # Guard example: only add k* abbr if kubectl is present
 if not type -q kubectl
     abbr -e kctx 2>/dev/null
@@ -93,6 +126,7 @@ end
 alias c clear
 alias dev 'cd ~/Development/'
 alias lg lazygit
+alias lj lazyjj
 alias ldc lazydocker
 alias py python3
 alias lfg 'codex --dangerously-bypass-approvals-and-sandbox'

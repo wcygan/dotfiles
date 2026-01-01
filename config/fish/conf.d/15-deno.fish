@@ -12,6 +12,12 @@ end
 # Set Deno environment variables
 set -gx DENO_INSTALL $HOME/.deno
 
+# Set up dx alias for running package binaries (Deno 2.6+)
+# dx is the Deno equivalent to npx
+if command -v deno >/dev/null 2>&1
+    alias dx='deno x'
+end
+
 # Generate and source Deno completions if deno is available
 if command -v deno >/dev/null 2>&1
     # Only generate completions if they don't exist or are outdated

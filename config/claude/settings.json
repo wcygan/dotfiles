@@ -127,6 +127,7 @@
       "Bash(> /dev/sda*)"
     ]
   },
+  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "~/.tools/claude-statusline.ts"
@@ -139,11 +140,9 @@
     "explanatory-output-style@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "security-guidance@claude-code-plugins": true,
-    "hookify@claude-code-plugins": true,
     "typescript-lsp@claude-plugins-official": true,
-    "ralph-wiggum@claude-plugins-official": true
+    "ralph-wiggum@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true
   },
-  "alwaysThinkingEnabled": true,
-  "model": "opus"
+  "alwaysThinkingEnabled": true
 }

@@ -13,6 +13,9 @@ result-*
 *.swp
 *.log
 tmp/
+config/claude/tasks/
+config/claude/cache/
+config/claude/paste-cache/
 config/claude/plugins/
 config/claude/plans/
 config/claude/projects/

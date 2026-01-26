@@ -205,17 +205,19 @@ Exit with success message after:
 - Completing and committing one task
 - Updating IMPLEMENTATION_PLAN.md
 
-Exit with blocker message if:
-- All tasks are complete (plan is done!)
+Exit with `BLOCKED: <reason>` if:
 - You encounter an unresolvable issue
 - A task requires clarification from the user
+- External dependencies are unavailable
 
 ## Completion Detection
 
-When all tasks show `- [x]`, output:
+When all tasks show `- [x]`, output exactly this and nothing else:
 ```
-🎉 RALPH_COMPLETE: All tasks finished. Review the implementation.
+DONE
 ```
+
+Do not add any other text, explanation, or formatting. Just the word "DONE" on its own line.
 ```
 
 Write this to `PROMPT.md` in the current directory.
@@ -455,16 +457,20 @@ while [[ $ITERATION -lt $MAX_ITERATIONS ]]; do
         } >> "$LOG_FILE"
     fi
     
-    # Check for completion signal
-    if echo "$OUTPUT" | grep -q "RALPH_COMPLETE"; then
+    # Check for completion signal (agent outputs exactly "DONE" when all tasks complete)
+    if echo "$OUTPUT" | grep -qx "DONE"; then
         log ""
-        log "✅ Ralph loop completed successfully!"
-        log "   All tasks in $PLAN_FILE are done."
+        log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log "✅ OBJECTIVE COMPLETE"
+        log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log ""
+        log "All tasks in $PLAN_FILE have been completed."
+        log "Review the implementation and run any final verification."
         exit 0
     fi
     
     # Check for blocker signal
-    if echo "$OUTPUT" | grep -q "RALPH_BLOCKED"; then
+    if echo "$OUTPUT" | grep -q "BLOCKED"; then
         log ""
         log "⚠️  Ralph encountered a blocker."
         log "   Review the output above and $PLAN_FILE, then restart."

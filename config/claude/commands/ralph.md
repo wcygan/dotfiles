@@ -16,51 +16,40 @@ You are initializing a **ralph loop** workflow for autonomous development. This 
 
 **Your goal is to fully understand what the user wants to build before writing anything.**
 
-Use `AskUserQuestion` to interview the user. Cover these areas thoroughly:
+Use `AskUserQuestion` to interview the user in detail. Ask about technical implementation, UI & UX, concerns, tradeoffs, and anything non-obvious. Be very in-depth and continue interviewing until you have comprehensive understanding.
 
-## Core Understanding
-- What is being built? (elevator pitch)
-- What problem does it solve?
-- Who is the target user/consumer?
-- What does "done" look like?
+## Topics to Cover (as relevant)
 
-## Technical Scope
-- What's the tech stack? (languages, frameworks, databases)
-- Are there existing codebases/files to integrate with?
-- What are the hard constraints? (performance, compatibility, dependencies)
-- What's explicitly out of scope?
+- **Core**: What's being built, the problem it solves, target users, definition of done
+- **Technical**: Tech stack, existing code to integrate with, hard constraints, what's out of scope
+- **Architecture**: Components, data models, external integrations, key decisions already made
+- **UX**: User workflows, UI preferences, error handling, edge cases
+- **Quality**: Acceptance criteria, testing strategy, performance/security requirements
+- **Risks**: Uncertainties, potential issues, external dependencies, areas needing research
 
-## Architecture & Design
-- High-level component structure
-- Data models and relationships
-- External integrations (APIs, services)
-- Key technical decisions already made
+## Interview Style
 
-## User Experience (if applicable)
-- User workflows and journeys
-- UI/UX requirements or preferences
-- Error handling and edge cases
-- Accessibility considerations
+**Ask 3-5 questions per round** using `AskUserQuestion`. Group related questions together to make efficient use of the user's time while still allowing for depth.
 
-## Quality & Testing
-- What constitutes "working"? (acceptance criteria)
-- Testing strategy preferences
-- Performance requirements
-- Security considerations
+Example format for each `AskUserQuestion` call:
+```
+I have a few questions about [topic area]:
 
-## Risks & Unknowns
-- What are you uncertain about?
-- What could go wrong?
-- Dependencies on external factors
-- Areas needing research/spikes
+1. [First question]
+2. [Second question]  
+3. [Third question]
+
+Also, regarding [related topic]:
+4. [Fourth question]
+```
 
 **Interview rules:**
-- Ask one question at a time
-- Go deep on answers - follow up on interesting threads
-- Don't ask obvious questions that can be inferred
+- Ask multiple related questions per turn (3-5 is ideal)
+- Don't ask obvious questions that can be inferred from context
+- Go deep on answers - follow up on interesting threads in subsequent rounds
 - Challenge assumptions constructively
-- Continue until you have comprehensive understanding
-- Confirm understanding before moving to Phase 2
+- Continue interviewing until you have comprehensive understanding
+- Confirm your understanding with a summary before moving to Phase 2
 
 ---
 

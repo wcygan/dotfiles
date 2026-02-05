@@ -2,6 +2,7 @@
   "cleanupPeriodDays": 90,
   "env": {
     "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "EDITOR": "zed",
     "GIT_EDITOR": "zed --wait",
     "USE_BUILTIN_RIPGREP": "0"
@@ -120,14 +121,8 @@
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs"
     ],
-    "deny": [
-      "Bash(rm -rf /)",
-      "Bash(dd if=/dev/zero of=/dev/*)",
-      "Bash(mkfs:*)",
-      "Bash(> /dev/sda*)"
-    ]
+    "deny": ["Bash(rm -rf /)", "Bash(dd if=/dev/zero of=/dev/*)", "Bash(mkfs:*)", "Bash(> /dev/sda*)"]
   },
-  "model": "sonnet",
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true,

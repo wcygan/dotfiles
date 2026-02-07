@@ -7,6 +7,8 @@ description: Launch and coordinate Claude Code agent teams for complex tasks. Us
 
 Launch and coordinate Claude Code agent teams using the available agent roster. This skill knows which agents exist, how they complement each other, and which team compositions work best for different tasks.
 
+It can also **recommend compositions** from a task description, **discover custom agents**, and **generate new agents** on the fly when no existing one fits.
+
 ## Prerequisites
 
 Agent teams are experimental. Ensure this is set in settings.json:
@@ -18,6 +20,36 @@ Agent teams are experimental. Ensure this is set in settings.json:
   }
 }
 ```
+
+## Agent Discovery
+
+Before selecting agents, always check for custom agents that may already exist.
+
+### Discovery Procedure
+
+1. **Check global agents** (available in all projects):
+   ```bash
+   ls ~/.claude/agents/*.md 2>/dev/null
+   ```
+
+2. **Check project-local agents** (specific to this repo):
+   ```bash
+   ls .claude/agents/*.md 2>/dev/null
+   ```
+
+3. **Read agent frontmatter** to understand each agent's capabilities:
+   ```bash
+   # Quick summary of all available agents
+   for f in ~/.claude/agents/*.md .claude/agents/*.md; do
+     head -5 "$f" 2>/dev/null
+   done
+   ```
+
+4. **Merge with built-in roster**: Custom agents supplement the roster below. If a custom agent overlaps with a built-in one, prefer the custom agent (it may be tailored to the user's workflow).
+
+### When presenting team options, list both:
+- Built-in agents from the roster below
+- Any discovered custom agents with their descriptions
 
 ## Available Agent Roster
 
@@ -43,6 +75,140 @@ Agent teams are experimental. Ensure this is set in settings.json:
 | **kubernetes-architect** | K8s infrastructure | Cluster design, networking, storage, security |
 | **skaffold-deployment-expert** | K8s dev workflows | Skaffold config, local dev, CI/CD with Skaffold |
 | **fedora-sysadmin** | Fedora Linux administration | DNF, SELinux, systemd, system troubleshooting |
+
+## Smart Composition
+
+When the user describes a task without specifying agents, analyze the task and recommend a team.
+
+### Composition Algorithm
+
+**Step 1: Classify the task type**
+
+| Signal in Request | Task Type | Likely Agents |
+|-------------------|-----------|---------------|
+| "review", "check", "audit" | Review | security-auditor, performance-analyst, test-strategist |
+| "design", "plan", "architect" | Design | api-designer, domain-modeler, devils-advocate |
+| "build", "implement", "create" | Development | api-designer, domain-modeler, test-strategist |
+| "debug", "fix", "investigate" | Investigation | implementation-investigator, reliability-engineer, devils-advocate |
+| "refactor", "clean up", "improve" | Refactoring | refactoring-strategist, test-strategist, performance-analyst |
+| "harden", "production-ready" | Hardening | security-auditor, reliability-engineer, performance-analyst |
+| "migrate", "upgrade" | Migration | tech-lead, reliability-engineer, devils-advocate |
+
+**Step 2: Identify required perspectives**
+
+For each task, ask:
+- Does this touch **security boundaries**? Add security-auditor.
+- Does this involve **data modeling**? Add domain-modeler.
+- Does this need **API/interface design**? Add api-designer.
+- Is **performance critical**? Add performance-analyst.
+- Does this need **test coverage**? Add test-strategist.
+- Is this a **major decision**? Add devils-advocate.
+- Does this involve **failure handling**? Add reliability-engineer.
+
+**Step 3: Identify productive tension pairs**
+
+Select agents whose lenses naturally conflict -- this creates better outcomes:
+
+| Tension Pair | What They Debate |
+|-------------|-----------------|
+| security-auditor vs performance-analyst | "Is the security measure too expensive?" |
+| api-designer vs domain-modeler | "Clean for consumers?" vs "Correct for the domain?" |
+| reliability-engineer vs performance-analyst | "Add resilience overhead" vs "Reduce latency" |
+| devils-advocate vs everyone | "Do we even need this?" |
+| test-strategist vs performance-analyst | "More test coverage" vs "Faster test suite" |
+| tech-lead vs devils-advocate | "Best practice says..." vs "In our context..." |
+
+**Step 4: Right-size the team**
+
+- Default to 3 agents (best coordination-to-value ratio)
+- Use 2 for simple, focused tasks
+- Use 4-5 only for complex audits or multi-hypothesis debugging
+- Never use 6+
+
+**Step 5: Present the recommendation**
+
+Before spawning, present the team to the user:
+
+```
+Based on your task, I recommend this team:
+
+Team: [Name] ([N] agents)
+Task type: [Classification]
+
+Agents:
+1. [agent-name]: [what they'll focus on]
+2. [agent-name]: [what they'll focus on]
+3. [agent-name]: [what they'll focus on]
+
+Key tension: [agent-a] vs [agent-b] will debate [topic]
+
+Interaction model: [debate / independent review / coordinate-then-build]
+
+Shall I proceed, or would you like to adjust the composition?
+```
+
+Wait for user confirmation before spawning.
+
+## Dynamic Agent Generation
+
+When no existing agent (built-in or custom) fits the task, generate one on the fly.
+
+### When to Generate
+
+- The task requires domain expertise not covered by the roster (e.g., "ML pipeline reviewer", "accessibility auditor", "database migration specialist")
+- The user explicitly asks for a specialist not in the roster
+- A team composition has a gap that no existing agent fills
+
+### Agent Definition Template
+
+```markdown
+---
+name: [kebab-case-name]
+description: [When to use this agent. Include 2-3 examples in the description.]
+color: [choose: cyan, magenta, yellow, green, blue, bright_red, bright_green]
+memory: [none | user | project]
+---
+
+[Opening paragraph: Who this agent is, their core expertise, their communication style]
+
+## Core Mindset
+
+- [3-5 principles that guide this agent's thinking]
+
+## Evaluation Framework
+
+[The systematic approach this agent uses to analyze problems in their domain]
+
+### [Category 1]
+- [Specific things to check]
+
+### [Category 2]
+- [Specific things to check]
+
+## Output Format
+
+[How this agent structures its findings/recommendations]
+
+## Communication Style
+
+- [3-5 style guidelines]
+```
+
+### Where to Save
+
+- **Global agents** (useful across projects): `~/.claude/agents/[name].md`
+- **Project-specific agents** (tailored to one repo): `.claude/agents/[name].md`
+
+Decision rule: If the agent's expertise is tied to a specific technology used in this project, save it project-locally. Otherwise, save globally.
+
+### Post-Team Persistence
+
+After a team run completes, if an ad-hoc agent was generated and proved useful:
+
+1. Ask the user: "The [agent-name] agent worked well. Want to save it for future use?"
+2. If yes, write the agent definition to the appropriate location
+3. If the agent should be available everywhere: `~/.claude/agents/[name].md`
+4. If project-specific: `.claude/agents/[name].md`
 
 ## Proven Team Compositions
 
@@ -84,7 +250,7 @@ Create an agent team to implement [FEATURE]:
 - api-designer: design the interface and contracts
 - domain-modeler: design the data model and state management
 - test-strategist: write tests in parallel based on the design
-Have the api-designer and domain-modeler coordinate on the contract, 
+Have the api-designer and domain-modeler coordinate on the contract,
 then the test-strategist writes tests against it.
 ```
 
@@ -144,27 +310,25 @@ Create an agent team to review [K8S DEPLOYMENT]:
 
 When the user wants to create an agent team:
 
-### 1. Identify the Task Type
+### 1. Discover Available Agents
 
-Match the user's request to one of the proven compositions above, or design a custom team based on the task. Key questions:
+Run agent discovery (see Agent Discovery section above) to find custom agents alongside the built-in roster.
+
+### 2. Identify the Task Type
+
+Match the user's request to one of the proven compositions above, or use Smart Composition to design a custom team. Key questions:
 - What kind of work? (review, build, investigate, debug, refactor)
 - How many perspectives needed? (2-5 agents, prefer 3)
 - Do agents need to debate or work independently?
+- Does any custom agent fit better than a built-in one?
 
-### 2. Select Agents
+### 3. Select and Recommend Agents
 
-Choose agents whose lenses create **productive tension**:
+If the user specified agents, use their selection. Otherwise, use Smart Composition to recommend a team and present it for confirmation.
 
-| Tension Pair | What They Debate |
-|-------------|-----------------|
-| security-auditor vs performance-analyst | "Is the security measure too expensive?" |
-| api-designer vs domain-modeler | "Clean for consumers?" vs "Correct for the domain?" |
-| reliability-engineer vs performance-analyst | "Add resilience overhead" vs "Reduce latency" |
-| devils-advocate vs everyone | "Do we even need this?" |
-| test-strategist vs performance-analyst | "More test coverage" vs "Faster test suite" |
-| tech-lead vs devils-advocate | "Best practice says..." vs "In our context..." |
+If no existing agent fits a needed role, use Dynamic Agent Generation to create one.
 
-### 3. Craft the Team Prompt
+### 4. Craft the Team Prompt
 
 A good team prompt includes:
 - **Clear task description**: What are we working on?
@@ -173,7 +337,7 @@ A good team prompt includes:
 - **Deliverable**: What does the team produce? (report, code, plan)
 - **Plan approval**: Add "Require plan approval before changes" for risky work
 
-### 4. Configure the Team
+### 5. Configure the Team
 
 **Use delegate mode** (Shift+Tab) to keep the lead orchestrating, not implementing.
 
@@ -187,12 +351,19 @@ A good team prompt includes:
 - 4-5 agents: Complex audits or multi-hypothesis debugging
 - 6+: Rarely worth the coordination overhead and token cost
 
-### 5. Monitor and Steer
+### 6. Monitor and Steer
 
 - Check teammate progress regularly
 - Redirect approaches that aren't working
 - Tell the lead to "wait for teammates to finish" if it starts implementing
 - Use "clean up the team" when done (shut down teammates first)
+
+### 7. Post-Team Wrap-Up
+
+After the team completes:
+- If any ad-hoc agents were generated, offer to persist them
+- Summarize findings across all agents
+- Highlight disagreements between agents (these are often the most valuable insights)
 
 ## Anti-Patterns
 
@@ -201,12 +372,13 @@ A good team prompt includes:
 - **Don't create teams for trivial tasks**: A single agent handles simple reviews or fixes faster
 - **Don't let teams run unattended too long**: Check in to prevent wasted effort
 - **Don't skip the devils-advocate**: Including one skeptic consistently produces better outcomes
+- **Don't generate agents when an existing one fits**: Check discovery first
 
 ## Quick Start Examples
 
 **Minimal team (2 agents):**
 ```
-Create a team: security-auditor reviews the auth module while 
+Create a team: security-auditor reviews the auth module while
 test-strategist checks test coverage for it.
 ```
 
@@ -227,4 +399,11 @@ Create a team to design our new notification system:
 - reliability-engineer plans for failure modes
 - devils-advocate challenges whether we need this at all
 Have them debate and converge on a recommended approach.
+```
+
+**Smart composition (let the skill choose):**
+```
+I need a team to review our payment processing module before
+we go live. It handles Stripe webhooks, stores transaction
+records, and sends email receipts.
 ```

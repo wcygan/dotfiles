@@ -13,6 +13,7 @@ result-*
 *.swp
 *.log
 tmp/
+config/claude/teams/*
 config/claude/telemetry/*
 config/claude/tasks/
 config/claude/cache/

@@ -1,15 +1,15 @@
 ---
 name: spike
-description: Quick prototype in an isolated git worktree. Creates a worktree, spawns agents to explore a technical approach, and opens a draft PR with findings. Use for time-boxed technical exploration, feasibility testing, or library evaluation. Keywords: spike, prototype, worktree, explore, feasibility, proof of concept, PoC, try, experiment, can we use
+description: Quick prototype or investigation in an isolated git worktree. Creates a worktree, spawns agents to explore a technical approach, and opens a draft PR with findings. Use for time-boxed technical exploration, feasibility testing, library evaluation, or codebase audits. Keywords: spike, prototype, worktree, explore, feasibility, proof of concept, PoC, try, experiment, can we use, audit, investigate, trace, wired up
 context: fork
 disable-model-invocation: true
 argument-hint: [description-of-what-to-explore]
 allowed-tools: Read, Grep, Glob, Bash, Write, Edit
 ---
 
-# Spike: Worktree-Based Prototyping
+# Spike: Worktree-Based Prototyping & Investigation
 
-Quickly prototype a technical approach in an isolated git worktree. The spike produces working (or instructively failing) code and a draft PR documenting what was learned.
+Quickly prototype a technical approach or investigate existing code in an isolated git worktree. The spike produces working (or instructively failing) code and a draft PR documenting what was learned.
 
 ## When to Use
 
@@ -17,6 +17,8 @@ Quickly prototype a technical approach in an isolated git worktree. The spike pr
 - "What would it take to migrate from A to B?"
 - "Is this API fast enough for our use case?"
 - "How hard would it be to add feature Y?"
+- "Is feature X actually wired up correctly?"
+- "Where does data Y flow through the system?"
 - Time-boxed exploration where the goal is learning, not production code
 
 ## Workflow
@@ -68,7 +70,32 @@ Work in the worktree to answer the exploration question:
 3. Compare against requirements or current baseline
 4. Note scaling characteristics (linear, quadratic, etc.)
 
-### 4. Document Findings in the Worktree
+**If auditing or investigating existing code:**
+1. Trace the code path from entry point to final effect (grep, read, follow calls)
+2. Document the actual wiring: what calls what, what's configured, what's missing
+3. Note any gaps between intended behavior and actual implementation
+4. Capture evidence: file paths, line numbers, config values, log output
+5. List assumptions that turned out to be wrong
+
+### 4. Verify the Approach
+
+Before documenting, verify that your findings are correct. Skip polish — not verification.
+
+**Verification ladder** (do as many levels as apply):
+
+| Level | What | When |
+|-------|------|------|
+| 1. Build passes | `make build` / `cargo check` / `npm run build` | Always (if the project builds) |
+| 2. Existing tests pass | `make test` / `cargo test` / `npm test` | Always (confirms you didn't break assumptions) |
+| 3. Minimal proof test | Write one test that demonstrates the spike's core claim | When the spike adds or changes code |
+| 4. E2E / manual verification | Deploy, hit endpoints, run benchmarks | For feasibility/performance spikes |
+
+**For audit/investigation spikes**, verification means confirming your trace is accurate:
+- Run the code path you traced and observe actual behavior
+- Check logs, database state, or network calls to confirm your understanding
+- If you claimed "X is not wired up," demonstrate it (e.g., toggle a flag and show nothing changes)
+
+### 5. Document Findings in the Worktree
 
 Create a `SPIKE.md` file in the worktree root with structured findings:
 
@@ -94,6 +121,16 @@ Create a `SPIKE.md` file in the worktree root with structured findings:
 ### Surprises
 - [Unexpected finding]
 
+## Verification
+
+### What Was Verified
+- [e.g., Build passes, existing tests pass, minimal proof test written]
+
+### Verification Results
+- [e.g., "All 47 existing tests pass with the new dependency"]
+- [e.g., "Proof test at `tests/spike_proof_test.rs` demonstrates claim X"]
+- [e.g., "Traced call path confirmed: controller → service → repo, but repo method is a no-op"]
+
 ## Key Code Snippets
 
 [Include the most instructive code from the spike]
@@ -113,7 +150,7 @@ Create a `SPIKE.md` file in the worktree root with structured findings:
 [Rough scope: small (hours), medium (days), large (weeks)]
 ```
 
-### 5. Commit and Push
+### 6. Commit and Push
 
 ```bash
 cd "$SPIKE_DIR"
@@ -132,7 +169,7 @@ See SPIKE.md for full findings."
 git push -u origin "$BRANCH_NAME"
 ```
 
-### 6. Open a Draft PR
+### 7. Open a Draft PR
 
 ```bash
 cd "$SPIKE_DIR"
@@ -161,7 +198,45 @@ EOF
 )"
 ```
 
-### 7. Report Back
+### 8. Post Detailed Findings as PR Comment
+
+The PR body is a summary. Post a detailed comment with the full analysis — this is where discussion happens, it shows up in notifications, and it can be iterated on.
+
+```bash
+cd "$SPIKE_DIR"
+
+PR_NUMBER=$(gh pr view --json number -q '.number')
+
+gh pr comment "$PR_NUMBER" --body "$(cat <<'EOF'
+## Detailed Findings
+
+### Question
+[What we set out to answer]
+
+### What We Tried
+[Step-by-step description of the approach]
+
+### Evidence
+[Key code snippets, file:line references, command output, benchmark numbers]
+
+### Verification
+[What was verified and how — build status, test results, manual checks]
+
+### Gotchas & Surprises
+[Anything unexpected that would affect a real implementation]
+
+### If Proceeding: Implementation Roadmap
+1. [Concrete next step with file references]
+2. [Next step]
+3. [Next step]
+
+---
+*Full details in `SPIKE.md` on this branch.*
+EOF
+)"
+```
+
+### 9. Report Back
 
 Return to the user with:
 1. The draft PR URL
@@ -190,7 +265,7 @@ git branch -D spike/description
 
 - **Time-box mentally**: A spike should answer "can we?" not "let's build it." Aim for the minimum code to learn.
 - **Fail fast**: If something doesn't work in the first 10 minutes, that's a valid finding. Document it and move on.
-- **Don't polish**: Spike code is disposable. Skip tests, linting, error handling. The output is knowledge, not code.
+- **Skip polish, not verification**: Spike code is disposable — skip linting, error handling, full test suites. But always verify your claims (build passes, existing tests pass, proof test if you changed code). The output is *verified* knowledge, not code.
 - **Commit messy**: One big commit is fine for a spike. The PR is for sharing findings, not for code review.
 - **Include negative results**: "Library X doesn't support feature Y" is valuable. Document it.
 
@@ -214,6 +289,15 @@ git branch -D spike/description
 **Migration scoping:**
 ```
 /spike How hard is it to migrate from Jest to Vitest in the frontend package?
+```
+
+**Audit / investigation:**
+```
+/spike Is the rate limiter actually wired up to the API gateway, or just defined?
+```
+
+```
+/spike Where does the user deletion flow actually propagate — does it clean up S3 assets?
 ```
 
 ## Anti-Patterns

@@ -121,7 +121,12 @@
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs"
     ],
-    "deny": ["Bash(rm -rf /)", "Bash(dd if=/dev/zero of=/dev/*)", "Bash(mkfs:*)", "Bash(> /dev/sda*)"]
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(dd if=/dev/zero of=/dev/*)",
+      "Bash(mkfs:*)",
+      "Bash(> /dev/sda*)"
+    ]
   },
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
@@ -135,5 +140,6 @@
     "ralph-wiggum@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "model": "sonnet"
 }

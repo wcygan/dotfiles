@@ -19,15 +19,20 @@ Orchestrate 7 research agents to produce a comprehensive competitor teardown. Ph
 
 ### 1. Parse Input
 
-Extract the target from `$ARGUMENTS`. Accept either a URL or company name:
+**Target: `$ARGUMENTS`**
 
-- **URL**: `https://linear.app` — use as-is for WebFetch, extract company name from domain
-- **Company name**: `Linear` — construct likely URLs (`https://linear.app`, `https://www.linear.app`)
-- **No argument**: Ask the user what competitor to analyze
+If the target above is non-empty, use it immediately — do NOT ask the user to confirm or re-provide it. Parse it as follows:
+
+- **URL** (starts with `http`): use as-is for WebFetch, extract company name from domain
+- **Company name** (no URL): construct likely URLs (`https://{name}.com`, `https://www.{name}.com`)
+
+If the target above is empty, ask the user what competitor to analyze and wait for their response.
 
 Store the parsed values:
 - `COMPANY_NAME`: Human-readable name (e.g., "Linear")
 - `PRIMARY_URL`: Main product URL (e.g., "https://linear.app")
+
+**IMPORTANT**: When a target is provided, begin Phase 2 immediately after parsing. Do not pause for user input.
 
 ### 2. Phase 1 — Parallel Research Agents
 

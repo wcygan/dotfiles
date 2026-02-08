@@ -1,0 +1,105 @@
+# spec-team orchestration
+
+## Team structure
+
+* **Team lead**: You (orchestrator)
+* **Members**:
+  * `product-manager` (custom agent, uses `product-manager.md`)
+  * `api-designer` (built-in)
+  * `domain-modeler` (built-in)
+  * `test-strategist` (built-in)
+
+## Workflow (sequential with feedback loops)
+
+### Phase 1: Requirements Analysis (product-manager)
+
+1. Spawn `product-manager` with feature request
+2. PM analyzes request and produces:
+   * Feature overview (problem, goals, non-goals)
+   * User personas
+   * Prioritized user stories with acceptance criteria
+3. You review PM output for completeness before proceeding
+
+**Gate**: All stories must have clear acceptance criteria and dependencies identified
+
+### Phase 2: API Design (api-designer)
+
+1. Forward PM's user stories to `api-designer`
+2. API designer produces:
+   * Endpoint specifications
+   * Request/response schemas
+   * Error handling contracts
+3. Designer reviews stories to ensure API supports all user capabilities
+
+**Feedback loop**: If API designer identifies missing stories or unclear requirements, loop back to PM for clarification
+
+**Gate**: All user stories must map to API endpoints or be marked as frontend-only
+
+### Phase 3: Data Modeling (domain-modeler)
+
+1. Forward PM stories + API contracts to `domain-modeler`
+2. Domain modeler produces:
+   * Entity definitions
+   * Relationships and constraints
+   * Validation rules
+3. Modeler reviews API contracts to ensure data structures support all endpoints
+
+**Feedback loop**: If modeler finds API contracts incompatible with data model (e.g., cannot efficiently query required data), loop back to API designer
+
+**Gate**: Data model must support all API operations with reasonable performance
+
+### Phase 4: Test Strategy (test-strategist)
+
+1. Forward complete spec (stories + API + data model) to `test-strategist`
+2. Test strategist produces:
+   * Test scenarios for each user story
+   * Edge cases and error conditions
+   * Performance criteria
+3. Strategist reviews entire spec to identify gaps
+
+**Feedback loop**: If strategist finds untestable requirements or missing error cases, loop back to appropriate specialist (PM for stories, API designer for contracts, domain modeler for data constraints)
+
+**Gate**: All acceptance criteria must have corresponding test scenarios
+
+### Phase 5: Integration Review
+
+1. Assemble all outputs into final spec document (using `template.md`)
+2. Broadcast to all team members for final review
+3. Collect feedback and resolve conflicts
+4. Produce final approved specification
+
+## Output assembly
+
+You (team lead) are responsible for:
+* Merging all specialist outputs into coherent spec document
+* Resolving conflicts between specialists (e.g., API designer wants one data structure, domain modeler suggests different normalization)
+* Ensuring no gaps between phases (every story has API endpoints, every endpoint has data model, every model has tests)
+* Adding rollback plan based on data model changes
+* Formatting final output for human review
+
+## Quality checks
+
+Before delivering final spec, verify:
+- [ ] Every user story has acceptance criteria
+- [ ] Every acceptance criterion has a test scenario
+- [ ] Every API endpoint has request/response schemas and error cases
+- [ ] Every data entity has validation rules
+- [ ] Rollback plan covers database and code changes
+- [ ] Open questions are clearly flagged for stakeholder decision
+
+## Communication style
+
+* Use SendMessage for teammate coordination
+* Keep messages concise and action-oriented
+* Reference specific sections when requesting revisions (e.g., "Story 3's acceptance criteria are too vague")
+* Broadcast only for final review phase
+
+## When to loop back
+
+Loop back to earlier phase if:
+* Later specialist identifies requirement gap
+* Conflict between outputs (e.g., API can't support data model efficiently)
+* Acceptance criteria are untestable
+* Performance requirements are unrealistic
+
+Never proceed to next phase with known gaps - fix them immediately by looping back.

@@ -16,6 +16,7 @@ tmp/
 config/claude/teams/*
 config/claude/telemetry/*
 config/claude/tasks/
+config/claude/agent-memory/
 config/claude/cache/
 config/claude/paste-cache/
 config/claude/plugins/

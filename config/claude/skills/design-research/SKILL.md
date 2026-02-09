@@ -60,6 +60,43 @@ npx playwright screenshot --color-scheme=dark <URL> dark-mode.png
 
 Save all screenshots to a `design-research-output/` directory.
 
+### 2.5. Bot Protection Handling (Automatic)
+
+The skill automatically detects and handles bot protection using a feedback loop:
+
+**Detection:**
+- Screenshot file size < 50KB
+- HTML content contains "Cloudflare", "checking your browser", "captcha"
+- Page redirects to `/cdn-cgi/challenge-platform/*`
+
+**Automatic Retry Strategy:**
+
+1. **Standard Playwright** (default, fast)
+   - No stealth overhead
+   - Works for most public sites
+   - If blocked, automatically tries strategy 2
+
+2. **Camoufox Stealth Mode** (if blocked)
+   - Firefox-based anti-detect browser (0% detection score normally)
+   - Automatically installed via UV: `uv run capture-stealth.py`
+   - Adds human-like behavior and realistic fingerprints
+   - Modifies browser at C++ level (not patchable JS)
+   - Success rate: ~70% against moderate Cloudflare protection
+
+3. **Manual Fallback** (if stealth fails)
+   - Provides clear instructions for manual browser capture
+   - Includes DevTools extraction scripts (CSS, colors, typography)
+   - Documents manual screenshot workflow
+   - See `MANUAL-FALLBACK.md` for complete instructions
+
+**User Communication:**
+- Clearly indicate which strategy is being used
+- Show progress and retry attempts
+- Provide actionable manual instructions if automated methods fail
+- Never silently fail - always explain what happened and why
+
+**Note:** The capture script uses UV-based Python scripts with inline dependencies (no package.json needed). UV must be available (already in dotfiles Nix flake).
+
 ### 3. HTML Structure Analysis
 
 Use Playwright to extract and analyze structure:

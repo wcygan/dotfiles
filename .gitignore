@@ -40,3 +40,8 @@ config/claude/ide/
 config/claude/file-history/
 config/claude/history.jsonl
 config/claude/skills/playwright-cli/.playwright-cli/
+
+# peon-ping (installed via brew, recreated by peon-ping-setup)
+config/claude/hooks/peon-ping/
+config/claude/skills/peon-ping-config/
+config/claude/skills/peon-ping-toggle/

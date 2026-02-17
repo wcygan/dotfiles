@@ -36,6 +36,18 @@ dotfiles/
 └── docs/               # Documentation site
 ```
 
+## Post-Install Extras
+
+### Peon Ping (Claude Code sound notifications)
+
+[Peon Ping](https://github.com/PeonPing/peon-ping) plays Warcraft-style sound cues when Claude Code needs attention. Not managed by Nix — install separately via Homebrew:
+
+```bash
+brew install PeonPing/tap/peon-ping && peon-ping-setup
+```
+
+This adds hooks and skills to your local `~/.claude/` config. These files are gitignored and will need to be reinstalled on new machines.
+
 ## Quick Reference
 
 ```bash

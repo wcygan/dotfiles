@@ -128,7 +128,7 @@
       "Bash(> /dev/sda*)"
     ]
   },
-  "model": "sonnet",
+  "model": "opusplan",
   "hooks": {
     "SessionStart": [
       {

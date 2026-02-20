@@ -1,8 +1,12 @@
 ---
-description: Scan code for refactoring opportunities to improve quality attributes
+name: refactor-scan
+description: Scan code for refactoring opportunities to improve modularity, testability, extensibility, reusability, understandability, and cognitive complexity. Use when reviewing code quality, identifying technical debt, planning a refactor, or improving code structure. Keywords: refactor, refactoring, code quality, modularity, testability, extensibility, reusability, cognitive complexity, code smell, clean code, SOLID, DRY, coupling, cohesion
+disable-model-invocation: true
+argument-hint: [path-or-file]
 ---
 
-Analyze the code the user specifies and identify refactoring opportunities that improve:
+Analyze the code at `$ARGUMENTS` (or the current working directory if no argument given) and identify refactoring opportunities that improve:
+
 - **Modularity**: Components are loosely coupled and highly cohesive
 - **Testability**: Code is easy to test in isolation
 - **Extensibility**: Easy to add new features without modifying existing code
@@ -148,7 +152,7 @@ Explain why this impacts the quality attributes (modularity, testability, etc.)
 # Priority Levels
 
 - 🔴 **High**: Major impediment to quality attributes, high impact
-- 🟡 **Medium**: Noticeable improvement opportunity, moderate impact  
+- 🟡 **Medium**: Noticeable improvement opportunity, moderate impact
 - 🟢 **Low**: Nice-to-have improvement, polish
 
 # Prioritization Strategy

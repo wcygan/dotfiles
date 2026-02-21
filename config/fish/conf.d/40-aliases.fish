@@ -131,6 +131,7 @@ alias ldc lazydocker
 alias py python3
 alias lfgc 'codex --dangerously-bypass-approvals-and-sandbox'
 alias lfg 'claude --dangerously-skip-permissions'
+alias lfgt 'claude --dangerously-skip-permissions --tmux --worktree'
 alias reload 'exec fish -l'
 
 if type -q lsof

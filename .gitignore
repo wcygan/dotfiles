@@ -15,6 +15,7 @@ result-*
 tmp/
 config/claude/teams/*
 config/claude/telemetry/*
+config/claude/backups/*
 config/claude/tasks/
 config/claude/agent-memory/
 config/claude/cache/

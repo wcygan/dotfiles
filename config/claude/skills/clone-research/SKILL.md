@@ -80,25 +80,30 @@ After all agents complete:
 2. Write `clone-research/{SLUG}/00-INDEX.md` with executive summary, reading order, and cross-reference map
 3. Verify feature IDs (F1, F2...) and entity names are consistent across documents
 4. Note any inconsistencies in the INDEX under "Known Gaps"
+5. Write `AGENTS.md` at the **project root** (current working directory) using the AGENTS template — includes operating instructions, domain model, architecture stack, and phased work plan (Phase 0 through 4) with per-phase checklists; this file is the primary context document for all future agents building the clone
+6. Run `ln -s AGENTS.md CLAUDE.md` at the project root — creates a relative symlink so Claude Code auto-loads the context when opening the project; only ever edit AGENTS.md going forward
 
 References: [workflow](references/workflow.md), [output-templates](references/output-templates.md)
 
 ## Output
 
-9 research documents + 1 index in `clone-research/{SLUG}/`:
+9 research documents + index in `clone-research/{SLUG}/`, plus `AGENTS.md` and `CLAUDE.md` symlink at the **project root**:
 
 ```
-clone-research/{slug}/
-  00-INDEX.md                    # Executive summary + reading order
-  01-product-thesis.md           # North star, market, opportunity
-  02-feature-priority-matrix.md  # Feature inventory P0-P3
-  03-mvp-scope-contract.md       # In/out scope, roadmap phases
-  04-core-user-journeys.md       # Personas, JTBD, step-by-step flows
-  05-domain-model.md             # Entities, relationships, lifecycles
-  06-system-architecture.md      # Observed + recommended stack
-  07-revenue-pricing-model.md    # Tiers, gating, upgrade triggers
-  08-api-surface-spec.md         # Endpoints, pagination, errors
-  09-design-system-brief.md      # Colors, type, spacing, components
+./                               # Project root (current working directory)
+  AGENTS.md                      # Project context: mission, scope, stack, work phases
+  CLAUDE.md -> AGENTS.md         # Symlink — Claude Code auto-loads this; edit AGENTS.md only
+  clone-research/{slug}/
+    00-INDEX.md                  # Executive summary + reading order
+    01-product-thesis.md         # North star, market, opportunity
+    02-feature-priority-matrix.md  # Feature inventory P0-P3
+    03-mvp-scope-contract.md     # In/out scope, roadmap phases
+    04-core-user-journeys.md     # Personas, JTBD, step-by-step flows
+    05-domain-model.md           # Entities, relationships, lifecycles
+    06-system-architecture.md    # Observed + recommended stack
+    07-revenue-pricing-model.md  # Tiers, gating, upgrade triggers
+    08-api-surface-spec.md       # Endpoints, pagination, errors
+    09-design-system-brief.md    # Colors, type, spacing, components
 ```
 
 Present to user: file list, executive summary, gaps, and suggested reading order.

@@ -111,10 +111,41 @@ Check that:
 
 If inconsistencies are found, note them in the INDEX under a "Known Gaps" section rather than re-running agents.
 
-### 4. Present summary to user
+### 4. Bootstrap AGENTS.md
+
+Create `clone-research/{SLUG}/AGENTS.md` using the AGENTS template from [output-templates.md](output-templates.md).
+
+This is the primary context document for all future AI agents building the clone. Fill each section by synthesizing from the completed research:
+
+| Section | Source |
+|---------|--------|
+| Mission + value prop | `01-product-thesis.md` — North Star block |
+| Operating instructions | Template is pre-filled; no changes needed |
+| Domain model entities | `05-domain-model.md` — Core Entities table (pick 5–8) |
+| Domain model relationships | `05-domain-model.md` — Entity Relationships block |
+| Architecture stack table | `06-system-architecture.md` — Recommended Clone Architecture |
+| Key decisions | `06-system-architecture.md` — Key Architecture Decisions table |
+| Phase 1 scaffold checklist | Derive from `05-domain-model.md` entities and `06-system-architecture.md` stack |
+| Phase 2 must-nail feature | `03-mvp-scope-contract.md` — The Must-Nail Feature block |
+| Phase 2 P0 checklist | `03-mvp-scope-contract.md` — In Scope table, P0 rows |
+| Phase 3 P1 checklist | `03-mvp-scope-contract.md` — In Scope table, P1 rows |
+| Research index paths | Adjust to `research/` prefix if docs will be reorganized, else use flat paths |
+
+Both files go at the **project root** (the current working directory, not inside `clone-research/{SLUG}/`):
+
+```bash
+# Write AGENTS.md to project root, then:
+ln -s AGENTS.md CLAUDE.md
+```
+
+This creates a relative symlink at the root so Claude Code auto-loads it when the project is opened. All future updates go to `AGENTS.md` only — `CLAUDE.md` is never edited directly.
+
+Research index links inside `AGENTS.md` must use the path `clone-research/{SLUG}/` prefix since AGENTS.md now lives one level above the research docs.
+
+### 5. Present summary to user
 
 Show the user:
-- List of all 10 files produced (including INDEX)
+- List of all 11 files produced (INDEX + 9 docs + AGENTS.md, plus CLAUDE.md symlink)
 - Executive summary from the INDEX
 - Any gaps or thin sections
 - Suggested next steps (e.g., "Read 01-product-thesis.md first")

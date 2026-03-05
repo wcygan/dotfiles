@@ -128,7 +128,7 @@
                 buf
 
                 # DNS tools
-                dogdns
+                doggo
 
                 # Terminal multiplexer
                 zellij

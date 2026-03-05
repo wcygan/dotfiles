@@ -46,3 +46,4 @@ config/claude/skills/playwright-cli/.playwright-cli/
 config/claude/hooks/peon-ping/
 config/claude/skills/peon-ping-config/
 config/claude/skills/peon-ping-toggle/
+config/claude/mcp-needs-auth-cache.json

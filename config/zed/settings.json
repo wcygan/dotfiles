@@ -7,6 +7,11 @@
 // custom settings, run `zed: open default settings` from the
 // command palette
 {
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry"
+    }
+  },
   "buffer_font_weight": 430.0,
   "ssh_connections": [
     {
@@ -28,6 +33,7 @@
   "show_completions_on_input": true,
   "show_edit_predictions": true,
   "edit_predictions": {
+    "provider": "zed",
     "mode": "eager",
     "copilot": {
       "proxy": null,
@@ -44,9 +50,6 @@
   "preferred_line_length": 120,
   "soft_wrap": "preferred_line_length",
   "icon_theme": "Catppuccin Frappé",
-  "features": {
-    "edit_prediction_provider": "zed"
-  },
   "autosave": {
     "after_delay": {
       "milliseconds": 50
@@ -54,7 +57,9 @@
   },
   "base_keymap": "JetBrains",
   "agent": {
-    "always_allow_tool_actions": true,
+    "tool_permissions": {
+      "default": "allow"
+    },
     "use_modifier_to_send": true,
     "play_sound_when_agent_done": true,
     "default_profile": "write",

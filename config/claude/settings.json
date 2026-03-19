@@ -148,7 +148,8 @@
           {
             "type": "command",
             "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
-            "timeout": 10
+            "timeout": 10,
+            "async": true
           }
         ]
       }
@@ -160,7 +161,8 @@
           {
             "type": "command",
             "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
-            "timeout": 10
+            "timeout": 10,
+            "async": true
           }
         ]
       }
@@ -172,7 +174,8 @@
           {
             "type": "command",
             "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
-            "timeout": 10
+            "timeout": 10,
+            "async": true
           }
         ]
       }
@@ -184,7 +187,60 @@
           {
             "type": "command",
             "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
-            "timeout": 10
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "timeout": 10,
+            "async": true
           }
         ]
       }
@@ -197,6 +253,14 @@
     "wealth-management@financial-services-plugins": true
   },
   "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "high"
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    }
+  }
 }

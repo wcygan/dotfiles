@@ -1,0 +1,1 @@
+/opt/homebrew/opt/peon-ping/libexec/skills/peon-ping-log/SKILL.md

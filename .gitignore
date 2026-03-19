@@ -38,6 +38,7 @@ config/zed/conversations
 config/zed/themes
 config/zed/prompts
 config/claude/ide/
+config/claude/sessions/
 config/claude/file-history/
 config/claude/history.jsonl
 config/claude/skills/playwright-cli/.playwright-cli/

@@ -24,13 +24,17 @@ copy-on-select = clipboard
 # Ensure to start in ~/ (home directory)
 working-directory = home
 
+# Keybind reference: https://ghostty.org/docs/config/keybind
+# Modifiers: super (aliases: cmd, command), alt, shift, ctrl
+# Use "super" consistently for the macOS Command key.
+
 # Add / delete terminal tabs
 keybind = super+shift+t=new_tab
 keybind = super+shift+w=close_surface
 
 # Switch between terminal tabs
-keybind = cmd+alt+right=next_tab
-keybind = cmd+alt+left=previous_tab
+keybind = super+alt+right=next_tab
+keybind = super+alt+left=previous_tab
 
 # Reload the config
 keybind = super+shift+r=reload_config

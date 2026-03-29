@@ -87,4 +87,7 @@ uv build --no-sources       # Verify build without custom sources
 
 ---
 
-Docs: https://docs.astral.sh/uv/guides/projects/ | https://docs.astral.sh/uv/concepts/projects/init/ | https://docs.astral.sh/uv/concepts/projects/layout/
+Docs:
+- https://docs.astral.sh/uv/guides/projects/
+- https://docs.astral.sh/uv/concepts/projects/init/
+- https://docs.astral.sh/uv/concepts/projects/layout/

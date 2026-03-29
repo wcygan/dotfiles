@@ -18,6 +18,8 @@ UV is an extremely fast Python package and project manager written in Rust. It r
 | Run a CLI tool without installing | `uvx <tool>` | [Tools](references/tools.md) |
 | Multiple interconnected packages | Workspace | [Workspaces](references/workspaces.md) |
 | Project automation scripts | Scripting suite | [Scripting Suites](references/scripting-suites.md) |
+| Migrating from pip/poetry/pipenv | `uvx migrate-to-uv` | [Migration](references/migration-from-pip.md) |
+| CI/CD pipelines or Docker | `setup-uv` action / multi-stage build | [CI/CD](references/ci-cd.md) |
 
 ## Quick Reference
 
@@ -131,3 +133,5 @@ my-lib = { workspace = true }
 - [Configuration](references/configuration.md) — pyproject.toml, uv.toml, precedence
 - [Authentication](references/authentication.md) — uv auth login, keyring, private indexes
 - [Scripting Suites](references/scripting-suites.md) — creating project automation scripts with UV
+- [Migration](references/migration-from-pip.md) — pip/poetry/pipenv command mapping, automated migration
+- [CI/CD](references/ci-cd.md) — GitHub Actions setup, Docker multi-stage builds, caching

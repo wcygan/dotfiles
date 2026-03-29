@@ -43,7 +43,7 @@ After `uv auth login private.example.com`, UV uses stored credentials automatica
 | `--password` | Password (use `-` for stdin) |
 | `--keyring-provider native` | Store in system keyring |
 | `--allow-insecure-host` | Allow unverified TLS |
-| `--native-tls` | Use platform TLS certificates |
+| `--system-certs` | Use platform TLS certificates (replaces deprecated `--native-tls`) |
 
 ---
 

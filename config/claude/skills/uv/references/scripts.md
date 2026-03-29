@@ -90,6 +90,64 @@ Add `exclude-newer` to metadata to pin resolution to a point in time:
 # ///
 ```
 
+## Common Mistakes
+
+Metadata block format — every line between markers must start with `#`:
+
+```python
+# CORRECT: all lines start with #
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["httpx"]
+# ///
+
+# WRONG: bare TOML lines — uv silently ignores the block
+# /// script
+requires-python = ">=3.12"
+dependencies = ["httpx"]
+# ///
+```
+
+Adding dependencies — use `--script` flag to target the metadata block:
+
+```bash
+# CORRECT: updates the script's inline metadata
+uv add --script example.py httpx
+
+# WRONG: adds to the project's pyproject.toml, not the script
+uv add httpx
+```
+
+Running scripts — let uv handle dependency resolution:
+
+```bash
+# CORRECT: uv resolves deps from inline metadata automatically
+uv run example.py
+
+# WRONG: manually installing into a venv, bypassing metadata
+pip install httpx && python example.py
+```
+
+Shebang for user-facing scripts — suppress uv's resolution output:
+
+```python
+# CORRECT: --quiet hides "Resolved N packages..." noise
+#!/usr/bin/env -S uv run --quiet --script
+
+# WRONG: users see uv progress output mixed with script output
+#!/usr/bin/env -S uv run --script
+```
+
+Scripts with project isolation — inline metadata auto-isolates:
+
+```bash
+# CORRECT: script with inline metadata ignores project deps automatically
+uv run my-script.py
+
+# UNNECESSARY: --no-project is redundant when inline metadata exists
+uv run --no-project my-script.py
+```
+
 ---
 
 Docs: https://docs.astral.sh/uv/guides/scripts/

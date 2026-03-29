@@ -9,7 +9,7 @@ Interactive wizard to scaffold a new Claude Code agent skill from scratch.
 
 ## Workflow
 
-1. **Gather requirements** — capability type, scope, tool access via AskUserQuestion
+1. **Gather requirements** — capability, invocation, scope, tools, execution context via AskUserQuestion
 2. **Name & describe** — kebab-case name + trigger-rich description
 3. **Generate content** — pick template, customize for project context
 4. **Create files** — write SKILL.md (+ reference files for advanced skills)
@@ -19,8 +19,9 @@ Interactive wizard to scaffold a new Claude Code agent skill from scratch.
 
 ## Requirements Gathering
 
-- Ask three targeted questions (capability, scope, tools) before writing any files
-- Never assume capability type or tool access — always confirm
+- Ask five targeted questions (capability, invocation, scope, tools, execution context) before writing any files
+- Never assume invocation mode, tool access, or execution context — always confirm
+- Map "forked" execution → `context: fork` frontmatter + agent type selection
 - Use AskUserQuestion tool with 2-4 options per question
 - Read reference for exact question structure
 
@@ -41,7 +42,7 @@ References: [naming-and-descriptions](references/naming-and-descriptions.md)
 
 ## Skill Content
 
-- Choose the template matching the capability (code analysis, test gen, docs, data)
+- Choose the template matching the capability (code analysis, test gen, docs, data, forked analysis)
 - Customize for project tech stack from deno.json, CLAUDE.md, existing patterns
 - For advanced scope: use reference-file pattern — lean SKILL.md + references/ dir
 - Skills with >150 lines of content should split into reference files
@@ -55,6 +56,8 @@ References: [skill-templates](references/skill-templates.md)
 - Simple: `.claude/skills/<name>/SKILL.md` only
 - Advanced: add `references/`, `scripts/`, or `templates/` subdirectories
 - Add `allowed-tools:` frontmatter if user chose restricted tool access
+- Set `context: fork` + `agent:` for forked execution context
+- All frontmatter fields: `argument-hint`, `effort`, `model`, `paths`, `shell`, `hooks`, `context`, `agent`
 - Common combos: read-only = `Read, Grep, Glob`; data = `Read, Write, Bash(jq:*)`
 
 References: [file-structure-and-tools](references/file-structure-and-tools.md)
@@ -74,7 +77,7 @@ References: [best-practices](references/best-practices.md)
 
 ## Guardrails
 
-- Do not create files until all three requirement questions are answered
+- Do not create files until all five requirement questions are answered
 - Do not hard-code machine paths or secrets in generated skills
 - Generated skills with non-trivial content (>150 lines) should themselves use the reference-file pattern
 - Always read existing CLAUDE.md and project context before generating skill content

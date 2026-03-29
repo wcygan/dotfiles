@@ -47,6 +47,48 @@ Skills activate when user requests match the description keywords. The descripti
 - Subject matter: "code", "tests", "docs", "JSON", "CSV"
 - Outcome focus: "improve coverage", "find security issues"
 
+## Dynamic Context Injection
+
+For forked skills (`context: fork`), the subagent has no conversation history. Use
+`` !`command` `` syntax to inject project state before Claude sees the prompt.
+
+### When to use
+
+- **Forked skills** that need project context (git state, file listings, tool versions)
+- **Any skill** that benefits from live data at invocation time
+- **Not needed** for inline skills that already have conversation context
+
+### Syntax
+
+```markdown
+Current branch: !`git branch --show-current`
+Recent commits: !`git log --oneline -5`
+Project type: !`ls -1 package.json Cargo.toml go.mod 2>/dev/null`
+```
+
+### Error handling
+
+Always use `2>/dev/null` or `|| echo 'fallback'` for commands that might not exist:
+
+```markdown
+Node version: !`node --version 2>/dev/null || echo 'not installed'`
+```
+
+### Bundled scripts
+
+Use `${CLAUDE_SKILL_DIR}` to reference scripts bundled with the skill:
+
+```markdown
+Analysis: !`python ${CLAUDE_SKILL_DIR}/scripts/analyze.py`
+```
+
+### Key considerations
+
+- Commands run **before** Claude sees anything — this is preprocessing
+- Keep commands fast — they block skill loading
+- Command output replaces the placeholder inline
+- If a command fails silently, the placeholder becomes empty string
+
 ## Propagating the Reference Pattern
 
 When generating a new skill that will have substantial content (>150 lines), structure it using the same reference-file pattern:

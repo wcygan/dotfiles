@@ -1,12 +1,12 @@
 ---
 title: Skill Templates
-description: Four ready-to-use SKILL.md templates for code analysis, test generation, documentation, and data processing
-tags: [templates, code-analysis, test-generation, documentation, data-processing]
+description: Five ready-to-use SKILL.md templates for code analysis, test generation, documentation, data processing, and forked analysis
+tags: [templates, code-analysis, test-generation, documentation, data-processing, forked-analysis]
 ---
 
 # Skill Templates
 
-Four templates to use as starting points. Customize based on project tech stack.
+Five templates to use as starting points. Customize based on project tech stack.
 
 ---
 
@@ -78,6 +78,7 @@ For each issue:
 ---
 name: test-suite-generator
 description: Generate comprehensive unit and integration tests with high coverage. Use when adding tests, improving test coverage, implementing TDD, or ensuring code quality. Keywords: test, testing, coverage, unit test, integration test, TDD, test-driven
+argument-hint: [file-or-module]
 ---
 
 # Test Suite Generator
@@ -87,6 +88,10 @@ Creates comprehensive test suites following TDD best practices.
 ## Instructions
 
 ### 1. Analyze Code Under Test
+
+If `$ARGUMENTS` is provided, use it as the target file or module path.
+Otherwise, analyze the current file or ask the user.
+
 - Identify all public interfaces and functions
 - Map dependencies and side effects
 - List edge cases and error conditions
@@ -276,3 +281,74 @@ yq eval '.services.*.image' docker-compose.yml
 - Data type mismatches
 - Encoding issues
 ```
+
+---
+
+## Forked Analysis Skill Template
+
+**SKILL.md:**
+```markdown
+---
+name: dependency-analyzer
+description: Analyze project dependencies for outdated packages, security vulnerabilities, and license issues. Use when auditing dependencies, checking for CVEs, or reviewing third-party packages. Keywords: dependency, audit, security, CVE, outdated, license, package
+context: fork
+agent: Explore
+disable-model-invocation: true
+argument-hint: [path-or-package]
+allowed-tools: Read, Grep, Glob, Bash(cat *), Bash(ls *)
+---
+
+# Dependency Analyzer
+
+Analyze project dependencies in an isolated context.
+
+## Project State
+
+Project type: !`ls -1 package.json Cargo.toml go.mod pyproject.toml requirements.txt 2>/dev/null || echo 'unknown'`
+Current branch: !`git branch --show-current 2>/dev/null`
+Lock files: !`ls -1 package-lock.json yarn.lock pnpm-lock.yaml Cargo.lock go.sum uv.lock 2>/dev/null || echo 'none found'`
+
+## Instructions
+
+Analyze $ARGUMENTS (or the entire project if no target specified):
+
+### 1. Identify Dependencies
+- Read manifest files (package.json, Cargo.toml, go.mod, etc.)
+- Categorize: production vs dev dependencies
+- Note pinned vs floating versions
+
+### 2. Security Check
+- Flag known vulnerable version ranges
+- Check for deprecated packages
+- Identify unmaintained dependencies (no updates in 2+ years)
+
+### 3. License Audit
+- Identify license for each dependency
+- Flag copyleft licenses in proprietary contexts
+- Note any missing license declarations
+
+### 4. Recommendations
+- List dependencies that should be updated
+- Suggest replacements for deprecated packages
+- Prioritize by severity: security > maintenance > freshness
+
+## Output Format
+
+Return structured findings:
+
+**Critical** (security vulnerabilities)
+**Warning** (outdated, deprecated, unmaintained)
+**Info** (license notes, version suggestions)
+
+For each finding: package name, current version, issue, and recommended action.
+```
+
+### Key patterns in this template
+
+- **`context: fork`** — runs in an isolated subagent, won't bloat main conversation
+- **`agent: Explore`** — read-only exploration agent, fast and focused
+- **`!`command``** — injects project state before Claude sees the prompt (the subagent has no conversation history)
+- **`$ARGUMENTS`** — accepts optional target path or package name
+- **`argument-hint`** — shows `[path-or-package]` during autocomplete
+- **`allowed-tools`** — scoped to read-only operations
+- **`2>/dev/null`** — graceful fallback when tools are missing

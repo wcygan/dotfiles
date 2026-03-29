@@ -8,6 +8,17 @@ allowed-tools: Read, Grep, Glob, Bash, Write, Edit
 
 UV is an extremely fast Python package and project manager written in Rust. It replaces pip, pip-tools, pipx, poetry, pyenv, twine, and virtualenv.
 
+## When to Use What
+
+| Need | Use | Reference |
+|------|-----|-----------|
+| One-off script with deps | Inline script (PEP 723) | [Scripts](references/scripts.md) |
+| Multi-file application | `uv init` project | [Projects](references/projects.md) |
+| Reusable library for PyPI | `uv init --lib` | [Projects](references/projects.md) |
+| Run a CLI tool without installing | `uvx <tool>` | [Tools](references/tools.md) |
+| Multiple interconnected packages | Workspace | [Workspaces](references/workspaces.md) |
+| Project automation scripts | Scripting suite | [Scripting Suites](references/scripting-suites.md) |
+
 ## Quick Reference
 
 | Command | Purpose |

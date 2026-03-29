@@ -1,3 +1,9 @@
+---
+title: Workspaces
+description: UV workspace setup for monorepos — member configuration, shared lockfile, inter-member dependencies, when to use vs path dependencies
+tags: [uv, workspaces, monorepo, members, shared-lockfile, inter-member]
+---
+
 # UV — Workspaces
 
 Workspaces manage multiple interconnected packages in a single repository with a shared lockfile.

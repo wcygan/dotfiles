@@ -1,3 +1,9 @@
+---
+title: Configuration Files
+description: UV configuration file locations and precedence — pyproject.toml, uv.toml, user/system config, .env files, pip-specific settings
+tags: [uv, configuration, pyproject, uv-toml, env-file, precedence, settings]
+---
+
 # UV — Configuration Files
 
 ## Configuration Locations

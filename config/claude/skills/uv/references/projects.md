@@ -1,3 +1,9 @@
+---
+title: Projects
+description: Creating and structuring UV projects — init flags, project types, application and library layouts, building, lockfile management
+tags: [uv, projects, init, layout, build, lockfile, pyproject, library, application]
+---
+
 # UV — Projects
 
 ## Creating Projects

@@ -1,3 +1,9 @@
+---
+title: Running Commands
+description: Running commands with uv run — temporary dependencies, inline scripts, Python version selection, env files, signal handling, modules
+tags: [uv, run, with, env-file, python-version, modules, sync, signals]
+---
+
 # UV — Running Commands (`uv run`)
 
 ## Basic Usage

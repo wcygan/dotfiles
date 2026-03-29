@@ -1,3 +1,9 @@
+---
+title: Scripting Suites
+description: Creating project automation scripts with UV — script template, checklist, common dependency combos, click/typer CLI patterns
+tags: [uv, scripts, automation, click, typer, scripting-suite, template, cli]
+---
+
 # UV — Creating Scripting Suites
 
 Guide for creating `scripts/` directories with UV-powered Python automation scripts.

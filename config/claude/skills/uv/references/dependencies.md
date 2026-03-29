@@ -1,3 +1,9 @@
+---
+title: Dependencies
+description: Adding, removing, and managing project dependencies — groups, sources, platform-specific deps, optional extras, private indexes, version specifiers
+tags: [uv, dependencies, add, remove, groups, sources, platform, extras, private-index, pep-508]
+---
+
 # UV — Dependencies
 
 ## Adding Dependencies

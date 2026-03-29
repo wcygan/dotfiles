@@ -1,3 +1,9 @@
+---
+title: Tools
+description: Running and installing CLI tools with uvx and uv tool — ephemeral execution, persistent install, version pinning, extras, git sources
+tags: [uv, uvx, tools, install, run, ephemeral, persistent, cli-tools]
+---
+
 # UV — Tools (`uvx` / `uv tool`)
 
 ## Running Tools Ephemerally

@@ -1,3 +1,9 @@
+---
+title: Authentication
+description: UV authentication for private package indexes — uv auth login, keyring integration, token and basic auth, TLS options
+tags: [uv, authentication, auth, login, keyring, private-index, token, tls]
+---
+
 # UV — Authentication
 
 ## `uv auth login`

@@ -1,3 +1,9 @@
+---
+title: Scripts (PEP 723 Inline Metadata)
+description: Creating, running, and locking UV scripts with inline metadata — shebang, dependencies, reproducibility, alternative indexes
+tags: [uv, scripts, pep-723, inline-metadata, shebang, dependencies, reproducibility]
+---
+
 # UV — Scripts (PEP 723 Inline Metadata)
 
 ## Creating a Script

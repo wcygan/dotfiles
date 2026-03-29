@@ -8,6 +8,11 @@ tags: [agents, roles, mandates, problem-decomposition]
 
 Six agents across three phases. Each agent has a strict mandate, a prompt template, and a required output format. Agents must NOT stray outside their mandate — overlap between agents degrades the analysis.
 
+## Contents
+- Phase 1: Input Explorer, Goal Analyst, Constraints Mapper (parallel)
+- Phase 2: Approach Generator, Approach Evaluator (sequential)
+- Phase 3: Synthesizer
+
 ---
 
 ## Phase 1 Agents (Parallel)
@@ -23,30 +28,11 @@ Six agents across three phases. Each agent has a strict mandate, a prompt templa
 ```
 We are analyzing this problem: [PROBLEM STATEMENT]
 
-Your role is INPUT EXPLORER — characterize the input and output space. Investigate:
+Your role is INPUT EXPLORER — characterize the input and output space exhaustively.
 
-1. Input characterization
-   - What are the inputs? (types, formats, structures)
-   - What are typical/common inputs? Give concrete examples.
-   - What is the expected scale? (size, volume, frequency)
-   - What is the distribution? (uniform, skewed, sparse, dense)
+Boundary rules: No solutions, no opinions on approaches. Data characterization only.
 
-2. Edge cases and boundaries
-   - What are the degenerate inputs? (empty, single element, maximum size)
-   - What inputs would break naive approaches?
-   - Are there invalid inputs to reject or handle?
-   - What are the boundary conditions? (off-by-one, overflow, underflow)
-
-3. Output characterization
-   - What does the output look like for common inputs?
-   - What does the output look like for edge cases?
-   - Are there multiple valid outputs? (uniqueness)
-   - What format/structure is expected?
-
-4. Input-output relationship
-   - Is the mapping 1:1, 1:many, many:1?
-   - Are there patterns between input characteristics and output complexity?
-   - Does input order matter?
+Investigate inputs (types, scale, distribution), edge cases and boundaries, output characteristics, and input-output relationships.
 
 Output format — use these exact sections:
 
@@ -83,33 +69,11 @@ Output format — use these exact sections:
 ```
 We are analyzing this problem: [PROBLEM STATEMENT]
 
-Your role is GOAL ANALYST — define success criteria. Clarify:
+Your role is GOAL ANALYST — define what success looks like.
 
-1. Functional requirements
-   - What MUST the solution do? (non-negotiable)
-   - What SHOULD it do? (important but flexible)
-   - What is explicitly OUT OF SCOPE?
+Boundary rules: No solutions. Clarify requirements and quality attributes only.
 
-2. Non-functional requirements
-   - Performance: What time/space complexity is acceptable?
-   - Correctness: Must it be exact or can it approximate?
-   - Robustness: How should it handle bad input?
-   - Maintainability: Will this be read/modified by others?
-
-3. Quality attribute priorities
-   Rank these for THIS problem (not all apply):
-   - Correctness
-   - Performance (time)
-   - Performance (space)
-   - Simplicity / readability
-   - Extensibility
-   - Robustness / error handling
-   - Testability
-
-4. Success metrics
-   - How do we know the solution is correct?
-   - How do we know it's fast enough?
-   - What tests would prove it works?
+Classify functional requirements (must/should/out-of-scope), rank quality attributes for THIS problem, and define measurable success criteria.
 
 Output format — use these exact sections:
 
@@ -151,36 +115,9 @@ Output format — use these exact sections:
 ```
 We are analyzing this problem: [PROBLEM STATEMENT]
 
-Your role is CONSTRAINTS MAPPER — identify what limits the solution space. Map:
+Your role is CONSTRAINTS MAPPER — identify everything that limits the solution space.
 
-1. Complexity constraints
-   - Time complexity target (O(n), O(n log n), etc.)
-   - Space complexity target
-   - Are there hard limits (must be under X ms)?
-
-2. Technology constraints
-   - Language/runtime requirements
-   - Available libraries/frameworks
-   - Platform limitations (browser, embedded, serverless)
-   - Existing system interfaces to conform to
-
-3. Data constraints
-   - Mutability: can we modify input in-place?
-   - Persistence: does state need to survive restarts?
-   - Concurrency: must it handle parallel access?
-   - Ordering: must it preserve insertion order?
-
-4. Environmental constraints
-   - Memory budget
-   - Network availability (offline-capable?)
-   - Latency budget
-   - Deployment environment
-
-5. Practical constraints
-   - Implementation time budget
-   - Team familiarity with approaches
-   - Existing code to integrate with
-   - Backward compatibility requirements
+Boundary rules: No solutions. Map constraints only: complexity, technology, data, environmental, and practical.
 
 Output format — use these exact sections:
 
@@ -229,32 +166,13 @@ Phase 1 findings:
 
 Your role is APPROACH GENERATOR — propose 3-5 distinct solution approaches.
 
-For each approach:
-
-1. Core strategy
-   - What algorithm, pattern, or technique does this use?
-   - What data structures does it require?
-   - What is the key insight that makes this work?
-
-2. High-level design
-   - Major components/steps
-   - Data flow
-   - Where the complexity lives
-
-3. Complexity analysis
-   - Time complexity (best, average, worst)
-   - Space complexity
-   - Practical constant factors (cache-friendly? allocation-heavy?)
-
-4. Trade-off profile
-   - What does this approach optimize for?
-   - What does it sacrifice?
-
-Rules:
-- Each approach must use a DIFFERENT strategy (not parameter tuning)
+Boundary rules:
+- Each approach must use a DIFFERENT strategy (not parameter tuning of the same idea)
 - Include at least one "obvious" approach and one unconventional one
 - Include the simplest possible approach even if it's slow
 - Do NOT evaluate or rank — that's the Evaluator's job
+
+For each approach, cover: core strategy and key insight, high-level design, complexity analysis (best/average/worst), and trade-off profile.
 
 Output format — use this exact structure for EACH approach:
 
@@ -308,29 +226,11 @@ Phase 1 findings:
 Proposed approaches:
 [INSERT APPROACH GENERATOR OUTPUT]
 
-Your role is APPROACH EVALUATOR — evaluate each approach against the problem findings.
+Your role is APPROACH EVALUATOR — evaluate each approach against Phase 1 findings.
 
-1. Comparison matrix
-   Score each approach 1-5 against each quality priority from the Goal Analyst.
-   Justify each score with a specific reference to the approach or problem.
+Boundary rules: Do NOT recommend. Score, compare, and identify gaps only. Every score must reference a specific Phase 1 finding.
 
-2. Edge case coverage
-   For each edge case from the Input Explorer, determine:
-   - Does the approach handle it naturally?
-   - Does it need special-case logic?
-   - Does it fail?
-
-3. Constraint compliance
-   For each hard constraint from the Constraints Mapper:
-   - Does the approach meet it?
-   - How much margin does it have?
-   - What would make it violate the constraint?
-
-4. Risk assessment
-   For each approach:
-   - Implementation risks (what could go wrong during coding)
-   - Runtime risks (what could fail in production)
-   - Scaling risks (what breaks at 10x or 100x scale)
+Evaluate each approach on: quality attribute scores (from Goal Analyst), edge case coverage (from Input Explorer), constraint compliance (from Constraints Mapper), and risk assessment (implementation, runtime, scaling).
 
 Output format — use these exact sections:
 

@@ -1,20 +1,38 @@
 ---
 name: problem-decompose
 description: >
-  Multi-agent problem decomposition and analysis before implementation.
-  Spawns phased agent teams to explore input space, clarify goals, map constraints,
-  generate approaches, and evaluate them — producing a comprehensive problem analysis
-  report. Use before tackling complex problems, algorithm design, system design,
-  or any task where understanding the problem deeply matters more than jumping to code.
-  Keywords: problem decomposition, analyze problem, understand problem, input space,
-  edge cases, approach, algorithm, system design, decompose, pre-implementation
+  Decomposes complex problems via phased multi-agent analysis before implementation.
+  Explores input space, maps constraints, generates and evaluates approaches, produces
+  a ranked recommendation report. Use for algorithm design, system design, or any task
+  where deep understanding matters more than jumping to code.
+  Keywords: problem decomposition, analyze, input space, edge cases, algorithm,
+  system design, approach evaluation, pre-implementation, decompose
 disable-model-invocation: true
 argument-hint: [problem description or link to problem statement]
+effort: high
 ---
 
 # Problem Decompose
 
 Problem: **$ARGUMENTS**
+
+## Progress Tracking
+
+Copy this checklist and update as you progress:
+
+```
+Problem Decomposition Progress:
+- [ ] Frame: Restate problem, classify, identify initial approaches
+- [ ] Phase 1: Input Explorer (parallel)
+- [ ] Phase 1: Goal Analyst (parallel)
+- [ ] Phase 1: Constraints Mapper (parallel)
+- [ ] Phase 1 gate: Verify all outputs have required sections
+- [ ] Phase 2A: Approach Generator (3-5 distinct approaches)
+- [ ] Phase 2B: Approach Evaluator (comparison matrix + edge case coverage)
+- [ ] Phase 2 gate: Verify diversity and evidence-backed scores
+- [ ] Phase 3: Synthesizer (final report)
+- [ ] Deliver report to user
+```
 
 ## Overview
 
@@ -46,6 +64,8 @@ Before spawning agents, restate the problem clearly:
 - **Domain**: What category does this fall into? Use problem-categories.md to classify.
 - **Initial gut approaches**: Any obvious starting points the agents should be aware of.
 
+If `$ARGUMENTS` is empty or too vague to act on, ask the user for a specific problem statement before proceeding.
+
 If the problem is described in an existing file, spec, or URL, read it first and extract the above.
 
 References: [problem-categories](references/problem-categories.md)
@@ -69,6 +89,13 @@ Use `subagent_type: general-purpose` for all three.
 
 References: [agent-roles](references/agent-roles.md), [analysis-frameworks](references/analysis-frameworks.md)
 
+**Phase 1 gate** — Before proceeding, verify each agent produced its required sections:
+- Input Explorer: Common inputs, edge cases, scale characteristics, input invariants
+- Goal Analyst: Must/Should/Won't requirements, quality priorities, success criteria
+- Constraints Mapper: Hard constraints, soft constraints, complexity budget
+
+If any output is thin, note it as a gap for the Synthesizer — don't re-run the agent.
+
 ### 3. Phase 2 — Approaches (Sequential)
 
 After Phase 1 completes:
@@ -83,6 +110,11 @@ After Phase 1 completes:
 The Evaluator produces a comparison matrix and identifies which edge cases each approach handles or struggles with.
 
 References: [agent-roles](references/agent-roles.md), [workflow](references/workflow.md)
+
+**Phase 2 gate** — Before synthesis, verify:
+- 3-5 genuinely distinct approaches (not variations of one idea)
+- Each approach scored with specific references to Phase 1 findings
+- Edge case coverage table populated for all approaches
 
 ### 4. Phase 3 — Synthesis
 

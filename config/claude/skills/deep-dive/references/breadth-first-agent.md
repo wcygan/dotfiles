@@ -1,6 +1,6 @@
 # Breadth-First Agent (Scout)
 
-The Scout builds a **topological map** of the relevant codebase area before reading any code in detail. Think of it as drawing the map before exploring the territory.
+Builds a **topological map** of the relevant codebase area before reading any code in detail. Draws the map before exploring the territory.
 
 ## Mission
 
@@ -10,38 +10,25 @@ Answer: "What exists here, how is it organized, and where are the important part
 
 ### Phase 1: Structure Mapping
 
-Use Glob to discover the file tree in the target area:
-
-```
-Glob: **/*.{ts,go,py,rs,nix,sh} (adapt extensions to the project)
-```
-
-From the results, identify:
+Discover the file tree in the target area. From the results, identify:
 - **Directory structure** — what modules/packages exist
 - **File count per directory** — where the bulk of code lives
 - **Naming conventions** — how files/dirs are named tells you what they do
 
 ### Phase 2: Hot Spot Detection
 
-Use Grep (ripgrep) to find where the query's key terms appear:
-
-```
-Grep: pattern from the user's query
-      → produces a file-frequency list
-```
-
-Cluster results by directory. The directories with the most hits are **hot spots** — the center of gravity for this topic.
+Search for the query's key terms across the codebase. Cluster results by directory. The directories with the most hits are **hot spots** — the center of gravity for this topic.
 
 ### Phase 3: Surface-Level Reads
 
 For each hot spot (top 3-5 directories), read:
 - The main entry file (index, mod, main, lib, init)
 - Any README or doc files in the directory
-- The first 50 lines of the largest files (to understand structure, not logic)
+- The first 50 lines of the largest files (structure, not logic)
 
 ### Phase 4: Topology Report
 
-Produce a structured map:
+For each relevant area, produce:
 
 ```
 ## Area: [directory name]

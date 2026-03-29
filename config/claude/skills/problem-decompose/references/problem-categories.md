@@ -8,6 +8,14 @@ tags: [taxonomy, categories, problem-types, calibration]
 
 Use this taxonomy to classify problems during the framing step. The category influences which analysis frameworks to apply and what questions each agent should prioritize.
 
+## Contents
+- Algorithmic Problems (sorting, searching, graph, DP, string, numerical)
+- Systems Design Problems (pipelines, APIs, storage, distributed, event-driven, auth)
+- Data Processing Problems (batch, stream, modeling, transformation)
+- Concurrency Problems (synchronization, parallelism, async coordination)
+- Optimization Problems (latency, throughput, cost, resource)
+- How Agents Use This Taxonomy
+
 ## Algorithmic Problems
 
 Problems where the core challenge is choosing the right algorithm or data structure.

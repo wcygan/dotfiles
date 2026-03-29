@@ -8,6 +8,13 @@ tags: [analysis, frameworks, methodology, structured-thinking]
 
 Reusable analysis structures that agents apply based on the problem category. Each framework is a lens — agents pick the relevant ones, not all of them.
 
+## Contents
+- Input/Output Analysis (Input Explorer)
+- Goal Decomposition (Goal Analyst)
+- Constraint Analysis (Constraints Mapper)
+- Approach Generation (Approach Generator)
+- Evaluation Framework (Approach Evaluator)
+
 ---
 
 ## Input/Output Analysis (Input Explorer)

@@ -1,16 +1,16 @@
 # Investigation Summarizer
 
-The Summarizer is not a separate agent — it's the synthesis step performed by the orchestrator after all agents return. This reference describes how to combine findings.
+Not a separate agent — the synthesis step performed by the orchestrator after all agents return.
 
 ## Synthesis Process
 
 ### Step 1: Deduplicate
 
-Agents will discover overlapping information. Remove duplicates, keeping the version with the most detail and the best file:line reference.
+Agents will discover overlapping information. Remove duplicates, keeping the version with the most detail and the best `file:line` reference.
 
 ### Step 2: Cross-Reference
 
-Look for connections between agent findings:
+Connect findings across agents:
 - Scout found a hot spot → does the Tracer's call chain pass through it?
 - Tracer found an entry point → does the Archaeologist have history on it?
 - Boundary Mapper found an integration → does the Tracer show how it's used?
@@ -19,14 +19,14 @@ Mark cross-references explicitly: "The Tracer's call chain confirms the Scout's 
 
 ### Step 3: Conflict Resolution
 
-If agents disagree (rare but possible):
+If agents disagree:
 - **Structure vs. behavior**: Trust the Tracer for "how it works", the Scout for "where things are"
 - **Current vs. historical**: Note both — "Currently X (per Tracer), historically was Y (per Archaeologist)"
-- **Never silently discard a finding** — if an agent found something contradictory, surface it
+- **Never silently discard a finding** — surface contradictions
 
 ### Step 4: Narrative Assembly
 
-Weave the findings into a coherent story:
+Weave findings into a coherent story:
 
 1. **Start with the Scout's map** — orient the reader in the codebase
 2. **Zoom into the Tracer's path** — show how the specific thing works

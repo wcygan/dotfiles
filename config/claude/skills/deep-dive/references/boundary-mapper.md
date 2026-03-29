@@ -1,6 +1,6 @@
 # Boundary Mapper (Optional)
 
-The Boundary Mapper identifies **where modules meet** — API surfaces, integration points, and the seams between subsystems. Spawn when the query involves connections or interfaces.
+Identifies **where modules meet** — API surfaces, integration points, and the seams between subsystems. Spawn when the query involves connections or interfaces.
 
 ## Mission
 
@@ -17,23 +17,17 @@ Answer: "What connects to what, and where are the boundaries?"
 
 ### Phase 1: Import/Export Analysis
 
-For the target area, trace imports and exports:
-
-```
-Grep: import/require/use statements in the target module
-      → what does this module depend on?
-
-Grep: references to the target module from elsewhere
-      → what depends on this module?
-```
+For the target area, trace both directions:
+- **Inbound**: What does this module depend on?
+- **Outbound**: What depends on this module?
 
 ### Phase 2: Interface Identification
 
 Find the public API surface:
 - **Exported functions/types** — what the module exposes
-- **Configuration** — what knobs exist (env vars, config files, CLI args)
-- **Events/signals** — does it emit or listen to events
-- **Data contracts** — what shapes of data cross the boundary (types, schemas, protocols)
+- **Configuration** — env vars, config files, CLI args
+- **Events/signals** — emitted or listened to
+- **Data contracts** — types, schemas, protocols crossing the boundary
 
 ### Phase 3: Boundary Map
 
@@ -61,7 +55,7 @@ For each boundary, assess:
 
 1. **Dependency graph** — what the target imports and what imports it
 2. **Public API surface** — exported functions, types, and their signatures
-3. **Integration points** — concrete file:line where modules connect
+3. **Integration points** — concrete `file:line` where modules connect
 4. **Coupling assessment** — how tightly bound the modules are
 5. **Change impact radius** — what would break if this module's API changed
 

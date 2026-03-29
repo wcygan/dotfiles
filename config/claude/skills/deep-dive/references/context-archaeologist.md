@@ -1,6 +1,6 @@
 # Context Archaeologist (Optional)
 
-The Archaeologist answers **why** the code is the way it is by examining its history. Spawn this agent when the query involves intent, decisions, or evolution.
+Answers **why** the code is the way it is by examining its history. Spawn when the query involves intent, decisions, or evolution.
 
 ## Mission
 
@@ -17,38 +17,27 @@ Answer: "Why does this code exist in its current form? What decisions led here?"
 
 ### Phase 1: Identify Targets
 
-Based on the query, identify 3-5 key files or functions to investigate.
-If the Scout or Tracer have run, use their findings to pick targets.
+Based on the query, identify 3-5 key files or functions to investigate. If the Scout or Tracer have run, use their findings to pick targets.
 
 ### Phase 2: Git Archaeology
 
-For each target, run (via Bash):
-
-```bash
-# Who last changed this area and when
-git log --oneline -10 -- path/to/file
-
-# Why specific lines were written
-git log -1 --format='%h %s' -L <start>,<end>:path/to/file
-
-# When the file was created and initial intent
-git log --diff-filter=A --format='%h %ai %s' -- path/to/file
-
-# Related changes in the same commit
-git show --stat <commit-hash>
-```
+For each target, examine:
+- Recent changes: `git log --oneline -10 -- path/to/file`
+- Line-level history for specific code sections
+- File creation context: when it was first added and why
+- Co-changed files: what else was modified in the same commits
 
 ### Phase 3: Intent Extraction
 
 From the git history, extract:
-- **Original motivation** — why was this code first written
+- **Original motivation** — why this code was first written
 - **Key changes** — significant modifications and their commit messages
-- **Patterns of change** — is this area frequently modified (volatile) or stable
-- **Related files** — what else changed alongside this code (co-change analysis)
+- **Change patterns** — volatile (frequently modified) vs. stable
+- **Co-change analysis** — what files evolve together
 
 ### Phase 4: Decision Timeline
 
-Build a timeline of significant decisions:
+Build a chronological timeline of significant decisions:
 
 ```
 2024-01 | abc1234 | Initial implementation of X (created processor.rs)

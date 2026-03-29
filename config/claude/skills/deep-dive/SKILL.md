@@ -1,15 +1,14 @@
 ---
 name: deep-dive
 description: >
-  Deep dive into a codebase to understand specific topics, patterns, or
-  implementations. Spawns parallel agents with distinct investigation strategies
-  (breadth-first mapping, depth-first tracing, optional history/boundary analysis)
-  then synthesizes findings into a layered summary. Use for understanding how
-  something works, exploring unfamiliar code, or building a mental model of a
-  large system. Keywords: deep dive, explore, understand, how does, architecture,
-  codebase exploration, trace, investigate, mental model
+  Investigates codebase topics by spawning parallel exploration agents (breadth-first
+  mapping, depth-first tracing, optional history/boundary analysis), then synthesizes
+  findings into a layered summary. Use when understanding how something works, exploring
+  unfamiliar code, or building a mental model. Keywords: deep dive, explore, understand,
+  how does, architecture, trace, investigate, mental model
 disable-model-invocation: true
 argument-hint: [topic or question about the codebase]
+allowed-tools: Agent, Read, Grep, Glob, Bash(git *)
 ---
 
 # Deep Dive
@@ -45,6 +44,19 @@ Read the user's query and decide:
 3. Add **Boundary Mapper** if the query asks about connections, integration points, API surfaces, or module interactions
 4. **Maximum 4 agents** — never more
 
+## Progress Checklist
+
+Copy and track as you go:
+
+```
+Deep Dive Progress:
+- [ ] Query analyzed, agents selected
+- [ ] Agents spawned in parallel
+- [ ] Findings received and deduplicated
+- [ ] Cross-references identified
+- [ ] Output formatted with file:line references
+```
+
 ## Execution
 
 ### 1. Analyze the Query
@@ -56,10 +68,11 @@ Before spawning agents, identify:
 
 ### 2. Spawn Agents in Parallel
 
-Use Task tool with `subagent_type=Explore` for each agent. Give each agent:
-- The user's query for context
-- Their specific investigation strategy (from reference files)
+Use the **Agent tool** with `subagent_type="Explore"` for each agent. Each agent prompt must be **self-contained** — subagents have no conversation history. Include:
+- The user's full query
+- The specific investigation strategy (from reference files)
 - Concrete starting points if you can infer them from the query
+- Project context (languages, directory structure) as needed
 
 ### 3. Synthesize
 

@@ -6,6 +6,14 @@ tags: [workflow, orchestration, phases, dependencies]
 
 # Workflow
 
+## Contents
+- Dependency Graph
+- Phase 1: Understanding (parallel agents, completion check)
+- Phase 2: Approaches (sequential, completion check)
+- Phase 3: Synthesis (quality checks)
+- Calibration: When to Use Which Depth
+- Error Recovery
+
 ## Dependency Graph
 
 ```

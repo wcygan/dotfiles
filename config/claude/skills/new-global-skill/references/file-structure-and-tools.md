@@ -71,11 +71,31 @@ Common tool combinations:
 
 ## Invocation Frontmatter
 
-| Invocation Mode    | Frontmatter                        |
-|--------------------|------------------------------------|
-| User-invoked only  | `disable-model-invocation: true`   |
-| Claude auto-only   | `user-invocable: false`            |
-| Both (default)     | _(no invocation flags needed)_     |
+| Invocation Mode      | Frontmatter                        |
+|----------------------|------------------------------------|
+| User-invoked only    | `disable-model-invocation: true`   |
+| Claude auto-only     | `user-invocable: false`            |
+| Both (default)       | _(no invocation flags needed)_     |
+| Forked (subagent)    | `context: fork`                    |
+| Forked + Explore     | `context: fork` + `agent: Explore` |
+
+## All Frontmatter Fields
+
+| Field | Purpose | Example |
+|-------|---------|---------|
+| `name` | Display name, becomes `/name` | `name: my-skill` |
+| `description` | Triggers auto-invocation (max 1024 chars) | `description: Analyze code...` |
+| `argument-hint` | Shown during autocomplete | `argument-hint: [file-path]` |
+| `disable-model-invocation` | User-only invoke | `disable-model-invocation: true` |
+| `user-invocable` | Claude-only invoke | `user-invocable: false` |
+| `allowed-tools` | Restrict available tools | `allowed-tools: Read, Grep, Glob` |
+| `context` | Execution context | `context: fork` |
+| `agent` | Agent type for forked skills | `agent: Explore` |
+| `effort` | Reasoning effort level | `effort: low` |
+| `model` | Override model | `model: sonnet` |
+| `paths` | File globs that trigger the skill | `paths: ["*.rs", "Cargo.toml"]` |
+| `shell` | Shell for `!`command`` execution | `shell: bash` |
+| `hooks` | Lifecycle hooks scoped to skill | _(see hooks docs)_ |
 
 ## Reference-File Pattern
 

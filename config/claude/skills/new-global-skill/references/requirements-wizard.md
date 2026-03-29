@@ -6,8 +6,8 @@ tags: [requirements, wizard, questions]
 
 # Requirements Wizard
 
-Use the AskUserQuestion tool to ask these four questions before creating any skill files.
-Invoke all four questions in a single AskUserQuestion call.
+Use the AskUserQuestion tool to ask these five questions before creating any skill files.
+Invoke all five questions in a single AskUserQuestion call.
 
 ## Question 1: Capability
 
@@ -56,6 +56,28 @@ Options:
 multiSelect: false
 ```
 
+## Question 5: Execution Context
+
+```
+Where should this skill execute?
+Header: "Execution Context"
+Options:
+  - "Inline (main conversation)"  / "Runs in the current conversation context"
+  - "Forked (isolated subagent)"  / "Runs in a separate subagent — no conversation history"
+multiSelect: false
+```
+
+If "Forked" is chosen, ask a follow-up:
+
+```
+Which agent type for the forked skill?
+Header: "Agent Type"
+Options:
+  - "Explore (read-only)"       / "Fast, read-only exploration — best for analysis tasks"
+  - "General-purpose (default)" / "Full capabilities — use when skill spawns sub-agents or writes files"
+multiSelect: false
+```
+
 ## After Gathering Answers
 
 1. Map capability to suggested name (see naming-and-descriptions.md for name table)
@@ -63,7 +85,13 @@ multiSelect: false
    - "User-invoked only" → add `disable-model-invocation: true`
    - "Claude auto-invoked" → add `user-invocable: false`
    - "Both" → no invocation flags needed
-3. Select matching template from skill-templates.md
-4. If "Restricted" was chosen, apply allowed-tools from file-structure-and-tools.md
-5. If "Advanced" was chosen, plan reference files alongside SKILL.md
-6. Proceed to file creation only after all four answers are collected
+3. Apply execution context frontmatter:
+   - "Forked" → add `context: fork`
+   - "Forked" + "Explore" → add `context: fork` and `agent: Explore`
+   - "Forked" + "General-purpose" → add `context: fork` (no agent field needed)
+   - "Inline" → no context field needed
+4. Select matching template from skill-templates.md (use forked analysis template if forked)
+5. If "Restricted" was chosen, apply allowed-tools from file-structure-and-tools.md
+6. If "Advanced" was chosen, plan reference files alongside SKILL.md
+7. If "Forked" was chosen, add `!`command`` blocks for injecting project state
+8. Proceed to file creation only after all five answers are collected

@@ -131,6 +131,63 @@ url = "https://private.example.com/simple"
 | `foo!=1.4.0` | Exclude version |
 | `foo[extra1,extra2]` | With extras |
 
+## Common Mistakes
+
+Installing packages — always go through `uv add` to keep metadata and lockfile in sync:
+
+```bash
+# CORRECT: updates pyproject.toml + uv.lock
+uv add httpx
+
+# WRONG: installs into .venv but pyproject.toml/lockfile don't know about it
+pip install httpx
+```
+
+Editing the lockfile — it is machine-managed:
+
+```bash
+# CORRECT: regenerate the lockfile from pyproject.toml
+uv lock
+
+# WRONG: hand-editing uv.lock to pin a version
+# (your changes will be overwritten on next uv lock)
+```
+
+Dev dependencies — use `--dev` or `--group`, not bare `uv add`:
+
+```bash
+# CORRECT: pytest stays out of production installs
+uv add --dev pytest
+
+# WRONG: pytest becomes a runtime dependency
+uv add pytest
+```
+
+Git sources — keep them in `[tool.uv.sources]`, not `[project.dependencies]`:
+
+```toml
+# CORRECT: standard dep + dev-only source override
+[project]
+dependencies = ["my-lib>=1.0"]
+
+[tool.uv.sources]
+my-lib = { git = "https://github.com/org/my-lib", branch = "main" }
+
+# WRONG: git URL in project.dependencies — not PEP 508 compliant
+[project]
+dependencies = ["my-lib @ git+https://github.com/org/my-lib"]
+```
+
+Upgrading — target specific packages, not the whole lockfile:
+
+```bash
+# CORRECT: upgrade one package
+uv lock --upgrade-package httpx
+
+# RISKY: upgrades everything at once — hard to debug regressions
+uv lock --upgrade
+```
+
 ---
 
 Docs: https://docs.astral.sh/uv/concepts/projects/dependencies/

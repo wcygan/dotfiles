@@ -98,6 +98,17 @@ default-groups = ["dev"]
 my-lib = { workspace = true }
 ```
 
+## Common Pitfalls
+
+| Mistake | Fix |
+|---------|-----|
+| Editing `uv.lock` manually | Always use `uv lock` — the lockfile is machine-managed |
+| Using `pip install` in a UV project | Use `uv add` to keep `pyproject.toml` and lockfile in sync |
+| Forgetting `--script` flag for script deps | `uv add --script foo.py pkg` (not `uv add pkg`) |
+| Running `uv run` without `uv lock` first | UV auto-syncs, but stale lockfiles can cause surprises — run `uv lock` after manual `pyproject.toml` edits |
+| Mixing `pip` and `uv` virtual environments | UV manages `.venv/` — don't activate it manually or use `pip` inside it |
+| Missing `# /// script` block in inline scripts | The metadata block is required for `uv run --script` to detect dependencies |
+
 ## References
 
 - [Scripts](references/scripts.md) — inline metadata, shebang, locking, creating scripts

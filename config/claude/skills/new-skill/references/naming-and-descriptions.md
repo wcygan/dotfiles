@@ -49,3 +49,40 @@ Based on capability, suggest:
 ❌ "Helps with documents" — too vague, no triggers, no keywords
 ❌ "Processes things" — no triggers, no subject matter
 ❌ "Does code stuff" — non-descriptive, won't match any user request
+
+## Three Skill Patterns
+
+Different patterns need different description styles:
+
+### 1. Reference (inline, auto-invoked)
+
+Background knowledge Claude applies automatically. Description should be broad and
+keyword-rich so Claude picks it up in relevant contexts.
+
+```
+description: Work with GitHub from the command line using the GitHub CLI (gh). Use when managing repositories, pull requests, issues, releases, or any GitHub operations. Keywords: github, gh, pull request, PR, issue, release
+```
+
+**Style**: broad triggers, many keywords, no action verbs like "run" or "execute"
+
+### 2. Task (user-invoked, inline)
+
+Step-by-step workflows triggered with `/name`. Description should be specific about
+what the workflow does end-to-end.
+
+```
+description: Analyze staged changes and create a well-crafted conventional commit. Use when committing code, writing commit messages, or preparing changes for review. Keywords: commit, git commit, staged changes
+```
+
+**Style**: specific workflow scope, outcome-focused, mention the trigger scenarios
+
+### 3. Forked (subagent context)
+
+Isolated analysis tasks. Description should emphasize the analysis output since the
+user won't interact with the skill mid-run.
+
+```
+description: Deep analysis of project dependencies for outdated packages, security vulnerabilities, and license issues. Returns structured findings with severity levels. Keywords: dependency, audit, security, CVE, outdated
+```
+
+**Style**: emphasize output format, mention "returns" or "reports", note isolation won't interact

@@ -8,7 +8,7 @@ description: >
   Keywords: skill, hook, sub-agent, agent team, headless, scheduled task, channel, plugin,
   SKILL.md, teleport, remote control, worktree, batch, chrome extension, frontend, /loop,
   accumulator, stateful loop, silent accumulator, polling watcher, incremental explorer
-allowed-tools: Read, Grep, Glob, WebFetch, WebSearch, Bash(cat *)
+allowed-tools: Read, Grep, Glob, WebFetch, WebSearch, Bash(cat *), Bash(gh *), Bash(git *), Bash(ls *)
 ---
 
 # Claude Code Best Practices

@@ -6,7 +6,8 @@ description: >
   batch, and frontend verification. Auto-loads when working with Claude Code configuration,
   writing skills, setting up hooks, orchestrating agents, or optimizing workflows.
   Keywords: skill, hook, sub-agent, agent team, headless, scheduled task, channel, plugin,
-  SKILL.md, teleport, remote control, worktree, batch, chrome extension, frontend, /loop
+  SKILL.md, teleport, remote control, worktree, batch, chrome extension, frontend, /loop,
+  accumulator, stateful loop, silent accumulator, polling watcher, incremental explorer
 allowed-tools: Read, Grep, Glob, WebFetch, WebSearch, Bash(cat *)
 ---
 
@@ -37,3 +38,4 @@ Reference knowledge for Claude Code features. Each topic has a local summary and
 | Git worktrees for parallel work | [worktrees](references/worktrees.md) | https://code.claude.com/docs/en/common-workflows#run-parallel-claude-code-sessions-with-git-worktrees |
 | /batch fan-out for large changesets | [batch](references/batch.md) | https://code.claude.com/docs/en/common-workflows |
 | Chrome extension & Desktop preview | [frontend-verification](references/frontend-verification.md) | https://code.claude.com/docs/en/chrome |
+| Loop patterns & stateful automation | [loop-patterns](references/loop-patterns.md) | https://code.claude.com/docs/en/scheduled-tasks |

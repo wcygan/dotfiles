@@ -38,7 +38,13 @@ SKIP_DIRS = frozenset({
     ".next", "coverage", "_build", "pkg", "bin", "obj",
 })
 
-SKIP_PREFIXES = (".", "_")
+VALID_CATEGORIES = frozenset({
+    "error-handling-gap", "pattern-violation", "naming-inconsistency",
+    "missing-test", "security-concern", "performance-issue",
+    "dead-code", "tech-debt", "documentation-gap", "dependency-concern",
+})
+
+VALID_SEVERITIES = ("low", "medium", "high", "critical")
 
 CODE_EXTENSIONS = frozenset({
     ".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs", ".java",
@@ -303,6 +309,12 @@ def cmd_record_finding(args):
         print("No state. Run init first.", file=sys.stderr)
         sys.exit(1)
 
+    # Validate category
+    if args.category not in VALID_CATEGORIES:
+        print(f"Invalid category: {args.category}", file=sys.stderr)
+        print(f"Valid: {', '.join(sorted(VALID_CATEGORIES))}", file=sys.stderr)
+        sys.exit(1)
+
     key = finding_key(args.file, args.line or 0, args.desc)
 
     # Deduplicate
@@ -332,7 +344,7 @@ def cmd_mark_explored(args):
     dirs = state.get("directories", {})
     if d in dirs:
         dirs[d]["status"] = "explored"
-        state["iteration"] = state.get("iteration", 0) + 1
+        # Don't increment iteration here — use bump-iteration for that
         save_state(state)
         remaining = sum(1 for info in dirs.values() if info["status"] == "pending")
         print(f"Explored: {d} | {remaining} directories remaining")
@@ -340,51 +352,76 @@ def cmd_mark_explored(args):
         print(f"Unknown directory: {d}", file=sys.stderr)
 
 
-def cmd_report(_args):
+def cmd_bump_iteration(_args):
+    """Increment the iteration counter. Call once per loop cycle, after all dirs are marked."""
+    state = load_state()
+    state["iteration"] = state.get("iteration", 0) + 1
+    save_state(state)
+    print(f"Iteration: {state['iteration']}")
+
+
+def cmd_report(args):
     state = load_state()
     findings = state.get("findings", [])
     dirs = state.get("directories", {})
     explored = sum(1 for info in dirs.values() if info["status"] == "explored")
 
-    print(f"# Codebase Improvement Report: {state.get('repo', '?')}")
-    print(f"Generated: {now_iso()}")
-    print(f"Coverage: {explored}/{len(dirs)} directories")
-    print(f"Findings: {len(findings)}")
-    print()
+    lines = []
+    def out(s=""):
+        lines.append(s)
+
+    out(f"# Codebase Improvement Report: {state.get('repo', '?')}")
+    out(f"Generated: {now_iso()}")
+    out(f"Coverage: {explored}/{len(dirs)} directories")
+    out(f"Findings: {len(findings)}")
+    out()
 
     if not findings:
-        print("No findings recorded.")
-        return
+        out("No findings recorded.")
+    else:
+        severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+        findings_sorted = sorted(findings, key=lambda f: (
+            severity_order.get(f.get("severity", "low"), 9),
+            f.get("category", ""),
+        ))
 
-    severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
-    findings_sorted = sorted(findings, key=lambda f: (
-        severity_order.get(f.get("severity", "low"), 9),
-        f.get("category", ""),
-    ))
+        current_sev = None
+        for f in findings_sorted:
+            sev = f["severity"].upper()
+            if sev != current_sev:
+                current_sev = sev
+                out(f"\n## {sev}\n")
+            line_info = f":{f['line']}" if f.get("line") else ""
+            out(f"- **[{f['category']}]** `{f['file']}{line_info}`")
+            out(f"  {f['description']}")
 
-    current_sev = None
-    for f in findings_sorted:
-        sev = f["severity"].upper()
-        if sev != current_sev:
-            current_sev = sev
-            print(f"\n## {sev}\n")
-        line_info = f":{f['line']}" if f.get("line") else ""
-        print(f"- **[{f['category']}]** `{f['file']}{line_info}`")
-        print(f"  {f['description']}")
+        out("\n## Summary by Category\n")
+        cats = {}
+        for f in findings:
+            cats[f["category"]] = cats.get(f["category"], 0) + 1
+        for cat, n in sorted(cats.items(), key=lambda x: -x[1]):
+            out(f"- {cat}: {n}")
 
-    print("\n## Summary by Category\n")
-    cats = {}
-    for f in findings:
-        cats[f["category"]] = cats.get(f["category"], 0) + 1
-    for cat, n in sorted(cats.items(), key=lambda x: -x[1]):
-        print(f"- {cat}: {n}")
+        remaining = [d for d, info in dirs.items() if info["status"] == "pending"]
+        if remaining:
+            out(f"\n## Unexplored ({len(remaining)} dirs remaining)\n")
+            for d in sorted(remaining, key=lambda x: -dirs[x]["priority"])[:10]:
+                info = dirs[d]
+                out(f"- {d} ({info['code_files']} code files)")
 
-    remaining = [d for d, info in dirs.items() if info["status"] == "pending"]
-    if remaining:
-        print(f"\n## Unexplored ({len(remaining)} dirs remaining)\n")
-        for d in sorted(remaining, key=lambda x: -dirs[x]["priority"])[:10]:
-            info = dirs[d]
-            print(f"- {d} ({info['code_files']} code files)")
+    report_text = "\n".join(lines)
+    print(report_text)
+
+    # Optionally write to file
+    output_path = getattr(args, "output", None)
+    if output_path:
+        Path(output_path).write_text(report_text + "\n")
+        print(f"\nReport written to: {output_path}", file=sys.stderr)
+    else:
+        # Default: also write to state dir
+        default_path = state_dir() / "improvement-report.md"
+        default_path.write_text(report_text + "\n")
+        print(f"\nReport saved to: {default_path}", file=sys.stderr)
 
 
 def cmd_stats(_args):
@@ -425,14 +462,18 @@ def main():
     p_mark = sub.add_parser("mark-explored", help="Mark directory as scanned")
     p_mark.add_argument("directory")
 
-    sub.add_parser("report", help="Full findings report")
+    sub.add_parser("bump-iteration", help="Increment iteration counter (call once per loop cycle)")
+
+    p_report = sub.add_parser("report", help="Full findings report")
+    p_report.add_argument("--output", "-o", help="Write report to file path")
+
     sub.add_parser("stats", help="One-line progress")
 
     args = parser.parse_args()
     cmds = {
         "init": cmd_init, "read": cmd_read, "next-targets": cmd_next_targets,
         "record-finding": cmd_record_finding, "mark-explored": cmd_mark_explored,
-        "report": cmd_report, "stats": cmd_stats,
+        "bump-iteration": cmd_bump_iteration, "report": cmd_report, "stats": cmd_stats,
     }
     fn = cmds.get(args.command)
     if fn:

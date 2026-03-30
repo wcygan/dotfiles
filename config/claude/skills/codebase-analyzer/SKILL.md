@@ -64,7 +64,10 @@ Then proceed to the Explore phase.
 
 5. **Mark explored:** `uv run --quiet --script ANALYZER mark-explored "dir"`
 
-6. **Brief status** — only report new findings and progress this iteration.
+6. **Bump iteration:** `uv run --quiet --script ANALYZER bump-iteration`
+   (Call once per loop cycle, after all dirs are marked.)
+
+7. **Brief status** — only report new findings and progress this iteration.
 
 ### If next-targets returns "DONE" or findings exceed 50
 

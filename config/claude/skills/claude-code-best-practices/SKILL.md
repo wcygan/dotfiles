@@ -2,9 +2,11 @@
 name: claude-code-best-practices
 description: >
   Reference guide for Claude Code features and best practices: skills, hooks, sub-agents,
-  agent teams, headless mode, scheduled tasks, and channels. Auto-loads when working with
-  Claude Code configuration, writing skills, setting up hooks, or orchestrating agents.
-  Keywords: skill, hook, sub-agent, agent team, headless, scheduled task, channel, plugin, SKILL.md
+  agent teams, headless mode, scheduled tasks, channels, teleport, remote control, worktrees,
+  batch, and frontend verification. Auto-loads when working with Claude Code configuration,
+  writing skills, setting up hooks, orchestrating agents, or optimizing workflows.
+  Keywords: skill, hook, sub-agent, agent team, headless, scheduled task, channel, plugin,
+  SKILL.md, teleport, remote control, worktree, batch, chrome extension, frontend, /loop
 allowed-tools: Read, Grep, Glob, WebFetch, WebSearch, Bash(cat *)
 ---
 
@@ -31,3 +33,7 @@ Reference knowledge for Claude Code features. Each topic has a local summary and
 | Push events into sessions | [channels](references/channels.md) | https://code.claude.com/docs/en/channels |
 | Dynamic context injection (`!`command``) | [dynamic-context-injection](references/dynamic-context-injection.md) | https://code.claude.com/docs/en/skills#inject-dynamic-context |
 | Complete skill-building guide | [skill-complete-guide](references/skill-complete-guide.md) | https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf |
+| Teleport & Remote Control | [session-mobility](references/session-mobility.md) | https://code.claude.com/docs/en/remote-control |
+| Git worktrees for parallel work | [worktrees](references/worktrees.md) | https://code.claude.com/docs/en/common-workflows#run-parallel-claude-code-sessions-with-git-worktrees |
+| /batch fan-out for large changesets | [batch](references/batch.md) | https://code.claude.com/docs/en/common-workflows |
+| Chrome extension & Desktop preview | [frontend-verification](references/frontend-verification.md) | https://code.claude.com/docs/en/chrome |

@@ -50,6 +50,28 @@ fi
 '
 ensure_line "$BASHRC" "DOTFILES:EXEC_FISH" "$BASH_EXEC_FISH"
 
+# 3) Ensure ~/.bash_profile sources .bashrc and .profile for login shells
+#    SSH sessions start login shells which read .bash_profile, not .bashrc.
+#    Only create/modify if the user's login shell is bash.
+if [[ "$(basename "${SHELL:-}")" == "bash" ]]; then
+  BASH_PROFILE="$HOME/.bash_profile"
+  touch "$BASH_PROFILE"
+
+  BASH_PROFILE_SOURCE_BASHRC='
+# Source .bashrc for login shells
+if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+fi'
+  ensure_line "$BASH_PROFILE" "DOTFILES:BASH_PROFILE_SOURCE_BASHRC" "$BASH_PROFILE_SOURCE_BASHRC"
+
+  BASH_PROFILE_SOURCE_PROFILE='
+# Source .profile for other env setup (deno, cargo, etc.)
+if [ -f ~/.profile ]; then
+    . ~/.profile
+fi'
+  ensure_line "$BASH_PROFILE" "DOTFILES:BASH_PROFILE_SOURCE_PROFILE" "$BASH_PROFILE_SOURCE_PROFILE"
+fi
+
 # Zsh
 ZSHRC="$HOME/.zshrc"
 touch "$ZSHRC"

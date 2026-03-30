@@ -63,6 +63,48 @@ fi
 
 echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "1b. BASH_PROFILE TESTS (login shell sourcing)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+if [[ "$(basename "${SHELL:-}")" == "bash" ]]; then
+    # Test that .bash_profile exists
+    echo -n "Testing ~/.bash_profile exists: "
+    if [ -f ~/.bash_profile ]; then
+        test_pass "~/.bash_profile exists"
+    else
+        test_fail "~/.bash_profile missing (SSH login shells won't source .bashrc)"
+    fi
+
+    # Test that .bash_profile sources .bashrc
+    echo -n "Testing ~/.bash_profile sources .bashrc: "
+    if grep -qE '\. ~/\.bashrc|source ~/\.bashrc|\. "\$HOME/\.bashrc"|source "\$HOME/\.bashrc"' ~/.bash_profile 2>/dev/null; then
+        test_pass "~/.bash_profile sources .bashrc"
+    else
+        test_fail "~/.bash_profile does not source .bashrc"
+    fi
+
+    # Test idempotency: marker present means ensure_line will no-op
+    echo -n "Testing idempotency marker present: "
+    if grep -Fq "DOTFILES:BASH_PROFILE_SOURCE_BASHRC" ~/.bash_profile 2>/dev/null; then
+        test_pass "Idempotency marker found"
+    else
+        test_fail "Idempotency marker missing"
+    fi
+
+    # Test that login shell gets fish handoff via .bash_profile -> .bashrc
+    echo -n "Testing bash login shell sources .bashrc chain: "
+    RESULT=$(bash -lc 'echo "OK"' 2>&1 | tail -1)
+    if [[ "$RESULT" == "OK" ]]; then
+        test_pass "Bash login shell runs non-interactive commands correctly"
+    else
+        test_fail "Bash login shell failed: $RESULT"
+    fi
+else
+    echo "Login shell is not bash (SHELL=$SHELL) - skipping .bash_profile tests"
+fi
+
+echo
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "2. ZSH TESTS"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 

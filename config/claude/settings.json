@@ -253,6 +253,7 @@
     "wealth-management@financial-services-plugins": true
   },
   "alwaysThinkingEnabled": true,
+  "enableRemoteControlForAllSessions": true,
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
   "extraKnownMarketplaces": {

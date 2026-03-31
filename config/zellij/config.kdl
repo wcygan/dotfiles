@@ -9,10 +9,8 @@ keybinds clear-defaults=true {
 
         // Pane management
         bind "Ctrl n" { NewPane; }
-        bind "Ctrl s" { NewPane "Down"; }
-        bind "Ctrl v" { NewPane "Right"; }
-        bind "Ctrl -" { NewPane "Down"; }
-        bind "Ctrl /" { NewPane "Right"; }
+        bind "Alt -" { NewPane "Down"; }
+        bind "Alt \\" { NewPane "Right"; }
         bind "Ctrl x" { CloseFocus; }
         bind "Ctrl z" { ToggleFocusFullscreen; }
 
@@ -108,7 +106,7 @@ themes {
 default_layout "compact"
 pane_frames false
 theme "default"
-default_shell "/Users/wcygan/.nix-profile/bin/fish"
+default_shell "fish"
 copy_on_select true
 scrollback_editor "/usr/bin/nvim"
 
@@ -120,4 +118,4 @@ serialize_pane_viewport true
 max_panes 100
 
 // Layout templates
-layout_dir "/Users/wcygan/.config/zellij/layouts"
+layout_dir "layouts"

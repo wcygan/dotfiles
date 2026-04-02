@@ -1,6 +1,6 @@
 ---
 title: Smart Composition
-description: Algorithm for composing agent teams from task descriptions, including tension pairs
+description: Algorithm for composing agent teams from task descriptions
 tags: [composition, algorithm, tension, team-sizing]
 ---
 
@@ -12,24 +12,27 @@ When the user describes a task without specifying agents, use this process to re
 
 | Signal in Request | Task Type | Likely Agents |
 |-------------------|-----------|---------------|
-| "review", "check", "audit" | Review | security-auditor, performance-analyst, test-strategist |
-| "design", "plan", "architect" | Design | api-designer, domain-modeler, devils-advocate |
-| "build", "implement", "create" | Development | api-designer, domain-modeler, test-strategist |
-| "debug", "fix", "investigate" | Investigation | implementation-investigator, reliability-engineer, devils-advocate |
-| "refactor", "clean up", "improve" | Refactoring | refactoring-strategist, test-strategist, performance-analyst |
-| "harden", "production-ready" | Hardening | security-auditor, reliability-engineer, performance-analyst |
-| "migrate", "upgrade" | Migration | tech-lead, reliability-engineer, devils-advocate |
+| "review", "check", "audit" | Review | error-path-reviewer, contract-reviewer, simplifier |
+| "design", "plan", "architect" | Design | contract-reviewer, devils-advocate, simplifier |
+| "build", "implement", "create" | Development | contract-reviewer, test-strategist, error-path-reviewer |
+| "debug", "fix", "investigate" | Investigation | error-path-reviewer, concurrency-reviewer, devils-advocate |
+| "refactor", "clean up", "improve" | Refactoring | simplifier, test-strategist, contract-reviewer |
+| "harden", "production-ready" | Hardening | error-path-reviewer, deploy-safety-reviewer, observability-advisor |
+| "migrate", "upgrade" | Migration | contract-reviewer, deploy-safety-reviewer, devils-advocate |
+| "add dependency", "new library" | Dependency | dependency-skeptic, simplifier, contract-reviewer |
+| "deploy", "ship", "release" | Deployment | deploy-safety-reviewer, observability-advisor, error-path-reviewer |
 
 ## 2. Add Required Perspectives
 
 Based on the task, consider adding:
-- Touches **security boundaries**? → security-auditor
-- Involves **data modeling**? → domain-modeler
-- Needs **API/interface design**? → api-designer
-- **Performance critical**? → performance-analyst
-- Needs **test coverage**? → test-strategist
+- Touches **error handling or I/O**? → error-path-reviewer
+- Changes **public interfaces**? → contract-reviewer
+- Involves **database schemas**? → data-model-analyst
+- Adds **new dependencies**? → dependency-skeptic
+- Has **concurrent/async code**? → concurrency-reviewer
 - **Major decision**? → devils-advocate
-- Involves **failure handling**? → reliability-engineer
+- Going to **production**? → deploy-safety-reviewer + observability-advisor
+- Feels **over-engineered**? → simplifier
 
 ## 3. Select Productive Tension Pairs
 
@@ -37,12 +40,12 @@ Agents whose lenses naturally conflict create better outcomes through debate:
 
 | Tension Pair | What They Debate |
 |-------------|-----------------|
-| security-auditor vs performance-analyst | "Is the security measure too expensive?" |
-| api-designer vs domain-modeler | "Clean for consumers?" vs "Correct for the domain?" |
-| reliability-engineer vs performance-analyst | "Add resilience overhead" vs "Reduce latency" |
+| simplifier vs error-path-reviewer | "Keep it simple" vs "Handle this failure mode" |
+| simplifier vs observability-advisor | "That's noise, delete it" vs "You'll need this at 3 AM" |
+| contract-reviewer vs simplifier | "You'll break consumers" vs "Just change the API" |
+| dependency-skeptic vs anyone adding a lib | "Write it yourself" vs "Don't reinvent the wheel" |
 | devils-advocate vs everyone | "Do we even need this?" |
-| test-strategist vs performance-analyst | "More test coverage" vs "Faster test suite" |
-| tech-lead vs devils-advocate | "Best practice says..." vs "In our context..." |
+| concurrency-reviewer vs simplifier | "Add synchronization" vs "Remove the shared state" |
 
 ## 4. Right-Size the Team
 

@@ -9,7 +9,7 @@ shell-integration-features = ssh-terminfo,ssh-env,sudo
 # Visuals
 theme = Idle Toes
 font-family = JetBrains Mono
-font-size = 22
+font-size = 16
 unfocused-split-opacity = 1.0
 window-inherit-font-size = false
 cursor-style-blink = false

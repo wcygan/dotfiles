@@ -88,5 +88,12 @@ fi
 '
 ensure_line "$ZSHRC" "DOTFILES:EXEC_FISH" "$ZSH_EXEC_FISH"
 
+# Zshenv — ensure non-interactive zsh (e.g. Zed env capture) gets Nix PATH
+ZSHENV="$HOME/.zshenv"
+touch "$ZSHENV"
+ZSHENV_PATH='
+export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/opt/homebrew/bin:$HOME/.cargo/bin:$HOME/go/bin:$HOME/.local/bin:$PATH"'
+ensure_line "$ZSHENV" "DOTFILES:NIX_PATH" "$ZSHENV_PATH"
+
 echo "✅ Shell handoff configured. Open a new terminal to verify, or run:"
 echo "  make test-shell"

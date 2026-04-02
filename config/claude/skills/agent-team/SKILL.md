@@ -120,25 +120,22 @@ When no existing agent fits, create one using the `/agents` command or by writin
 
 **Minimal (2):**
 ```
-Create a team: security-auditor reviews auth while test-strategist checks coverage.
+Create a team with 2 agents to review auth: one on security, one on test coverage.
 ```
 
 **Standard (3):**
 ```
-Create a team to review PR #42:
-- security-auditor on vulnerabilities
-- performance-analyst on efficiency
-- test-strategist on test coverage
+Create a team to review PR #42 with agents covering vulnerabilities, efficiency, and test coverage.
 Synthesize findings into a single review.
 ```
 
 **Full debate (4):**
 ```
 Create a team to design our notification system:
-- api-designer designs the interface
-- domain-modeler designs the data model
-- reliability-engineer plans for failure modes
-- devils-advocate challenges whether we need this at all
+- one agent on interface design
+- one on data modeling
+- one on failure modes
+- one as devils-advocate challenging whether we need this at all
 Have them debate and converge on a recommended approach.
 ```
 

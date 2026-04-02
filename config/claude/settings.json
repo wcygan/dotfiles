@@ -252,10 +252,6 @@
     "rust-analyzer-lsp@claude-plugins-official": true,
     "wealth-management@financial-services-plugins": true
   },
-  "alwaysThinkingEnabled": true,
-  "enableRemoteControlForAllSessions": true,
-  "effortLevel": "high",
-  "skipDangerousModePermissionPrompt": true,
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
       "source": {
@@ -263,5 +259,9 @@
         "repo": "anthropics/claude-plugins-official"
       }
     }
-  }
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
+  "skipDangerousModePermissionPrompt": true,
+  "enableRemoteControlForAllSessions": true
 }

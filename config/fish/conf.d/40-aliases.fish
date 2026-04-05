@@ -54,6 +54,7 @@ abbr -a l 'eza -la'
 abbr -a gcl 'git clone'
 abbr -a gc 'git commit'
 abbr -a d 'deno'
+abbr -a h 'hermes'
 abbr -a dt 'deno task'
 abbr -a br 'broot'
 

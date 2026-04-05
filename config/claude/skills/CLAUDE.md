@@ -72,6 +72,19 @@ hooks: ...                  # Lifecycle hooks scoped to this skill.
 
 All fields are optional. Only `description` is recommended.
 
+### Field validation rules
+
+- `name`: ≤64 chars, lowercase letters/numbers/hyphens only, no XML tags, no reserved words (`anthropic`, `claude`). Defaults to directory name.
+- `description`: ≤1024 chars, non-empty, no XML tags. Front-load the key use case — listings truncate around 250 chars.
+
+### Naming conventions
+
+Prefer **gerund form** (verb + `-ing`) so the name reads as a capability:
+
+- Good: `processing-pdfs`, `analyzing-spreadsheets`, `reviewing-changes`
+- Acceptable: noun phrases (`pdf-processing`) or action verbs (`fix-issue`)
+- Avoid: vague names (`helper`, `utils`, `tools`), generic nouns (`docs`, `data`)
+
 ### Invocation Control Matrix
 
 | Setting | User can invoke | Claude can invoke | When loaded |
@@ -248,6 +261,14 @@ Claude only sees the rendered output, not the commands.
 The description is the most important field. Claude uses it for auto-invocation
 decisions and to show users what's available.
 
+**Always write in third person.** The description is injected into the system prompt;
+first/second person causes discovery problems.
+
+- Good: `Processes Excel files and generates reports`
+- Avoid: `I can help you process Excel files` / `You can use this to...`
+
+**Template:** `[What it does]. Use when [scenarios]. Keywords: [terms].`
+
 **Good patterns from this repo:**
 
 ```yaml
@@ -333,6 +354,202 @@ Skill(deploy *)       # Deny prefix match (in deny rules)
 **Per-skill frontmatter:**
 - `disable-model-invocation: true` — removes from Claude's context entirely
 - `user-invocable: false` — hides from `/` menu but Claude can still use it
+
+## Authoring Best Practices
+
+These apply when writing or reviewing any SKILL.md in this repo. For the canonical
+source, fetch https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices.
+
+### Conciseness is the prime directive
+
+The context window is a public good. Before writing a line, ask:
+
+- **Does Claude already know this?** (general knowledge → skip)
+- **Can Claude discover it from the code?** (→ skip, tell Claude where to look instead)
+- **Is SKILL.md the only place Claude will learn this?** (→ keep)
+
+Don't re-explain what PDFs are, what `git rebase` does, or what a library is for.
+Show the shape of the call, the non-obvious constraint, the project-specific rule.
+A 50-token concise version almost always beats the 150-token "friendly" version.
+
+### Degrees of freedom: match specificity to fragility
+
+Think of Claude as a robot walking a path:
+
+| Terrain | When | Instruction style |
+|---------|------|-------------------|
+| **Narrow bridge** (low freedom) | Fragile, safety-critical, exact sequence required | Exact commands, "do not modify" |
+| **Winding road** (medium freedom) | Preferred pattern exists, some variation ok | Pseudocode, template with parameters |
+| **Open field** (high freedom) | Many valid approaches, context-dependent | Goals + heuristics, trust judgment |
+
+Mixing modes in one section confuses Claude — pick one per workflow step.
+
+### Progressive disclosure
+
+Three loading tiers:
+
+1. **Frontmatter** — always in context (name + description only). Treat every char as expensive.
+2. **SKILL.md body** — loaded on invoke. Keep under **500 lines**.
+3. **Reference files** — loaded on demand via bash reads. Bundle freely; no cost until read.
+
+**Keep references one level deep.** Claude often previews nested files with `head`
+and may miss content. Every reference should link directly from SKILL.md, not from
+another reference.
+
+**For reference files over 100 lines, add a table of contents at the top** so Claude
+can see the full scope even during partial reads.
+
+**Organize by domain, not chronology:**
+
+```text
+bigquery/
+├── SKILL.md              # overview + router
+└── reference/
+    ├── finance.md        # revenue, billing
+    ├── sales.md          # pipeline, accounts
+    └── product.md        # usage, features
+```
+
+When the user asks about revenue, Claude reads SKILL.md then just `reference/finance.md`.
+The other files stay on disk, consuming zero tokens.
+
+### Workflows with checklists
+
+For multi-step tasks, give Claude a checklist it can copy into its response and
+tick off as it progresses. This is especially valuable for fragile sequences:
+
+````markdown
+## Workflow
+
+Copy this checklist and check off items as you complete them:
+
+```
+- [ ] Step 1: Analyze the form (run analyze_form.py)
+- [ ] Step 2: Create field mapping
+- [ ] Step 3: Validate mapping
+- [ ] Step 4: Fill the form
+- [ ] Step 5: Verify output
+```
+````
+
+### Feedback loops: validate → fix → repeat
+
+For quality-critical tasks, build a loop Claude can iterate on:
+
+```markdown
+1. Make your edits
+2. Run: `python scripts/validate.py`
+3. If validation fails, read the error, fix, and re-run validate
+4. Only proceed when validation passes
+```
+
+Machine-verifiable validators (scripts, type checks, test runs) are far more
+effective than "please double-check your work."
+
+### Consistent terminology
+
+Pick one term and stick with it. Don't alternate between "field" / "box" / "element",
+or "API endpoint" / "URL" / "route". Inconsistency forces Claude to guess whether
+two names refer to the same thing.
+
+### Avoid time-sensitive phrasing
+
+Don't write "before August 2025" or "starting next quarter." Use an **"Old patterns"**
+section with a collapsed `<details>` block for deprecated guidance so the main body
+stays evergreen.
+
+## Anti-Patterns
+
+Avoid these in any SKILL.md (checked during review):
+
+- **Vague descriptions** — `description: Helps with code` never triggers. Be specific and include trigger keywords.
+- **First/second person descriptions** — "I can help you..." breaks discovery. Always third person.
+- **Over-explaining general knowledge** — if Claude already knows what a PDF is, don't explain.
+- **Deeply nested references** — SKILL.md → a.md → b.md → c.md. Flatten to one level.
+- **Mixing guidelines with exact commands in one section** — pick low or high freedom, not both.
+- **Offering too many options** — "use pypdf, or pdfplumber, or PyMuPDF, or..." Pick a default; mention alternatives only as escape hatches.
+- **Windows-style paths** — always use forward slashes (`scripts/helper.py`), even in docs.
+- **Time-sensitive content in the main body** — move deprecated guidance into an "Old patterns" section.
+- **Novel-length descriptions** — wastes the always-loaded context budget.
+- **Duplicating README content** into SKILL.md.
+
+### Scripts: solve, don't punt
+
+If a skill ships scripts, they should handle errors themselves rather than failing
+and asking Claude to recover:
+
+```python
+# Good — handles the error
+try:
+    with open(path) as f:
+        return f.read()
+except FileNotFoundError:
+    print(f"File {path} not found, creating default")
+    open(path, "w").close()
+    return ""
+
+# Bad — punts to Claude
+return open(path).read()
+```
+
+**No voodoo constants.** Every magic number needs a comment explaining why:
+
+```python
+# HTTP requests typically complete in <30s; longer accounts for slow links
+REQUEST_TIMEOUT = 30
+```
+
+If you don't know why the value is right, Claude won't either.
+
+### MCP tool references
+
+When a skill tells Claude to use an MCP tool, use the fully-qualified name
+`ServerName:tool_name` (e.g., `GitHub:create_issue`). Bare tool names fail to
+resolve when multiple MCP servers are loaded.
+
+## Iterating on Skills
+
+Good skills come from observation, not imagination:
+
+1. **Complete the task once without a skill.** Notice what context you repeatedly provide.
+2. **Extract the reusable pattern** into a draft SKILL.md.
+3. **Test with a fresh Claude instance** (no conversation history) on a similar task.
+4. **Watch how Claude navigates it.** Does it find the right references? Skip important rules? Re-read the same file?
+5. **Refine based on real failures**, not hypothetical ones. If Claude skipped a rule, make the rule more prominent or restructure the workflow.
+6. **Build evaluations before extensive documentation** — three concrete test scenarios beat a page of prose guidance.
+
+The `name` and `description` are the most load-bearing fields because they drive
+triggering. If Claude fails to invoke the skill when it should, fix those first.
+
+## Pre-Publish Checklist
+
+Before merging a new or changed skill:
+
+**Core quality**
+- [ ] `name` ≤64 chars, lowercase + hyphens, gerund form if possible
+- [ ] `description` is third person, specific, includes trigger keywords, ≤1024 chars
+- [ ] SKILL.md body under 500 lines
+- [ ] Reference files are one level deep from SKILL.md
+- [ ] Reference files >100 lines include a table of contents
+- [ ] No time-sensitive phrasing in the main body
+- [ ] Consistent terminology throughout
+- [ ] Workflows have clear steps (checklist for complex ones)
+- [ ] Forward slashes only in paths
+
+**Invocation control**
+- [ ] `disable-model-invocation: true` set if the skill shouldn't auto-trigger
+- [ ] `allowed-tools` scoped appropriately (read-only for analysis, write for workflows)
+- [ ] `context: fork` used when the skill spawns sub-agents or does heavy exploration
+
+**Scripts (if any)**
+- [ ] Scripts handle errors explicitly, don't punt
+- [ ] No voodoo constants (every magic number documented)
+- [ ] MCP tools referenced as `Server:tool_name`
+
+**Testing**
+- [ ] Manually invoked with `/skill-name` and verified
+- [ ] Triggered by a natural-language request (for auto-invoked skills)
+- [ ] Tested against realistic inputs, not toy examples
 
 ## Skills in This Repo
 

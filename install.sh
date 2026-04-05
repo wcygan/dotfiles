@@ -137,6 +137,13 @@ else
     echo -e "${YELLOW}⚠${NC} Unable to configure shell handoff automatically"
 fi
 
+echo -e "\n${BLUE}Step 5: Registering Hermes skills directory (if Hermes installed)${NC}"
+if "$ROOT/scripts/setup-hermes-skills.sh"; then
+    echo -e "${GREEN}✓${NC} Hermes skills setup complete"
+else
+    echo -e "${YELLOW}⚠${NC} Hermes skills setup reported an error (non-fatal)"
+fi
+
 echo ""
 
 # ============================================================================

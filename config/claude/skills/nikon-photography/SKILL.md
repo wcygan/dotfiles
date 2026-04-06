@@ -26,7 +26,6 @@ allowed-tools:
   - Read
   - Glob
   - Grep
-paths: "**/*.JPG, **/*.jpg, **/*.NEF, **/*.nef, **/*.jxl, **/*.heif, **/*.MOV, **/*.mov"
 argument-hint: "<command> [options] — resize, optimize, archive, share-album, contact-sheet, metadata, video"
 ---
 

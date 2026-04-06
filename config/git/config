@@ -123,3 +123,6 @@
 
     # Clean
     cleanup = !git branch --merged | grep -v '\\*\\|main\\|master\\|develop' | xargs -n 1 git branch -d
+[user]
+	email = wcygan.io@gmail.com
+	name = Will Cygan

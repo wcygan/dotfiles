@@ -10,6 +10,7 @@ Recipes for the situations that come up every day. Each one is a concrete sequen
 
 ## Table of contents
 
+- [Adopting jj in an existing git repo](#adopting-jj-in-an-existing-git-repo)
 - [Starting new work](#starting-new-work)
 - [Committing and describing](#committing-and-describing)
 - [Splitting a change](#splitting-a-change)
@@ -23,6 +24,65 @@ Recipes for the situations that come up every day. Each one is a concrete sequen
 - [Recovering from a bad rebase](#recovering-from-a-bad-rebase)
 - [Working with multiple workspaces](#working-with-multiple-workspaces)
 - [Bisecting](#bisecting)
+
+## Adopting jj in an existing git repo
+
+You've cloned or `cd`'d into a repo that was previously git-only. Turn it into a colocated jj repo, gitignore the jj metadata with an informative comment, and commit that change via jj. Everything is local until the final `jj git push`; nothing ever affects teammates who stay on git.
+
+**Prerequisite:** clean working tree. If `git status` shows uncommitted work, either commit it with git first or run `jj git init --colocate` and handle the snapshot as its own change before adding anything new.
+
+```bash
+# 0. Sanity check
+git status                                  # should be clean
+command -v jj                                # jj must be installed
+
+# 1. Colocate jj into the existing .git
+jj git init --colocate
+# Output: "Done importing changes from the underlying Git repo."
+# The repo is now jj-managed. .git is untouched; teammates see nothing.
+
+# 2. Track main against origin so jj git push knows where it goes
+jj bookmark track main --remote=origin
+# If the repo uses 'master' or 'trunk', substitute accordingly.
+
+# 3. Add .jj/ to .gitignore with a short comment for teammates
+cat >> .gitignore <<'EOF'
+
+# Jujutsu (jj) local state — present only for contributors using jj.
+# See https://jj-vcs.dev. Safe to ignore; git users are unaffected.
+.jj/
+EOF
+
+# 4. Commit the gitignore change via jj, not git
+jj commit -m "chore: gitignore .jj/ (jujutsu local state)"
+# This describes @ and creates a fresh empty @ on top.
+
+# 5. Advance the main bookmark to the committed change
+jj bookmark set main -r @-
+
+# 6. Push
+jj git push
+```
+
+After this, your day-to-day is normal jj: `jj new`, `jj describe`, `jj squash`, `jj git push`. See [Starting new work](#starting-new-work) below.
+
+**If you'd rather not touch the shared `.gitignore`**, skip steps 3–6 and use a global ignore instead. One-time setup per machine:
+
+```bash
+mkdir -p ~/.config/git
+echo '.jj/' >> ~/.config/git/ignore
+git config --global core.excludesfile ~/.config/git/ignore
+```
+
+Every repo you colocate after that will auto-ignore `.jj/` without any commit.
+
+**Backing out.** Colocation is purely additive — `rm -rf .jj` reverts the repo to a plain git repo with no history loss. If you also committed the `.gitignore` entry, undo it with normal VCS operations (`jj abandon @-` or a follow-up git commit).
+
+**Gotchas at adoption time:**
+- If the repo already has uncommitted work when you colocate, jj snapshots it into `@` with "no description set". Describe it with `jj describe -m "..."` before doing anything else, or your first jj commit will bundle two unrelated things.
+- If the repo uses `master` or a non-standard trunk name, update step 2 accordingly. jj's default `trunk()` revset tries `main`, `master`, and `trunk` in order.
+- If the repo has submodules, LFS objects, or git hooks, read [git-interop § Compatibility matrix](git-interop.md#compatibility-matrix) before relying on jj for that repo — some workflows still need raw git.
+- If `jj git push` rejects with "bookmark has no tracked remote", you forgot step 2 (`jj bookmark track`).
 
 ## Starting new work
 

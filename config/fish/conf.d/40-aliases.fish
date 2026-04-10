@@ -83,29 +83,91 @@ if type -q jj
     alias jl 'jj log'
     alias jn 'jj new'
     alias ju 'jj undo'
+    alias jsh 'jj show'                 # show current change details
+    alias jres 'jj resolve'             # resolve conflicts in @
+    alias jnx 'jj next --edit'          # walk forward in the stack
+    alias jpv 'jj prev --edit'          # walk back in the stack
 
     # Abbreviations for commands with args
     abbr -a jde 'jj describe -m'
+    abbr -a jc 'jj commit -m'           # describe @ + start a fresh change
+    abbr -a jnm 'jj new -m'             # new change with a message
     abbr -a jed 'jj edit'
     abbr -a jsq 'jj squash'
+    abbr -a jsqi 'jj squash --into'     # squash @ into an arbitrary ancestor
+    abbr -a jsp 'jj split'              # split a change (interactive)
     abbr -a jrb 'jj rebase -d'
     abbr -a jrs 'jj restore'
     abbr -a jab 'jj abandon'
+
+    # Operation log (jj's real undo history)
+    alias jop 'jj op log'
+    abbr -a jor 'jj op restore'
 
     # Git interop
     abbr -a jgf 'jj git fetch'
     abbr -a jgp 'jj git push'
     abbr -a jgc 'jj git clone'
+    abbr -a jgpn 'jj git push -c @-'    # push new auto-named bookmark from committed change
+    abbr -a jgpd 'jj git push --deleted' # sync bookmark deletions to remote
 
-    # Branch management
-    abbr -a jbc 'jj branch create'
-    abbr -a jbs 'jj branch set'
-    abbr -a jbl 'jj branch list'
+    # Put a named bookmark at @- (create if new, move if it exists) and push.
+    # Compatible with jj versions that don't have `bookmark set --allow-new`.
+    function __jgp_set_bookmark_at_prev --argument-names bookmark
+        jj bookmark create $bookmark -r @- 2>/dev/null
+        or jj bookmark move $bookmark --to @-
+    end
 
-    # Useful combos
-    alias jll 'jj log -r ::@'           # log ancestors only
-    alias jla 'jj log -r "all()"'       # log everything
-    alias jds 'jj diff --stat'          # diff with stats (like gds)
+    # Closest equivalent of `git push -u origin <branch>`:
+    # - with arg:    put a named bookmark at @- and push it (new or existing)
+    # - without arg: push whatever tracked bookmarks already moved (like plain `jgp`).
+    #   If that does nothing, you probably need `jgpu <name>` or `jgpn`.
+    function jgpu --description 'jj: set/create bookmark at @- and push (git push -u equivalent)' --argument-names bookmark
+        if test -n "$bookmark"
+            __jgp_set_bookmark_at_prev $bookmark
+            or return 1
+            jj git push
+            return
+        end
+
+        jj git push
+        set -l rc $status
+        if test $rc -ne 0
+            return $rc
+        end
+        # Helpful nudge if nothing actually moved.
+        if test -z (jj log --no-graph -r @- -T 'local_bookmarks' 2>/dev/null)
+            echo "" >&2
+            echo "hint: no bookmark at @-. Use 'jgpu <name>' to name one, or 'jgpn' for an auto-generated name." >&2
+        end
+    end
+
+    # Commit + set bookmark to new commit + push, in one call.
+    # Usage: jgpb <bookmark> "commit message"
+    # Works whether <bookmark> is new or already exists.
+    function jgpb --description 'jj: commit, set bookmark to new commit, push' --argument-names bookmark message
+        if test -z "$bookmark"; or test -z "$message"
+            echo "Usage: jgpb <bookmark> \"commit message\"" >&2
+            return 1
+        end
+        jj commit -m "$message"
+        or return 1
+        __jgp_set_bookmark_at_prev $bookmark
+        or return 1
+        jj git push
+    end
+
+    # Bookmark management (formerly `jj branch`)
+    abbr -a jbc 'jj bookmark create'
+    abbr -a jbs 'jj bookmark set'
+    abbr -a jbl 'jj bookmark list'
+    abbr -a jbm 'jj bookmark move'
+
+    # Useful log views
+    alias jll 'jj log -r ::@'                   # ancestors of @
+    alias jla 'jj log -r "all()"'               # everything
+    alias jlt 'jj log -r "trunk()..@"'          # my stack vs main
+    alias jds 'jj diff --stat'                  # diff with stats (like gds)
 end
 
 # Guard example: only add k* abbr if kubectl is present

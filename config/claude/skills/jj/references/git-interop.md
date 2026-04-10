@@ -51,9 +51,35 @@ After init:
 ```bash
 jj log                       # should render the existing git history
 jj st
+jj bookmark track main --remote=origin   # track main against origin (once)
 ```
 
 No git history is modified. The initial import reads all branches and creates matching bookmarks.
+
+**Gitignore `.jj/` immediately.** jj does **not** add `.jj/` to `.gitignore` for you, and `git status` will happily offer to commit the entire `.jj/` directory. Choose one:
+
+- **Per-repo (shared)** — commit a `.gitignore` entry so every jj user on the team benefits:
+  ```bash
+  cat >> .gitignore <<'EOF'
+
+  # Jujutsu (jj) local state — present only for contributors using jj.
+  # See https://jj-vcs.dev. Safe to ignore; git users are unaffected.
+  .jj/
+  EOF
+  jj commit -m "chore: gitignore .jj/ (jujutsu local state)"
+  jj bookmark set main -r @-
+  jj git push
+  ```
+- **Global (personal)** — one-time setup that covers every repo you ever colocate:
+  ```bash
+  mkdir -p ~/.config/git
+  echo '.jj/' >> ~/.config/git/ignore
+  git config --global core.excludesfile ~/.config/git/ignore
+  ```
+
+The narrated end-to-end recipe is in [workflows § Adopting jj in an existing git repo](workflows.md#adopting-jj-in-an-existing-git-repo).
+
+**Backing out of colocation** is always safe: `rm -rf .jj` restores a plain git repo. Git objects, refs, and history are untouched.
 
 ## Cloning from a git remote
 

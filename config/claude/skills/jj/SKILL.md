@@ -25,7 +25,42 @@ Use `jj` as the default VCS in git-backed repositories. Jujutsu is git-compatibl
 | Inspecting state, committing, resolving conflicts | `jj` |
 | Pushing/pulling with a remote | `jj git push` / `jj git fetch` |
 | Running pre-commit hooks, LFS, submodules, signed commits to protected branches | `git` (see [git-interop](references/git-interop.md)) |
-| The repo has no `.jj` directory | `git`, or run `jj git init --colocate` first |
+| The repo has no `.jj` directory | Adopt jj first (see below), then use jj |
+
+## Adopting jj in an existing git repo
+
+When you land in a plain-git repo and want to switch to jj, run the three steps below. Everything is local until the final push; nothing affects teammates who stay on git. Assumes a clean working tree — stash or commit in-progress work with git first if needed.
+
+```bash
+# 1. Colocate jj into the existing .git (no history is modified)
+jj git init --colocate
+
+# 2. Add .jj/ to the repo's .gitignore with context for teammates
+cat >> .gitignore <<'EOF'
+
+# Jujutsu (jj) local state — present only for contributors using jj.
+# See https://jj-vcs.dev. Safe to ignore; git users are unaffected.
+.jj/
+EOF
+
+# 3. Track main, commit the gitignore change via jj, advance the bookmark, push
+jj bookmark track main --remote=origin     # only needed the first time
+jj commit -m "chore: gitignore .jj/ (jujutsu local state)"
+jj bookmark set main -r @-
+jj git push
+```
+
+**Alternative — skip the repo change entirely.** If you don't want to touch the shared `.gitignore`, add `.jj/` to your global gitignore once and every future repo you colocate will just work:
+
+```bash
+mkdir -p ~/.config/git
+echo '.jj/' >> ~/.config/git/ignore
+git config --global core.excludesfile ~/.config/git/ignore
+```
+
+**Back out of colocation** at any time with `rm -rf .jj` — git is untouched, so the repo reverts to a plain git repo.
+
+See [git-interop § Adopting jj in an existing git repo](references/git-interop.md#initializing-on-an-existing-git-repo) for the gotchas (submodules, LFS, clean-tree assumption, etc.) and [workflows § Adopting jj in a git repo](references/workflows.md#adopting-jj-in-an-existing-git-repo) for the narrated recipe.
 
 ## Daily cheat sheet
 
@@ -92,4 +127,8 @@ jj op restore <op-id>              # jump back to any previous repo state
 - [git-to-jj command table](references/git-to-jj.md) — one-to-one translations for every common git workflow
 - [jj CLI reference](references/cli-reference.md) — subcommands grouped by purpose, important flags
 - [git interoperability](references/git-interop.md) — colocated vs standalone, init/clone/push, compatibility matrix, known gotchas
-- [Common workflows](references/workflows.md) — split, squash, stacked rebase, conflict resolution, undo, pushing, recovering from a bad op
+- [Common workflows](references/workflows.md) — adopt, split, squash, stacked rebase, conflict resolution, undo, pushing, recovering from a bad op
+
+## Learning mode only
+
+- [jj-tutorial router](references/jj-tutorial/INDEX.md) — local summaries of Steve Klabnik's [jj tutorial](https://steveklabnik.github.io/jujutsu-tutorial/). **Load this only when the user is explicitly learning jj or reflecting on the tutorial** — e.g., "help me learn jj", "explain the squash workflow", "I'm reading the tutorial and...", "what's the difference between squash and edit workflows?". For daily jj operations, the four references above are sufficient; do not preload the tutorial router.

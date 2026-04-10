@@ -120,7 +120,7 @@ case "$subcmd" in
   clone)
     hint="Use 'jj git clone <url>' (add '--colocate' if you also need git tooling in the clone)." ;;
   init)
-    hint="Use 'jj git init --colocate' for a new repo, or 'jj git init --git-repo=.' inside an existing git repo to adopt it." ;;
+    hint="Use 'jj git init --colocate' to adopt an existing git repo (or start a fresh one). Full adoption: 'jj git init --colocate' → append '.jj/' to .gitignore with a teammate-friendly comment (see jj skill) → 'jj bookmark track main --remote=origin' → 'jj commit -m \"chore: gitignore .jj/ (jujutsu local state)\"' → 'jj bookmark set main -r @-' → 'jj git push'. Alternative: add '.jj/' to the global gitignore (\$HOME/.config/git/ignore) once and skip the repo change entirely." ;;
   branch)
     hint="jj uses bookmarks. 'jj bookmark list', 'jj bookmark create <name> -r <rev>', 'jj bookmark set <name> -r <rev>' (move), 'jj bookmark delete <name>'." ;;
   tag)

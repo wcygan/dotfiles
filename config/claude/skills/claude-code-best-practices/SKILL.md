@@ -1,19 +1,27 @@
 ---
 name: claude-code-best-practices
 description: >
-  Reference guide for Claude Code features and best practices: skills, hooks, sub-agents,
-  agent teams, headless mode, scheduled tasks, channels, teleport, remote control, worktrees,
-  batch, and frontend verification. Auto-loads when working with Claude Code configuration,
-  writing skills, setting up hooks, orchestrating agents, or optimizing workflows.
-  Keywords: skill, hook, sub-agent, agent team, headless, scheduled task, channel, plugin,
-  SKILL.md, teleport, remote control, worktree, batch, chrome extension, frontend, /loop,
-  accumulator, stateful loop, silent accumulator, polling watcher, incremental explorer
+  Reference guide for Claude Code features and best practices: writing a good CLAUDE.md,
+  skills, hooks, sub-agents, agent teams, headless mode, scheduled tasks, channels, teleport,
+  remote control, worktrees, batch, and frontend verification. Auto-loads when authoring or
+  auditing a CLAUDE.md, working with Claude Code configuration, writing skills, setting up
+  hooks, orchestrating agents, or optimizing workflows.
+  Keywords: CLAUDE.md, claude md, project instructions, agent instructions, instruction budget,
+  skill, hook, sub-agent, agent team, headless, scheduled task, channel, plugin, SKILL.md,
+  teleport, remote control, worktree, batch, chrome extension, frontend, /loop, accumulator,
+  stateful loop, silent accumulator, polling watcher, incremental explorer
 allowed-tools: Read, Grep, Glob, WebFetch, WebSearch, Bash(cat *), Bash(gh *), Bash(git *), Bash(ls *)
 ---
 
 # Claude Code Best Practices
 
 Reference knowledge for Claude Code features. Each topic has a local summary and a canonical URL.
+
+## Prime Directive: CLAUDE.md Is Load-Bearing
+
+`CLAUDE.md` is the **only** file that goes into every Claude Code conversation by default. Every line competes for a finite instruction budget (~150–200 instructions, of which ~50 are already spent on the system prompt). Authoring or editing a `CLAUDE.md` — global, project, or skill-scoped — is **always** a high-leverage operation.
+
+**Whenever the user asks you to write, refactor, audit, or add to a `CLAUDE.md`**, load [writing-claude-md](references/writing-claude-md.md) *first* and apply it. Proactively flag bloat, task-specific rules, linter-style guidance, and long inline examples. Prefer extracting deep content into `agent_docs/` (or equivalent) with a one-line pointer from the root file.
 
 ## Fetch Strategy
 
@@ -24,6 +32,8 @@ Reference knowledge for Claude Code features. Each topic has a local summary and
 
 | Topic | Reference | Canonical URL |
 |-------|-----------|---------------|
+| **Writing a good CLAUDE.md** | [writing-claude-md](references/writing-claude-md.md) | https://www.humanlayer.dev/blog/writing-a-good-claude-md |
+| Built-in tool catalog & behavior | [tools-reference](references/tools-reference.md) | https://code.claude.com/docs/en/tools-reference |
 | Creating and configuring skills | [skills](references/skills.md) | https://code.claude.com/docs/en/skills |
 | Skill authoring best practices | [skill-best-practices](references/skill-best-practices.md) | https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices |
 | Spawning isolated subagents | [sub-agents](references/sub-agents.md) | https://code.claude.com/docs/en/sub-agents |

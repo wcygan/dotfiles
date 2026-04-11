@@ -6,6 +6,21 @@ tags: [content, guidelines, CLAUDE.md, context, writing]
 
 # Content Guidelines for CLAUDE.md Files
 
+> **Read first**: [`claude-code-best-practices/references/writing-claude-md.md`](../../claude-code-best-practices/references/writing-claude-md.md). That file is the canonical source for CLAUDE.md authoring — this file layers directory-scoped conventions on top of it. When the two disagree, the best-practices reference wins.
+
+## Why This Matters
+
+Every CLAUDE.md you write is injected into every Claude Code session opened in that directory. It competes with the root CLAUDE.md, the skill instructions, and the system prompt for a finite instruction budget. Treat each line as expensive. If a piece of info can be discovered by reading the code, or is already covered by a parent CLAUDE.md, leave it out.
+
+## Core Rules (inherited from writing-claude-md)
+
+- **WHAT / WHY / HOW**: what's in the directory, why it exists, how a developer touches it.
+- **Universality within scope**: only rules that apply to *essentially every* task in this directory. Sub-area specifics belong in a deeper CLAUDE.md or an `agent_docs/` file.
+- **No linter prose**: formatting, naming, import order — leave to the linter.
+- **No long inline code**: use `path/to/file.ext:42` pointers instead of pasting code.
+- **No duplication of the parent CLAUDE.md**: if the root already says "this is a pnpm monorepo," don't repeat it.
+- **No auto-generated boilerplate**: hand-write every line.
+
 ## Target Structure (under 40 lines)
 
 ```markdown

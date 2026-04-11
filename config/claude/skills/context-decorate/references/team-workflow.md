@@ -38,23 +38,33 @@ Task(
   prompt="""
 You are a context decorator agent on the ctx-decorate team.
 
+**Before you write anything, read these two files in full:**
+1. ~/.claude/skills/claude-code-best-practices/references/writing-claude-md.md
+2. ~/.claude/skills/context-decorate/references/content-guidelines.md
+
+They define the instruction budget, WHAT/WHY/HOW structure, universality rule, and
+anti-patterns you MUST apply. Every CLAUDE.md you produce will be injected into every
+Claude Code session in that directory, so every line has to earn its slot.
+
 Write a CLAUDE.md file for each of these directories:
 - /path/to/src
 - /path/to/lib
 
 For each directory:
 1. Use Glob and Read to examine its contents (entry points, manifests, READMEs)
-2. Write a CLAUDE.md (under 40 lines) with:
-   - 1-2 sentence overview
+2. Check the parent CLAUDE.md (if any) so you don't duplicate what's already stated upstream
+3. Write a CLAUDE.md (under 40 lines) with:
+   - 1-2 sentence WHAT/WHY overview
    - ## Contents: bullet list of key files and subdirs
-   - ## Usage: how it fits in the larger project
-3. Do NOT create a CLAUDE.md if one already exists
+   - ## Usage: HOW this fits in the larger project (entry points, who reads/writes it)
+4. Do NOT include linter-style rules, long code examples, or boilerplate
+5. Do NOT create a CLAUDE.md if one already exists
 
 After writing all files, send a message to your team lead summarizing:
 - Which CLAUDE.md files you created
 - Any directories you skipped and why
-
-Content guidelines: [content-guidelines](content-guidelines.md)
+- Any directories where you felt the parent CLAUDE.md already covered everything
+  (in which case you should skip rather than create noise)
   """
 )
 ```

@@ -157,6 +157,27 @@ if type -q jj
         jj git push
     end
 
+    # Direct-to-main shortcuts for personal repos (dotfiles, side projects).
+    # Both take an optional bookmark override, defaulting to "main".
+    #
+    # jpm            → advance main to @- and push (use after `jc`)
+    # jpm master     → same thing but for a master-based repo
+    # jcm "msg"      → commit + advance main + push, in one shot
+    # jcm "msg" dev  → commit + advance the "dev" bookmark + push
+    function jpm --description 'jj: push to main (or given bookmark) — after jc' --argument-names bookmark
+        test -z "$bookmark"; and set bookmark main
+        jgpu $bookmark
+    end
+
+    function jcm --description 'jj: commit and push to main (or given bookmark) in one shot' --argument-names message bookmark
+        if test -z "$message"
+            echo "Usage: jcm \"commit message\" [bookmark]" >&2
+            return 1
+        end
+        test -z "$bookmark"; and set bookmark main
+        jgpb $bookmark "$message"
+    end
+
     # Bookmark management (formerly `jj branch`)
     abbr -a jbc 'jj bookmark create'
     abbr -a jbs 'jj bookmark set'

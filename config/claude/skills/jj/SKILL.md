@@ -121,6 +121,65 @@ jj op restore <op-id>              # jump back to any previous repo state
 - **Prefer `jj squash --into <rev>` over `git commit --fixup` + autosquash.** It's one step and descendants rebase for free.
 - **`jj abandon` is reversible.** It's not `git reset --hard`. Recover with `jj undo` or `jj op restore`.
 - **Never force-push without confirming.** `jj git push` only pushes what changed, but bookmark moves are still force updates from the remote's perspective.
+- **"Nothing changed" on push means you forgot the bookmark move.** jj never auto-advances bookmarks. After `jj commit`, the bookmark still points at the old position — advance it (`jj bookmark move <name> --to @-`) before `jj git push`, or use the `jpm`/`jcm` fish shortcuts below for the direct-to-main case.
+
+## Fish shortcuts on this machine
+
+This user's `~/.config/fish/conf.d/40-aliases.fish` defines a layered set of jj helpers. Prefer them over raw commands when responding — they're shorter and carry the user's intent. Definitions are the source of truth; this list is just the ones that matter most when you're helping with a commit-and-push flow.
+
+**Core single-word aliases:**
+
+| Alias | Expands to |
+|---|---|
+| `js` | `jj st` |
+| `jd` | `jj diff` |
+| `jl` | `jj log` |
+| `jlt` | `jj log -r 'trunk()..@'` — stack vs main (use this constantly) |
+| `jn` | `jj new` |
+| `ju` | `jj undo` |
+| `jop` | `jj op log` |
+
+**Commands that take args (abbreviations — expand on space/tab):**
+
+| Abbr | Expands to |
+|---|---|
+| `jc` | `jj commit -m` |
+| `jde` | `jj describe -m` |
+| `jnm` | `jj new -m` |
+| `jsq` | `jj squash` |
+| `jsqi` | `jj squash --into` |
+| `jsp` | `jj split` |
+| `jed` | `jj edit` |
+| `jab` | `jj abandon` |
+| `jbm` | `jj bookmark move` |
+| `jbs` | `jj bookmark set` |
+| `jbl` | `jj bookmark list` |
+| `jgf` / `jgp` | `jj git fetch` / `jj git push` |
+
+**Push helpers (the important ones for getting work to the remote):**
+
+| Shortcut | What it does | When to use |
+|---|---|---|
+| `jcm "msg"` | `jj commit -m "msg"` → set main to `@-` → `jj git push` | Direct-to-main personal repos — **default for dotfiles and side projects** |
+| `jpm` | Set main to `@-` → `jj git push` | You already ran `jc` and now want to push main |
+| `jcm "msg" <bk>` / `jpm <bk>` | Same as above but for an arbitrary bookmark (e.g. `master`, `dev`) | Override the `main` default |
+| `jgpb <bk> "msg"` | Commit + set bookmark + push | Feature-branch workflow with a chosen branch name |
+| `jgpu <bk>` | Set bookmark at `@-` + push (no commit) | Push after committing, to any bookmark |
+| `jgpn` | `jj git push -c @-` | First push under an auto-generated `push-<changeid>` name |
+| `jgpd` | `jj git push --deleted` | Sync bookmark deletions to the remote |
+
+**Decision tree for "commit and push this":**
+
+1. Direct-to-main repo (personal dotfiles, side projects) → `jcm "msg"`
+2. Feature branch, new or existing → `jgpb feat/x "msg"`
+3. Already committed, just need to push main → `jpm`
+4. Don't care about the branch name → `jc "msg"` then `jgpn`
+
+**Gotchas to remember:**
+
+- The abbreviations (`jc`, `jde`, `jnm`, etc.) only expand in interactive fish shells. In scripts or when the user pastes a full command, you need the full `jj` form.
+- After changing `40-aliases.fish`, the user must `reload` (which is `exec fish -l`) for new functions to be picked up.
+- `jpm`/`jcm` assume a `main` bookmark by default. If a repo uses `master` or `dev`, pass it explicitly (`jpm master`, `jcm "msg" dev`).
 
 ## References
 

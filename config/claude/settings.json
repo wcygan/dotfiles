@@ -135,8 +135,8 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Bash(git *)",
             "command": "/Users/wcygan/.claude/hooks/enforce-jj.sh",
+            "if": "Bash(git *)",
             "timeout": 5
           }
         ]
@@ -270,6 +270,12 @@
       "source": {
         "source": "github",
         "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "financial-services-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/financial-services-plugins"
       }
     }
   },

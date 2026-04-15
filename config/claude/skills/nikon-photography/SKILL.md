@@ -148,3 +148,14 @@ see [sharing-guide.md](references/sharing-guide.md)
 
 For long-term storage strategy and JPEG XL reversibility:
 see [archival-guide.md](references/archival-guide.md)
+
+## RAW / NEF Workflow (DaVinci Resolve 21)
+
+This skill does **not** process RAW (NEF) files. As of 2026-04-14, the user's
+RAW editing tool is DaVinci Resolve 21 (free, Photo page). Handoff pattern:
+Z5 II NEF → Resolve (grade + Quick Export JPEG) → this skill (resize, optimize,
+archive, share, contact-sheet). If the user asks about RAW grading, Magic Mask,
+Relight, Face Refinement, or AI SuperScale on stills, point them at Resolve —
+do not try to batch NEFs through the scripts here.
+
+See [davinci-resolve-workflow.md](references/davinci-resolve-workflow.md)

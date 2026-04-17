@@ -2,6 +2,33 @@
 
 Detailed model comparison for M5 Max 128GB. See also: hardware.md for memory constraints.
 
+## ⭐ Preferred Default: Qwen3.6-35B-A3B
+
+**35B total / 3B active MoE, multimodal (text + vision), 256K native context (1M via YaRN).** This is the preferred daily-driver model on this hardware for four reasons:
+
+1. **Lossless is affordable.** BF16 weights are only 69.4 GB — you can run the flagship at full precision and still have ~50 GB free for a 256K KV cache plus OS and apps. Almost no other model in this intelligence tier fits at BF16 on consumer Apple Silicon.
+2. **MoE speed.** Only 3B active params per token → generation speed in the Qwen3-Coder-30B-A3B ballpark (~100-130 t/s at Q5/Q4, ~50-70 t/s at BF16 — bandwidth-bound).
+3. **Multimodal.** Includes vision (mmproj files), unlike the 30B-A3B class it supersedes.
+4. **Agentic-friendly.** Supports `/think` and `/no_think` modes; default `enable_thinking:true` can be disabled for tool loops.
+
+**Gotchas**
+- **Ollama is currently broken** for this model — mmproj vision files aren't handled. Use llama.cpp (llama-server) or MLX directly.
+- **Thinking mode on by default** — pass `--chat-template-kwargs '{"enable_thinking":false}'` for agentic/coding use.
+- If you see gibberish at long context, add `--cache-type-k bf16 --cache-type-v bf16`.
+
+**Quant picks (Unsloth Dynamic 2.0 GGUFs)**
+
+| Quant | Size | Use when |
+|-------|------|----------|
+| **BF16** | 69.4 GB | Flagship lossless quality; room for 256K ctx; ~50-70 t/s |
+| **UD-Q5_K_XL** | 26.6 GB | Speed + quality balance, dual-model setups, 1M-token YaRN context |
+| UD-Q4_K_XL | 22.4 GB | Maximum speed / minimum footprint |
+| UD-IQ4_XS | 17.7 GB | Edge case — co-load with a large second model |
+
+**Sampling**
+- Thinking mode: `--temp 0.6 --top-p 0.95 --top-k 20 --min-p 0.0`
+- Non-thinking: `--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0.0`
+
 ## Tier 1: Maximum Power (Push the Limits)
 
 | Model | Total | Active | Type | Quant | Size | t/s | Notes |
@@ -41,11 +68,11 @@ Detailed model comparison for M5 Max 128GB. See also: hardware.md for memory con
 
 ## Top 5 Picks (Summary)
 
-1. **Qwen3-235B-A22B (Q4, MLX)** — Most powerful that fits. Frontier knowledge, 22B active. ~15-25 t/s
-2. **GLM-4.7-Flash (Q8)** — Best coding model. ~80-100 t/s. Excellent tool calling. Daily driver
-3. **Llama 4 Scout (Q4-Q8)** — Best multimodal. 109B MoE, 17B active. ~30-45 t/s. 10M context
+1. **⭐ Qwen3.6-35B-A3B (BF16 or UD-Q5_K_XL)** — Preferred daily driver. 35B/3B MoE, vision, 256K ctx. BF16 fits losslessly (69 GB). ~50-130 t/s depending on quant
+2. **Qwen3-235B-A22B (Q4, MLX)** — Most powerful that fits. Frontier knowledge, 22B active. ~15-25 t/s
+3. **GLM-4.7-Flash (Q8)** — Best pure-coding model. ~80-100 t/s. Excellent tool calling
 4. **Devstral 2 123B (Q4_K_M)** — Best SWE-bench (76.2%). ~10-16 t/s. Serious engineering tasks
-5. **Qwen3-Coder 30B-A3B (Q8)** — Fastest useful coding model. ~100-134 t/s. Instant feel
+5. **Llama 4 Scout (Q4-Q8)** — Best multimodal at scale. 109B MoE, 17B active. ~30-45 t/s. 10M context
 
 ## What Does NOT Fit (or Fits Poorly)
 

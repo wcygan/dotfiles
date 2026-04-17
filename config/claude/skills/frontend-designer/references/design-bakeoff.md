@@ -24,60 +24,31 @@ N parallel `frontend-design-agent` instances (2–4), each in its own worktree, 
 
 ### Picking the N aesthetics (critical — don't skip)
 
-**Always** source candidates from `frontend-aesthetic/references/domain-matching.md`:
+Don't guess the candidates — build them *with the user* through two rounds of `AskUserQuestion`. The goal is N directions that are **genuinely different from each other** (different color temperature, different type neighborhoods, different motion philosophy) and that all fit the product's domain pool in `frontend-aesthetic/references/domain-matching.md`.
 
-1. Identify the product's domain (fintech / dev tool / wellness / games / agency / etc.).
-2. Look up the candidate pool for that domain — 4–6 aesthetics that naturally fit.
-3. From that pool, pick N candidates that are **genuinely different from each other** (different color temperature, different type neighborhoods, different motion philosophy). The domain-matching doc has explicit "genuinely different" example combinations per domain.
-4. Write one line per slot naming the direction + its distinguishing twist.
+`AskUserQuestion` accepts multiple questions in a single turn — batch related prompts into one turn instead of serializing one question at a time.
 
-**Hard rule**: do NOT default to Editorial / Brutalist / Handcrafted. Those are three of 18 directions and only fit specific domains. If you pick them without reading the domain pool, you're pattern-matching on prior examples, not the current product.
+**Round 1 — gather constraints.** In a single `AskUserQuestion` turn, ask whatever you can't infer from the code and current project state. Typical questions:
 
-### Example team compositions (domain-specific)
+- Product domain or closest analogue (so you can pick the right pool in `domain-matching.md`).
+- Number of slots (2–4).
+- Hard no-gos (brand colors to preserve, fonts already licensed, aesthetics to avoid).
+- Boldness target — "show me the extremes" vs. "three takes on the same mood."
+- Any reference sites / moodboard links the user already has in mind.
 
-These are illustrative — pick fresh per product. Each shows three genuinely-different picks from within one domain's pool.
+**Round 2 — propose and approve.** Read `frontend-aesthetic/references/domain-matching.md`, pick N candidates from the matching domain's pool that diverge along multiple axes, and write one line per slot (direction + distinguishing twist — type pairing, palette, motion note). Send the draft back through `AskUserQuestion`:
 
-**Consumer SaaS — productivity tool**
+- One question per proposed slot: *approve as-is / revise / replace with a different direction*.
+- Include a free-text option on each so the user can steer ("swap the display face", "push the palette further", etc.).
 
-| # | Aesthetic | Port | Branch |
-|---|---|---|---|
-| 1 | Minimalist-luxury — Didot, extreme whitespace, single charcoal accent | 7071 | (agent returns) |
-| 2 | Serif-forward Tech — GT Super + Söhne, warm off-white + deep forest | 7072 | (agent returns) |
-| 3 | Dark / Moody — Reckless Neue + mono, near-black base, ember accent | 7073 | (agent returns) |
+Iterate Round 2 until every slot is explicitly approved. Only then spawn the agents.
 
-**Developer tool — CLI / infra**
+**Hard rules**:
+- No fixed default triad. The right pool depends on the product; every direction in `domain-matching.md` is on the table until you've matched the domain.
+- If two proposed slots could plausibly produce the same output, merge them and propose something bolder for the freed slot.
+- Don't skip the approval round, even when you're confident. The user reviews the rendered candidates later — surprise candidates bias that review.
 
-| # | Aesthetic | Port | Branch |
-|---|---|---|---|
-| 1 | Terminal — JetBrains Mono end-to-end, green-on-black, typewriter reveals | 7071 | (agent returns) |
-| 2 | Swiss — Söhne, strict 12-col grid, monochrome + single red accent | 7072 | (agent returns) |
-| 3 | Brutalist — Druk Wide + mono, unapologetic cyan on black, exposed borders | 7073 | (agent returns) |
-
-**Games / entertainment**
-
-| # | Aesthetic | Port | Branch |
-|---|---|---|---|
-| 1 | Cyberpunk — Orbitron + mono, acid magenta/cyan, HUD hairlines | 7071 | (agent returns) |
-| 2 | Y2K — Eurostile, aqua gradients, chrome highlights, shimmer buttons | 7072 | (agent returns) |
-| 3 | Lo-fi Zine — VT323, flat neon + pastel, scan-line overlays | 7073 | (agent returns) |
-
-**Wellness / lifestyle**
-
-| # | Aesthetic | Port | Branch |
-|---|---|---|---|
-| 1 | Pastoral — Canela + botanical accents, sage/clay/bone palette | 7071 | (agent returns) |
-| 2 | Minimalist-luxury — Didot Light, cream + cocoa, glacial scroll-reveal | 7072 | (agent returns) |
-| 3 | Risograph — PP Editorial New, fluoro pink + teal + black on cream | 7073 | (agent returns) |
-
-**Agency / portfolio — show taste**
-
-| # | Aesthetic | Port | Branch |
-|---|---|---|---|
-| 1 | Brutalist — Neue Haas Display Black, harsh contrast, exposed structure | 7071 | (agent returns) |
-| 2 | Maximalist — clashing serif + script + display, saturated parallax chaos | 7072 | (agent returns) |
-| 3 | Editorial — Fraunces + Inter Tight, asymmetric, hanging drop-caps | 7073 | (agent returns) |
-
-Each slot gets:
+Each approved slot carries:
 - An **aesthetic** (from the domain pool, named with its distinguishing twist)
 - A **dev-server port** so you can open all N simultaneously
 - A **worktree** so commits don't collide and you can flip between them with `cd`
@@ -86,16 +57,16 @@ Each slot gets:
 
 ### 1. Pick the candidates
 
-State them up front:
+Run the two-round `AskUserQuestion` flow described above. Once every slot is user-approved, restate the final roster for the record:
 
 ```
-Bake-off for src/routes/index.tsx hero:
-  1. Editorial refined  — Fraunces + Inter Tight, oxblood accent
-  2. Brutalist bakery   — Neue Haas Display + JetBrains Mono, no accent
-  3. Handcrafted zine   — Canela + Söhne, torn-paper textures, warm palette
+Bake-off for <surface>:
+  1. <direction> — <one-line distinguishing twist (type / palette / motion)>
+  2. <direction> — <one-line distinguishing twist>
+  3. <direction> — <one-line distinguishing twist>
 ```
 
-Keep candidate descriptions to one line — the agent reads its own skill for depth.
+Keep each description to one line — the agent reads its own skill for depth.
 
 ### 2. Spawn the subagents in parallel
 
@@ -116,7 +87,7 @@ Three parallel Agent calls, each with:
 ```
 ## Task
 Bake-off slot #<N> of <total>. Design the <surface> for <project/route>.
-Aesthetic: <one-line direction — "Brutalist bakery" style>.
+Aesthetic: <one-line direction + distinguishing twist, as approved in Round 2>.
 Dev server port: <unique port per slot, e.g., 7071/7072/7073>.
 
 ## Constraints

@@ -37,6 +37,14 @@ ollama launch opencode --model gemma4:26b
 # Start MLX server (fastest, OpenAI-compatible)
 mlx_lm.server --model mlx-community/Qwen3.5-35B-A3B-4bit --port 8080
 
+# Preferred: Qwen3.6-35B-A3B via llama.cpp (BF16 lossless, 256K ctx, vision)
+# -hf auto-downloads the sibling mmproj; do NOT pass --mmproj-url with an HF shorthand (needs https://)
+llama-server -hf unsloth/Qwen3.6-35B-A3B-GGUF:BF16 \
+  -c 262144 --cache-type-k bf16 --cache-type-v bf16 \
+  --jinja --reasoning off \
+  --temp 0.7 --top-p 0.8 --top-k 20 --min-p 0.0 \
+  -ngl 99 -fa on --host 127.0.0.1 --port 8080
+
 # Start llama.cpp server (max quant control)
 llama-server -hf unsloth/gemma-4-26B-A4B-it-GGUF:UD-Q4_K_XL -c 65536 --port 8080
 
@@ -47,8 +55,12 @@ curl -s http://localhost:11434/api/ps | jq
 
 ## Model Selection
 
+**Preferred default: Qwen3.6-35B-A3B.** 35B total / 3B active MoE. 256K native context (1M via YaRN). Multimodal (vision). Rare property at 128GB: runs at **BF16 (69 GB) losslessly** with headroom for long context. Use Unsloth GGUFs via llama.cpp or MLX — Ollama is currently broken for this model (mmproj vision files not handled). Thinking mode is on by default; disable with `--chat-template-kwargs '{"enable_thinking":false}'` for agentic work.
+
 | Use Case | Model | Quant | Size | Speed | Notes |
 |----------|-------|-------|------|-------|-------|
+| **⭐ Default (preferred)** | Qwen3.6-35B-A3B | BF16 | ~69 GB | ~50-70 t/s | Lossless flagship, 256K ctx, vision |
+| **⭐ Default (fast)** | Qwen3.6-35B-A3B | UD-Q5_K_XL | ~27 GB | ~100-130 t/s | Same model, quantized for speed + headroom |
 | **Fast coding** | GLM-4.7-Flash | Q8 | ~38 GB | ~80-100 t/s | Best coding index, excellent tool calling |
 | **Fast coding** | Qwen3-Coder 30B-A3B | Q8 | ~32 GB | ~100-134 t/s | Purpose-built coding MoE, feels instant |
 | **Quality coding** | Gemma 4 31B Dense | Q8 | ~39 GB | ~25-35 t/s | Strong reasoning, 256K context |
@@ -57,9 +69,9 @@ curl -s http://localhost:11434/api/ps | jq
 | **Max intelligence** | Qwen3-235B-A22B | Q4 | ~124 GB | ~15-25 t/s | Frontier-class, barely fits |
 | **Multimodal** | Llama 4 Scout | Q4-Q8 | ~55-100 GB | ~30-45 t/s | 10M context, vision+text |
 
-**Dual-model daily driver setup** (~77 GB, 41 GB free):
-- GLM-4.7-Flash Q8 for fast agentic work
-- Gemma 4 31B Dense Q8 for hard reasoning
+**Dual-model daily driver setup** (~66 GB, 52 GB free):
+- Qwen3.6-35B-A3B UD-Q5_K_XL for primary reasoning + vision (~27 GB)
+- GLM-4.7-Flash Q8 for fast agentic coding (~38 GB)
 
 ## Inference Engine Decision
 

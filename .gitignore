@@ -10,9 +10,11 @@ result-*
 .DS_Store
 .vscode/
 .idea/
+.jj
 *.swp
 *.log
 tmp/
+config/claude/session-env/*
 config/claude/teams/*
 config/claude/telemetry/*
 config/claude/backups/*

@@ -60,6 +60,26 @@ Example: `"matcher": "Edit|Write"` fires only on file edits.
 - Re-inject context after compaction on `SessionStart` `compact`
 - Auto-approve safe permissions on `PermissionRequest`
 
+### Gotcha: `env` block does not shell-expand
+
+The `env` block in `settings.json` passes values **literally** — no `${VAR}` expansion. Setting `"TALOSCONFIG": "${CLAUDE_PROJECT_DIR}/talos/config"` exports the literal string `${CLAUDE_PROJECT_DIR}/talos/config`, not the resolved path.
+
+For env vars that need a dynamic project-relative path, use `CLAUDE_ENV_FILE` from a `SessionStart` / `CwdChanged` / `FileChanged` hook. Hooks run in a shell where `$CLAUDE_PROJECT_DIR` is set, and anything appended to `$CLAUDE_ENV_FILE` is applied to every subsequent Bash tool call:
+
+```python
+# .claude/hooks/set_env.py (SessionStart hook)
+import os, shlex
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+env_file = os.environ.get("CLAUDE_ENV_FILE")
+if env_file:
+    with open(env_file, "a") as f:
+        f.write(f"export MY_VAR={shlex.quote(str(REPO_ROOT / 'some/path'))}\n")
+```
+
+Only `SessionStart`, `CwdChanged`, and `FileChanged` hooks have access to `CLAUDE_ENV_FILE`. Append (`>>`), don't overwrite — other hooks may write to it too.
+
 ### Practical Hook Recipes
 
 **1. Inject dynamic context on session start:**

@@ -128,7 +128,6 @@
       "Bash(> /dev/sda*)"
     ]
   },
-  "model": "claude-opus-4-7",
   "hooks": {
     "PreToolUse": [
       {
@@ -283,6 +282,6 @@
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
-  "enableRemoteControlForAllSessions": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "enableRemoteControlForAllSessions": true
 }

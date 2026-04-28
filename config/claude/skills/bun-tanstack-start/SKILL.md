@@ -1,14 +1,30 @@
 ---
 name: bun-tanstack-start
-description: Opinionated scaffolding and wiring for Bun + TanStack Start apps. Encodes exact create/run commands, Vite plugin order, Tailwind v4 CSS import pattern, `__root.tsx` stylesheet injection, server functions, and Nitro deployment presets. Auto-loads when package.json contains `@tanstack/react-start` or the user asks to create/set up/configure a TanStack Start project with Bun. Complements the general `tanstack-start` and `tailwind` skills by being stack-specific and command-exact. Keywords bun, bunx, tanstack start, vite, nitro, createFileRoute, createServerFn, __root, SSR, react-start.
+description: Opinionated scaffolding and wiring for Bun + TanStack Start apps. Encodes exact create/run commands, Vite plugin order, Tailwind v4 CSS import pattern, `__root.tsx` stylesheet injection, server functions, Nitro deployment presets, **and Effect TS as the default for server-side business logic**. Auto-loads when package.json contains `@tanstack/react-start` or the user asks to create/set up/configure a TanStack Start project with Bun. Complements the general `tanstack-start` and `tailwind` skills by being stack-specific and command-exact. Keywords bun, bunx, tanstack start, vite, nitro, createFileRoute, createServerFn, __root, SSR, react-start, effect, effect-ts, ManagedRuntime, runPromiseExit.
 allowed-tools: Read, Grep, Glob, Bash, Write, Edit, WebFetch
 ---
 
 # Bun + TanStack Start (Opinionated Stack)
 
-Stack-specific mechanics for shipping a TanStack Start app on **Bun** with **Tailwind v4**. This is the *how to wire it up* skill — the *design tokens* skill owns visual consistency, and `frontend-aesthetic` owns taste.
+Stack-specific mechanics for shipping a TanStack Start app on **Bun** with **Tailwind v4**, with **Effect TS as the default for server-side business logic**. This is the *how to wire it up* skill — the *design tokens* skill owns visual consistency, `frontend-aesthetic` owns taste, and `effect-ts` owns the Effect type system itself.
 
 This skill is **low-freedom**: the commands and config snippets below are load-bearing and easy to get wrong from memory. Use them verbatim.
+
+## Stack defaults
+
+| Layer | Default |
+|---|---|
+| Runtime | **Bun** (with `bun --bun` flag — see non-negotiable #2) |
+| Framework | **TanStack Start** |
+| Styling | **Tailwind v4** (CSS-first, no `tailwind.config.*`) |
+| **Server-side business logic** | **Effect TS** — the default, not an option |
+| Validation (server fn inputs, loader inputs, env config) | **Effect Schema** (not Zod, not Valibot) |
+| Server-side error handling | **`Data.TaggedError` + `runPromiseExit`** at the seam |
+| DI / shared resources (DB pool, HTTP client, tracer) | **Effect `Layer` + `ManagedRuntime`** |
+| Retries, timeouts, scheduling | **Effect `Schedule`** |
+| Observability | **Effect spans + `@effect/opentelemetry`** |
+
+If the user proposes plain `try/catch` + `Promise` for non-trivial server logic, push back and propose the Effect equivalent. Opt out only on explicit request — when they do, document the reason in code (`// effect-ts skipped: reason`).
 
 ## When to use this skill
 
@@ -17,11 +33,13 @@ This skill is **low-freedom**: the commands and config snippets below are load-b
 | `package.json` has `@tanstack/react-start` | Apply this skill's conventions automatically |
 | User says "new app" / "scaffold" / "set up TanStack Start" | Use [create-and-run](references/create-and-run.md) |
 | User adds a route / touches `src/routes/` | Apply [routing](references/routing.md) conventions |
-| User writes server logic | Use [server-functions](references/server-functions.md) |
+| User writes **any** server logic (server fn, loader, middleware) | Use [server-functions](references/server-functions.md) **and** [effect-integration](references/effect-integration.md). Default to Effect TS — load the `effect-ts` skill. |
 | User asks about deployment / Vercel / Cloudflare | See [deployment](references/deployment.md) |
 | `bun.lockb` but scripts missing `--bun` flag | Flag and patch — see [create-and-run](references/create-and-run.md) |
+| Scaffolding a new app | After `bunx @tanstack/cli create`, run `bun add effect` and add a `src/server/runtime.ts` with a `ManagedRuntime` — see [effect-integration](references/effect-integration.md) |
+| Agent needs to dogfood / verify the running dev server, or wants a stable HTTPS local URL | See [local-dev-tools](references/local-dev-tools.md) — `portless` + `agent-browser` |
 
-## Non-negotiables (the six easy-to-miss things)
+## Non-negotiables (the seven easy-to-miss things)
 
 1. **Scaffold with the TanStack CLI via `bunx`**: `bunx @tanstack/cli create my-app`. Do not hand-roll.
 2. **Force Bun as the runtime** in scripts with `bun --bun`. Without the flag, Bun delegates to Node and the runtime advantage evaporates.
@@ -29,6 +47,7 @@ This skill is **low-freedom**: the commands and config snippets below are load-b
 4. **Tailwind v4 CSS entry** uses `@import 'tailwindcss' source('../')` — not `@tailwind base/components/utilities` (v3 syntax) and not a `tailwind.config.js` file (v4 is CSS-first).
 5. **Inject the stylesheet via the root route** using `?url` import + `head.links` — *not* a plain `import './styles.css'`.
 6. **Nitro `bun` preset is incompatible with Vercel.** Pick presets per target; don't blanket-set it.
+7. **Server-side business logic is Effect TS.** A single `ManagedRuntime` lives in `src/server/runtime.ts`. Server functions and loaders convert at the seam via `runtime.runPromiseExit(...)` — never `runPromise` (it hides defects), never plain `try/catch` Promises in non-trivial logic. Inputs validated with `Schema.decodeUnknown` as the TanStack `validator`. Errors typed with `Data.TaggedError`. See [effect-integration](references/effect-integration.md).
 
 ## Canonical snippets
 
@@ -89,6 +108,9 @@ Before calling a task done:
 - [ ] `app.css` imported via `?url` in `__root.tsx`, not bare import
 - [ ] Vite plugin order matches above
 - [ ] Nitro preset matches deployment target (see [deployment](references/deployment.md))
+- [ ] `effect` is a dependency, `src/server/runtime.ts` exports a `ManagedRuntime`, and server functions / loaders use `runtime.runPromiseExit(...)` (or the user has explicitly opted out with a code comment)
+- [ ] Server function inputs use `Schema.decodeUnknown(...)` as the `validator`
+- [ ] Domain errors extend `Data.TaggedError`, not raw `Error` subclasses
 
 ## References
 
@@ -98,6 +120,8 @@ Before calling a task done:
 - [server-functions](references/server-functions.md) — `createServerFn`, middleware, auth
 - [deployment](references/deployment.md) — Nitro preset matrix, Bun vs Node runtime
 - [upgrade-paths](references/upgrade-paths.md) — drift watch for TanStack/Bun releases
+- [effect-integration](references/effect-integration.md) — wiring Effect TS into server functions / loaders / `ManagedRuntime`
+- [local-dev-tools](references/local-dev-tools.md) — `portless` (stable HTTPS `.localhost` URLs) and `agent-browser` (native CLI for agent-driven browser verification)
 
 ## External canonical docs
 
@@ -106,6 +130,10 @@ Before calling a task done:
 - Bun quickstart: https://bun.com/docs/quickstart
 - TanStack Start Tailwind integration: https://tanstack.com/start/latest/docs/framework/react/guide/tailwind-integration
 - Tailwind v4 Vite install: https://tailwindcss.com/docs/installation/using-vite
+
+## Required companion skill
+
+- **`effect-ts`** — load this whenever you're touching server-side code in this stack. It is **not optional**: this stack treats Effect TS as the default for business logic, validation, errors, retries, and DI. This skill owns the framework wiring (where the seam goes); `effect-ts` owns the Effect type system itself (what goes through the seam). The boundary lives in [effect-integration](references/effect-integration.md).
 
 ## Complements
 

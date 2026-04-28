@@ -267,8 +267,8 @@
     }
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "low",
+  "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true,
+  "agentPushNotifEnabled": true,
   "enableRemoteControlForAllSessions": true
 }

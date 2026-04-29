@@ -1,5 +1,0 @@
-# This file contains fish universal variable definitions.
-# VERSION: 3.0
-SETUVAR __fish_initialized:4300
-SETUVAR fish_greeting:\x1d
-SETUVAR fish_user_paths:/Users/wcygan/\x2eantigravity/antigravity/bin\x1e/Applications/Ghostty\x2eapp/Contents/MacOS

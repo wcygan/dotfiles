@@ -53,3 +53,5 @@ config/claude/mcp-needs-auth-cache.json
 
 # Autoresearch working files
 .autoresearch-*
+# Fish runtime state (universal vars, init flags) — machine-local
+config/fish/fish_variables

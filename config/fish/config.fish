@@ -5,3 +5,6 @@ end
 
 # Added by Antigravity
 fish_add_path /Users/wcygan/.antigravity/antigravity/bin
+
+# Disable fish greeting
+set -g fish_greeting ""

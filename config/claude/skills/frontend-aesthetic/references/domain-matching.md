@@ -1,148 +1,123 @@
-# Domain → Aesthetic Matching
+# Domain → Reference Sites
 
-Purpose: before picking an aesthetic, **narrow to a pool of 4–6 candidates appropriate to the product's domain**. Then pick (or, for a bake-off, pick 3 genuinely-different members of that pool).
+Purpose: when the user hasn't named references (or has named only one or two), use this list to assemble a credible 3–5-site reference set in their domain. Then run the [reference-research](./reference-research.md) workflow.
 
-This exists to prevent the "always Editorial / Brutalist / Handcrafted" anchoring trap. Different domains have different natural aesthetic neighborhoods; mixing them randomly produces tone-deaf design.
+This is **not** a list of aesthetic territories to pick from. It's a list of real sites whose landing pages can be studied. Reference URLs evolve over time; treat every entry as "the canonical example as of now" and verify the page still looks the way you expect.
 
 ## How to use
 
 1. Identify the **primary domain** from the brief. If multiple apply, pick the dominant one — don't average.
-2. Look up the domain's **candidate pool** below.
-3. Within the pool, pick a direction that fits the product's **specific voice** (calm / loud / premium / playful / institutional). One sentence of reasoning is enough.
-4. If the pool feels constraining, override consciously — but *name* what you're overriding. "I'm pulling Cyberpunk for a wellness app because the brand is rebellious, not serene."
+2. From the matching list below, pick **3–5 sites** whose products are *adjacent enough to the user's product* that copying their consensus would feel honest. Mix one or two close peers with one or two slightly different references for triangulation.
+3. Run the research workflow. The references inform the design; the user's project still owns its voice.
+4. **Always tell the user which references you picked** before designing. They will redirect if the choice is wrong, and that redirect is the most valuable signal you'll get.
 
-## Domain → Candidate Pool
+## Domains
 
 ### Fintech / banking / insurance / legal
-Signal: trust, permanence, precision. The statistical center works *against* you here — users want dignified, not distinctive-for-its-own-sake.
+Signal: trust, permanence, precision. Distinctive-for-its-own-sake works against you here.
 
-Pool: **Corporate-institutional** / **Swiss** / **Serif-forward Tech** / **Editorial** / **Blueprint**
+References: stripe.com, mercury.com, ramp.com, brex.com, modernfinance.io, plaid.com
 
-Avoid: Neo-brutalist, Cyberpunk, Lo-fi Zine (reads as "not a real bank").
+Avoid mimicking: meme-coin sites, cyberpunk crypto landing pages — wrong neighborhood for "real bank/financial institution" trust signals.
 
 ### Developer tools / infrastructure / DX
-Signal: "made by engineers, for engineers." Typography is the brand.
+Signal: "made by engineers, for engineers." Typography is the brand; restraint signals competence.
 
-Pool: **Terminal** / **Dark / Moody** / **Swiss** / **Blueprint** / **Brutalist** / **Serif-forward Tech**
+References: linear.app, vercel.com, railway.com, render.com, supabase.com, planetscale.com, neon.tech, modal.com, ghostty.org, warp.dev, charm.sh
 
-Avoid: Y2K, Pastoral, Minimalist-luxury (tone mismatch — reads as non-technical).
+Avoid mimicking: consumer wellness/lifestyle sites, e-commerce — tone mismatch.
 
-### Consumer SaaS (productivity / knowledge / calm tools)
-Signal: calm, focus, quiet confidence. The Cove / Notion / Linear space.
+### Consumer SaaS — productivity / knowledge / calm tools
+Signal: calm, focus, quiet confidence. The Notion/Linear/Cove neighborhood.
 
-Pool: **Serif-forward Tech** / **Minimalist-luxury** / **Editorial** / **Dark / Moody** / **Handcrafted** / **Swiss**
+References: notion.com, linear.app, raycast.com, arc.net, superhuman.com, cron.com, things.app, craft.do, height.app
 
-Avoid: Maximalist, Cyberpunk, Neo-brutalist (too loud for a tool you'll use daily).
+Avoid mimicking: agency portfolios, maximalist art sites — too loud for daily-use tools.
 
 ### Creative tool / design-forward product
-Signal: "this tool has taste." Willing to be distinctive.
+Signal: "this tool has taste." Willing to be more distinctive than a calm SaaS — but still grounded in known references.
 
-Pool: **Brutalist** / **Neo-brutalist** / **Editorial** / **Risograph** / **Maximalist** / **Serif-forward Tech**
+References: figma.com, framer.com, rive.app, runway.com, descript.com, cursor.com, linear.app
 
-Avoid: Corporate-institutional (too safe), Y2K (wrong era).
+Avoid mimicking: corporate-institutional banks — too restrained for a creative tool's audience.
 
 ### Games / entertainment / media
-Signal: immersive, thematic, lean into the game's world.
+Signal: thematic, immersive — the marketing should evoke the world.
 
-Pool: **Cyberpunk** / **Dark / Moody** / **Y2K** / **Neo-brutalist** / **Maximalist** / **Lo-fi Zine**
+References: rockstargames.com, riotgames.com (specific game pages), playdead.com, supergiantgames.com, hellblade.com, returnal.com
 
-Avoid: Corporate-institutional, Minimalist-luxury (too restrained).
+Note: each individual game has its own marketing direction. Pick references that match the product's tone (e.g. moody indie ≠ AAA shooter).
 
 ### Wellness / lifestyle / beauty / hospitality
 Signal: sensory, calm, tactile, human.
 
-Pool: **Pastoral** / **Handcrafted** / **Minimalist-luxury** / **Editorial** / **Risograph**
+References: ourplace.com, headspace.com, calm.com, casper.com, oura.com, aesop.com, glossier.com, bymalenebirger.com
 
-Avoid: Terminal, Cyberpunk, Brutalist (clinical or hostile).
+Avoid mimicking: dev tools, fintech — clinical/cold for the wrong audience.
 
 ### E-commerce / DTC / fashion / food
 Signal: product-forward photography + typographic confidence.
 
-Pool: **Editorial** / **Minimalist-luxury** / **Handcrafted** / **Risograph** / **Maximalist** / **Pastoral**
-
-Avoid: Terminal, Blueprint, Swiss-pushed-too-far (product gets lost).
+References: aesop.com, allbirds.com, everlane.com, nike.com (specific campaigns), patagonia.com, ourplace.com, bymalenebirger.com, kith.com
 
 ### Agency / studio / portfolio
-Signal: "look at what we can do." Distinctiveness is the product.
+Signal: distinctiveness is part of the product. References here will be more varied; that's intentional.
 
-Pool: **Brutalist** / **Neo-brutalist** / **Maximalist** / **Editorial** / **Lo-fi Zine** / **Risograph**
-
-Avoid: Corporate-institutional, Serif-forward Tech (looks like a client deliverable).
+References: instrument.com, locomotive.ca, basicagency.com, ueno.co, work-and-co.com, area17.com, rauno.me, pentagram.com
 
 ### AI / ML / data products
-Signal: depends sharply on audience — enterprise vs. consumer.
+Signal depends on audience — enterprise vs. consumer.
 
-Pool (enterprise): **Swiss** / **Dark / Moody** / **Serif-forward Tech** / **Blueprint** / **Corporate-institutional**
-Pool (consumer): **Glassmorphism** / **Dark / Moody** / **Serif-forward Tech** / **Cyberpunk** / **Minimalist-luxury**
+Enterprise references: anthropic.com, openai.com, scale.com, weightsandbiases.com (wandb.ai), databricks.com, snowflake.com
 
-Avoid: Pastoral, Handcrafted (reads as low-tech).
+Consumer-facing references: claude.com, chatgpt.com, perplexity.ai, midjourney.com, runwayml.com, pika.art
+
+Avoid mimicking: handcrafted/pastoral — reads as low-tech for an AI/ML audience.
 
 ### Non-profit / civic / educational
 Signal: accessible, earnest, not slick.
 
-Pool: **Editorial** / **Handcrafted** / **Swiss** / **Risograph** / **Pastoral**
-
-Avoid: Cyberpunk, Neo-brutalist, Maximalist (alienating).
+References: eff.org, propublica.org, khanacademy.org, ourworldindata.org, signal.org, archive.org
 
 ### Marketplaces / community / social
 Signal: warmth + energy; neither too corporate nor too niche.
 
-Pool: **Handcrafted** / **Editorial** / **Neo-brutalist** / **Y2K** / **Maximalist** / **Serif-forward Tech**
-
-Avoid: Corporate-institutional, Terminal, Minimalist-luxury (cold).
+References: are.na, gumroad.com, etsy.com, substack.com, ghost.org, discord.com, bsky.app
 
 ### Hardware / physical products / industrial
 Signal: precision, engineering, material honesty.
 
-Pool: **Blueprint** / **Swiss** / **Dark / Moody** / **Brutalist** / **Minimalist-luxury**
-
-Avoid: Y2K, Pastoral, Maximalist (disconnect from the object).
+References: dyson.com, framework.computer, teenage.engineering, daylightcomputer.com, panic.com (Playdate page), apple.com (specific product pages)
 
 ### Crypto / web3 / DeFi
-Signal: pick your side — either "institutional finance" or "cyberpunk rebellion."
+Signal: pick your side — institutional or rebellious. Don't mix them.
 
-Pool (institutional): **Serif-forward Tech** / **Corporate-institutional** / **Swiss** / **Dark / Moody**
-Pool (rebellious): **Cyberpunk** / **Brutalist** / **Terminal** / **Y2K** / **Glassmorphism**
+Institutional references: coinbase.com (institutional pages), uniswap.org, ethereum.org
 
-Avoid mixing pools in one design — that's how you get uncanny-valley crypto sites.
+More-distinctive references: zora.co, friends.tech archives, manifold.xyz
+
+Avoid mimicking the other side — uncanny-valley crypto sites come from blending these two pools.
 
 ### Indie / personal / blog / portfolio
 Signal: have a point of view; reward the curious visitor.
 
-Pool: **Lo-fi Zine** / **Editorial** / **Handcrafted** / **Risograph** / **Maximalist** / **Terminal** / **Pastoral**
+References: rauno.me, frankchimero.com, bratprincess.xyz, robinrendle.com, tylor.dev, every personal site you've ever bookmarked because it stuck with you
 
-Avoid: Corporate-institutional (disingenuous).
+For Nu-Sync specifically: the "indie infra collective" niche overlaps with **Developer tools** (Linear, Vercel, Render) and **Indie portfolio** (rauno.me) — pull from both.
 
 ---
 
-## Picking within a pool
+## Picking within a domain
 
-After narrowing to a pool, ask two questions:
+Within the candidate list, pick **3–5 sites** that are:
 
-1. **Voice**: Is this product loud or quiet? Bold or reserved? The pool's members span this range — pick the point.
-   - Consumer SaaS loud: Serif-forward Tech, Dark/Moody
-   - Consumer SaaS quiet: Minimalist-luxury, Editorial
-2. **Neighborhood**: Who are the three closest competitors? What aesthetic are they in? Pick something *different enough to distinguish but close enough to be legible*.
+1. **Mostly aligned** — at least 3 of them share an obvious aesthetic neighborhood. That's the consensus you'll mimic.
+2. **One outlier** — one reference that's still in the domain but takes a different position. This shows you what's *optional* vs. *required* for the neighborhood.
 
-## Picking for a bake-off (3 candidates)
+Bad picks: 5 sites that all look the same (you'll just clone one). 5 sites with nothing in common (you'll have no consensus to lean on).
 
-From the same pool, pick 3 members that are **genuinely different from each other**. Do not pick three directions that might plausibly produce similar output.
+## When the user names references
 
-Genuinely different combinations (examples):
-- Consumer SaaS pool: **Minimalist-luxury** + **Serif-forward Tech** + **Dark / Moody**
-- Dev tool pool: **Terminal** + **Swiss** + **Brutalist**
-- Games pool: **Cyberpunk** + **Y2K** + **Lo-fi Zine**
-- Fintech pool: **Corporate-institutional** + **Swiss** + **Blueprint**
-- Wellness pool: **Pastoral** + **Minimalist-luxury** + **Risograph**
-- Agency pool: **Brutalist** + **Maximalist** + **Editorial**
+If the user named references, **always include them**, even if they seem off-domain. Their reference list tells you what they actually want; the canonical lists above only fill gaps.
 
-Not-different-enough (anti-examples):
-- Editorial + Serif-forward Tech + Handcrafted (all warm-serif neighborhoods)
-- Swiss + Minimalist-luxury + Corporate-institutional (all restraint, different only in degree)
-- Cyberpunk + Neo-brutalist + Maximalist (all loud; nothing to fall back to)
-
-## The anti-anchoring rule
-
-If you find yourself about to pick **Editorial, Brutalist, and Handcrafted** — stop. That's the example from the skill docs leaking into your choice. Reread this file, start from the domain pool, and pick fresh.
-
-Good bake-off picks tell you something real about the product when you see them side-by-side. Picks from random pools just produce three pages that happen to look different.
+If their references contradict their domain (e.g. "I'm building a bank but I want it to look like Are.na"), surface that explicitly: *"You named Are.na, which is more agency/indie than fintech — want me to pull the design toward that, or keep it bank-credible and just borrow specific moves from Are.na?"* That's the conversation that prevents misaligned output.

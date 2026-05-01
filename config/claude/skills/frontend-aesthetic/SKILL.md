@@ -1,13 +1,18 @@
 ---
 name: frontend-aesthetic
-description: Opinionated aesthetic direction for frontend work. Forks Anthropic's bundled `frontend-design` with NEVER/INSTEAD directives, expanded aesthetic territories (editorial, brutalist, swiss, dark-moody, handcrafted, lo-fi-zine), explicit typography pairings, and a single motion-library choice. Use when the user says "design", "landing", "hero", "make it beautiful", "style this", or when creating a new marketing/landing route. Complements `tailwind-v4-tokens` (which owns consistency) and `bun-tanstack-start` (which owns wiring). Keywords aesthetic, design, taste, landing page, hero, typography, motion, visual direction, frontend design.
+description: Opinionated aesthetic direction for frontend work. Research-first — study 3–5 credible reference sites in the user's space, identify the patterns they share, build to that consensus rather than inventing distinctive aesthetics. Use when the user says "design", "landing", "hero", "make it beautiful", "style this", or when creating a new marketing/landing route. Complements `tailwind-v4-tokens` (which owns consistency) and `bun-tanstack-start` (which owns wiring). Keywords aesthetic, design, taste, landing page, hero, typography, motion, visual direction, frontend design.
 ---
 
-# Frontend Aesthetic (Taste & Direction)
+# Frontend Aesthetic (Research & Direction)
 
-The *taste* skill. Its job is to push Claude away from the statistical center of its training data — Inter + purple gradient + centered cards — and commit to a distinct aesthetic direction *before* writing any code.
+The *taste* skill. Its job is to ground design decisions in **what already works in the user's space**, not in invented aesthetic territories. Before writing any code, identify 3–5 credible reference sites — competitors, peers, well-regarded products in the same domain — and synthesize the patterns they share.
 
-**High-freedom**: pick an aesthetic, declare it, then let the details follow. Lean on `tailwind-v4-tokens` for how to encode the decision.
+The failure mode this skill prevents is twofold:
+
+1. **AI defaults** — Inter + purple gradient + three centered cards.
+2. **Cosplay extremes** — picking "brutalist" or "lo-fi zine" because they sound distinctive, not because they fit the product.
+
+The cure for both is the same: study the neighborhood first, then design to fit it (with one deliberate signature, not four).
 
 ## When to use this skill
 
@@ -15,78 +20,78 @@ The *taste* skill. Its job is to push Claude away from the statistical center of
 |---|---|
 | User says "design", "make it beautiful", "landing page", "hero", "style this" | Apply this skill |
 | New marketing route or landing page | Apply this skill |
-| Refining visual polish on existing UI | Apply this skill — pick or confirm the direction first |
-| CRUD / internal tool work | **Do not** use this skill — stay consistent, don't reinvent |
+| Refining visual polish on existing UI | Apply this skill — confirm references first |
+| User says "I don't like how this looks" | Apply this skill — disagreement usually means the references were wrong |
+| CRUD / internal tool work | **Do not** use this skill — stay consistent with the rest of the app |
 
 The trigger is deliberate. Internal dashboards get `tailwind-v4-tokens` for consistency; *visible surfaces* get this skill for direction.
 
-## Rule zero: commit to a direction before coding
+## Rule zero: study before designing
 
-Before writing a single JSX tag, pick **one** aesthetic from [aesthetics](references/aesthetics.md) and *state it*. Every subsequent typography, color, spacing, and motion choice follows from that commitment.
+Before writing a single JSX tag:
 
-Never produce a "good default" hoping the user notices. Pick an extreme point and defend it.
+1. **Identify the domain** — fintech, dev tools, consumer SaaS, agency portfolio, e-commerce, etc. See [domain-matching](references/domain-matching.md) for canonical reference sites per domain.
+2. **Pick 3–5 reference sites** — preferably ones the user named, plus 1–2 from the canonical list. If the user says "I don't have references," use the domain-matching defaults and tell them which ones you used.
+3. **Study each one** along the axes in [reference-research](references/reference-research.md): typography, palette, layout rhythm, motion, copy voice, signature elements.
+4. **Synthesize the consensus** — what do most of them do? That's your direction. Note the *one or two* places they meaningfully differ — those are spots where you can place a deliberate signature.
+5. **State the synthesis back** in one short paragraph before coding. Get the user's nod or correction.
 
-## NEVER / INSTEAD (typography)
+If the user explicitly wants something distinctive ("I want this to feel different from Linear/Vercel"), still do the research — you need to know what you're departing from, and how far.
 
-- **NEVER** use Inter, Roboto, Arial, system-ui, or Space Grotesk for display text.
-- **NEVER** use the same font family for display and body — pair distinct voices.
-- **INSTEAD** pick a display + body pairing from [typography](references/typography.md). Examples:
-  - Editorial: Fraunces (display) + Inter Tight (body)
-  - Swiss: Söhne (display) + Söhne Mono for accents
-  - Brutalist: Neue Haas Grotesk Display (display) + JetBrains Mono (body)
-  - Handcrafted: Canela (display) + Söhne (body)
-  - Lo-fi zine: VT323 / Departure Mono (display) + Inter Tight (body)
+## Building from the consensus
 
-## NEVER / INSTEAD (color)
+Once the synthesis is stated, every downstream decision follows from the references:
 
-- **NEVER** a purple-to-blue gradient on white.
-- **NEVER** a gradient across more than two hues.
-- **NEVER** raw hex literals — use tokens from `tailwind-v4-tokens`.
-- **INSTEAD** pick a dominant color + one sharp accent. Let the accent appear ≤20% of the surface.
+- **Typography**: use the same family or close substitutes to what the references use. Don't pick a "more interesting" font to differentiate. See [typography](references/typography.md).
+- **Color**: match the dominant base + accent pattern your references use. If they're all near-monochrome with one accent, do that.
+- **Layout**: respect the rhythm and density of the references. If they all use a contained text column, don't go full-bleed.
+- **Motion**: one orchestrated pattern, single library — see [motion](references/motion.md). If the references are mostly still, be still.
+- **Tokens**: declare via `tailwind-v4-tokens`. No raw hex.
 
-## NEVER / INSTEAD (motion)
+## Signature: one deliberate departure
 
-- **NEVER** scatter micro-animations across the page (individual card hover bounces, each icon pulsing).
-- **NEVER** mix two motion libraries.
-- **INSTEAD** pick **one** orchestrated entrance (page-load cascade, scroll-driven reveal, or staged hero) and let the rest of the page be still. See [motion](references/motion.md).
-- **INSTEAD** pick **one** animation library for the project. This codebase defaults to **Motion** (`motion` npm package). Do not add Framer Motion or GSAP alongside.
+After matching the consensus on most axes, pick **one** axis where you go slightly further than the references — a more confident type scale, a single saturated accent your peers don't have, a particular layout move. This is what keeps the result from feeling like a copy.
 
-## NEVER / INSTEAD (layout)
+Don't pick four signatures. One. Defend it in your synthesis paragraph.
 
-- **NEVER** center everything in a 1200px container with stacked cards.
-- **NEVER** rounded cards + drop shadow + subtle border (the "SaaS dashboard" default).
-- **INSTEAD** break the grid deliberately — asymmetry, full-bleed imagery, hanging text, or a strong vertical split. See [layouts](references/layouts.md).
+## NEVER (the unconditional AI tells)
+
+These have nothing to do with aesthetic direction — they are the giveaways that a page was generated without supervision. Avoid regardless of references:
+
+- **Purple-to-blue gradient on white** — the single most common AI default.
+- **Three-card grid with `rounded-xl shadow-lg border-gray-100`** — the SaaS dashboard uniform.
+- **`max-w-7xl mx-auto` as the only container primitive** — learn `max-w-prose`, `max-w-screen-sm`, full-bleed.
+- **Default `ease` easing curves** — pick a custom cubic-bezier with character.
+- **Hero copy that explains what the product does before selling a feeling.**
+- **Hex literals or `bg-blue-500` in components** — use semantic tokens (`tailwind-v4-tokens`).
+- **Same family for display and body with no weight contrast** — at minimum, pair voices via weight.
+
+Inter is fine when your references use it; the tell is using it lazily without contrast or scale. See [anti-patterns](references/anti-patterns.md) for the full list.
 
 ## Consistency guard
 
-Even while being extreme on a landing page, the **chrome** (nav, footer, global frame) stays consistent across routes. Load the `bun-tanstack-start` skill's [routing](../../bun-tanstack-start/references/routing.md) rule: `__root.tsx` is the single source of truth. See [consistency-anchor](references/consistency-anchor.md).
+Even on a landing page, the **chrome** (nav, footer, global frame) stays consistent across routes. `__root.tsx` is the single source of truth. See [consistency-anchor](references/consistency-anchor.md).
 
 ## Check before you commit
 
-- [ ] One aesthetic direction stated explicitly
-- [ ] Display font and body font named — not Inter
-- [ ] One dominant color + one accent — no purple-to-blue gradient
-- [ ] Motion orchestrated, not scattered; single library
-- [ ] Layout is not "centered container of cards"
-- [ ] Tokens declared via `tailwind-v4-tokens` skill, not hex
+- [ ] 3–5 reference sites named (or the user explicitly waived)
+- [ ] Synthesis paragraph stated and acknowledged
+- [ ] Typography choice grounded in references — not a "more interesting" font picked in isolation
+- [ ] Color: dominant + accent pattern matches the references
+- [ ] One deliberate signature departure, not four
+- [ ] Tokens declared via `tailwind-v4-tokens`, no raw hex
+- [ ] Motion: one library, one orchestrated pattern, `prefers-reduced-motion` respected
 - [ ] `__root.tsx` chrome untouched (unless this *is* the root)
 
 ## References
 
-- [aesthetics](references/aesthetics.md) — **18 committed directions** with traits; pick one per page
-- [domain-matching](references/domain-matching.md) — narrow the 18 to a domain-appropriate pool of 4–6 before picking
-- [typography](references/typography.md) — approved font pairings, anti-patterns
-- [motion](references/motion.md) — Motion library patterns, orchestration rules
-- [layouts](references/layouts.md) — grid-breaking, asymmetry, anti-SaaS patterns
-- [consistency-anchor](references/consistency-anchor.md) — chrome vs content, `__root.tsx` rule
-- [anti-patterns](references/anti-patterns.md) — the statistical center to avoid
-
-## External canonical sources
-
-- Anthropic bundled skill (forked from): https://github.com/anthropics/claude-code/blob/main/plugins/frontend-design/skills/frontend-design/SKILL.md
-- "Teaching Claude to Design Better" (methodology source): https://www.justinwetch.com/blog/improvingclaudefrontend
-- Anthropic blog on the skill: https://claude.com/blog/improving-frontend-design-through-skills
-- Motion library: https://motion.dev/
+- [reference-research](references/reference-research.md) — how to study a site, what to extract, how to synthesize
+- [domain-matching](references/domain-matching.md) — canonical reference sites per domain
+- [typography](references/typography.md) — practical pairings and rhythm; reference-driven
+- [motion](references/motion.md) — single library, orchestration, reduced-motion
+- [layouts](references/layouts.md) — common patterns and the AI defaults to avoid
+- [anti-patterns](references/anti-patterns.md) — the AI tells to avoid regardless of direction
+- [consistency-anchor](references/consistency-anchor.md) — chrome vs content boundary
 
 ## Complements
 

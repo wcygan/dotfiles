@@ -55,6 +55,20 @@ You are running in an isolated git worktree. Your job:
      it. Pick a non-default port to avoid conflicts (e.g., 3919, 8421). Capture
      real output — request/response, stdout, test results. Tear it down before
      finishing.
+   - UI / web frontend (Next.js, Vite, Remix, Astro, Bun + TanStack Start,
+     anything that serves a browser): **strongly prefer `portless`** over
+     raw `localhost:<port>`. Portless is installed on this machine — see
+     https://portless.sh/configuration and https://portless.sh/commands.
+     Add a `portless.json` (or a `"portless"` key in `package.json`) at the
+     prototype root with a `name` that uniquely identifies this prototype so
+     it does not collide with the main checkout. Derive the name from the
+     prototype: `<short-slug>-spike` (e.g., `auth-redesign-spike`,
+     `inbox-zero-spike`). Boot via `portless` (or `portless run dev`) and
+     exercise the app at `https://<name>.localhost`. Note: portless already
+     auto-prefixes the worktree branch on inferred names, but setting an
+     explicit `name` keeps the URL stable and easy for the user to reproduce.
+     Capture a real request/response (curl the page, check status + a
+     fragment of HTML) before tearing down.
    - HEAVY (docker-compose, k8s manifests, multi-service infra, anything
      needing external creds or long-running stateful services): do NOT boot it.
      Run unit/integration tests if they exist and are fast. Otherwise, rely on
@@ -74,7 +88,9 @@ You are running in an isolated git worktree. Your job:
    **How you verify it**: numbered shell commands the user can copy-paste.
      Start with `cd <worktree path>`. For lightweight prototypes, include the
      exact boot command with the non-default port and a probe command (curl,
-     test invocation, etc.). For heavy prototypes, list the real steps the
+     test invocation, etc.). For UI prototypes booted via `portless`, give
+     the `portless` boot command and the full `https://<name>.localhost` URL
+     to open in a browser. For heavy prototypes, list the real steps the
      user must take (e.g., `docker compose up`, env vars to set, endpoints to
      hit). End with a clear pass/fail signal the user should look for.
    **Known gaps**: what's mocked, stubbed, skipped, or hardcoded.

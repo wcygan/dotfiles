@@ -7,6 +7,10 @@
 // custom settings, run `zed: open default settings` from the
 // command palette
 {
+  "cli_default_open_behavior": "new_window",
+  "project_panel": {
+    "dock": "left"
+  },
   "agent_servers": {
     "claude-acp": {
       "type": "registry"
@@ -38,9 +42,7 @@
   "terminal": {
     "shell": {
       "program": "fish"
-    },
-    "dock": "right",
-    "default_width": 640
+    }
   },
   "preferred_line_length": 120,
   "soft_wrap": "preferred_line_length",

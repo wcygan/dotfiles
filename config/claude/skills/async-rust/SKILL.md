@@ -1,17 +1,6 @@
 ---
 name: async-rust
-description: >
-  Async Rust and Tokio ecosystem expert. Provides idiomatic patterns, architectural guidance,
-  and code review for async Rust code using tokio, futures, bytes, tracing, tonic, hyper, tower,
-  axum, tokio-stream, and pin-project. Covers runtime internals, cancellation safety, graceful
-  shutdown, channel selection, shared state, backpressure, structured concurrency, error handling,
-  Tower middleware, stream processing, and performance tuning. Also identifies async footguns
-  (blocking the runtime, holding locks across .await, silent task panics, accidental cancellation)
-  and suggests fixes. Use when writing async Rust, debugging async issues, reviewing async code,
-  choosing between spawn/join/select, designing channel topologies, implementing graceful shutdown,
-  or learning how futures, Pin, and the Tokio runtime work under the hood.
-  Keywords: async, await, tokio, futures, spawn, select, join, channels, streams, pin, tower,
-  tonic, hyper, axum, tracing, bytes, cancellation, runtime, backpressure, graceful shutdown.
+description: Async Rust and Tokio ecosystem expert (tokio, futures, tower, tonic, hyper, axum, tracing). Use for idiomatic patterns, cancellation safety, graceful shutdown, channel selection, backpressure, debugging async footguns. Keywords async, await, tokio, futures, spawn, select, channels, streams, pin, tower, axum, tonic, cancellation, backpressure.
 ---
 
 # Async Rust & Tokio Ecosystem

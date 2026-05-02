@@ -1,6 +1,6 @@
 ---
 name: connectrpc
-description: ConnectRPC expert for Go servers and Node.js clients. Auto-loads when working with ConnectRPC, connect-go, connect-node, protobuf RPC, buf codegen, gRPC-compatible APIs, streaming RPCs, ConnectError, interceptors, service handlers, transport configuration, or REST-to-RPC proxy patterns. Covers the architecture where Node frontend servers proxy REST+JSON from the UI into ConnectRPC calls to Go backend services.
+description: ConnectRPC expert for Go servers and Node.js clients. Auto-loads on ConnectRPC, connect-go/connect-node, protobuf RPC, buf codegen, streaming RPCs, ConnectError, interceptors, or REST-to-RPC proxies (Node frontend → Go backend). Keywords connectrpc, connect-go, connect-node, buf, protobuf RPC, ConnectError, interceptor.
 ---
 
 # ConnectRPC

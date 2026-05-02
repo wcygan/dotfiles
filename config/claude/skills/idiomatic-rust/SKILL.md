@@ -1,6 +1,6 @@
 ---
 name: idiomatic-rust
-description: Analyze and generate idiomatic Rust code following official style guide, std library conventions, and API design guidelines. Auto-loads when writing, reviewing, or refactoring Rust code. Use when writing Rust, reviewing Rust code, checking Rust idioms, or generating Rust scaffolding. Keywords: rust, idiomatic, ownership, borrowing, lifetime, trait, error handling, pattern matching, clippy, rustfmt, cargo
+description: Analyze and generate idiomatic Rust per the official style guide, std conventions, and API guidelines. Auto-loads when writing/reviewing/refactoring Rust. Keywords rust, idiomatic, ownership, borrowing, lifetime, trait, error handling, pattern matching, clippy, rustfmt, cargo.
 ---
 
 # Idiomatic Rust

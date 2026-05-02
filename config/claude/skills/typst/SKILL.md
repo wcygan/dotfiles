@@ -1,6 +1,6 @@
 ---
 name: typst
-description: Typst 0.13+ typesetting expert. Auto-loads when working with .typ files, Typst markup, show/set/let rules, figures, math mode, counters, state, context blocks, @preview packages, templates, tinymist LSP, or typst compile/watch. Corrects outdated idioms from pre-0.12 training data. Keywords typst, .typ, typesetting, LaTeX alternative, show rule, set rule, let binding, content block, context block, counter, state, figure, bibliography, @preview, tinymist, typst compile, typst watch, cetz, touying, polylux, fletcher, Hayagriva.
+description: Typst 0.13+ typesetting expert. Auto-loads on .typ files, show/set/let rules, figures, math mode, counters, state, context blocks, @preview, tinymist LSP, or typst compile/watch. Corrects outdated pre-0.12 idioms. Keywords typst, .typ, typesetting, show rule, @preview, tinymist, cetz, touying, Hayagriva.
 allowed-tools: Read, Grep, Glob, Bash, Write, Edit, WebFetch
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: sqlx
-description: SQLx Rust async SQL toolkit expert. Assists with compile-time checked queries, connection pooling, migrations, transactions, FromRow derive, QueryBuilder, type mappings, and testing. Use when working with SQLx, database queries in Rust, sqlx::query!, Pool configuration, database migrations, or Rust database code. Keywords: sqlx, rust database, query macro, pool, migration, transaction, FromRow, postgres rust, mysql rust, sqlite rust, compile-time SQL
+description: SQLx Rust async SQL toolkit expert: compile-time checked queries, connection pooling, migrations, transactions, FromRow, QueryBuilder, type mappings, testing. Use for SQLx code, sqlx::query!, Pool config, or DB migrations. Keywords sqlx, rust database, query macro, pool, migration, FromRow, compile-time SQL.
 ---
 
 # SQLx Expert

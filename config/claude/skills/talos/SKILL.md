@@ -1,6 +1,6 @@
 ---
 name: talos
-description: Talos Linux expert for cluster documentation lookup and read-only talosctl diagnostics. Auto-loads when the user explicitly mentions Talos, talosctl, or Sidero Labs — covers machine config schema, networking (bonds, VLANs, static IPs, kubespan), cluster health checks, node inspection, and upgrade planning. Read-only scope only — does NOT run destructive verbs (apply-config without dry-run, upgrade, reset, bootstrap). Keywords: talos, talosctl, siderolabs, machineconfig, controlplane.yaml, worker.yaml, talconfig, kubespan, machine config, talos networking, talos upgrade
+description: Talos Linux expert for cluster docs lookup and read-only talosctl diagnostics. Auto-loads on Talos/talosctl/Sidero Labs mentions — covers machine config, networking, health checks, upgrade planning. Read-only: does NOT run apply-config (without dry-run), upgrade, reset, or bootstrap. Keywords talos, talosctl, machineconfig, kubespan.
 allowed-tools: Read, Grep, Glob, WebFetch, Bash(talosctl version:*), Bash(talosctl health:*), Bash(talosctl get:*), Bash(talosctl read:*), Bash(talosctl logs:*), Bash(talosctl service:*), Bash(talosctl dashboard:*), Bash(talosctl validate:*), Bash(talosctl containers:*), Bash(talosctl memory:*), Bash(talosctl cpu:*), Bash(talosctl disks:*), Bash(talosctl netstat:*), Bash(talosctl stats:*)
 ---
 

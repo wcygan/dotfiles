@@ -1,6 +1,6 @@
 ---
 name: temporal-go
-description: Temporal Go SDK expert for durable workflow orchestration. Auto-loads when working with Temporal workflows, activities, workers, workflow.Context, workflow.ExecuteActivity, temporal client, task queues, activity heartbeats, retry policies, workflow signals, queries, continue-as-new, workflow testing, TestWorkflowEnvironment, activity mocking, cancellation handling, workflow timers, or Temporal Cloud mTLS/API key configuration.
+description: Temporal Go SDK expert for durable workflow orchestration. Auto-loads on Temporal workflows/activities/workers, workflow.Context, ExecuteActivity, task queues, signals/queries, continue-as-new, TestWorkflowEnvironment, retry policies, or Temporal Cloud mTLS. Keywords temporal, workflow, activity, task queue, signal, query.
 ---
 
 # Temporal Go SDK

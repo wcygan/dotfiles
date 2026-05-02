@@ -1,15 +1,6 @@
 ---
 name: claude-code-best-practices
-description: >
-  Reference guide for Claude Code features and best practices: writing a good CLAUDE.md,
-  skills, hooks, sub-agents, agent teams, headless mode, scheduled tasks, channels, teleport,
-  remote control, worktrees, batch, and frontend verification. Auto-loads when authoring or
-  auditing a CLAUDE.md, working with Claude Code configuration, writing skills, setting up
-  hooks, orchestrating agents, or optimizing workflows.
-  Keywords: CLAUDE.md, claude md, project instructions, agent instructions, instruction budget,
-  skill, hook, sub-agent, agent team, headless, scheduled task, channel, plugin, SKILL.md,
-  teleport, remote control, worktree, batch, chrome extension, frontend, /loop, accumulator,
-  stateful loop, silent accumulator, polling watcher, incremental explorer
+description: Reference for Claude Code features and best practices: writing CLAUDE.md, skills, hooks, sub-agents, agent teams, headless mode, scheduled tasks, worktrees, batch, frontend verification. Use when authoring/auditing CLAUDE.md, configuring Claude Code, writing skills, or orchestrating agents. Keywords CLAUDE.md, skill, hook, sub-agent, agent team, headless, worktree, /loop.
 allowed-tools: Read, Grep, Glob, WebFetch, WebSearch, Bash(cat *), Bash(gh *), Bash(git *), Bash(ls *)
 ---
 

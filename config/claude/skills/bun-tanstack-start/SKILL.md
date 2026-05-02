@@ -1,6 +1,6 @@
 ---
 name: bun-tanstack-start
-description: Opinionated scaffolding and wiring for Bun + TanStack Start apps. Encodes exact create/run commands, Vite plugin order, Tailwind v4 CSS import pattern, `__root.tsx` stylesheet injection, server functions, Nitro deployment presets, **and Effect TS as the default for server-side business logic**. Auto-loads when package.json contains `@tanstack/react-start` or the user asks to create/set up/configure a TanStack Start project with Bun. Complements the general `tanstack-start` and `tailwind` skills by being stack-specific and command-exact. Keywords bun, bunx, tanstack start, vite, nitro, createFileRoute, createServerFn, __root, SSR, react-start, effect, effect-ts, ManagedRuntime, runPromiseExit.
+description: Scaffolding/wiring for Bun + TanStack Start apps: exact create commands, Vite plugin order, Tailwind v4 import pattern, `__root.tsx` injection, server functions, Nitro presets; defaults to Effect TS for server logic. Auto-loads when package.json has `@tanstack/react-start`. Keywords bun, bunx, tanstack start, vite, nitro, createFileRoute, createServerFn.
 allowed-tools: Read, Grep, Glob, Bash, Write, Edit, WebFetch
 ---
 

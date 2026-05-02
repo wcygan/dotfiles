@@ -1,6 +1,6 @@
 ---
 name: make-interfaces-feel-better
-description: Micro-detail checklist for polishing production UI — concentric border radius, optical vs geometric alignment, layered box-shadows instead of borders, split-and-stagger enter animations, tabular-nums, text-wrap balance/pretty, scale(0.96) on press, 40x40 hit areas, and interruptible transitions. Use when the user explicitly asks to polish, refine, or review finished UI, says "feels off" / "make it feel better", or is doing a visual-detail pass before ship. Do NOT auto-trigger on routine CRUD UI work, new component scaffolding, or general frontend coding — this skill is for the polish pass, not first-pass implementation.
+description: Micro-detail polish checklist for production UI: concentric radius, optical alignment, layered shadows, stagger animations, tabular-nums, text-wrap balance, scale(0.96) on press, 40x40 hit areas. Use for explicit polish/refine passes or "feels off" requests. Do NOT trigger on routine CRUD or new component scaffolding.
 ---
 
 # Details that make interfaces feel better

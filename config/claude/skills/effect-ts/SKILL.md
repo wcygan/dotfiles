@@ -1,17 +1,6 @@
 ---
 name: effect-ts
-description: >
-  Effect TS expert for the `effect` library and its ecosystem (`@effect/schema`, `@effect/platform`,
-  `@effect/opentelemetry`, `@effect/ai`). Provides idiomatic patterns and architectural guidance for
-  the `Effect<A, E, R>` type, tagged errors, services and Layers (DI), fibers and structured
-  concurrency, Schedule-based retries, Schema validation/encoding, resource management with Scope,
-  Stream/Sink/Channel, OpenTelemetry observability, and runtime entry points (runPromise/runSync/
-  runFork). Covers gen vs pipe syntax, the failure/defect two-channel error model, and integration
-  friction with non-Effect libraries (Express, Drizzle, Sentry). Use when writing or reviewing Effect
-  code, designing Layers, picking between Effect and neverthrow/fp-ts/Zod, debugging fiber/cancellation
-  issues, or migrating Promise-based code to Effect. Keywords effect, effect-ts, Effect.gen, pipe,
-  Layer, Context.Tag, Data.TaggedError, Schema, Fiber, Schedule, Stream, runPromise, neverthrow,
-  fp-ts, ZIO, Cats Effect.
+description: Effect TS (`effect` library + ecosystem) expert. Use for idiomatic patterns, Layer DI, tagged errors, fibers, Schedule retries, Schema validation, Stream, runPromise, and migrating Promise code to Effect. Keywords effect, Effect.gen, pipe, Layer, Context.Tag, Data.TaggedError, Schema, Fiber, Stream, neverthrow, fp-ts.
 ---
 
 # Effect TS

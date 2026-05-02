@@ -1,6 +1,6 @@
 ---
 name: seaweedfs-docs
-description: Reference knowledge for upstream SeaweedFS and the seaweedfs-operator Kubernetes operator. Covers architecture (master/volume/filer split, blob-id format, O(1) read path), components and their ports, replication codes (000/001/010/100/110/200), TTL semantics, filer metadata store choice (leveldb/sqlite/postgres/mysql/redis/cassandra), the S3-compatible API (supported ops, lifecycle, versioning, table buckets, Iceberg REST catalog), the `weed shell` CLI, cloud-tiering, erasure coding, the Seaweed CRD shape, operator IAM and topology support, and release-notes triage. Load when the user mentions seaweedfs, weed, seaweedfs-operator, Seaweed CRD, weed shell, filer, volume server, master server, blob store, erasure coding, WebDAV on seaweedfs, CSI seaweedfs, Iceberg on seaweedfs, S3 table bucket, or when working in code that uses the SeaweedFS S3 endpoint. Do NOT load on generic mentions of "S3" alone. Keywords — seaweedfs, seaweed-fs, weed, seaweedfs-operator, Seaweed CRD, weed shell, weed mini, filer, volume server, master server, blob store, erasure coding, Iceberg catalog, S3 table bucket, chrislusf/seaweedfs.
+description: Upstream SeaweedFS and seaweedfs-operator reference (architecture, replication codes, S3 API, weed shell, erasure coding, Seaweed CRD). Load on explicit mentions; do NOT load for generic "S3". Keywords seaweedfs, weed, seaweedfs-operator, Seaweed CRD, weed shell, filer, volume server, master server, blob store, Iceberg catalog, S3 table bucket.
 ---
 
 # SeaweedFS Documentation Reference

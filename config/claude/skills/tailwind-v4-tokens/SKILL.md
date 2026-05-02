@@ -1,6 +1,6 @@
 ---
 name: tailwind-v4-tokens
-description: Opinionated design-token system for Tailwind v4 projects. Enforces semantic tokens over raw colors, single-source brand hue via OKLCH, CSS-first `@theme` configuration, and shadcn/ui composition rules. Auto-loads when CSS contains `@theme` or `@import 'tailwindcss'`, or when `components.json` exists. Rejects hex literals, arbitrary `bg-*-500` Tailwind classes, and duplicate dark-mode definitions. Complements the general `tailwind` skill (which covers v4 basics) and the `bun-tanstack-start` skill (which owns wiring). Keywords design tokens, OKLCH, @theme, brand hue, shadcn, semantic colors, consistency, dark mode.
+description: Design-token system for Tailwind v4: semantic tokens over raw colors, single brand hue via OKLCH, `@theme` config, shadcn/ui composition. Auto-loads when CSS has `@theme`/`@import 'tailwindcss'` or `components.json` exists. Rejects hex literals and arbitrary `bg-*-500`. Keywords design tokens, OKLCH, @theme, shadcn, semantic colors.
 allowed-tools: Read, Grep, Glob, Write, Edit, WebFetch
 ---
 

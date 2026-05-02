@@ -1,6 +1,6 @@
 ---
 name: kubernetes
-description: Kubernetes expert for cluster operations, manifests, kubectl debugging, RBAC, networking (Services/Ingress/Gateway API), workloads, storage, and troubleshooting. Auto-loads when the user mentions kubectl/kubernetes/k8s together with an action verb (apply, debug, troubleshoot, rollout, deploy, write manifest, fix pod, exec, logs). Do NOT trigger on incidental mentions of "service", "pod", or "cluster" outside a Kubernetes context, or for Terraform/Helm-only questions. Keywords: kubernetes, kubectl, k8s, deployment, pod, statefulset, daemonset, configmap, secret, ingress, gateway api, networkpolicy, rbac, serviceaccount, pvc, storageclass, crashloopbackoff, imagepullbackoff, manifest, rollout, kustomize
+description: Kubernetes expert for cluster ops, manifests, kubectl debugging, RBAC, networking, workloads, storage. Auto-loads when kubectl/k8s mentioned with an action verb. Do NOT trigger on incidental "service"/"pod"/"cluster" or Terraform/Helm-only questions. Keywords kubernetes, kubectl, k8s, deployment, ingress, gateway api, networkpolicy, rbac, kustomize.
 allowed-tools: Read, Grep, Glob, Bash(kubectl *), Bash(kustomize *), WebFetch
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: hermes-docs
-description: Look up Hermes Agent (Nous Research) documentation at hermes-agent.nousresearch.com. Use when the user asks about Hermes CLI commands, Hermes configuration (~/.hermes/config.yaml, .env, SOUL.md), Hermes sessions, Hermes security/sandboxing, Hermes skills/memory/tools/MCP, Hermes voice mode, Hermes integrations or providers, or mentions "hermes-agent" or the hermes CLI. Keywords hermes, hermes-agent, nous research, hermes cli, hermes config, hermes sessions, hermes skills, SOUL.md, hermes mcp, hermes voice mode, ~/.hermes.
+description: Look up Hermes Agent (Nous Research) documentation at hermes-agent.nousresearch.com. Use for Hermes CLI, config (~/.hermes/config.yaml, .env, SOUL.md), sessions, skills, MCP, voice mode, integrations. Keywords hermes, hermes-agent, nous research, hermes cli, SOUL.md, hermes mcp, ~/.hermes.
 ---
 
 # Hermes Agent Documentation Navigator

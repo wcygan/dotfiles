@@ -1,14 +1,6 @@
 ---
 name: claude-agent-sdk
-description: >
-  Claude Agent SDK for Python (and TypeScript) — building programmatic agents with
-  claude-agent-sdk. Covers query(), ClaudeSDKClient, custom tools, hooks, permissions,
-  sessions, subagents, structured outputs, file checkpointing, system prompts, skills,
-  slash commands, and tool search. Auto-loads when working with claude_agent_sdk imports,
-  agent SDK code, or building autonomous Claude agents.
-  Keywords: claude-agent-sdk, agent sdk, query, ClaudeSDKClient, ClaudeAgentOptions,
-  custom tools, mcp server, hooks, permissions, subagents, structured output, sessions,
-  file checkpointing, tool search, agent loop, slash commands, skills sdk
+description: Claude Agent SDK (Python/TypeScript) — building programmatic agents with claude-agent-sdk. Covers query(), ClaudeSDKClient, custom tools, hooks, permissions, sessions, subagents, structured outputs, file checkpointing, skills, slash commands. Auto-loads on claude_agent_sdk imports. Keywords claude-agent-sdk, query, ClaudeSDKClient, custom tools, mcp server, subagents.
 allowed-tools: Read, Grep, Glob, WebFetch, WebSearch, Bash(cat *), Bash(gh *), Bash(git *), Bash(ls *), Bash(uv *)
 ---
 

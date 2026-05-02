@@ -1,13 +1,6 @@
 ---
 name: authoring-hermes-skills
-description: >
-  Author Hermes Agent skills (SKILL.md files) for ~/.hermes/skills/ or
-  dotfiles-tracked external skill dirs. Covers frontmatter, conditional
-  activation via toolset fallbacks, progressive disclosure with references/
-  and templates/, and the hermes skills CLI. Use when creating, editing, or
-  reviewing Hermes skills, or setting up shared skill directories.
-  Keywords: hermes skill, hermes agent, nous research, SKILL.md, ~/.hermes/skills,
-  skill_manage, external_dirs, fallback_for_toolsets, hermes skills CLI
+description: Author Hermes Agent skills (SKILL.md) for `~/.hermes/skills/` or dotfiles-tracked external dirs. Covers frontmatter, conditional activation via toolset fallbacks, progressive disclosure with references/templates, and the hermes skills CLI. Keywords hermes skill, SKILL.md, ~/.hermes/skills, skill_manage, external_dirs, fallback_for_toolsets.
 ---
 
 # Authoring Hermes Skills

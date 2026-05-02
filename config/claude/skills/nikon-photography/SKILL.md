@@ -1,12 +1,6 @@
 ---
 name: nikon-photography
-description: >
-  Manage Nikon Z5 II photo and video libraries. Batch resize, convert to JPEG XL
-  or optimized JPEG via mozjpeg, create contact sheets, manage EXIF metadata, prepare
-  share-ready albums, and process 4K video. Uses Python scripts via uv run for all
-  batch operations. Use when working with JPG, NEF, HEIF, or MOV photo/video files,
-  or when the user mentions photos, camera, Nikon, resize, sharing pictures, photo
-  library, image optimization, JPEG XL, or contact sheet.
+description: Manage Nikon Z5 II photo/video libraries: batch resize, convert to JPEG XL or mozjpeg, contact sheets, EXIF, share-ready albums, 4K video. Uses Python via uv run. Use for JPG/NEF/HEIF/MOV files or photo/camera/Nikon mentions. Keywords Nikon, photo, JPEG XL, mozjpeg, contact sheet, EXIF, 4K video.
 allowed-tools:
   - Bash(uv run *)
   - Bash(ffmpeg *)

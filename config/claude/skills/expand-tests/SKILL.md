@@ -1,12 +1,6 @@
 ---
 name: expand-tests
-description: >
-  Analyze existing test patterns and create comprehensive, idiomatic tests to
-  expand coverage. Detects framework (Jest, Vitest, pytest, Go, Rust, JUnit),
-  matches project conventions, and fills coverage gaps. Use when adding tests,
-  improving coverage, expanding test suite, or writing tests for untested code.
-  Keywords: test, tests, testing, coverage, unit test, integration test, expand
-  tests, test coverage, write tests, add tests, test gaps
+description: Analyze existing test patterns and write idiomatic tests to expand coverage. Detects framework (Jest, Vitest, pytest, Go, Rust, JUnit), matches conventions, fills gaps. Use for adding tests, improving coverage, or testing untested code. Keywords test, coverage, unit test, integration test, expand tests, test gaps.
 ---
 
 # Test Expansion

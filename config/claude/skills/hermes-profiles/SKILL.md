@@ -1,17 +1,6 @@
 ---
 name: hermes-profiles
-description: >
-  Work with Hermes Agent profiles — isolated ~/.hermes/profiles/<name>/
-  environments, each with its own config.yaml, .env, SOUL.md, memory,
-  sessions, skills, state DB, and gateway process. Use when creating,
-  cloning, switching, renaming, exporting, importing, or deleting Hermes
-  profiles; when running multiple Hermes agents on one machine; when
-  configuring per-profile messaging gateways (Telegram/Discord/Slack/
-  WhatsApp/Signal); or when the user mentions `hermes profile`, `-p <name>`,
-  `--profile`, `HERMES_HOME`, or per-profile aliases in ~/.local/bin.
-  Keywords: hermes profile, hermes -p, hermes --profile, HERMES_HOME,
-  profile clone, profile create, profile use, profile export, profile
-  import, gateway install, per-profile bot token
+description: Manage Hermes Agent profiles — isolated `~/.hermes/profiles/<name>/` envs with per-profile config, SOUL.md, memory, sessions, gateway. Use for create/clone/switch/export/import profiles or configuring per-profile messaging gateways. Keywords hermes profile, -p, --profile, HERMES_HOME, gateway install.
 ---
 
 # Hermes Profiles

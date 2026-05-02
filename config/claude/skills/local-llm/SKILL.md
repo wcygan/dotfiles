@@ -1,16 +1,6 @@
 ---
 name: local-llm
-description: >
-  Manage and run local LLMs on Apple Silicon (M5 Max 128GB MacBook Pro). Start/stop inference servers,
-  pull and configure models, benchmark performance, set up coding agent harnesses (Ollama, MLX-LM,
-  llama.cpp, Hermes Agent, OpenCode, Aider), troubleshoot inference issues, and optimize for speed
-  or quality. Auto-loads when working with local model inference, Ollama commands, MLX server,
-  llama.cpp, GGUF quantization, model selection, coding agents with local models, or Apple Silicon
-  LLM performance. Use when starting a local model, picking a model for hardware, configuring a
-  coding agent harness, benchmarking inference, or troubleshooting local LLM issues.
-  Keywords: ollama, mlx, mlx-lm, llama.cpp, gguf, local llm, inference, quantization, apple silicon,
-  m5 max, hermes agent, opencode, aider, coding agent, model selection, benchmark, moe, prefill,
-  token generation, unified memory, metal, neural accelerator.
+description: Manage local LLMs on Apple Silicon (M5 Max). Start/stop inference servers, pull models, benchmark, configure coding-agent harnesses, troubleshoot. Keywords ollama, mlx, mlx-lm, llama.cpp, gguf, local llm, inference, quantization, apple silicon, hermes agent, opencode, aider, MoE, prefill.
 ---
 
 # Local LLM Management — M5 Max 128GB

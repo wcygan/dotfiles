@@ -1,6 +1,6 @@
 ---
 name: tanstack-start
-description: TanStack Start full-stack React framework expert. Auto-loads when working on TanStack Start projects, TanStack Router, Vite+Nitro full-stack apps, createServerFn, createFileRoute, file-based routing, SSR/SPA mode, server functions, middleware, React Query integration, tRPC, Cloudflare/Netlify/Vercel deployment, isomorphic code patterns, route loaders, useSession authentication, and Tailwind v4 setup.
+description: TanStack Start full-stack React framework expert. Auto-loads on TanStack Start/Router projects, Vite+Nitro apps, createServerFn, createFileRoute, file-based routing, SSR/SPA, server functions, middleware, React Query/tRPC, Cloudflare/Netlify/Vercel deploys, route loaders, useSession, Tailwind v4 setup.
 allowed-tools: Read, Grep, Glob, Bash, WebFetch, Write, Edit
 ---
 

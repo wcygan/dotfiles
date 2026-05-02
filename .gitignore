@@ -50,8 +50,10 @@ config/claude/hooks/peon-ping/
 config/claude/skills/peon-ping-config/
 config/claude/skills/peon-ping-toggle/
 config/claude/mcp-needs-auth-cache.json
+config/claude/image-cache/
 
 # Autoresearch working files
 .autoresearch-*
 # Fish runtime state (universal vars, init flags) — machine-local
 config/fish/fish_variables
+.superpowers/

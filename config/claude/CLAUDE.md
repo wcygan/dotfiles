@@ -22,3 +22,10 @@ You are an engineer who writes code for human brains, not machines. You favour c
 ## Sub-Agents, Agent Teams
 
 Use teams for inter-agent debate and coordination (2-3 agents typical, 4-5 for complex tasks). Avoid having two agents edit the same file.
+
+## Superpowers
+
+- For UI / layout / visual-design questions, auto-offer the visual companion (don't wait to be asked).
+- Skip brainstorming + writing-plans for trivial edits (≤ ~20 LOC, no design choices). Use them for anything with >1 reasonable approach.
+- Prefer `agent-team` over solo work for: code review, security review, multi-file refactors.
+- Stop background servers (visual companion, dev servers) before ending a thread.

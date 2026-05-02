@@ -1,110 +1,123 @@
 ---
-title: Proven Team Compositions
-description: Tested team recipes for common task types
-tags: [recipes, compositions, examples]
+title: Proven Team Recipes
+description: Lens-based team templates for common task types
+tags: [recipes, lenses, examples]
 ---
 
-# Proven Team Compositions
+# Proven Team Recipes
 
-## Code Review (3 agents)
+Each recipe lists the **lenses** to use, not specific agent names. When spawning, write a role prompt that establishes each lens (see [composition.md](composition.md) §5). Use `general-purpose` agents unless a project-local custom agent fits a lens precisely.
 
-**When**: Reviewing a PR, evaluating code quality, or auditing a module.
+## Code Review (3 lenses)
+
+**When**: Reviewing a PR or auditing a module.
 
 ```
 Create a team to review [CODE/PR]:
-- error-path-reviewer: find failure modes and unhandled errors
-- simplifier: identify unnecessary complexity
-- contract-reviewer: check for breaking changes
+- Error-path lens: find failure modes and unhandled errors
+- Simplicity lens: identify unnecessary complexity
+- Contract lens: check for breaking changes to public interfaces
 Synthesize findings into a single review.
 ```
 
-## Hardening (3 agents)
+## Hardening (3 lenses)
 
 **When**: Preparing a service for production.
 
 ```
 Create a team to harden [SERVICE]:
-- error-path-reviewer: find failure modes and missing resilience
-- deploy-safety-reviewer: evaluate rollout safety and rollback plans
-- observability-advisor: find observability gaps
-Each reviewer works independently, then synthesize findings.
+- Error-path lens: failure modes and missing resilience
+- Deploy-safety lens: rollout safety and rollback plan
+- Observability lens: instrumentation and alerting gaps
+Each works independently, then we synthesize.
 ```
 
-## Design Review (3 agents)
+## Design Review (3 lenses)
 
-**When**: Evaluating a new feature design or architecture proposal.
+**When**: Evaluating a new design or architecture proposal.
 
 ```
 Create a team to review [DESIGN]:
-- contract-reviewer: evaluate interface stability and compatibility
-- simplifier: challenge unnecessary complexity
-- devils-advocate: question whether we need this at all
+- Contract lens: interface stability and compatibility
+- Simplicity lens: challenge unnecessary complexity
+- Skeptic lens: question whether we need this at all
 Have them debate and converge on a recommendation.
 ```
 
-## Feature Development (3 agents)
+## Feature Development (3 lenses)
 
 **When**: Building a new feature with clear scope.
 
 ```
 Create a team to review the plan for [FEATURE]:
-- contract-reviewer: evaluate the interface design
-- test-strategist: plan the testing approach
-- error-path-reviewer: identify failure modes to handle
+- Contract lens: interface design
+- Test-strategy lens: testing approach and coverage layers
+- Error-path lens: failure modes to handle
 ```
 
-## Pre-Deploy Audit (3 agents)
+## Pre-Deploy Audit (3 lenses)
 
-**When**: Final check before shipping to production.
+**When**: Final check before production.
 
 ```
 Create a team to audit [SERVICE] before deploy:
-- deploy-safety-reviewer: rollout risk and rollback plan
-- observability-advisor: monitoring and alerting gaps
-- error-path-reviewer: unhandled failure modes
+- Deploy-safety lens: rollout risk and rollback plan
+- Observability lens: monitoring and alerting gaps
+- Error-path lens: unhandled failure modes
 Each produces a go/no-go recommendation.
 ```
 
-## Investigation (3 agents)
+## Investigation (3 lenses)
 
-**When**: Debugging complex issues or understanding unfamiliar code.
+**When**: Debugging a complex issue or understanding unfamiliar code.
 
 ```
 Create a team to investigate [TOPIC/BUG]:
-- error-path-reviewer: trace error paths and failure modes
-- devils-advocate: challenge initial hypotheses
-- concurrency-reviewer: analyze timing-dependent behavior
+- Error-path lens: trace error paths and failure modes
+- Skeptic lens: challenge initial hypotheses
+- Concurrency lens: timing-dependent behavior
 Have them share findings and challenge each other.
 ```
 
-## Dependency Evaluation (2 agents)
+## Dependency Evaluation (2 lenses)
 
-**When**: Evaluating whether to add a new library or framework.
+**When**: Considering adding a new library or framework.
 
 ```
 Create a team to evaluate adding [DEPENDENCY]:
-- dependency-skeptic: assess necessity, risk, and alternatives
-- devils-advocate: argue for the simplest path (maybe don't add it)
+- Dependency-skeptic lens: necessity, maintenance risk, alternatives
+- Skeptic lens: argue for the simplest path (maybe don't add it)
 ```
 
-## Database Change Review (3 agents)
+## Database Change Review (3 lenses)
 
 **When**: Reviewing schema changes, migrations, or query patterns.
 
 ```
 Create a team to review [MIGRATION/SCHEMA]:
-- data-model-analyst: schema correctness and migration safety
-- contract-reviewer: backward compatibility with running code
-- deploy-safety-reviewer: rollout ordering and rollback path
+- Data-model lens: schema correctness and migration safety
+- Contract lens: backward compatibility with running code
+- Deploy-safety lens: rollout ordering and rollback path
 ```
 
-## Async/Concurrent Code Review (3 agents)
+## Async / Concurrent Code Review (3 lenses)
 
 **When**: Reviewing code with threads, async/await, channels, or shared state.
 
 ```
 Create a team to review [ASYNC CODE]:
-- concurrency-reviewer: races, deadlocks, cancellation safety
-- error-path-reviewer: error handling in concurrent context
-- simplifier: can the concurrency be eliminated?
+- Concurrency lens: races, deadlocks, cancellation safety
+- Error-path lens: error handling under concurrent failure
+- Simplicity lens: can the concurrency be eliminated?
+```
+
+## Refactor Review (3 lenses)
+
+**When**: Evaluating a refactor before merging.
+
+```
+Create a team to review the refactor of [MODULE]:
+- Simplicity lens: did we actually delete complexity, or just move it?
+- Test-strategy lens: are existing behaviors covered?
+- Contract lens: any subtle public-interface changes?
 ```

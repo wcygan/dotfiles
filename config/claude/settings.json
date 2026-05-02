@@ -139,6 +139,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/wcygan/.claude/hooks/superpowers-session-start.py",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [

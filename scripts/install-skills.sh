@@ -21,6 +21,7 @@ NC='\033[0m'
 # Curated list of trusted, official-publisher skills. Add to this list as
 # new vendor skills become useful. Format: <owner>/<repo>@<skill>
 SKILLS=(
+    "astral-sh/claude-code-plugins@uv"
     "stripe/ai@stripe-best-practices"
     "resend/resend-skills@resend"
     "resend/resend-skills@resend-cli"

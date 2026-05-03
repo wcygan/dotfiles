@@ -26,6 +26,7 @@ Reproducible tools with Nix; portable, editable configs via symlinks; fast onboa
 * **Need a config?** Add under `config/**` → wire in `scripts/link-config.sh`.
   * Only symlink to `~/.config/` for XDG-compliant programs (fish, starship, zed). Legacy programs like tmux expect `~/.tmux.conf` — check before symlinking.
 * **Need per-project dev environment?** Use the nix-direnv pattern — see README.md.
+* **Need a vendor agent skill?** Add it to the `SKILLS` array in `scripts/install-skills.sh` → `make install-skills`.
 * **Unsure?** Prefer plain files + symlinks over bespoke derivations.
 
 ## Workflow
@@ -53,6 +54,8 @@ Rollback: re-link configs (script backs up physical dirs), or `nix profile rollb
 **Bump package set**: `make update`; verify with `make test-pre && make test-local`; push and let the CI matrix run.
 
 **Add a fish function**: create `config/fish/functions/<name>.fish`; reference in docs; add a small test if relevant.
+
+**Add a vendor agent skill**: append `<owner>/<repo>@<skill>` to the `SKILLS` array in `scripts/install-skills.sh`; run `make install-skills`. Only vendor official-publisher skills (verify the GitHub org owns the repo). Refresh all global skills with `make update-skills`.
 
 ## Pointers
 

@@ -57,3 +57,15 @@ config/claude/image-cache/
 # Fish runtime state (universal vars, init flags) — machine-local
 config/fish/fish_variables
 .superpowers/
+
+# BEGIN vendor-skill-symlinks (managed by scripts/install-skills.sh)
+# Symlinks created by 'bunx skills add'. Real content lives in ~/.agents/skills/;
+# the CLI symlinks them into ~/.claude/skills/ which resolves into this repo.
+config/claude/skills/stripe-best-practices
+config/claude/skills/resend
+config/claude/skills/resend-cli
+config/claude/skills/react-email
+config/claude/skills/email-best-practices
+config/claude/skills/portless
+config/claude/skills/oauth
+# END vendor-skill-symlinks

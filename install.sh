@@ -144,6 +144,13 @@ else
     echo -e "${YELLOW}⚠${NC} Hermes skills setup reported an error (non-fatal)"
 fi
 
+echo -e "\n${BLUE}Step 6: Installing vendor agent skills${NC}"
+if "$ROOT/scripts/install-skills.sh"; then
+    echo -e "${GREEN}✓${NC} Vendor skills install complete"
+else
+    echo -e "${YELLOW}⚠${NC} Vendor skills install reported an error (non-fatal)"
+fi
+
 echo ""
 
 # ============================================================================

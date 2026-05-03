@@ -1,7 +1,7 @@
 # Nix Dotfiles Makefile
 # Run 'make help' for available commands
 
-.PHONY: help install test test-pre test-local test-docker link git-user clean update latest shell docs
+.PHONY: help install test test-pre test-local test-docker link git-user clean update latest shell docs install-skills update-skills
 
 # Default target
 help:
@@ -30,6 +30,10 @@ help:
 	@echo "  make install-packages - Install/upgrade packages from current flake"
 	@echo "  make list       - List installed packages"
 	@echo "  make clean      - Garbage collect old packages"
+	@echo ""
+	@echo "Agent Skills:"
+	@echo "  make install-skills - Install curated vendor agent skills"
+	@echo "  make update-skills  - Update all global agent skills"
 	@echo ""
 	@echo "Development:"
 	@echo "  make shell      - Enter Nix development shell"
@@ -153,6 +157,17 @@ install-packages:
 	@echo "📦 Installing packages from flake..."
 	@nix profile install . --priority 5
 	@echo "✅ Packages installed!"
+
+# Install curated vendor agent skills (Stripe, Resend, etc.)
+install-skills:
+	@echo "🧠 Installing vendor agent skills..."
+	@./scripts/install-skills.sh
+	@echo "✅ Skills installed!"
+
+# Update all global agent skills
+update-skills:
+	@echo "🔄 Updating global agent skills..."
+	@./scripts/install-skills.sh --update
 
 # List installed packages
 list:

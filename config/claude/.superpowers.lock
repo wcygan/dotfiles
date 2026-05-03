@@ -1,5 +1,0 @@
-# Pinned upstream commit for obra/superpowers.
-# Bump with: scripts/vendor-superpowers.py --update <new-sha>
-# Then review the resulting diff before committing.
-repo=https://github.com/obra/superpowers.git
-sha=e7a2d16476bf042e9add4699c9d018a90f86e4a6

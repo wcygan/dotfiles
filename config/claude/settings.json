@@ -135,7 +135,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "command": "if [ -x $HOME/.claude/hooks/peon-ping/peon.sh ]; then $HOME/.claude/hooks/peon-ping/peon.sh; fi",
             "timeout": 10
           }
         ]
@@ -145,7 +145,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/wcygan/.claude/hooks/superpowers-session-start.py",
+            "command": "$HOME/.claude/hooks/superpowers-session-start.py",
             "timeout": 10
           }
         ]
@@ -157,7 +157,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "command": "if [ -x $HOME/.claude/hooks/peon-ping/peon.sh ]; then $HOME/.claude/hooks/peon-ping/peon.sh; fi",
             "timeout": 10,
             "async": true
           }
@@ -170,7 +170,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "command": "if [ -x $HOME/.claude/hooks/peon-ping/peon.sh ]; then $HOME/.claude/hooks/peon-ping/peon.sh; fi",
             "timeout": 10,
             "async": true
           }
@@ -183,7 +183,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "command": "if [ -x $HOME/.claude/hooks/peon-ping/peon.sh ]; then $HOME/.claude/hooks/peon-ping/peon.sh; fi",
             "timeout": 10,
             "async": true
           }
@@ -196,7 +196,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "command": "if [ -x $HOME/.claude/hooks/peon-ping/peon.sh ]; then $HOME/.claude/hooks/peon-ping/peon.sh; fi",
             "timeout": 10,
             "async": true
           }
@@ -209,7 +209,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "command": "if [ -x $HOME/.claude/hooks/peon-ping/peon.sh ]; then $HOME/.claude/hooks/peon-ping/peon.sh; fi",
             "timeout": 10,
             "async": true
           }
@@ -222,7 +222,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "command": "if [ -x $HOME/.claude/hooks/peon-ping/peon.sh ]; then $HOME/.claude/hooks/peon-ping/peon.sh; fi",
             "timeout": 10,
             "async": true
           }
@@ -235,7 +235,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "command": "if [ -x $HOME/.claude/hooks/peon-ping/peon.sh ]; then $HOME/.claude/hooks/peon-ping/peon.sh; fi",
             "timeout": 10,
             "async": true
           }
@@ -248,7 +248,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/wcygan/.claude/hooks/peon-ping/peon.sh",
+            "command": "if [ -x $HOME/.claude/hooks/peon-ping/peon.sh ]; then $HOME/.claude/hooks/peon-ping/peon.sh; fi",
             "timeout": 10,
             "async": true
           }

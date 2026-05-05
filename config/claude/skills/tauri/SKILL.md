@@ -1,16 +1,18 @@
 ---
 name: tauri
-description: Tauri v2 + SvelteKit desktop/mobile app expert. Auto-loads when working with Tauri commands, tauri.conf.json, src-tauri/, #[tauri::command], invoke(), IPC, Tauri plugins, capabilities, permissions, WRY, TAO, tauri::Builder, tauri::State, Tauri events, channels, WebviewWindow, AppHandle, tauri-driver, or Tauri security patterns.
+description: Tauri v2 + Bun + TanStack Start (SPA mode) desktop/mobile app expert. Auto-loads when working with Tauri commands, tauri.conf.json, src-tauri/, #[tauri::command], invoke(), IPC, Tauri plugins, capabilities, permissions, WRY, TAO, tauri::Builder, tauri::State, Tauri events, channels, WebviewWindow, AppHandle, tauri-driver, Tauri security patterns, frontendDist, bunx tauri, bun --bun, or TanStack Start SPA mode for a Tauri webview.
 ---
 
-# Tauri v2 + SvelteKit
+# Tauri v2 + Bun + TanStack Start
 
-Tauri is a framework for building tiny, fast desktop and mobile apps. It combines a Rust backend (Core Process) with a frontend rendered in the OS's native webview — no bundled browser engine. Apps start under 600KB. We always use **SvelteKit** with `adapter-static` (SPA mode, `ssr = false`).
+Tauri is a framework for building tiny, fast desktop and mobile apps. It combines a Rust backend (Core Process) with a frontend rendered in the OS's native webview — no bundled browser engine. Apps start under 600KB.
+
+This skill assumes **Bun + TanStack Start in SPA mode**. Tauri loads a static frontend bundle at runtime, so SSR/Nitro is disabled. For framework wiring (Vite plugin order, Tailwind v4, `__root.tsx`), see the `bun-tanstack-start` skill. **Server functions / loaders / Effect TS guidance from that skill do not apply here**: there is no Nitro server in a Tauri app. All "backend" work happens in Rust via Tauri commands.
 
 ## Architecture Overview
 
 ```
-SvelteKit Frontend (WebView)
+TanStack Start Frontend (WebView, SPA, static)
       │  invoke() / events / channels
       ▼
 ┌─────────────────────────┐
@@ -23,28 +25,30 @@ SvelteKit Frontend (WebView)
 ```
 
 - **Core Process (Rust)**: entry point, OS access, state, IPC hub, security enforcement
-- **WebView Process**: renders SvelteKit app using system webview (WKWebView/Edge WebView2/webkitgtk)
+- **WebView Process**: renders the prebuilt TanStack Start SPA using system webview (WKWebView/Edge WebView2/webkitgtk)
 - **IPC**: message-passing via commands (`invoke`) and events — all routed through Core
 
 ## Project Structure
 
 ```
-├── package.json
-├── svelte.config.js          # adapter-static, fallback: 'index.html'
+├── package.json                  # bun --bun vite scripts
+├── vite.config.ts                # tsConfigPaths → tanstackStart({ spa }) → viteReact → tailwindcss
 ├── src/
 │   ├── routes/
-│   │   └── +layout.ts        # export const ssr = false
-│   └── ...
+│   │   ├── __root.tsx            # links app.css via ?url import
+│   │   └── index.tsx             # createFileRoute('/')
+│   └── styles/
+│       └── app.css               # @import 'tailwindcss' source('../')
 └── src-tauri/
     ├── Cargo.toml
-    ├── tauri.conf.json        # devUrl, frontendDist, app config
-    ├── build.rs               # must call tauri_build::build()
+    ├── tauri.conf.json           # devUrl, frontendDist, app config
+    ├── build.rs                  # must call tauri_build::build()
     ├── src/
-    │   ├── lib.rs             # Builder, commands, state
-    │   └── main.rs            # desktop entry point
+    │   ├── lib.rs                # Builder, commands, state
+    │   └── main.rs               # desktop entry point
     ├── capabilities/
-    │   └── default.json       # permission bindings per window
-    ├── permissions/            # custom TOML permission definitions
+    │   └── default.json          # permission bindings per window
+    ├── permissions/              # custom TOML permission definitions
     └── icons/
 ```
 
@@ -70,30 +74,41 @@ SvelteKit Frontend (WebView)
 | `emit('event', payload)` | Emit event to backend |
 | `Channel<T>` | Receive streamed data from Rust |
 
-## SvelteKit Setup Essentials
+## TanStack Start Setup Essentials
 
-```js
-// svelte.config.js
-import adapter from '@sveltejs/adapter-static';
-export default { kit: { adapter: adapter({ fallback: 'index.html' }) } };
-```
+Tauri requires a **static SPA bundle**. Enable SPA mode on the TanStack Start Vite plugin so there is no Nitro server and the build emits static HTML/JS that Tauri can load from disk.
 
 ```ts
-// src/routes/+layout.ts
-export const ssr = false;
+// vite.config.ts
+import { defineConfig } from 'vite'
+import tsConfigPaths from 'vite-tsconfig-paths'
+import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import viteReact from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [
+    tsConfigPaths(),
+    tanstackStart({ spa: { enabled: true } }), // disables SSR/Nitro for Tauri
+    viteReact(),
+    tailwindcss(),
+  ],
+})
 ```
 
 ```json
-// tauri.conf.json
+// src-tauri/tauri.conf.json
 {
   "build": {
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
-    "devUrl": "http://localhost:5173",
-    "frontendDist": "../build"
+    "beforeDevCommand": "bun run dev",
+    "beforeBuildCommand": "bun run build",
+    "devUrl": "http://localhost:3000",
+    "frontendDist": "../.output/public"
   }
 }
 ```
+
+The dev port and `frontendDist` path are the only Tauri-specific knobs. See [getting-started](references/getting-started.md) for the full walkthrough including how to verify the actual build-output directory for your TanStack Start version.
 
 ## Security Model (Capability-Based)
 
@@ -121,10 +136,16 @@ strip = true
 
 ## References
 
-- [Getting Started & SvelteKit](references/getting-started.md) — project creation, SvelteKit adapter-static setup, project structure
+- [Getting Started & TanStack Start](references/getting-started.md) — scaffold (Bun + TanStack Start, then add Tauri), SPA-mode wiring, project structure
 - [Architecture & Process Model](references/architecture.md) — multi-process design, WRY/TAO, crate ecosystem, size optimization
 - [Inter-Process Communication](references/ipc.md) — commands, events, channels, brownfield vs isolation patterns
 - [Security & Permissions](references/security.md) — capabilities, permissions, scopes, CSP, security lifecycle
 - [Commands & Events](references/commands-and-events.md) — calling Rust from frontend, calling frontend from Rust, streaming
 - [Development & Configuration](references/development.md) — config files, resources, state management, icons, dev workflow
 - [Testing](references/testing.md) — IPC mocking, event mocking, window mocking, WebDriver, tauri-driver
+
+## Companion Skills
+
+- **`bun-tanstack-start`** — frontend stack reference (Vite plugin order, Tailwind v4, `__root.tsx`). Load whenever touching `src/`, `vite.config.ts`, or `package.json`.
+- **`tailwind`** / **`tailwind-v4-tokens`** — styling.
+- **`idiomatic-rust`** / **`async-rust`** — Rust side of `src-tauri/`.

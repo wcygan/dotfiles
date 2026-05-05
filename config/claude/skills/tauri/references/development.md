@@ -30,10 +30,10 @@ tauri = { version = "2.0.0", features = ["config-json5"] }
 ```json
 {
   "build": {
-    "devUrl": "http://localhost:5173",
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../build"
+    "devUrl": "http://localhost:3000",
+    "beforeDevCommand": "bun run dev",
+    "beforeBuildCommand": "bun run build",
+    "frontendDist": "../.output/public"
   },
   "bundle": {
     "active": true,
@@ -66,7 +66,7 @@ Filenames:
 Build variants without duplicating full config:
 
 ```bash
-npm run tauri build -- --config src-tauri/tauri.beta.conf.json
+bun run tauri build -- --config src-tauri/tauri.beta.conf.json
 ```
 
 ```json
@@ -102,18 +102,20 @@ tauri = { version = "2.0.0", features = [] }
 ```json
 {
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
+    "dev": "bun --bun vite dev",
+    "build": "bun --bun vite build",
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/api": "^2.0.0"
+  },
+  "devDependencies": {
     "@tauri-apps/cli": "^2.0.0"
   }
 }
 ```
 
-The `"tauri"` script entry is required only when using npm.
+The `bun --bun` flag forces Bun end-to-end for child processes. See the `bun-tanstack-start` skill for the rationale.
 
 ## Resources / Assets
 
@@ -285,9 +287,9 @@ type AppState = Mutex<AppStateInner>;
 ### Generate Icons
 
 ```bash
-npm run tauri icon          # uses ./app-icon.png
-npm run tauri icon my.png   # custom source
-npm run tauri icon -o out/  # custom output dir
+bun run tauri icon          # uses ./app-icon.png
+bun run tauri icon my.png   # custom source
+bun run tauri icon -o out/  # custom output dir
 ```
 
 Start with at least 1024x1024 PNG or SVG source.
@@ -321,26 +323,39 @@ Start with at least 1024x1024 PNG or SVG source.
 ## Mobile Development
 
 ```bash
-npx tauri android dev
-npx tauri ios dev
-npx tauri ios dev 'iPhone 15'
+bunx tauri android dev
+bunx tauri ios dev
+bunx tauri ios dev 'iPhone 15'
 ```
 
-For iOS physical device, the frontend must listen on `TAURI_DEV_HOST`:
+For iOS physical device, the frontend must listen on `TAURI_DEV_HOST`. Extend the existing TanStack Start `vite.config.ts` (keep the plugin order from `bun-tanstack-start`).
 
-```javascript
-import { defineConfig } from 'vite';
-const host = process.env.TAURI_DEV_HOST;
+Note: this snippet pins `port: 1420` for the mobile dev server. If you adopt this for desktop too, update `tauri.conf.json#build.devUrl` to match (the rest of this skill assumes TanStack Start's default `3000`).
+
+```ts
+import { defineConfig } from 'vite'
+import tsConfigPaths from 'vite-tsconfig-paths'
+import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import viteReact from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+const host = process.env.TAURI_DEV_HOST
 
 export default defineConfig({
   clearScreen: false,
+  plugins: [
+    tsConfigPaths(),
+    tanstackStart({ spa: { enabled: true } }),
+    viteReact(),
+    tailwindcss(),
+  ],
   server: {
     host: host || false,
     port: 1420,
     strictPort: true,
     hmr: host ? { protocol: 'ws', host, port: 1421 } : undefined,
   },
-});
+})
 ```
 
 The `--open` flag launches Xcode or Android Studio instead of simulator/device deployment.

@@ -1,101 +1,118 @@
 ---
-title: Getting Started & SvelteKit
-description: Project creation, SvelteKit adapter-static setup, project structure, and prerequisites
-tags: [getting-started, sveltekit, project-structure, adapter-static, create-tauri-app]
+title: Getting Started & TanStack Start
+description: Scaffolding a Bun + TanStack Start frontend, wiring Tauri on top, SPA-mode requirement, project structure, prerequisites
+tags: [getting-started, tanstack-start, bun, spa, project-structure, create-tauri-app]
 ---
 
-# Getting Started & SvelteKit
+# Getting Started & TanStack Start
 
-## Project Creation
+This skill assumes Bun + TanStack Start as the frontend. The recommended path is **scaffold the frontend first, then add Tauri to it** — `create-tauri-app` does not ship a TanStack Start template.
 
-```bash
-# Recommended
-npm create tauri-app@latest
-
-# Alternatives
-sh <(curl https://create.tauri.app/sh)
-yarn create tauri-app
-pnpm create tauri-app
-cargo install create-tauri-app --locked
-```
-
-## SvelteKit Setup (Required)
-
-Tauri requires SPA mode via `@sveltejs/adapter-static`. SSR/SSG with prerendering won't work because Tauri APIs aren't available during the build phase.
-
-### 1. Install adapter-static
+## 1. Scaffold the TanStack Start frontend
 
 ```bash
-npm install --save-dev @sveltejs/adapter-static
+bunx @tanstack/cli create my-app
+cd my-app
+bun install
 ```
 
-### 2. Configure SvelteKit (`svelte.config.js`)
-
-```javascript
-import adapter from '@sveltejs/adapter-static';
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
-
-const config = {
-  preprocess: vitePreprocess(),
-  kit: {
-    adapter: adapter({
-      fallback: 'index.html',
-    }),
-  },
-};
-
-export default config;
-```
-
-The `fallback: 'index.html'` is critical — it enables SPA mode so all routes are handled client-side.
-
-### 3. Disable SSR (`src/routes/+layout.ts`)
-
-```typescript
-export const ssr = false;
-```
-
-This allows `window`-dependent APIs (like Tauri's `invoke`) to work without client-side guards.
-
-### 4. Configure Tauri (`tauri.conf.json`)
+Patch `package.json` scripts to force Bun end-to-end (see the `bun-tanstack-start` skill for the rationale):
 
 ```json
 {
-  "build": {
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
-    "devUrl": "http://localhost:5173",
-    "frontendDist": "../build"
+  "scripts": {
+    "dev": "bun --bun vite dev",
+    "build": "bun --bun vite build",
+    "serve": "bun --bun vite preview"
   }
 }
 ```
 
-Adapt `npm` to your package manager. The `frontendDist` points to SvelteKit's build output directory.
+## 2. Switch the frontend to SPA mode
+
+Tauri loads a **static** frontend bundle at runtime — there is no Nitro server. Enable SPA mode on the TanStack Start Vite plugin so the build emits static HTML/JS:
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import tsConfigPaths from 'vite-tsconfig-paths'
+import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import viteReact from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [
+    tsConfigPaths(),
+    tanstackStart({ spa: { enabled: true } }),
+    viteReact(),
+    tailwindcss(),
+  ],
+})
+```
+
+Plugin order (`tsConfigPaths → tanstackStart → viteReact → tailwindcss`) is the same as the `bun-tanstack-start` skill.
+
+Why SPA mode: in default (SSR) mode, TanStack Start outputs a Nitro server bundle to `.output/server/` and Tauri has nothing static to load. SPA mode emits a prerendered shell + client bundle into `.output/public/` instead.
+
+## 3. Add Tauri to the project
+
+```bash
+bun add -D @tauri-apps/cli
+bunx @tauri-apps/cli@latest init
+```
+
+Answer the prompts:
+
+- **frontend dev command** → `bun run dev`
+- **frontend build command** → `bun run build`
+- **dev server URL** → `http://localhost:3000`
+- **frontend dist path** → `../.output/public`
+
+After scaffolding, run `bun run build` once and check the actual output directory (`ls .output/` or `ls dist/`) — the dir varies by TanStack Start version. Update `frontendDist` to match if it differs.
+
+Install the JS API:
+
+```bash
+bun add @tauri-apps/api
+```
+
+## 4. Wire `tauri.conf.json`
+
+```json
+{
+  "build": {
+    "beforeDevCommand": "bun run dev",
+    "beforeBuildCommand": "bun run build",
+    "devUrl": "http://localhost:3000",
+    "frontendDist": "../.output/public"
+  }
+}
+```
 
 ## Project Structure
 
 ```
 .
 ├── package.json
-├── svelte.config.js
-├── vite.config.ts
+├── vite.config.ts                # SPA-mode tanstackStart + plugin chain
 ├── src/
 │   ├── routes/
-│   │   ├── +layout.ts          # ssr = false
-│   │   └── +page.svelte
-│   ├── lib/
-│   └── app.html
+│   │   ├── __root.tsx            # createRootRoute + app.css ?url link
+│   │   └── index.tsx             # createFileRoute('/')
+│   ├── styles/
+│   │   └── app.css               # @import 'tailwindcss' source('../')
+│   └── components/
 └── src-tauri/
     ├── Cargo.toml
-    ├── Cargo.lock               # commit this
-    ├── build.rs                 # must call tauri_build::build()
-    ├── tauri.conf.json          # primary config, CLI marker
+    ├── Cargo.lock                # commit this
+    ├── build.rs                  # must call tauri_build::build()
+    ├── tauri.conf.json           # primary config, CLI marker
     ├── src/
-    │   ├── lib.rs               # Builder, commands, state, mobile entry
-    │   └── main.rs              # desktop entry: app_lib::run()
+    │   ├── lib.rs                # Builder, commands, state, mobile entry
+    │   └── main.rs               # desktop entry: app_lib::run()
     ├── capabilities/
-    │   └── default.json         # permission bindings
-    ├── permissions/             # custom TOML permission definitions
+    │   └── default.json          # permission bindings
+    ├── permissions/              # custom TOML permission definitions
     └── icons/
         ├── icon.png
         ├── icon.icns
@@ -105,6 +122,8 @@ Adapt `npm` to your package manager. The `frontendDist` points to SvelteKit's bu
 ### Key Files
 
 - **`tauri.conf.json`**: primary config — app identifier, dev server URL, build commands, window settings. Also serves as CLI marker to locate the Rust project.
+- **`vite.config.ts`**: SPA-mode `tanstackStart`. The single most common failure mode for Tauri + TanStack Start is forgetting `spa: { enabled: true }` and getting a Nitro server bundle that Tauri cannot load.
+- **`src/routes/__root.tsx`**: links `app.css` via `?url` import (see `bun-tanstack-start`). Single source of truth for the app shell.
 - **`build.rs`**: must contain `tauri_build::build()` for the build system.
 - **`lib.rs`**: Rust code + mobile entry point (`#[cfg_attr(mobile, tauri::mobile_entry_point)]`).
 - **`main.rs`**: desktop entry point — calls `app_lib::run()` to share logic with mobile.
@@ -112,25 +131,22 @@ Adapt `npm` to your package manager. The `frontendDist` points to SvelteKit's bu
 
 ### How It Works
 
-The framework operates like static web hosting: SvelteKit compiles to static files first, then the Rust project bundles those files during compilation. The frontend build is entirely standard — nothing Tauri-specific.
+The framework operates like static web hosting: TanStack Start (in SPA mode) compiles to static files first, then the Rust project bundles those files during compilation. The frontend build is entirely standard — nothing Tauri-specific.
 
 ## Development Commands
 
 ```bash
 # Start dev mode (hot reload + Rust rebuild)
-npm run tauri dev
+bun run tauri dev
 
 # Build release binary
-npm run tauri build
+bun run tauri build
 
 # Generate app icons from source image
-npm run tauri icon
-
-# Mobile dev
-npx tauri android dev
-npx tauri ios dev
-npx tauri ios dev 'iPhone 15'
+bun run tauri icon
 ```
+
+For mobile (`bunx tauri android dev` / `bunx tauri ios dev`), see [development.md](development.md#mobile-development).
 
 ### Dev Mode Notes
 
@@ -142,12 +158,14 @@ npx tauri ios dev 'iPhone 15'
 
 ### Source Control
 
-- **Commit**: `src-tauri/Cargo.lock`, `src-tauri/Cargo.toml`
-- **Exclude**: `src-tauri/target/`
+- **Commit**: `src-tauri/Cargo.lock`, `src-tauri/Cargo.toml`, the Bun lockfile (`bun.lock` on Bun ≥1.2, `bun.lockb` on older)
+- **Exclude**: `src-tauri/target/`, `.output/`, `node_modules/`
 
 ## Further Reading
 
 - https://v2.tauri.app/start/
 - https://v2.tauri.app/start/project-structure/
-- https://v2.tauri.app/start/frontend/sveltekit/
 - https://v2.tauri.app/start/prerequisites/
+- https://tanstack.com/start/latest/docs/framework/react/getting-started
+- https://tanstack.com/start/latest/docs/framework/react/guide/spa-mode
+- https://bun.com/docs/guides/ecosystem/tanstack-start

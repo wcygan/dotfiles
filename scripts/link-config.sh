@@ -26,12 +26,75 @@ link() {
       echo "      (would replace existing symlink)"
     fi
   else
+    mkdir -p "$(dirname "$dst")"
     if [ -e "$dst" ] && [ ! -L "$dst" ]; then
       mv "$dst" "$dst.backup.$(date +%s)"
     fi
     ln -snf "$src" "$dst"
     echo "→ $dst ↦ $src"
   fi
+}
+
+link_codex_skills() {
+  local src="$CFG_SRC/codex/skills"
+  local dst="$HOME/.codex/skills"
+
+  if $DRY_RUN; then
+    echo "[DRY] Would link: $dst → $src"
+    if [ -e "$dst" ] && [ ! -L "$dst" ]; then
+      echo "      (would migrate existing $dst contents into $src first)"
+    elif [ -L "$dst" ]; then
+      echo "      (would replace existing symlink)"
+    fi
+    return 0
+  fi
+
+  mkdir -p "$src" "$(dirname "$dst")"
+
+  if [ -e "$dst" ] && [ ! -L "$dst" ]; then
+    local backup="$dst.backup.$(date +%s)"
+    local backup_created=false
+
+    if [ -d "$dst" ]; then
+      shopt -s dotglob nullglob
+      local entries=("$dst"/*)
+      shopt -u dotglob nullglob
+
+      for entry in "${entries[@]}"; do
+        local name
+        name="$(basename "$entry")"
+
+        if [ -e "$src/$name" ] || [ -L "$src/$name" ]; then
+          if ! $backup_created; then
+            mkdir -p "$backup"
+            backup_created=true
+          fi
+          mv "$entry" "$backup/$name"
+        else
+          mv "$entry" "$src/"
+        fi
+      done
+
+      if rmdir "$dst" 2>/dev/null; then
+        if $backup_created; then
+          echo "→ Backed up Codex skills conflicts to $backup"
+        fi
+      else
+        if ! $backup_created; then
+          mkdir -p "$backup"
+          backup_created=true
+        fi
+        mv "$dst" "$backup/skills"
+        echo "→ Backed up existing Codex skills directory to $backup"
+      fi
+    else
+      mv "$dst" "$backup"
+      echo "→ Backed up existing Codex skills path to $backup"
+    fi
+  fi
+
+  ln -snf "$src" "$dst"
+  echo "→ $dst ↦ $src"
 }
 
 # Git config (XDG-compliant location)
@@ -58,6 +121,9 @@ link "$CFG_SRC/ghostty" "$HOME/.config/ghostty"
 # Claude configuration (for Claude Code CLI)
 link "$CFG_SRC/claude" "$HOME/.claude"
 
+# Codex skills only; ~/.codex contains runtime state that should stay machine-local.
+link_codex_skills
+
 # Zellij config
 link "$CFG_SRC/zellij" "$HOME/.config/zellij"
 
@@ -83,7 +149,9 @@ else
 fi
 
 # Disable fish greeting if fish is installed
-if command -v fish >/dev/null 2>&1; then
+if [[ "${DOTFILES_SKIP_FISH_GREETING:-}" == "1" ]]; then
+  :
+elif command -v fish >/dev/null 2>&1; then
   if $DRY_RUN; then
     echo "[DRY] Would disable fish greeting"
   else

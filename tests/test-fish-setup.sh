@@ -93,6 +93,19 @@ else
     fail "link-config.sh missing fish symlink command"
 fi
 
+if [[ -d "../config/codex/skills" ]]; then
+    pass "config/codex/skills exists for Codex skills"
+else
+    fail "config/codex/skills missing"
+fi
+
+if grep -q 'link_codex_skills' ../scripts/link-config.sh && \
+   grep -q '\.codex/skills' ../scripts/link-config.sh; then
+    pass "link-config.sh configured to symlink Codex skills"
+else
+    fail "link-config.sh missing Codex skills symlink command"
+fi
+
 # Test 5: Check for potential conflicts
 section "Conflict Detection"
 if [[ -e "$HOME/.config/fish" ]]; then
@@ -141,6 +154,7 @@ section "Symlink Dry Run"
 echo "Would create symlinks:"
 echo "  ~/.config/fish → $(dirname $(pwd))/config/fish"
 echo "  ~/.config/shell-nix.sh → $(dirname $(pwd))/config/shell-nix.sh"
+echo "  ~/.codex/skills → $(dirname $(pwd))/config/codex/skills"
 
 if [[ -e "$HOME/.config/fish" ]]; then
     if [[ -L "$HOME/.config/fish" ]]; then

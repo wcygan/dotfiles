@@ -25,9 +25,11 @@ Full documentation available at: https://wcygan.github.io/dotfiles/
 ```
 dotfiles/
 ├── config/             # Configuration files
-|   ├── zed/            # Zed config
-|   ├── ghostty/        # Ghostty config
 │   ├── fish/           # Fish shell config
+│   ├── claude/         # Claude Code config and skills
+│   ├── codex/          # Codex skills
+│   ├── zed/            # Zed config
+│   ├── ghostty/        # Ghostty config
 │   ├── starship.toml   # Starship prompt
 │   └── shell-nix.sh    # Bash/zsh compatibility
 ├── scripts/            # Installation scripts
@@ -47,6 +49,10 @@ brew install PeonPing/tap/peon-ping && peon-ping-setup
 ```
 
 This adds hooks and skills to your local `~/.claude/` config. These files are gitignored and will need to be reinstalled on new machines.
+
+### Agent Skills
+
+Claude Code config is linked from `config/claude` to `~/.claude`. Codex skills are linked more narrowly: `~/.codex/skills` points at `config/codex/skills`, while the rest of `~/.codex` remains machine-local runtime state.
 
 ## Per-Project Dev Environments (nix-direnv)
 

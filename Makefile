@@ -85,6 +85,7 @@ test: test-pre test-local test-shell
 test-pre:
 	@echo "🔍 Running pre-flight checks..."
 	@cd tests && ./test-fish-setup.sh
+	@cd tests && ./test-link-config.sh
 
 # Local isolated test
 test-local:

@@ -40,12 +40,16 @@ echo "Removing configuration symlinks..."
 echo ""
 
 # Remove all symlinks created by link-config.sh
+remove_symlink "~/.config/git"
 remove_symlink "~/.tmux.conf"
 remove_symlink "~/.config/shell-nix.sh"
 remove_symlink "~/.config/fish"
 remove_symlink "~/.config/starship.toml"
 remove_symlink "~/.config/zed"
 remove_symlink "~/.config/ghostty"
+remove_symlink "~/.claude"
+remove_symlink "~/.codex/skills"
+remove_symlink "~/.config/zellij"
 
 # VSCode config location varies by platform
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -74,6 +78,14 @@ if ls ~/.config/*.backup.* >/dev/null 2>&1; then
     BACKUPS_FOUND=true
 fi
 
+if ls "$HOME"/.claude.backup.* >/dev/null 2>&1; then
+    BACKUPS_FOUND=true
+fi
+
+if ls "$HOME"/.codex/skills.backup.* >/dev/null 2>&1; then
+    BACKUPS_FOUND=true
+fi
+
 if [ -d "$VSCODE_CONFIG_DIR" ] && ls "$VSCODE_CONFIG_DIR"/*.backup.* >/dev/null 2>&1; then
     BACKUPS_FOUND=true
 fi
@@ -83,6 +95,8 @@ if $BACKUPS_FOUND; then
     echo "📦 Found backup files from previous installations:"
     ls -la ~/.tmux.conf.backup.* 2>/dev/null || true
     ls -la ~/.config/*.backup.* 2>/dev/null || true
+    ls -la ~/.claude.backup.* 2>/dev/null || true
+    ls -la ~/.codex/skills.backup.* 2>/dev/null || true
     if [ -d "$VSCODE_CONFIG_DIR" ]; then
         ls -la "$VSCODE_CONFIG_DIR"/*.backup.* 2>/dev/null || true
     fi

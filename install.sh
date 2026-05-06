@@ -122,7 +122,7 @@ else
     exit 1
 fi
 
-echo -e "\n${BLUE}Step 3: Linking configuration files${NC}"
+echo -e "\n${BLUE}Step 3: Linking configuration files and agent skill roots${NC}"
 if "$ROOT/scripts/link-config.sh"; then
     echo -e "${GREEN}✓${NC} Configurations linked successfully"
 else
@@ -176,6 +176,7 @@ echo -e "\n${BLUE}Configuration files:${NC}"
 CONFIG_FILES=(
     "$HOME/.config/fish/config.fish"
     "$HOME/.config/starship.toml"
+    "$HOME/.codex/skills"
 )
 
 for file in "${CONFIG_FILES[@]}"; do

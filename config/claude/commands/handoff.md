@@ -52,3 +52,5 @@ Please continue by [specific next step].
 """
 
 **Style**: Be concise but complete. The next agent should understand the situation without re-reading the entire thread.
+
+**Delivery**: Write the handoff prompt to a file under `/tmp/` (e.g. `/tmp/handoff-YYYYMMDD-HHMMSS.md`) and pipe it to `pbcopy` so it lands on the clipboard. Report both the file path and that the prompt is on the clipboard.

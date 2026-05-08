@@ -1,4 +1,4 @@
 interface:
   display_name: "Goal Shaping"
-  short_description: "Choose high-impact Codex goals"
-  default_prompt: "Use $goal-shaping to turn my direction into a clear, high-impact Codex goal."
+  short_description: "Anchor Codex goals in evidence"
+  default_prompt: "Use $goal-shaping to turn my direction, references, and rough task ideas into an anchored Codex goal."

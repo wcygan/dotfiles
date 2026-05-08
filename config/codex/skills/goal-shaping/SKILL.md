@@ -1,6 +1,6 @@
 ---
 name: goal-shaping
-description: Use when Codex should help a user choose, clarify, rank, or write a durable `/goal` objective for long-running work. Trigger for requests about finding a good goal, deciding what to work toward, turning an open-ended domain direction into impactful opportunities, defining success criteria, drafting a verifiable stopping condition, or preparing a goal for Codex to follow across turns.
+description: Use when Codex should help a user choose, clarify, rank, or write a durable `/goal` objective for long-running work. Trigger for requests about finding a good goal, deciding what to work toward, turning an open-ended domain direction into impactful opportunities, defining success criteria, drafting a verifiable stopping condition, or preparing a goal prompt that includes concrete anchors such as URLs, files, issues, logs, metrics, or task lists.
 ---
 
 # Goal Shaping
@@ -15,6 +15,8 @@ Optimize for a useful goal contract, not a large plan. A strong goal says:
 
 - what Codex should achieve
 - what Codex should avoid changing
+- which concrete references anchor the work in reality
+- which short list of tasks Codex should improve first
 - which context Codex must inspect first
 - which commands, artifacts, or checks prove progress
 - which checkpoint or condition means Codex should stop, pause, or ask
@@ -26,10 +28,12 @@ Do not turn unrelated ideas into one goal. Split them into separate candidate go
 1. Establish the user's direction.
    - Ask what domain, product, repo, workflow, or personal/business outcome they want to move toward.
    - Ask what constraint matters most: revenue, reliability, learning speed, polish, customer pain, migration risk, time box, or maintenance burden.
+   - Ask for concrete references if they are missing and likely to change the goal: URLs, repo paths, issue/PR numbers, screenshots, logs, failing commands, metrics, customer examples, specs, notes, or rough task ideas.
    - If the user already gave enough context, infer the direction and state assumptions instead of blocking on questions.
 
 2. Build an opportunity inventory.
    - Identify concrete opportunities from the user's direction: fixes, migrations, prototypes, experiments, evals, automations, tests, docs, launches, or research loops.
+   - Preserve the user's strongest anchors as explicit evidence: exact links, file paths, issue IDs, commands, observed failures, current metrics, named users, sample inputs, or screenshots.
    - Prefer opportunities where Codex can read the relevant artifacts, make scoped progress, and validate each checkpoint.
    - Reject vague backlog buckets such as "improve the app" unless they can be narrowed to a measurable behavior or artifact.
 
@@ -50,6 +54,8 @@ Do not turn unrelated ideas into one goal. Split them into separate candidate go
    Include:
    - Objective: one sentence.
    - Stopping condition: the exact verifiable end state.
+   - Reality anchors: exact URLs, file paths, issue IDs, docs, logs, metrics, screenshots, examples, or user notes that Codex should treat as grounding evidence.
+   - Highlighted tasks: 3-7 concrete improvements, investigations, or decisions that turn the direction into visible work.
    - Read first: files, docs, issues, logs, metrics, or plans to inspect.
    - Constraints and non-goals: boundaries that prevent scope creep.
    - Validation loop: commands or artifacts to check after each checkpoint.
@@ -57,10 +63,20 @@ Do not turn unrelated ideas into one goal. Split them into separate candidate go
    - Pause conditions: when Codex should stop and ask for input.
 
 6. Produce a `/goal` prompt when ready.
+   Keep it compact, but include anchors and tasks when they exist. Do not invent references. If useful anchors are missing, make the first checkpoint gather them or ask the user for them.
+
    Use this shape:
 
    ```text
-   /goal Complete [objective] without stopping until [verifiable end state]. First read [context]. Keep changes within [scope/non-goals]. Work in checkpoints, after each checkpoint run [validation] and record a short progress log. Pause if [pause conditions].
+   /goal Complete [objective] without stopping until [verifiable end state].
+
+   Reality anchors:
+   - [URL/file/issue/log/metric/example that grounds the work]
+
+   Highlighted tasks:
+   - [specific improvement, investigation, or decision]
+
+   First read [context]. Keep changes within [scope/non-goals]. Work in checkpoints; after each checkpoint run [validation] and record a short progress log. Pause if [pause conditions].
    ```
 
 ## Conversation Style
@@ -69,6 +85,7 @@ Do not turn unrelated ideas into one goal. Split them into separate candidate go
 - Use the user's language for their domain, customers, repo, product, or craft.
 - Keep questions few and high leverage. Prefer "which outcome matters most?" over broad interviews.
 - Surface tradeoffs directly: high-impact but risky, quick win but low leverage, valuable but not yet verifiable.
+- Prefer concrete references over abstract summaries when drafting the final prompt; file paths, URLs, issue IDs, command names, and metric names make better anchors than prose labels.
 - If the user asks to start immediately, still check that the goal has a stopping condition and validation loop before starting.
 
 ## Fitness Checks
@@ -77,6 +94,8 @@ A candidate is a good `/goal` if:
 
 - it can survive multiple turns without constant steering
 - it has one durable objective, not a mixed list
+- it names the real artifacts, links, or observations that should guide the work
+- it highlights the first few tasks or decisions that should get attention
 - it can be validated with commands, artifacts, screenshots, evals, logs, or an explicit acceptance checklist
 - it has clear boundaries and rollback or pause points
 - it is feasible for Codex to advance with the available tools and permissions
@@ -84,6 +103,7 @@ A candidate is a good `/goal` if:
 A candidate needs more shaping if:
 
 - success is subjective and no acceptance evidence is named
+- the prompt only paraphrases the user's direction and lacks concrete anchors or task focus
 - the work depends on unavailable credentials, private decisions, or production changes
 - the scope mixes unrelated codebases, products, or strategic bets
 - the first checkpoint cannot be identified
@@ -99,6 +119,8 @@ When presenting the result, use the smallest useful form:
 **Goal Contract**
 - Objective: ...
 - Stopping condition: ...
+- Reality anchors: ...
+- Highlighted tasks: ...
 - Read first: ...
 - Constraints/non-goals: ...
 - Validation loop: ...

@@ -102,8 +102,40 @@ link_codex_agents_md() {
   link "$CFG_SRC/codex/AGENTS.md" "$CODEX_HOME_DIR/AGENTS.md"
 }
 
-link_codex_config_toml() {
-  link "$CFG_SRC/codex/config.toml" "$CODEX_HOME_DIR/config.toml"
+install_codex_config_toml() {
+  local src="$CFG_SRC/codex/config.toml"
+  local dst="$CODEX_HOME_DIR/config.toml"
+
+  if $DRY_RUN; then
+    if [ -L "$dst" ]; then
+      echo "[DRY] Would migrate Codex config symlink to local file: $dst"
+    elif [ -e "$dst" ]; then
+      echo "[DRY] Would preserve existing local Codex config: $dst"
+    else
+      echo "[DRY] Would copy Codex config template: $src → $dst"
+    fi
+    return 0
+  fi
+
+  mkdir -p "$(dirname "$dst")"
+
+  if [ -L "$dst" ]; then
+    local tmp
+    tmp="$(mktemp "$(dirname "$dst")/.config.toml.XXXXXX")"
+    if [ -e "$dst" ]; then
+      cp -p "$dst" "$tmp"
+    else
+      cp -p "$src" "$tmp"
+    fi
+    rm "$dst"
+    mv "$tmp" "$dst"
+    echo "→ Migrated Codex config symlink to local file: $dst"
+  elif [ -e "$dst" ]; then
+    echo "→ Preserved existing local Codex config: $dst"
+  else
+    cp -p "$src" "$dst"
+    echo "→ Copied Codex config template to local file: $dst"
+  fi
 }
 
 # Git config (XDG-compliant location)
@@ -130,8 +162,8 @@ link "$CFG_SRC/ghostty" "$HOME/.config/ghostty"
 # Claude configuration (for Claude Code CLI)
 link "$CFG_SRC/claude" "$HOME/.claude"
 
-# Codex user-authored config only; the rest of CODEX_HOME contains runtime state.
-link_codex_config_toml
+# Codex config.toml is mutable user state; copy the template once, then preserve it.
+install_codex_config_toml
 link_codex_agents_md
 link_codex_skills
 

@@ -100,7 +100,7 @@ else
 fi
 
 if [[ -f "../config/codex/config.toml" ]]; then
-    pass "config/codex/config.toml exists for Codex user config"
+    pass "config/codex/config.toml exists as the Codex config template"
 else
     fail "config/codex/config.toml missing"
 fi
@@ -118,11 +118,11 @@ else
     fail "link-config.sh missing Codex skills symlink command"
 fi
 
-if grep -q 'link_codex_config_toml' ../scripts/link-config.sh && \
-   grep -q 'config.toml' ../scripts/link-config.sh; then
-    pass "link-config.sh configured to symlink Codex config.toml"
+if grep -q 'install_codex_config_toml' ../scripts/link-config.sh && \
+   grep -q 'Preserved existing local Codex config' ../scripts/link-config.sh; then
+    pass "link-config.sh configured to install local Codex config.toml"
 else
-    fail "link-config.sh missing Codex config.toml symlink command"
+    fail "link-config.sh missing Codex config.toml install command"
 fi
 
 if grep -q 'link_codex_agents_md' ../scripts/link-config.sh && \
@@ -213,7 +213,7 @@ section "Symlink Dry Run"
 echo "Would create symlinks:"
 echo "  ~/.config/fish → $(dirname $(pwd))/config/fish"
 echo "  ~/.config/shell-nix.sh → $(dirname $(pwd))/config/shell-nix.sh"
-echo "  \${CODEX_HOME:-~/.codex}/config.toml → $(dirname $(pwd))/config/codex/config.toml"
+echo "  \${CODEX_HOME:-~/.codex}/config.toml copied from $(dirname $(pwd))/config/codex/config.toml if missing"
 echo "  \${CODEX_HOME:-~/.codex}/AGENTS.md → $(dirname $(pwd))/config/codex/AGENTS.md"
 echo "  \${CODEX_HOME:-~/.codex}/skills → $(dirname $(pwd))/config/codex/skills"
 

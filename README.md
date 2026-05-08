@@ -52,7 +52,7 @@ This adds hooks and skills to your local `~/.claude/` config. These files are gi
 
 ### Agent Skills
 
-Claude Code config is linked from `config/claude` to `~/.claude`. Codex is linked narrowly: `config/codex/config.toml` points to `${CODEX_HOME:-~/.codex}/config.toml`, `config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`, and `config/codex/skills` points to `${CODEX_HOME:-~/.codex}/skills`, while the rest of `CODEX_HOME` remains machine-local runtime state. Keep machine-specific `[projects]` trust entries out of the tracked Codex config.
+Claude Code config is linked from `config/claude` to `~/.claude`. Codex is managed narrowly: `config/codex/config.toml` is a portable template copied to `${CODEX_HOME:-~/.codex}/config.toml` only when missing, `config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`, and `config/codex/skills` points to `${CODEX_HOME:-~/.codex}/skills`, while the rest of `CODEX_HOME` remains machine-local runtime state. Codex may write machine-specific `[projects]` trust entries into the local config; keep those out of the tracked template.
 
 ## Per-Project Dev Environments (nix-direnv)
 

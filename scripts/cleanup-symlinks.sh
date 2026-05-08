@@ -50,6 +50,7 @@ remove_symlink "~/.config/starship.toml"
 remove_symlink "~/.config/zed"
 remove_symlink "~/.config/ghostty"
 remove_symlink "~/.claude"
+remove_symlink "$CODEX_HOME_DIR/config.toml"
 remove_symlink "$CODEX_HOME_DIR/AGENTS.md"
 remove_symlink "$CODEX_HOME_DIR/skills"
 remove_symlink "~/.config/zellij"
@@ -89,6 +90,10 @@ if ls "$CODEX_HOME_DIR"/AGENTS.md.backup.* >/dev/null 2>&1; then
     BACKUPS_FOUND=true
 fi
 
+if ls "$CODEX_HOME_DIR"/config.toml.backup.* >/dev/null 2>&1; then
+    BACKUPS_FOUND=true
+fi
+
 if ls "$CODEX_HOME_DIR"/skills.backup.* >/dev/null 2>&1; then
     BACKUPS_FOUND=true
 fi
@@ -103,6 +108,7 @@ if $BACKUPS_FOUND; then
     ls -la ~/.tmux.conf.backup.* 2>/dev/null || true
     ls -la ~/.config/*.backup.* 2>/dev/null || true
     ls -la ~/.claude.backup.* 2>/dev/null || true
+    ls -la "$CODEX_HOME_DIR"/config.toml.backup.* 2>/dev/null || true
     ls -la "$CODEX_HOME_DIR"/AGENTS.md.backup.* 2>/dev/null || true
     ls -la "$CODEX_HOME_DIR"/skills.backup.* 2>/dev/null || true
     if [ -d "$VSCODE_CONFIG_DIR" ]; then

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Effect TypeScript Docs"
+  short_description: "Navigate Effect docs for TypeScript work"
+  default_prompt: "Use $effect-typescript-docs to find the right Effect docs before changing TypeScript code."

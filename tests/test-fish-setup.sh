@@ -99,6 +99,12 @@ else
     fail "config/codex/skills missing"
 fi
 
+if [[ -f "../config/codex/config.toml" ]]; then
+    pass "config/codex/config.toml exists for Codex user config"
+else
+    fail "config/codex/config.toml missing"
+fi
+
 if [[ -f "../config/codex/AGENTS.md" ]]; then
     pass "config/codex/AGENTS.md exists for global Codex instructions"
 else
@@ -110,6 +116,13 @@ if grep -q 'link_codex_skills' ../scripts/link-config.sh && \
     pass "link-config.sh configured to symlink Codex skills"
 else
     fail "link-config.sh missing Codex skills symlink command"
+fi
+
+if grep -q 'link_codex_config_toml' ../scripts/link-config.sh && \
+   grep -q 'config.toml' ../scripts/link-config.sh; then
+    pass "link-config.sh configured to symlink Codex config.toml"
+else
+    fail "link-config.sh missing Codex config.toml symlink command"
 fi
 
 if grep -q 'link_codex_agents_md' ../scripts/link-config.sh && \
@@ -200,6 +213,7 @@ section "Symlink Dry Run"
 echo "Would create symlinks:"
 echo "  ~/.config/fish → $(dirname $(pwd))/config/fish"
 echo "  ~/.config/shell-nix.sh → $(dirname $(pwd))/config/shell-nix.sh"
+echo "  \${CODEX_HOME:-~/.codex}/config.toml → $(dirname $(pwd))/config/codex/config.toml"
 echo "  \${CODEX_HOME:-~/.codex}/AGENTS.md → $(dirname $(pwd))/config/codex/AGENTS.md"
 echo "  \${CODEX_HOME:-~/.codex}/skills → $(dirname $(pwd))/config/codex/skills"
 

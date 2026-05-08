@@ -48,8 +48,15 @@ DOTFILES_SKIP_FISH_GREETING=1 "$ROOT/scripts/link-config.sh" >/dev/null
 assert_symlink "$HOME/.config/git" "$ROOT/config/git"
 assert_symlink "$HOME/.config/fish" "$ROOT/config/fish"
 assert_symlink "$HOME/.claude" "$ROOT/config/claude"
+assert_symlink "$CODEX_HOME/config.toml" "$ROOT/config/codex/config.toml"
 assert_symlink "$CODEX_HOME/AGENTS.md" "$ROOT/config/codex/AGENTS.md"
 assert_symlink "$CODEX_HOME/skills" "$ROOT/config/codex/skills"
+
+if [[ -f "$ROOT/config/codex/config.toml" ]]; then
+    pass "config/codex/config.toml exists as the Codex user config source"
+else
+    fail "config/codex/config.toml is missing"
+fi
 
 if [[ -f "$ROOT/config/codex/AGENTS.md" ]]; then
     pass "config/codex/AGENTS.md exists as the Codex global instructions source"

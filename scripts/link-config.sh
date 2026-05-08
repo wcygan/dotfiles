@@ -102,6 +102,10 @@ link_codex_agents_md() {
   link "$CFG_SRC/codex/AGENTS.md" "$CODEX_HOME_DIR/AGENTS.md"
 }
 
+link_codex_config_toml() {
+  link "$CFG_SRC/codex/config.toml" "$CODEX_HOME_DIR/config.toml"
+}
+
 # Git config (XDG-compliant location)
 link "$CFG_SRC/git" "$CFG_DST/git"
 
@@ -127,6 +131,7 @@ link "$CFG_SRC/ghostty" "$HOME/.config/ghostty"
 link "$CFG_SRC/claude" "$HOME/.claude"
 
 # Codex user-authored config only; the rest of CODEX_HOME contains runtime state.
+link_codex_config_toml
 link_codex_agents_md
 link_codex_skills
 

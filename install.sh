@@ -177,6 +177,7 @@ echo -e "\n${BLUE}Configuration files:${NC}"
 CONFIG_FILES=(
     "$HOME/.config/fish/config.fish"
     "$HOME/.config/starship.toml"
+    "$CODEX_HOME_DIR/config.toml"
     "$CODEX_HOME_DIR/AGENTS.md"
     "$CODEX_HOME_DIR/skills"
 )

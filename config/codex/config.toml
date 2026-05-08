@@ -1,0 +1,16 @@
+# Personal Codex defaults tracked by dotfiles.
+# Keep auth, generated state, and machine-specific [projects] trust entries out of git.
+model = "gpt-5.5"
+model_reasoning_effort = "xhigh"
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[features]
+goals = true
+
+[projects."/Users/wcygan/Development/dotfiles"]
+trust_level = "trusted"
+
+[tui.model_availability_nux]
+"gpt-5.5" = 1

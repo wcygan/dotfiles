@@ -16,6 +16,8 @@ if [[ "${1:-}" == "--dry-run" || "${1:-}" == "-n" ]]; then
     echo ""
 fi
 
+CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
+
 # Function to safely remove a symlink
 remove_symlink() {
     local target="$1"
@@ -48,7 +50,8 @@ remove_symlink "~/.config/starship.toml"
 remove_symlink "~/.config/zed"
 remove_symlink "~/.config/ghostty"
 remove_symlink "~/.claude"
-remove_symlink "~/.codex/skills"
+remove_symlink "$CODEX_HOME_DIR/AGENTS.md"
+remove_symlink "$CODEX_HOME_DIR/skills"
 remove_symlink "~/.config/zellij"
 
 # VSCode config location varies by platform
@@ -82,7 +85,11 @@ if ls "$HOME"/.claude.backup.* >/dev/null 2>&1; then
     BACKUPS_FOUND=true
 fi
 
-if ls "$HOME"/.codex/skills.backup.* >/dev/null 2>&1; then
+if ls "$CODEX_HOME_DIR"/AGENTS.md.backup.* >/dev/null 2>&1; then
+    BACKUPS_FOUND=true
+fi
+
+if ls "$CODEX_HOME_DIR"/skills.backup.* >/dev/null 2>&1; then
     BACKUPS_FOUND=true
 fi
 
@@ -96,7 +103,8 @@ if $BACKUPS_FOUND; then
     ls -la ~/.tmux.conf.backup.* 2>/dev/null || true
     ls -la ~/.config/*.backup.* 2>/dev/null || true
     ls -la ~/.claude.backup.* 2>/dev/null || true
-    ls -la ~/.codex/skills.backup.* 2>/dev/null || true
+    ls -la "$CODEX_HOME_DIR"/AGENTS.md.backup.* 2>/dev/null || true
+    ls -la "$CODEX_HOME_DIR"/skills.backup.* 2>/dev/null || true
     if [ -d "$VSCODE_CONFIG_DIR" ]; then
         ls -la "$VSCODE_CONFIG_DIR"/*.backup.* 2>/dev/null || true
     fi

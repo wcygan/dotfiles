@@ -9,6 +9,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 
 # ============================================================================
 # Pre-flight checks
@@ -176,7 +177,8 @@ echo -e "\n${BLUE}Configuration files:${NC}"
 CONFIG_FILES=(
     "$HOME/.config/fish/config.fish"
     "$HOME/.config/starship.toml"
-    "$HOME/.codex/skills"
+    "$CODEX_HOME_DIR/AGENTS.md"
+    "$CODEX_HOME_DIR/skills"
 )
 
 for file in "${CONFIG_FILES[@]}"; do

@@ -12,6 +12,7 @@ fi
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CFG_SRC="$REPO_ROOT/config"
 CFG_DST="$HOME/.config"
+CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 
 mkdir -p "$CFG_DST"
 
@@ -37,7 +38,7 @@ link() {
 
 link_codex_skills() {
   local src="$CFG_SRC/codex/skills"
-  local dst="$HOME/.codex/skills"
+  local dst="$CODEX_HOME_DIR/skills"
 
   if $DRY_RUN; then
     echo "[DRY] Would link: $dst → $src"
@@ -97,6 +98,10 @@ link_codex_skills() {
   echo "→ $dst ↦ $src"
 }
 
+link_codex_agents_md() {
+  link "$CFG_SRC/codex/AGENTS.md" "$CODEX_HOME_DIR/AGENTS.md"
+}
+
 # Git config (XDG-compliant location)
 link "$CFG_SRC/git" "$CFG_DST/git"
 
@@ -121,7 +126,8 @@ link "$CFG_SRC/ghostty" "$HOME/.config/ghostty"
 # Claude configuration (for Claude Code CLI)
 link "$CFG_SRC/claude" "$HOME/.claude"
 
-# Codex skills only; ~/.codex contains runtime state that should stay machine-local.
+# Codex user-authored config only; the rest of CODEX_HOME contains runtime state.
+link_codex_agents_md
 link_codex_skills
 
 # Zellij config

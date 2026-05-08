@@ -27,7 +27,7 @@ dotfiles/
 ├── config/             # Configuration files
 │   ├── fish/           # Fish shell config
 │   ├── claude/         # Claude Code config and skills
-│   ├── codex/          # Codex skills
+│   ├── codex/          # Codex global instructions and skills
 │   ├── zed/            # Zed config
 │   ├── ghostty/        # Ghostty config
 │   ├── starship.toml   # Starship prompt
@@ -52,7 +52,7 @@ This adds hooks and skills to your local `~/.claude/` config. These files are gi
 
 ### Agent Skills
 
-Claude Code config is linked from `config/claude` to `~/.claude`. Codex skills are linked more narrowly: `~/.codex/skills` points at `config/codex/skills`, while the rest of `~/.codex` remains machine-local runtime state.
+Claude Code config is linked from `config/claude` to `~/.claude`. Codex is linked narrowly: `config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`, and `config/codex/skills` points to `${CODEX_HOME:-~/.codex}/skills`, while the rest of `CODEX_HOME` remains machine-local runtime state.
 
 ## Per-Project Dev Environments (nix-direnv)
 

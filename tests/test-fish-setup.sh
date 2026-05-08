@@ -99,11 +99,24 @@ else
     fail "config/codex/skills missing"
 fi
 
+if [[ -f "../config/codex/AGENTS.md" ]]; then
+    pass "config/codex/AGENTS.md exists for global Codex instructions"
+else
+    fail "config/codex/AGENTS.md missing"
+fi
+
 if grep -q 'link_codex_skills' ../scripts/link-config.sh && \
-   grep -q '\.codex/skills' ../scripts/link-config.sh; then
+   grep -q 'CODEX_HOME' ../scripts/link-config.sh; then
     pass "link-config.sh configured to symlink Codex skills"
 else
     fail "link-config.sh missing Codex skills symlink command"
+fi
+
+if grep -q 'link_codex_agents_md' ../scripts/link-config.sh && \
+   grep -q 'AGENTS.md' ../scripts/link-config.sh; then
+    pass "link-config.sh configured to symlink global Codex instructions"
+else
+    fail "link-config.sh missing Codex AGENTS.md symlink command"
 fi
 
 # Test 4b: Validate Codex skill metadata shape
@@ -187,7 +200,8 @@ section "Symlink Dry Run"
 echo "Would create symlinks:"
 echo "  ~/.config/fish → $(dirname $(pwd))/config/fish"
 echo "  ~/.config/shell-nix.sh → $(dirname $(pwd))/config/shell-nix.sh"
-echo "  ~/.codex/skills → $(dirname $(pwd))/config/codex/skills"
+echo "  \${CODEX_HOME:-~/.codex}/AGENTS.md → $(dirname $(pwd))/config/codex/AGENTS.md"
+echo "  \${CODEX_HOME:-~/.codex}/skills → $(dirname $(pwd))/config/codex/skills"
 
 if [[ -e "$HOME/.config/fish" ]]; then
     if [[ -L "$HOME/.config/fish" ]]; then

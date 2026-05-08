@@ -1,0 +1,4 @@
+interface:
+  display_name: "HTML Artifacts"
+  short_description: "Create rich single-file HTML artifacts"
+  default_prompt: "Use $html to create a readable standalone HTML artifact for this plan, report, explainer, prototype, or editor."

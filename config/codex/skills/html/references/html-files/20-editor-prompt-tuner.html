@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prompt Tuner</title>
+  <link rel="stylesheet" href="reference-card.css">
+</head>
+<body>
+  <main>
+    <p><a href="index.html">Back to index</a></p>
+    <p class="eyebrow">Custom editor</p>
+    <h1>Prompt tuner</h1>
+    <p class="lede">A live template editor for tuning prompts, variables, sample inputs, and copyable output.</p>
+    <ul class="meta"><li>Primary intent: tune prompt</li><li>Interaction: live preview</li><li>Output: prompt text</li></ul>
+    <section class="card"><h2>Use when</h2><p>The user needs to adjust a prompt, template, or copy while seeing how real sample inputs render.</p></section>
+    <section class="card"><h2>Input signals</h2><ul><li>"Prompt tuner", "template variables", "live preview", "copy prompt".</li><li>System prompt, email copy, support response template, variable slots.</li><li>Need for counters, previews, and reset.</li></ul></section>
+    <section class="card"><h2>Borrow</h2><ul><li>Editable template and highlighted slots.</li><li>Available slot list and character/token estimates.</li><li>Multiple sample previews, reset, and copy prompt.</li></ul></section>
+    <section class="card"><h2>Avoid</h2><ul><li>Static prompt specs where no interactive tuning is needed.</li><li>Handling paste poorly in contenteditable areas.</li><li>Preview data that does not cover the prompt's real edge cases.</li></ul></section>
+    <section class="card"><h2>Pair with</h2><p>Use `15-research-concept-explainer.html` for teaching concepts or `19-editor-feature-flags.html` for structured config constraints.</p></section>
+    <section class="card"><h2>Validation</h2><ul><li>Typing updates previews.</li><li>Slots are highlighted and listed accurately.</li><li>Copy/export returns the current prompt.</li></ul></section>
+  </main>
+</body>
+</html>

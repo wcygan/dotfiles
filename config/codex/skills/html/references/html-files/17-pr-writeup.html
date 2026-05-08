@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PR Writeup For Reviewers</title>
+  <link rel="stylesheet" href="reference-card.css">
+</head>
+<body>
+  <main>
+    <p><a href="index.html">Back to index</a></p>
+    <p class="eyebrow">Code review</p>
+    <h1>PR writeup for reviewers</h1>
+    <p class="lede">An author-facing PR artifact that explains motivation, behavior change, reading order, and review focus.</p>
+    <ul class="meta"><li>Primary intent: explain PR</li><li>Interaction: collapsible files</li><li>Output: reviewer guide</li></ul>
+    <section class="card"><h2>Use when</h2><p>The user wants to attach a helpful explanation to a PR so reviewers can understand the change quickly.</p></section>
+    <section class="card"><h2>Input signals</h2><ul><li>"Write up this PR", "reviewer guide", "explain motivation", "file-by-file".</li><li>Diff, PR metadata, changed files, before/after behavior.</li><li>Need to direct reviewer attention.</li></ul></section>
+    <section class="card"><h2>Borrow</h2><ul><li>TL;DR, why, before/after behavior.</li><li>File-by-file reading order, not alphabetical order.</li><li>Focus areas, rollout notes, hidden secondary file details.</li></ul></section>
+    <section class="card"><h2>Avoid</h2><ul><li>Critical bug-hunting tone when the user asked for author guidance.</li><li>Repeating the diff without explaining why.</li><li>Ignoring reviewer context or unfamiliar code areas.</li></ul></section>
+    <section class="card"><h2>Pair with</h2><p>Use `03-code-review-pr.html` when the task is critique, or `11-status-report.html` when the PR is part of a broader update.</p></section>
+    <section class="card"><h2>Validation</h2><ul><li>File list matches actual changes.</li><li>Before/after claims are evidence-backed.</li><li>Review focus areas are specific.</li></ul></section>
+  </main>
+</body>
+</html>

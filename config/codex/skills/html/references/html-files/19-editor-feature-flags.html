@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feature Flag Editor</title>
+  <link rel="stylesheet" href="reference-card.css">
+</head>
+<body>
+  <main>
+    <p><a href="index.html">Back to index</a></p>
+    <p class="eyebrow">Custom editor</p>
+    <h1>Feature flag editor</h1>
+    <p class="lede">A constrained config editor for toggles, dependencies, warnings, and diff export.</p>
+    <ul class="meta"><li>Primary intent: edit config</li><li>Interaction: form and export</li><li>Output: JSON or diff</li></ul>
+    <section class="card"><h2>Use when</h2><p>The user needs to edit structured configuration safely with validation and copyable output.</p></section>
+    <section class="card"><h2>Input signals</h2><ul><li>"Feature flags", "config editor", "dependencies", "copy diff", "JSON".</li><li>YAML/JSON config with booleans, percentages, prerequisites, or grouped areas.</li><li>Need to warn about invalid combinations.</li></ul></section>
+    <section class="card"><h2>Borrow</h2><ul><li>Grouped toggles and dependency warnings.</li><li>Changed-key summary and dirty-state controls.</li><li>Copy diff, copy full JSON, and reset.</li></ul></section>
+    <section class="card"><h2>Avoid</h2><ul><li>Read-only explainers where editing is not needed.</li><li>Allowing invalid states without warning.</li><li>Exporting the whole config when the user asked for only changes.</li></ul></section>
+    <section class="card"><h2>Pair with</h2><p>Use `14-research-feature-explainer.html` for explaining how config is consumed, or `18-editor-triage-board.html` for non-config bucketing.</p></section>
+    <section class="card"><h2>Validation</h2><ul><li>Warnings appear for broken dependencies.</li><li>Reset restores original state.</li><li>Diff export contains only changed keys.</li></ul></section>
+  </main>
+</body>
+</html>

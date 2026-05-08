@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Component Variant Matrix</title>
+  <link rel="stylesheet" href="reference-card.css">
+</head>
+<body>
+  <main>
+    <p><a href="index.html">Back to index</a></p>
+    <p class="eyebrow">Design</p>
+    <h1>Component variant matrix</h1>
+    <p class="lede">A focused review surface for one component across props, states, sizes, themes, and density settings.</p>
+    <ul class="meta"><li>Primary intent: component review</li><li>Interaction: controls</li><li>Output: variant decision</li></ul>
+    <section class="card"><h2>Use when</h2><p>The user wants to inspect, tune, or document a specific component and its variants.</p></section>
+    <section class="card"><h2>Input signals</h2><ul><li>"Component variants", "all states", "prop matrix", "button/card/input states".</li><li>Existing component API or design tokens.</li><li>Need to compare hover, disabled, selected, density, size, or theme states.</li></ul></section>
+    <section class="card"><h2>Borrow</h2><ul><li>Control bar for adjustable props.</li><li>Grid of repeated live variants.</li><li>Best-for notes and prop combo labels.</li></ul></section>
+    <section class="card"><h2>Avoid</h2><ul><li>Broad screen-level design exploration.</li><li>Rendering variants that cannot exist in the real component API.</li><li>Controls that resize or shift the whole layout awkwardly.</li></ul></section>
+    <section class="card"><h2>Pair with</h2><p>Use `05-design-system.html` for token context or `07-prototype-animation.html` for interaction state timing.</p></section>
+    <section class="card"><h2>Validation</h2><ul><li>Controls update every applicable variant.</li><li>All important states are visible.</li><li>Grid holds on mobile without text overlap.</li></ul></section>
+  </main>
+</body>
+</html>

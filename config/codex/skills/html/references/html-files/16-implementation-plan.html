@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Implementation Plan</title>
+  <link rel="stylesheet" href="reference-card.css">
+</head>
+<body>
+  <main>
+    <p><a href="index.html">Back to index</a></p>
+    <p class="eyebrow">Exploration and planning</p>
+    <h1>Implementation plan</h1>
+    <p class="lede">A handoff artifact for turning an agreed direction into slices, risks, tests, rollout, and rollback.</p>
+    <ul class="meta"><li>Primary intent: plan</li><li>Interaction: mostly static</li><li>Output: implementation handoff</li></ul>
+    <section class="card"><h2>Use when</h2><p>The user wants a thorough plan that another agent or engineer can execute from a fresh session.</p></section>
+    <section class="card"><h2>Input signals</h2><ul><li>"Implementation plan", "handoff", "milestones", "risk table", "rollout".</li><li>Feature scope, affected packages, data model, tests, deployment concerns.</li><li>Need for code snippets and sequence of work.</li></ul></section>
+    <section class="card"><h2>Borrow</h2><ul><li>Summary facts, milestones, mockups, data-flow SVG.</li><li>Key code snippets, risk table, rollout, rollback, test plan.</li><li>Slices that are independently reviewable.</li></ul></section>
+    <section class="card"><h2>Avoid</h2><ul><li>Using it before key options are compared.</li><li>Writing vague phases without acceptance checks.</li><li>Omitting rollback or migration notes for risky changes.</li></ul></section>
+    <section class="card"><h2>Pair with</h2><p>Use `01-exploration-code-approaches.html` before choosing direction or `17-pr-writeup.html` after implementation.</p></section>
+    <section class="card"><h2>Validation</h2><ul><li>Every milestone has concrete deliverables.</li><li>Risks, tests, rollout, and rollback are explicit.</li><li>Plan references actual files and repo patterns.</li></ul></section>
+  </main>
+</body>
+</html>

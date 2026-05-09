@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Animated Graph Data Flow</title>
+  <style>
+    :root {
+      --bg: #f7f5ef;
+      --surface: #ffffff;
+      --surface-soft: #fbfaf7;
+      --border: #d8d2c7;
+      --text: #202124;
+      --muted: #5f6470;
+      --accent: #3867d6;
+      --accent-2: #16a085;
+      --warning: #b7791f;
+      --danger: #b91c1c;
+      --code: #f1efe8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 780px;
+      margin: 0;
+      font-size: 2.6rem;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.25rem;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    li + li {
+      margin-top: 6px;
+    }
+
+    code {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--code);
+      padding: 1px 5px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.9em;
+    }
+
+    .lede {
+      max-width: 820px;
+      color: var(--muted);
+      font-size: 1.04rem;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .meta li {
+      margin: 0;
+      padding: 5px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .card {
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .graph-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .mesh-panel {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-soft);
+      padding: 12px;
+    }
+
+    .mesh-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .edge {
+      fill: none;
+      stroke: #bbb4a7;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+
+    .edge.flow {
+      stroke: var(--accent);
+      stroke-width: 3;
+      stroke-dasharray: 9 8;
+      animation: edge-flow 1.4s linear infinite;
+      marker-end: url("#arrow-active");
+    }
+
+    .edge.duplicate {
+      stroke: var(--warning);
+      stroke-width: 3;
+      stroke-dasharray: 9 8;
+      animation: edge-flow 1.4s linear infinite;
+      marker-end: url("#arrow-duplicate");
+    }
+
+    .edge.inactive {
+      stroke-dasharray: 4 7;
+    }
+
+    .node circle {
+      stroke: var(--surface);
+      stroke-width: 4;
+      filter: drop-shadow(0 4px 8px rgba(32, 33, 36, 0.12));
+    }
+
+    .node text {
+      fill: #ffffff;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 15px;
+      font-weight: 800;
+      pointer-events: none;
+    }
+
+    .node .label {
+      fill: var(--muted);
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .edge-label {
+      fill: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      font-weight: 700;
+      paint-order: stroke;
+      stroke: var(--surface-soft);
+      stroke-width: 5;
+    }
+
+    .legend {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .legend-row {
+      display: grid;
+      grid-template-columns: 76px 1fr;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .legend-line {
+      height: 0;
+      border-top: 3px solid var(--accent);
+      border-radius: 999px;
+    }
+
+    .legend-line.duplicate {
+      border-top-color: var(--warning);
+      border-top-style: dashed;
+    }
+
+    .legend-line.inactive {
+      border-top-color: #bbb4a7;
+      border-top-style: dashed;
+    }
+
+    .step-list {
+      counter-reset: hop;
+      list-style: none;
+      padding: 0;
+    }
+
+    .step-list li {
+      counter-increment: hop;
+      position: relative;
+      margin: 0 0 8px;
+      padding: 12px 12px 12px 44px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-soft);
+      font-size: 0.92rem;
+    }
+
+    .step-list li::before {
+      content: counter(hop);
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      display: grid;
+      width: 22px;
+      height: 22px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .ttl-row,
+    .bits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .ttl {
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #e8eefc;
+      color: #234ea3;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .ttl.warn {
+      background: #f8ead0;
+      color: var(--warning);
+    }
+
+    .ttl.stop {
+      background: #ebe7df;
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .bit {
+      display: grid;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: #f3f0e8;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .bit.set {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .bit.hit {
+      border-color: var(--accent-2);
+      background: var(--accent-2);
+      color: #ffffff;
+      animation: bit-pulse 1.5s ease-in-out infinite;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+    }
+
+    .note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @keyframes edge-flow {
+      from {
+        stroke-dashoffset: 34;
+      }
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes bit-pulse {
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.62;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .edge.flow,
+      .edge.duplicate,
+      .bit.hit {
+        animation: none;
+      }
+    }
+
+    @media (max-width: 820px) {
+      main {
+        padding: 22px 14px 44px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .graph-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p><a href="index.html">Back to index</a></p>
+    <p class="eyebrow">Explainers and diagrams</p>
+    <h1>Animated graph data flow</h1>
+    <p class="lede">A starter for explaining propagation, routing, dependency graphs, fanout, retries, or state machines where seeing data move across edges teaches more than a static box diagram.</p>
+    <ul class="meta">
+      <li>Primary intent: graph-based explanation</li>
+      <li>Interaction: CSS motion with static fallback</li>
+      <li>Output: data-flow intuition</li>
+      <li>Featured edges: A-B, B-D, B-E, C-E, C-F</li>
+    </ul>
+
+    <section class="card">
+      <h2>Example: gossip flooding with duplicate suppression</h2>
+      <div class="graph-layout">
+        <div>
+          <div class="mesh-panel">
+            <svg class="mesh-svg" viewBox="0 0 560 360" role="img" aria-label="Animated graph showing a packet moving from A through B and C to D, E, and F. Shared node E receives a duplicate path.">
+              <defs>
+                <marker id="arrow-active" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L9,3 z" fill="#3867d6"></path>
+                </marker>
+                <marker id="arrow-duplicate" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L9,3 z" fill="#b7791f"></path>
+                </marker>
+              </defs>
+
+              <path class="edge flow" data-edge="A-B" d="M105 180 L230 95"></path>
+              <path class="edge flow" data-edge="A-C" d="M105 180 L230 265"></path>
+              <path class="edge flow" data-edge="B-D" d="M230 95 L365 65"></path>
+              <path class="edge flow" data-edge="B-E" d="M230 95 L365 180"></path>
+              <path class="edge duplicate" data-edge="C-E" d="M230 265 L365 180"></path>
+              <path class="edge flow" data-edge="C-F" d="M230 265 L365 295"></path>
+              <path class="edge inactive" data-edge="D-G" d="M365 65 L485 120"></path>
+              <path class="edge inactive" data-edge="E-H" d="M365 180 L485 180"></path>
+              <path class="edge inactive" data-edge="F-I" d="M365 295 L485 240"></path>
+
+              <text class="edge-label" x="152" y="118">A-B</text>
+              <text class="edge-label" x="145" y="252">A-C</text>
+              <text class="edge-label" x="292" y="71">B-D</text>
+              <text class="edge-label" x="290" y="142">B-E</text>
+              <text class="edge-label" x="290" y="236">C-E</text>
+              <text class="edge-label" x="292" y="292">C-F</text>
+
+              <g class="node">
+                <circle cx="90" cy="180" r="26" fill="#3867d6"></circle>
+                <text x="90" y="186" text-anchor="middle">A</text>
+                <text class="label" x="90" y="222" text-anchor="middle">origin</text>
+              </g>
+              <g class="node">
+                <circle cx="230" cy="95" r="23" fill="#16a085"></circle>
+                <text x="230" y="101" text-anchor="middle">B</text>
+              </g>
+              <g class="node">
+                <circle cx="230" cy="265" r="23" fill="#16a085"></circle>
+                <text x="230" y="271" text-anchor="middle">C</text>
+              </g>
+              <g class="node">
+                <circle cx="365" cy="65" r="21" fill="#8b5cf6"></circle>
+                <text x="365" y="71" text-anchor="middle">D</text>
+              </g>
+              <g class="node">
+                <circle cx="365" cy="180" r="21" fill="#8b5cf6"></circle>
+                <text x="365" y="186" text-anchor="middle">E</text>
+                <text class="label" x="365" y="216" text-anchor="middle">duplicate check</text>
+              </g>
+              <g class="node">
+                <circle cx="365" cy="295" r="21" fill="#8b5cf6"></circle>
+                <text x="365" y="301" text-anchor="middle">F</text>
+              </g>
+              <g class="node">
+                <circle cx="485" cy="120" r="17" fill="#9ca3af"></circle>
+                <text x="485" y="126" text-anchor="middle">G</text>
+              </g>
+              <g class="node">
+                <circle cx="485" cy="180" r="17" fill="#9ca3af"></circle>
+                <text x="485" y="186" text-anchor="middle">H</text>
+              </g>
+              <g class="node">
+                <circle cx="485" cy="240" r="17" fill="#9ca3af"></circle>
+                <text x="485" y="246" text-anchor="middle">I</text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="legend" aria-label="Graph legend">
+            <div class="legend-row"><span class="legend-line"></span><span>Active data-carrying edge. Stroke motion shows direction and flow.</span></div>
+            <div class="legend-row"><span class="legend-line duplicate"></span><span>Duplicate candidate. It reaches a shared node and should be checked before relay.</span></div>
+            <div class="legend-row"><span class="legend-line inactive"></span><span>Known neighbor edge. It stays quiet until TTL and duplicate rules allow forwarding.</span></div>
+          </div>
+        </div>
+
+        <div>
+          <h3>Relay rule per hop</h3>
+          <ol class="step-list">
+            <li>A sends one packet into the mesh. Edges make the fanout visible without a paragraph of prose.</li>
+            <li>B relays to D and E while TTL decreases. The graph shows where work multiplies.</li>
+            <li>C also tries E. E checks recent packet IDs and drops the duplicate instead of relaying again.</li>
+            <li>C relays to F. Quiet edges stay visible so the reader understands there are more possible paths.</li>
+          </ol>
+
+          <div class="card">
+            <h3>TTL state</h3>
+            <p class="note">Use state chips beside the graph so motion has a rule attached to it.</p>
+            <div class="ttl-row" aria-label="TTL decay from seven to zero">
+              <span class="ttl">TTL 7</span>
+              <span class="ttl">TTL 5</span>
+              <span class="ttl warn">TTL 3</span>
+              <span class="ttl warn">TTL 1</span>
+              <span class="ttl stop">TTL 0</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Recently seen bits</h3>
+            <p class="note">Bloom-filter or visited-set state makes duplicate suppression concrete.</p>
+            <div class="bits" aria-label="Bloom filter bit array with three hit bits">
+              <span class="bit set">1</span><span class="bit">0</span><span class="bit hit">1</span><span class="bit">0</span>
+              <span class="bit set">1</span><span class="bit">0</span><span class="bit hit">1</span><span class="bit">0</span>
+              <span class="bit set">1</span><span class="bit">0</span><span class="bit">0</span><span class="bit hit">1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Use when</h2>
+        <ul>
+          <li>A topology matters: graph algorithms, mesh routing, queues, dependencies, fanout, retries, replication, or event propagation.</li>
+          <li>The reader needs to see direction, concurrency, duplicate paths, or state transitions.</li>
+          <li>A static flowchart would hide why a node, edge, or repeated visit matters.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Borrow</h2>
+        <ul>
+          <li>Labeled SVG nodes and edges with muted inactive topology.</li>
+          <li>Animated strokes only on data-carrying edges, with delays or labels when sequence matters.</li>
+          <li>Adjacent rule/state panels: TTL, visited set, queue depth, lock state, cache hit, or retry count.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Avoid</h2>
+        <ul>
+          <li>Decorative motion that does not encode direction, timing, state, or causality.</li>
+          <li>Animating every edge at once when only a few edges explain the behavior.</li>
+          <li>Hiding conclusions behind animation. The static labels and legend should still teach the idea.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Validation</h2>
+        <ul>
+          <li>Confirm the active edges are the intended ones, especially named edges like A-B, B-D, B-E, C-E, and C-F.</li>
+          <li>Browser-check desktop and narrow viewports for label overlap, clipped SVG, and horizontal overflow.</li>
+          <li>Check <code>prefers-reduced-motion</code> still leaves a readable graph.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -33,10 +33,11 @@ Use these prompts as a lightweight manual check after changing `SKILL.md`, `exam
 | "Make a draggable board to sort 30 Linear tickets into Now, Next, Later, and Cut, then export Markdown." | `18-editor-triage-board.html` | `16-implementation-plan.html` | The output is a custom editor for bucketing work. |
 | "Build a form editor for feature flags that warns about dependency violations and copies only changed keys." | `19-editor-feature-flags.html` | `14-research-feature-explainer.html` | Structured config editing with validation and diff export. |
 | "Build a prompt tuning page with an editable template, highlighted variables, three live sample previews, counters, reset, and copy." | `20-editor-prompt-tuner.html` | `15-research-concept-explainer.html` | Prompt/template editing with live previews and export. |
+| "Explain gossip flooding by showing a packet move through a mesh graph, with animated A-B, B-D, B-E, C-E, and C-F edges plus Bloom-filter duplicate suppression." | `21-animated-graph-data-flow.html` | `15-research-concept-explainer.html`, `13-flowchart-diagram.html` | The topology and moving data are the teaching surface; the Bloom/visited state explains duplicate suppression. |
 
 ## Pass Criteria
 
-- At least 18 of 20 primary choices should route exactly as expected.
+- At least 19 of 21 primary choices should route exactly as expected.
 - For the two hardest tie-breakers, the agent should explain the ambiguity and choose a reasonable secondary card.
 - Every eval should route to one of the production starters under `references/html-files/`; there is no separate blank template fallback.
 - PR critique should route to `03`; PR author guidance should route to `17`.

@@ -68,6 +68,12 @@ Use this file to choose which official page to fetch. Do not treat it as an API 
 - [Equivalence](https://effect.website/docs/behaviour/equivalence/)
 - [Order](https://effect.website/docs/behaviour/order/)
 
+## State Management
+
+- [Ref](https://effect.website/docs/state-management/ref/)
+- [SynchronizedRef](https://effect.website/docs/state-management/synchronizedref/)
+- [SubscriptionRef](https://effect.website/docs/state-management/subscriptionref/)
+
 ## Concurrency
 
 - [Basic Concurrency](https://effect.website/docs/concurrency/basic-concurrency/)

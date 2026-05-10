@@ -7,7 +7,7 @@ description: Tauri v2 + Bun + TanStack Start (SPA mode) desktop/mobile app exper
 
 Tauri is a framework for building tiny, fast desktop and mobile apps. It combines a Rust backend (Core Process) with a frontend rendered in the OS's native webview — no bundled browser engine. Apps start under 600KB.
 
-This skill assumes **Bun + TanStack Start in SPA mode**. Tauri loads a static frontend bundle at runtime, so SSR/Nitro is disabled. For framework wiring (Vite plugin order, Tailwind v4, `__root.tsx`), see the `bun-tanstack-start` skill. **Server functions / loaders / Effect TS guidance from that skill do not apply here**: there is no Nitro server in a Tauri app. All "backend" work happens in Rust via Tauri commands.
+This skill assumes **Bun + TanStack Start in SPA mode**. Tauri loads a static frontend bundle at runtime, so SSR/Nitro is disabled. For framework wiring (Vite plugin order, Tailwind v4, `__root.tsx`), see the `tanstack-start` skill; for `bun --bun` and lockfile rules, see the `bun` skill. **Server functions / loaders / Effect TS guidance from `tanstack-start` do not apply here**: there is no Nitro server in a Tauri app. All "backend" work happens in Rust via Tauri commands.
 
 ## Architecture Overview
 
@@ -146,6 +146,7 @@ strip = true
 
 ## Companion Skills
 
-- **`bun-tanstack-start`** — frontend stack reference (Vite plugin order, Tailwind v4, `__root.tsx`). Load whenever touching `src/`, `vite.config.ts`, or `package.json`.
+- **`tanstack-start`** — frontend framework reference (Vite plugin order, Tailwind v4, `__root.tsx`). Load whenever touching `src/`, `vite.config.ts`, or routes.
+- **`bun`** — `bun --bun` flag, `bunx`, lockfile rules. Load whenever editing `package.json` scripts.
 - **`tailwind`** / **`tailwind-v4-tokens`** — styling.
 - **`idiomatic-rust`** / **`async-rust`** — Rust side of `src-tauri/`.

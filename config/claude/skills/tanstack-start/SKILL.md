@@ -38,7 +38,7 @@ src/
   router.tsx            # createRouter() entry
   client.tsx            # Client entry (StartClient)
   ssr.tsx               # SSR handler
-app.config.ts           # tanstackStart() vite plugin config
+vite.config.ts          # tanstackStart() Vite plugin (Vite + Nitro)
 ```
 
 ## File-Based Routing Key Conventions
@@ -58,7 +58,8 @@ app.config.ts           # tanstackStart() vite plugin config
   "@tanstack/react-router": "latest",
   "react": "^19.0.0",
   "vite": "^6.0.0",
-  "vinxi": "latest"
+  "@vitejs/plugin-react": "latest",
+  "vite-tsconfig-paths": "latest"
 }
 ```
 
@@ -82,3 +83,4 @@ app.config.ts           # tanstackStart() vite plugin config
 - [Error Handling](references/error-handling.md) — boundaries, notFound, hydration errors
 - [React Query & tRPC](references/react-query-and-trpc.md) — integration patterns
 - [Database Patterns](references/database-patterns.md) — DB access, recommended providers
+- [Effect TS Integration](references/effect-integration.md) — opt-in: where the seam between TanStack and Effect lives (`runPromiseExit`, `ManagedRuntime`, Schema as validator). Cross-load the `effect-ts` skill for the type system itself.

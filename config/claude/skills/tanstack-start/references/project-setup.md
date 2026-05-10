@@ -3,11 +3,13 @@
 ## CLI Scaffold (Recommended)
 
 ```bash
-npx create @tanstack/start@latest my-app
+npx @tanstack/cli@latest create my-app
 cd my-app
 npm install
 npm run dev
 ```
+
+On Bun: `bunx @tanstack/cli create my-app` (the CLI runs on Bun and emits Bun-aware scripts). See the `bun` skill for `--bun` flag and lockfile rules.
 
 ## Manual Setup
 
@@ -16,53 +18,45 @@ npm run dev
 ```json
 {
   "scripts": {
-    "dev": "vinxi dev",
-    "build": "vinxi build",
-    "start": "vinxi start"
+    "dev": "vite dev",
+    "build": "vite build",
+    "serve": "vite preview"
   },
   "dependencies": {
     "@tanstack/react-start": "latest",
     "@tanstack/react-router": "latest",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "vinxi": "latest"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "latest",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "typescript": "^5.0.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vite-tsconfig-paths": "latest"
   }
 }
 ```
 
-### app.config.ts (Vite Config)
+### vite.config.ts
 
 ```typescript
-import { defineConfig } from '@tanstack/react-start/config'
-import viteTsConfigPaths from 'vite-tsconfig-paths'
+import { defineConfig } from 'vite'
+import tsConfigPaths from 'vite-tsconfig-paths'
+import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import viteReact from '@vitejs/plugin-react'
 
 export default defineConfig({
-  vite: {
-    plugins: [
-      // NOTE: viteReact() is added automatically by tanstackStart()
-      // Do NOT manually add it before tanstackStart()
-      viteTsConfigPaths(),
-    ],
-  },
-  // Optional: SSR options
-  routers: {
-    ssr: {
-      entry: './src/ssr.tsx',
-    },
-    client: {
-      entry: './src/client.tsx',
-    },
-  },
+  plugins: [
+    tsConfigPaths(),   // 1. Resolve `@/*` aliases before anything else
+    tanstackStart(),   // 2. Generate the route tree, inject server entry
+    viteReact(),       // 3. React fast-refresh transforms (NOT auto-injected)
+  ],
 })
 ```
 
-> **Critical**: If adding `@vitejs/plugin-react`, it MUST come AFTER `tanstackStart()` in the plugin order, or use `defineConfig` which handles this automatically.
+> **Plugin order is load-bearing.** `tsConfigPaths` must run before `tanstackStart` so generated route imports resolve. `viteReact()` is **not** auto-injected by `tanstackStart()` — add it explicitly. If you also use Tailwind v4, append `tailwindcss()` from `@tailwindcss/vite` last so every CSS module flows through it (see `tailwind-and-styling.md`).
 
 ### tsconfig.json
 
@@ -197,6 +191,8 @@ This watches `src/routes/` and auto-generates `src/routeTree.gen.ts`.
 
 ```bash
 npm run dev     # Start dev server (default: http://localhost:3000)
-npm run build   # Production build
-npm run start   # Start production server
+npm run build   # Production build to .output/
+npm run serve   # Preview the production build
 ```
+
+In production, run the Nitro output directly: `node .output/server/index.mjs` (or `bun --bun .output/server/index.mjs` on Bun). See `hosting-and-deployment.md` for preset matrix.

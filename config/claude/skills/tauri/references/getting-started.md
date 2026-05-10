@@ -16,7 +16,7 @@ cd my-app
 bun install
 ```
 
-Patch `package.json` scripts to force Bun end-to-end (see the `bun-tanstack-start` skill for the rationale):
+Patch `package.json` scripts to force Bun end-to-end (see the `bun` skill for the rationale):
 
 ```json
 {
@@ -50,7 +50,7 @@ export default defineConfig({
 })
 ```
 
-Plugin order (`tsConfigPaths → tanstackStart → viteReact → tailwindcss`) is the same as the `bun-tanstack-start` skill.
+Plugin order (`tsConfigPaths → tanstackStart → viteReact → tailwindcss`) is the same as the `tanstack-start` skill — see `tanstack-start/references/project-setup.md`.
 
 Why SPA mode: in default (SSR) mode, TanStack Start outputs a Nitro server bundle to `.output/server/` and Tauri has nothing static to load. SPA mode emits a prerendered shell + client bundle into `.output/public/` instead.
 
@@ -123,7 +123,7 @@ bun add @tauri-apps/api
 
 - **`tauri.conf.json`**: primary config — app identifier, dev server URL, build commands, window settings. Also serves as CLI marker to locate the Rust project.
 - **`vite.config.ts`**: SPA-mode `tanstackStart`. The single most common failure mode for Tauri + TanStack Start is forgetting `spa: { enabled: true }` and getting a Nitro server bundle that Tauri cannot load.
-- **`src/routes/__root.tsx`**: links `app.css` via `?url` import (see `bun-tanstack-start`). Single source of truth for the app shell.
+- **`src/routes/__root.tsx`**: links `app.css` via `?url` import (see `tanstack-start/references/tailwind-and-styling.md`). Single source of truth for the app shell.
 - **`build.rs`**: must contain `tauri_build::build()` for the build system.
 - **`lib.rs`**: Rust code + mobile entry point (`#[cfg_attr(mobile, tauri::mobile_entry_point)]`).
 - **`main.rs`**: desktop entry point — calls `app_lib::run()` to share logic with mobile.

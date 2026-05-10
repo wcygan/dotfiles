@@ -8,7 +8,7 @@ allowed-tools: Read, Grep, Glob, Write, Edit, WebFetch
 
 The *consistency* skill. Its job is to make sure every color, radius, font, and spacing decision flows from a small set of named tokens — so visual drift across routes and components is structurally impossible.
 
-This skill is **medium-freedom**: tokens are prescriptive, but how you compose them is up to the design. Pair with `frontend-aesthetic` for direction and `bun-tanstack-start` for wiring.
+This skill is **medium-freedom**: tokens are prescriptive, but how you compose them is up to the design. Pair with `frontend-aesthetic` for direction and `tanstack-start` for framework wiring (CSS import + `?url` injection in `__root.tsx`).
 
 ## When to use this skill
 
@@ -95,5 +95,5 @@ Before calling a task done:
 ## Complements
 
 - `tailwind` skill — general v4 utility reference
-- `bun-tanstack-start` skill — how the CSS gets imported
+- `tanstack-start` skill — how the CSS gets imported (`@import 'tailwindcss' source('../')` + `?url` injection in `__root.tsx`)
 - `frontend-aesthetic` skill — what direction the tokens should express

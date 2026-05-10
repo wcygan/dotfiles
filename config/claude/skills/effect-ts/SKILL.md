@@ -85,8 +85,9 @@ This skill owns the Effect type system and ecosystem. Hand off when the question
 
 | Signal | Hand off to |
 |---|---|
-| `package.json` has `@tanstack/react-start`, or user is inside a TanStack Start app | **`bun-tanstack-start` — Effect TS is its declared default for server-side business logic.** Load both skills together. See [effect-integration](../bun-tanstack-start/references/effect-integration.md) for `ManagedRuntime` placement, `runPromiseExit` inside `createServerFn`, and Schema-as-validator. |
-| User asks how to wire `Layer`s into a server's request lifecycle on Bun | `bun-tanstack-start` (owns the boundary) |
-| Question is about `vite.config.ts`, Nitro presets, or `__root.tsx` | `bun-tanstack-start` |
+| `package.json` has `@tanstack/react-start`, or user is inside a TanStack Start app | **`tanstack-start`** — opt-in Effect integration lives in [effect-integration](../tanstack-start/references/effect-integration.md): `ManagedRuntime` placement, `runPromiseExit` inside `createServerFn`, Schema-as-validator. Load both skills together. |
+| User asks how to wire `Layer`s into a TanStack Start server's request lifecycle | `tanstack-start` (owns the boundary) |
+| Question is about `vite.config.ts`, Nitro presets, or `__root.tsx` | `tanstack-start` |
+| Question is about `bun --bun`, `bunx`, `bun.lockb`, native dep gotchas | `bun` |
 
 Rule of thumb: **Effect lives at the seams, not the wiring.** This skill explains the seam (`runPromiseExit` and `Cause` routing — see [runtime-and-execution](references/runtime-and-execution.md) and [error-handling](references/error-handling.md)). The framework skill explains where the seam goes.

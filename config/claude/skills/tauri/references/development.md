@@ -115,7 +115,7 @@ tauri = { version = "2.0.0", features = [] }
 }
 ```
 
-The `bun --bun` flag forces Bun end-to-end for child processes. See the `bun-tanstack-start` skill for the rationale.
+The `bun --bun` flag forces Bun end-to-end for child processes. See the `bun` skill for the rationale.
 
 ## Resources / Assets
 
@@ -328,7 +328,7 @@ bunx tauri ios dev
 bunx tauri ios dev 'iPhone 15'
 ```
 
-For iOS physical device, the frontend must listen on `TAURI_DEV_HOST`. Extend the existing TanStack Start `vite.config.ts` (keep the plugin order from `bun-tanstack-start`).
+For iOS physical device, the frontend must listen on `TAURI_DEV_HOST`. Extend the existing TanStack Start `vite.config.ts` (keep the plugin order from the `tanstack-start` skill).
 
 Note: this snippet pins `port: 1420` for the mobile dev server. If you adopt this for desktop too, update `tauri.conf.json#build.devUrl` to match (the rest of this skill assumes TanStack Start's default `3000`).
 

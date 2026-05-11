@@ -54,6 +54,23 @@ This adds hooks and skills to your local `~/.claude/` config. These files are gi
 
 Claude Code config is linked from `config/claude` to `~/.claude`. Codex is managed narrowly: `config/codex/config.toml` is a portable template copied to `${CODEX_HOME:-~/.codex}/config.toml` only when missing, `config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`, and `config/codex/skills` points to `${CODEX_HOME:-~/.codex}/skills`, while the rest of `CODEX_HOME` remains machine-local runtime state. Codex may write machine-specific `[projects]` trust entries into the local config; keep those out of the tracked template.
 
+### npm Global Tools
+
+The installer configures npm's user prefix in `~/.npmrc`:
+
+```ini
+prefix=${HOME}/.local
+```
+
+That keeps `npm install -g` writable when npm comes from Nix, and exposes global binaries through `~/.local/bin`, which the shell config already adds to `PATH` behind Nix-managed tools.
+
+Example:
+
+```bash
+npm install -g @playwright/cli@latest
+playwright-cli --help
+```
+
 ## Per-Project Dev Environments (nix-direnv)
 
 For reproducible per-project tool versions, use [nix-direnv](https://determinate.systems/blog/nix-direnv/).

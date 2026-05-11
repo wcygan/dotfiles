@@ -138,6 +138,55 @@ install_codex_config_toml() {
   fi
 }
 
+configure_npm_global_prefix() {
+  local npmrc="$HOME/.npmrc"
+  local prefix='${HOME}/.local'
+
+  if $DRY_RUN; then
+    echo "[DRY] Would ensure npm global prefix in $npmrc: $prefix"
+    echo "[DRY] Would ensure npm global directories exist under: $HOME/.local"
+    return 0
+  fi
+
+  mkdir -p "$HOME/.local/bin" "$HOME/.local/lib"
+
+  if [ ! -e "$npmrc" ]; then
+    printf 'prefix=%s\n' "$prefix" > "$npmrc"
+    echo "→ Configured npm global prefix in $npmrc"
+    return 0
+  fi
+
+  local tmp
+  tmp="$(mktemp)"
+  awk -v prefix="$prefix" '
+    BEGIN { wrote = 0 }
+    /^[[:space:]]*prefix[[:space:]]*=/ {
+      if (!wrote) {
+        print "prefix=" prefix
+        wrote = 1
+      }
+      next
+    }
+    { print }
+    END {
+      if (!wrote) {
+        print "prefix=" prefix
+      }
+    }
+  ' "$npmrc" > "$tmp"
+
+  if cmp -s "$tmp" "$npmrc"; then
+    rm -f "$tmp"
+    echo "→ npm global prefix already configured in $npmrc"
+    return 0
+  fi
+
+  cp -p "$npmrc" "$npmrc.backup.$(date +%s)"
+  cat "$tmp" > "$npmrc"
+  rm -f "$tmp"
+  echo "→ Updated npm global prefix in $npmrc"
+}
+
 # Git config (XDG-compliant location)
 link "$CFG_SRC/git" "$CFG_DST/git"
 
@@ -155,6 +204,9 @@ link "$CFG_SRC/starship.toml" "$HOME/.config/starship.toml"
 
 # zed config
 link "$CFG_SRC/zed" "$HOME/.config/zed"
+
+# npm globals should be user-writable even when npm itself is provided by Nix.
+configure_npm_global_prefix
 
 # ghostty config
 link "$CFG_SRC/ghostty" "$HOME/.config/ghostty"

@@ -71,11 +71,36 @@ assert_file_copy "$CODEX_HOME/config.toml" "$ROOT/config/codex/config.toml"
 assert_symlink "$CODEX_HOME/AGENTS.md" "$ROOT/config/codex/AGENTS.md"
 assert_symlink "$CODEX_HOME/skills" "$ROOT/config/codex/skills"
 
+if [[ -d "$HOME/.local/bin" ]]; then
+    pass "npm global bin directory exists"
+else
+    fail "$HOME/.local/bin was not created"
+fi
+
+if [[ -d "$HOME/.local/lib" ]]; then
+    pass "npm global lib directory exists"
+else
+    fail "$HOME/.local/lib was not created"
+fi
+
+if grep -Fxq 'prefix=${HOME}/.local' "$HOME/.npmrc"; then
+    pass "npm global prefix is configured for ~/.local"
+else
+    fail "$HOME/.npmrc does not configure npm global prefix"
+fi
+
 cat >>"$CODEX_HOME/config.toml" <<'LOCAL_CODEX_STATE'
 
 [projects."/tmp/private-project"]
 trust_level = "trusted"
 LOCAL_CODEX_STATE
+
+cat >"$HOME/.npmrc" <<'LOCAL_NPM_CONFIG'
+registry=https://registry.npmjs.org/
+prefix=/tmp/wrong-prefix
+save-exact=true
+prefix=/tmp/duplicate-prefix
+LOCAL_NPM_CONFIG
 
 DOTFILES_SKIP_FISH_GREETING=1 "$ROOT/scripts/link-config.sh" >/dev/null
 
@@ -87,6 +112,20 @@ if grep -Fq '[projects."/tmp/private-project"]' "$CODEX_HOME/config.toml"; then
     pass "existing local Codex trust state is preserved"
 else
     fail "existing local Codex trust state was overwritten"
+fi
+
+if grep -Fxq 'registry=https://registry.npmjs.org/' "$HOME/.npmrc" && \
+   grep -Fxq 'save-exact=true' "$HOME/.npmrc"; then
+    pass "existing local npm config is preserved"
+else
+    fail "existing local npm config was overwritten"
+fi
+
+if [[ "$(grep -Ec '^[[:space:]]*prefix[[:space:]]*=' "$HOME/.npmrc")" == "1" ]] && \
+   grep -Fxq 'prefix=${HOME}/.local' "$HOME/.npmrc"; then
+    pass "npm global prefix is updated idempotently"
+else
+    fail "npm global prefix was not updated idempotently"
 fi
 
 if [[ -f "$ROOT/config/codex/config.toml" ]]; then

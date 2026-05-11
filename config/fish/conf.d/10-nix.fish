@@ -1,51 +1,52 @@
-# Priority PATH setup - system packages take precedence over Nix
-# Load order: system paths > user paths > brew/dnf > Nix
+# Priority PATH setup - Nix profile packages take precedence
+# Load order: Nix > user paths > brew/dnf > system paths
 
 # IMPORTANT: fish_add_path adds to fish_user_paths which persists across sessions
-# We use --path flag to only modify PATH for current session to avoid accumulation
+# We use --path to only modify PATH for this session, and --move so existing
+# inherited paths are moved to the requested priority.
 
-# 1. First, ensure system and user-installed binaries are prioritized
+# 1. Add system and user-installed binaries as fallback paths.
 # macOS: Homebrew paths
 if test -d /opt/homebrew/bin
-  fish_add_path --path --prepend /opt/homebrew/bin
+  fish_add_path --path --move --prepend /opt/homebrew/bin
 else if test -d /usr/local/bin
-  fish_add_path --path --prepend /usr/local/bin
+  fish_add_path --path --move --prepend /usr/local/bin
 end
 
 # User-specific binary locations (for manual installs)
 if test -d $HOME/.local/bin
-  fish_add_path --path --prepend $HOME/.local/bin
+  fish_add_path --path --move --prepend $HOME/.local/bin
 end
 if test -d $HOME/bin
-  fish_add_path --path --prepend $HOME/bin
+  fish_add_path --path --move --prepend $HOME/bin
 end
 
 
 
 # Cargo/Rust binaries
 if test -d $HOME/.cargo/bin
-  fish_add_path --path --prepend $HOME/.cargo/bin
+  fish_add_path --path --move --prepend $HOME/.cargo/bin
 end
 
 # Go binaries
 if test -d $HOME/go/bin
-  fish_add_path --path --prepend $HOME/go/bin
+  fish_add_path --path --move --prepend $HOME/go/bin
 end
 
 # Bun binaries
 if test -d $HOME/.bun/bin
-  fish_add_path --path --prepend $HOME/.bun/bin
+  fish_add_path --path --move --prepend $HOME/.bun/bin
 end
 
-# 2. Now add Nix paths with lower priority (after manual installs)
-# Ensure Nix bins are on PATH (works for both single- and multi-user)
-if test -d $HOME/.nix-profile/bin
-  fish_add_path --path --append $HOME/.nix-profile/bin
-end
-
-# Add system-wide Nix profile to PATH (for multi-user installations)
+# 2. Prefer Nix profile bins for reproducible tools.
+# Add system-wide Nix profile first so the user profile can take precedence.
 if test -d /nix/var/nix/profiles/default/bin
-  fish_add_path --path --append /nix/var/nix/profiles/default/bin
+  fish_add_path --path --move --prepend /nix/var/nix/profiles/default/bin
+end
+
+# Ensure user Nix bins are on PATH (works for both single- and multi-user).
+if test -d $HOME/.nix-profile/bin
+  fish_add_path --path --move --prepend $HOME/.nix-profile/bin
 end
 
 # Set flake features at the process level (good default)

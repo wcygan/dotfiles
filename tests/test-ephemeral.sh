@@ -100,11 +100,10 @@ else
 end
 
 # Test abbreviations were created
-if abbrev --show | grep -q nix-update 2>/dev/null
+if type -q abbr; and abbr --show | grep -q nix-update 2>/dev/null
     echo "→ Abbreviations: created ✓"
 else
-    # Fish < 3.6 doesn't have abbrev command, check if abbr works
-    echo "→ Abbreviations: checking (older fish version)"
+    echo "→ Abbreviations: not found ✗"
 end
 
 # Test custom functions

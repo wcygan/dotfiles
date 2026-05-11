@@ -45,6 +45,18 @@ else
     fail "fish is NOT in flake.nix - need to add it"
 fi
 
+if grep -qE '^\s+nodejs\s*$' ../flake.nix; then
+    pass "nodejs is defined in flake.nix for npm"
+else
+    fail "nodejs is NOT in flake.nix - npm will be unavailable"
+fi
+
+if grep -q 'self.packages.${pkgs.stdenv.hostPlatform.system}.default' ../flake.nix; then
+    pass "dev shell includes the default package set"
+else
+    fail "dev shell missing default package set - direnv may not expose npm"
+fi
+
 # Test 2: Check fish config structure
 section "Fish Config Structure"
 EXPECTED_FILES=(
@@ -196,6 +208,13 @@ if command -v nix &> /dev/null; then
     fi
 else
     fail "Nix not installed - install.sh needs to run first"
+fi
+
+if grep -q 'fish_add_path --path --move --prepend $HOME/.nix-profile/bin' ../config/fish/conf.d/10-nix.fish && \
+   grep -q 'fish_add_path --path --move --prepend /nix/var/nix/profiles/default/bin' ../config/fish/conf.d/10-nix.fish; then
+    pass "fish prefers Nix profile paths"
+else
+    fail "fish does not prefer Nix profile paths"
 fi
 
 # Test 7: Check other tools in flake

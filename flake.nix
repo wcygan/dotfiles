@@ -52,6 +52,7 @@
                 go
                 python3
                 uv
+                nodejs
                 deno
                 bun
 
@@ -142,11 +143,11 @@
         {
           default = pkgs.mkShell {
             packages = with pkgs; [
+              self.packages.${pkgs.stdenv.hostPlatform.system}.default
               fish
               nixpkgs-fmt
               shellcheck
             ];
-            inputsFrom = [ self.packages.${pkgs.system}.default ];
             shellHook = ''
               echo "🐠 Dotfiles development environment"
               echo "Run: make test-pre"

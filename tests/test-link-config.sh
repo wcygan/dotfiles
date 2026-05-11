@@ -66,6 +66,9 @@ DOTFILES_SKIP_FISH_GREETING=1 "$ROOT/scripts/link-config.sh" >/dev/null
 
 assert_symlink "$HOME/.config/git" "$ROOT/config/git"
 assert_symlink "$HOME/.config/fish" "$ROOT/config/fish"
+assert_symlink "$HOME/.bunfig.toml" "$ROOT/config/bunfig.toml"
+assert_symlink "$HOME/.config/.bunfig.toml" "$ROOT/config/bunfig.toml"
+assert_symlink "$HOME/.config/deno" "$ROOT/config/deno"
 assert_symlink "$HOME/.claude" "$ROOT/config/claude"
 assert_file_copy "$CODEX_HOME/config.toml" "$ROOT/config/codex/config.toml"
 assert_symlink "$CODEX_HOME/AGENTS.md" "$ROOT/config/codex/AGENTS.md"
@@ -89,6 +92,12 @@ else
     fail "$HOME/.npmrc does not configure npm global prefix"
 fi
 
+if grep -Fxq 'min-release-age=3' "$HOME/.npmrc"; then
+    pass "npm minimum release age is configured"
+else
+    fail "$HOME/.npmrc does not configure npm minimum release age"
+fi
+
 cat >>"$CODEX_HOME/config.toml" <<'LOCAL_CODEX_STATE'
 
 [projects."/tmp/private-project"]
@@ -99,7 +108,9 @@ cat >"$HOME/.npmrc" <<'LOCAL_NPM_CONFIG'
 registry=https://registry.npmjs.org/
 prefix=/tmp/wrong-prefix
 save-exact=true
+min-release-age=1
 prefix=/tmp/duplicate-prefix
+min-release-age=7
 LOCAL_NPM_CONFIG
 
 DOTFILES_SKIP_FISH_GREETING=1 "$ROOT/scripts/link-config.sh" >/dev/null
@@ -126,6 +137,25 @@ if [[ "$(grep -Ec '^[[:space:]]*prefix[[:space:]]*=' "$HOME/.npmrc")" == "1" ]] 
     pass "npm global prefix is updated idempotently"
 else
     fail "npm global prefix was not updated idempotently"
+fi
+
+if [[ "$(grep -Ec '^[[:space:]]*min-release-age[[:space:]]*=' "$HOME/.npmrc")" == "1" ]] && \
+   grep -Fxq 'min-release-age=3' "$HOME/.npmrc"; then
+    pass "npm minimum release age is updated idempotently"
+else
+    fail "npm minimum release age was not updated idempotently"
+fi
+
+if [[ -f "$ROOT/config/bunfig.toml" ]]; then
+    pass "config/bunfig.toml exists as the Bun config source"
+else
+    fail "config/bunfig.toml is missing"
+fi
+
+if [[ -f "$ROOT/config/deno/deno.jsonc" ]]; then
+    pass "config/deno/deno.jsonc exists as the Deno cooldown config source"
+else
+    fail "config/deno/deno.jsonc is missing"
 fi
 
 if [[ -f "$ROOT/config/codex/config.toml" ]]; then

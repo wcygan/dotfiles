@@ -1,0 +1,6 @@
+[install]
+# 3 days, in seconds. Bun applies this to newly resolved npm package versions.
+minimumReleaseAge = 259200
+
+# Keep local workspace packages from waiting on the public registry cooldown.
+minimumReleaseAgeExcludes = ["@wcygan/*"]

@@ -138,12 +138,14 @@ install_codex_config_toml() {
   fi
 }
 
-configure_npm_global_prefix() {
+configure_npm_settings() {
   local npmrc="$HOME/.npmrc"
   local prefix='${HOME}/.local'
+  local min_release_age_days="3"
 
   if $DRY_RUN; then
     echo "[DRY] Would ensure npm global prefix in $npmrc: $prefix"
+    echo "[DRY] Would ensure npm minimum release age in $npmrc: $min_release_age_days days"
     echo "[DRY] Would ensure npm global directories exist under: $HOME/.local"
     return 0
   fi
@@ -151,40 +153,56 @@ configure_npm_global_prefix() {
   mkdir -p "$HOME/.local/bin" "$HOME/.local/lib"
 
   if [ ! -e "$npmrc" ]; then
-    printf 'prefix=%s\n' "$prefix" > "$npmrc"
-    echo "→ Configured npm global prefix in $npmrc"
+    {
+      printf 'prefix=%s\n' "$prefix"
+      printf 'min-release-age=%s\n' "$min_release_age_days"
+    } > "$npmrc"
+    echo "→ Configured npm settings in $npmrc"
     return 0
   fi
 
   local tmp
   tmp="$(mktemp)"
-  awk -v prefix="$prefix" '
-    BEGIN { wrote = 0 }
+  awk -v prefix="$prefix" -v min_release_age_days="$min_release_age_days" '
+    BEGIN {
+      wrote_prefix = 0
+      wrote_min_release_age = 0
+    }
     /^[[:space:]]*prefix[[:space:]]*=/ {
-      if (!wrote) {
+      if (!wrote_prefix) {
         print "prefix=" prefix
-        wrote = 1
+        wrote_prefix = 1
+      }
+      next
+    }
+    /^[[:space:]]*min-release-age[[:space:]]*=/ {
+      if (!wrote_min_release_age) {
+        print "min-release-age=" min_release_age_days
+        wrote_min_release_age = 1
       }
       next
     }
     { print }
     END {
-      if (!wrote) {
+      if (!wrote_prefix) {
         print "prefix=" prefix
+      }
+      if (!wrote_min_release_age) {
+        print "min-release-age=" min_release_age_days
       }
     }
   ' "$npmrc" > "$tmp"
 
   if cmp -s "$tmp" "$npmrc"; then
     rm -f "$tmp"
-    echo "→ npm global prefix already configured in $npmrc"
+    echo "→ npm settings already configured in $npmrc"
     return 0
   fi
 
   cp -p "$npmrc" "$npmrc.backup.$(date +%s)"
   cat "$tmp" > "$npmrc"
   rm -f "$tmp"
-  echo "→ Updated npm global prefix in $npmrc"
+  echo "→ Updated npm settings in $npmrc"
 }
 
 # Git config (XDG-compliant location)
@@ -206,7 +224,18 @@ link "$CFG_SRC/starship.toml" "$HOME/.config/starship.toml"
 link "$CFG_SRC/zed" "$HOME/.config/zed"
 
 # npm globals should be user-writable even when npm itself is provided by Nix.
-configure_npm_global_prefix
+# npm v11 supports a release-age cooldown in days.
+configure_npm_settings
+
+# Bun reads a global bunfig from $HOME/.bunfig.toml, or from
+# $XDG_CONFIG_HOME/.bunfig.toml when that environment variable is set.
+link "$CFG_SRC/bunfig.toml" "$HOME/.bunfig.toml"
+link "$CFG_SRC/bunfig.toml" "$CFG_DST/.bunfig.toml"
+
+# Deno has project config discovery rather than a built-in global config path.
+# Shell wrappers source this file for dependency-management commands when no
+# project deno.json/deno.jsonc is already in scope.
+link "$CFG_SRC/deno" "$CFG_DST/deno"
 
 # ghostty config
 link "$CFG_SRC/ghostty" "$HOME/.config/ghostty"

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
+  "minimumDependencyAge": {
+    "age": "P3D",
+    "exclude": [
+      "npm:@wcygan/*",
+      "jsr:@wcygan/*"
+    ]
+  }
+}

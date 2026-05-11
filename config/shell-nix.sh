@@ -42,6 +42,52 @@ export PATH="${_ORIGINAL_PATH_BEFORE_NIX}:$HOME/.nix-profile/bin:/nix/var/nix/pr
 
 # Nix flakes configuration
 export NIX_CONFIG="experimental-features = nix-command flakes"
+export DOTFILES_DENO_COOLDOWN_CONFIG="$HOME/.config/deno/deno.jsonc"
+
+_dotfiles_find_deno_config() {
+    local dir="$PWD"
+
+    while [ -n "$dir" ] && [ "$dir" != "/" ]; do
+        if [ -f "$dir/deno.json" ] || [ -f "$dir/deno.jsonc" ]; then
+            return 0
+        fi
+
+        dir="$(dirname "$dir")"
+    done
+
+    [ -f "/deno.json" ] || [ -f "/deno.jsonc" ]
+}
+
+_dotfiles_deno_has_dependency_config_arg() {
+    local arg
+
+    for arg in "$@"; do
+        case "$arg" in
+            --minimum-dependency-age|--minimum-dependency-age=*|--config|--config=*|-c|--no-config)
+                return 0
+                ;;
+        esac
+    done
+
+    return 1
+}
+
+deno() {
+    case "${1:-}" in
+        install|add|update|outdated|x)
+            if _dotfiles_deno_has_dependency_config_arg "$@" || _dotfiles_find_deno_config || [ ! -f "$DOTFILES_DENO_COOLDOWN_CONFIG" ]; then
+                command deno "$@"
+            else
+                local subcommand="$1"
+                shift
+                command deno "$subcommand" --config "$DOTFILES_DENO_COOLDOWN_CONFIG" "$@"
+            fi
+            ;;
+        *)
+            command deno "$@"
+            ;;
+    esac
+}
 
 # Useful Nix aliases
 alias nix-update='nix flake update && nix profile upgrade'

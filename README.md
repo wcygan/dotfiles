@@ -56,10 +56,12 @@ Claude Code config is linked from `config/claude` to `~/.claude`. Codex is manag
 
 ### npm Global Tools
 
-The installer configures npm's user prefix in `~/.npmrc`:
+The installer configures npm's user prefix and a 3-day dependency release
+cooldown in `~/.npmrc`:
 
 ```ini
 prefix=${HOME}/.local
+min-release-age=3
 ```
 
 That keeps `npm install -g` writable when npm comes from Nix, and exposes global binaries through `~/.local/bin`, which the shell config already adds to `PATH` behind Nix-managed tools.
@@ -70,6 +72,21 @@ Example:
 npm install -g @playwright/cli@latest
 playwright-cli --help
 ```
+
+### Dependency Install Cooldowns
+
+The repo's docs site uses npm (`docs/package-lock.json`). The installer also
+sets equivalent 3-day cooldowns for Bun and Deno:
+
+- Bun: links `config/bunfig.toml` to global bunfig locations with
+  `minimumReleaseAge = 259200`.
+- npm: manages `min-release-age=3` in `~/.npmrc`. npm does not currently expose
+  a documented package or scope exemption key for this setting.
+- Deno: links `config/deno/deno.jsonc` and shell wrappers apply it to
+  `deno install`, `deno add`, `deno update`, `deno outdated`, and `deno x` when
+  no project `deno.json` or `deno.jsonc` is already active.
+
+Bun and Deno exempt the `@wcygan/*` workspace scope from the cooldown.
 
 ## Per-Project Dev Environments (nix-direnv)
 

@@ -1,13 +1,13 @@
 ---
 name: goal-shaping
-description: Use when Codex should help a user choose, clarify, rank, or write a durable `/goal` objective for long-running work. Trigger for requests about finding a good goal, deciding what to work toward, turning an open-ended domain direction into impactful opportunities, defining success criteria, drafting a verifiable stopping condition, or preparing a goal prompt that includes concrete anchors such as URLs, files, issues, logs, metrics, or task lists.
+description: Use when Codex should help a user choose, clarify, rank, write, or set a durable goal objective for long-running work. Trigger for requests about finding a good goal, deciding what to work toward, turning an open-ended domain direction into impactful opportunities, defining success criteria, drafting a verifiable stopping condition, setting an active goal with the available goal tool, or preparing a goal prompt that includes concrete anchors such as URLs, files, issues, logs, metrics, or task lists.
 ---
 
 # Goal Shaping
 
 ## Overview
 
-Use this skill to help the user identify a goal worth giving Codex as a long-running objective. Shape the work until it is bigger than one prompt, smaller than an open-ended backlog, and has a verifiable stopping condition.
+Use this skill to help the user identify and set a goal worth giving Codex as a long-running objective. Shape the work until it is bigger than one prompt, smaller than an open-ended backlog, and has a verifiable stopping condition.
 
 ## Core Rule
 
@@ -22,6 +22,16 @@ Optimize for a useful goal contract, not a large plan. A strong goal says:
 - which checkpoint or condition means Codex should stop, pause, or ask
 
 Do not turn unrelated ideas into one goal. Split them into separate candidate goals and help the user choose the one with the highest expected payoff.
+
+## Goal Tool Default
+
+When the user invokes this skill to turn direction into a Codex goal, treat that as permission to set the active goal once the contract is strong enough. Do not ask the user to copy a `/goal` prompt or confirm that Codex should set it.
+
+Prefer the active goal-setting tool over a text-only prompt. If `set_goal` is available, use it. If this session exposes an equivalent tool such as `create_goal`, use that instead. Before creating a new goal, inspect the active goal when a goal-inspection tool is available. If there is already an active, conflicting goal, pause and ask how to proceed.
+
+The goal text passed to the tool should be the strongest durable prompt Codex can construct for the user's intent. Include the objective, stopping condition, reality anchors, constraints and non-goals, checkpoint plan, validation commands, and pause conditions. Keep it compact enough to be usable as a goal, but complete enough that Codex can resume from it later without reconstructing the user's intent.
+
+Only fall back to producing a `/goal` prompt when a goal-setting tool is unavailable, when the user explicitly asks only for a prompt, or when the missing context materially changes the goal.
 
 ## Workflow
 
@@ -62,8 +72,24 @@ Do not turn unrelated ideas into one goal. Split them into separate candidate go
    - Checkpoints: small ordered milestones with proof for each.
    - Pause conditions: when Codex should stop and ask for input.
 
-6. Produce a `/goal` prompt when ready.
-   Keep it compact, but include anchors and tasks when they exist. Do not invent references. If useful anchors are missing, make the first checkpoint gather them or ask the user for them.
+6. Set the goal when ready.
+   Keep the goal compact, but include anchors and tasks when they exist. Do not invent references. If useful anchors are missing and they would materially change the goal, ask for them. If missing anchors can be discovered during the work, make the first checkpoint gather them.
+
+   If a goal-setting tool is available, pass it a goal shaped like this:
+
+   ```text
+   Complete [objective] without stopping until [verifiable end state].
+
+   Reality anchors:
+   - [URL/file/issue/log/metric/example that grounds the work]
+
+   Highlighted tasks:
+   - [specific improvement, investigation, or decision]
+
+   First read [context]. Keep changes within [scope/non-goals]. Work in checkpoints; after each checkpoint run [validation] and record a short progress log. Pause if [pause conditions].
+   ```
+
+   If no goal-setting tool is available, produce a `/goal` prompt instead:
 
    Use this shape:
 
@@ -84,13 +110,14 @@ Do not turn unrelated ideas into one goal. Split them into separate candidate go
 - Work with the user to clarify where they want to head in their domain before prescribing work.
 - Use the user's language for their domain, customers, repo, product, or craft.
 - Keep questions few and high leverage. Prefer "which outcome matters most?" over broad interviews.
+- Do not ask permission to set the goal after the user has invoked this skill. Ask only for facts that materially change the goal or for direction when an existing active goal conflicts.
 - Surface tradeoffs directly: high-impact but risky, quick win but low leverage, valuable but not yet verifiable.
-- Prefer concrete references over abstract summaries when drafting the final prompt; file paths, URLs, issue IDs, command names, and metric names make better anchors than prose labels.
+- Prefer concrete references over abstract summaries when drafting the goal text; file paths, URLs, issue IDs, command names, and metric names make better anchors than prose labels.
 - If the user asks to start immediately, still check that the goal has a stopping condition and validation loop before starting.
 
 ## Fitness Checks
 
-A candidate is a good `/goal` if:
+A candidate is a good active goal if:
 
 - it can survive multiple turns without constant steering
 - it has one durable objective, not a mixed list
@@ -110,7 +137,7 @@ A candidate needs more shaping if:
 
 ## Output Template
 
-When presenting the result, use the smallest useful form:
+When presenting the result before setting a goal, use the smallest useful form:
 
 ````markdown
 **Recommendation**
@@ -134,6 +161,8 @@ When presenting the result, use the smallest useful form:
 ````
 
 If the user is still choosing direction, replace the goal contract with a ranked list of candidates and the one or two questions needed to pick.
+
+When the goal has been set with a goal tool, do not also present a long `/goal` prompt. Briefly state that the goal was set, summarize the objective and stopping condition, then start or continue the first checkpoint.
 
 ## Source Guidance
 

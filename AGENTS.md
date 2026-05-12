@@ -7,9 +7,9 @@ Reproducible tools with Nix; portable, editable configs via symlinks; fast onboa
 ## Principles
 
 * **Idempotent**: every script safe to run twice.
-* **Cross‑platform**: macOS, Ubuntu, Fedora all green.
+* **Cross‑platform**: macOS, Ubuntu, Fedora all green. CI runs Linux only (cost); macOS compatibility is verified ad-hoc on the maintainer's machine.
 * **Minimal surface area**: configs live under `config/**`; packages live in `flake.nix`.
-* **Test-first ops**: pre-flight (local) → isolated (ephemeral HOME) → Docker matrix.
+* **Test-first ops**: pre-flight (local) → isolated (ephemeral HOME) → Docker matrix. macOS-specific changes: run `make test-pre` (and `make test-local` if touching fish) on a Mac before merging.
 * **Rollbackable**: links backed up, package generations garbage-collectable.
 
 ## Authority & Guardrails
@@ -42,7 +42,7 @@ Rollback: re-link configs (script backs up physical dirs), or `nix profile rollb
 ## Quality Bar (PR Checklist)
 
 * [ ] Idempotent (re-run safe)
-* [ ] Cross‑platform verified (macOS, Ubuntu, Fedora)
+* [ ] Cross‑platform verified — Linux via CI; macOS locally when the change could be platform-sensitive (shell init, paths, package availability)
 * [ ] Tests updated (pre-flight + relevant suite)
 * [ ] Docs updated (README/AGENTS)
 * [ ] Rollback path obvious

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Consult Claude"
+  short_description: "Ask Claude Opus from Codex"
+  default_prompt: "Use $consult-claude to ask Claude Opus for a focused second opinion on this implementation question."

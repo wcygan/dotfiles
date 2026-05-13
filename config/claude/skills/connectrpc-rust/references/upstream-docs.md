@@ -1,7 +1,8 @@
 # Upstream documentation index
 
-Always prefer these two sources over reciting from memory. The crate is pre-1.0
-and APIs shift across 0.3.x point releases.
+Always prefer these two sources over reciting from memory. The crate is still
+0.x and APIs evolve across point releases — see SKILL.md "Compatibility" for
+the version this skill targets.
 
 ## Table of contents
 
@@ -72,15 +73,25 @@ Sections (paraphrased — fetch the live document for exact headings):
 
 | Example | Coverage |
 |---------|----------|
+| `eliza` | Production-shaped axum app — TLS, CORS, IPv6, the greet-style demo |
 | `streaming-tour` | All four RPC kinds, handler signatures, client patterns |
 | `middleware` | Tower auth, trailers, header / timeout `CallOptions` |
-| `eliza` | Production-shaped app: TLS / mTLS, CORS, IPv6, streaming |
-| `multiservice` | Multiple proto packages, `buf generate`, well-known types |
+| `mtls-identity` | mTLS via `connectrpc::axum::serve_tls`, peer-cert extraction, SAN-based ACLs (added in 0.4.2) |
+| `multiservice` | Multiple service traits hosted on one router |
 | `wasm-client` | Browser fetch transport, custom `ClientTransport` |
-| `bazel` | Bazel build integration |
+| `bazel` | Bazel build integration (non-Cargo) |
 
-When in doubt, point at `streaming-tour` for handler shapes and `eliza` for a
-realistic end-to-end deployment. Both are kept in sync with the runtime.
+When in doubt: `eliza` for end-to-end deployment shape, `streaming-tour`
+for handler shapes, `mtls-identity` for the TLS-termination-in-process
+pattern (and the only reference for `serve_tls` outside docs.rs).
+
+## docs/ directory
+
+The `docs/` directory in the repo holds:
+
+- `guide.md` — the user guide linked above.
+- `specs/` — protocol specs and conformance reference (internal-leaning;
+  reach for it only when something at the wire level seems off).
 
 ## How to fetch
 

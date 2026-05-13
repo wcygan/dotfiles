@@ -3,7 +3,7 @@
 Enable the `client` feature (or `client-tls` for TLS):
 
 ```toml
-connectrpc = { version = "0.3", features = ["client", "client-tls"] }
+connectrpc = { version = "0.4", features = ["client", "client-tls"] }
 ```
 
 ## Table of contents

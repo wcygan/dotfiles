@@ -5,12 +5,27 @@ capability.
 
 ## Table of contents
 
+- [The two crates](#the-two-crates)
 - [Decision matrix](#decision-matrix)
 - [Path 1 — connectrpc-build (default)](#path-1--connectrpc-build-default)
 - [Path 2 — buf generate](#path-2--buf-generate)
 - [Path 3 — protoc-gen-connect-rust directly](#path-3--protoc-gen-connect-rust-directly)
 - [extern_path and well-known types](#extern_path-and-well-known-types)
 - [Generated artifacts](#generated-artifacts)
+- [Upgrading from 0.3 → 0.4: filename change](#upgrading-from-03--04-filename-change)
+
+## The two crates
+
+| Crate | What it is |
+|-------|------------|
+| `connectrpc-codegen` | Library + the `protoc-gen-connect-rust` binary. Emits ConnectRPC service stubs only. Depends on `buffa` for the message types. |
+| `connectrpc-build` | `build.rs` wrapper. Runs `buffa-codegen` for messages and `connectrpc-codegen` for services, then packages the output. The recommended path. |
+
+`protoc-gen-connect-rust` is a *component* of both workflows (`buf generate`
+calls it; `connectrpc-build` invokes its library form). It isn't an alternative
+to them — it's what they shell out to.
+
+## Decision matrix
 
 ## Decision matrix
 
@@ -28,8 +43,10 @@ and the one with the least moving pieces.
 ```toml
 # Cargo.toml
 [build-dependencies]
-connectrpc-build = "0.3"
+connectrpc-build = "0.4"
 ```
+
+Requires `protoc` v27+ on the build machine (and in CI).
 
 ```rust
 // build.rs
@@ -120,3 +137,25 @@ Each `.proto` produces, per service:
 
 Buffer types come from `buffa`, the underlying zero-copy proto library. You
 do not depend on `prost` directly.
+
+## Upgrading from 0.3 → 0.4: filename change
+
+In 0.4.0 (May 2026), service stubs moved from `<stem>.rs` to
+`<stem>.__connect.rs`. The buffa message file is still `<stem>.rs`.
+
+- **OUT_DIR users (`build.rs` + `include!`):** no action — the include file
+  points at both names. Just bump the dep.
+- **Checked-in codegen (`buf generate`, `protoc-gen-connect-rust` to a
+  tracked directory):** regenerate **and delete** the old `<stem>.rs`
+  service file. Stale 0.3 service files left next to new
+  `<stem>.__connect.rs` files break the build with duplicate-item errors.
+
+Companion 0.4.x changes worth knowing:
+
+- The generated `mod.rs` `#[allow(...)]` block now suppresses
+  `unused_qualifications` and `impl_trait_redundant_captures`. If you build
+  with `-D warnings` and the lint suppressions don't reach your handler
+  impls, see `gotchas.md` for the `refining_impl_trait_internal` workaround.
+- The `connectrpc-build` floor on `buffa-codegen` is `>= 0.5.1` because
+  `ALLOW_LINTS` (sourced into the generated `mod.rs`) gained
+  `unused_qualifications` there.

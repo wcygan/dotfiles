@@ -34,12 +34,12 @@ edition = "2024"
 rust-version = "1.88"
 
 [dependencies]
-connectrpc = { version = "0.3", features = ["axum"] }
-axum = "0.7"
+connectrpc = { version = "0.4", features = ["axum"] }
+axum = "0.8"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal"] }
 
 [build-dependencies]
-connectrpc-build = "0.3"
+connectrpc-build = "0.4"
 ```
 
 Add `client` / `client-tls` only if this binary will also act as a ConnectRPC

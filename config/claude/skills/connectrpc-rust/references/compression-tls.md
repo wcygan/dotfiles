@@ -19,7 +19,7 @@ responses are compressed if the client advertises `accept-encoding`.
 To strip a compressor entirely:
 
 ```toml
-connectrpc = { version = "0.3", default-features = false, features = ["axum"] }
+connectrpc = { version = "0.4", default-features = false, features = ["axum"] }
 ```
 
 (`streaming` is also default — keep it on for streaming RPCs.)
@@ -63,8 +63,9 @@ covered.
 
 ## Server TLS
 
-Enable the `server-tls` feature, build a `rustls::ServerConfig`, and either
-hand it to the standalone server or wrap an `axum::serve` listener:
+Enable the `server-tls` feature, build a `rustls::ServerConfig`, and hand it
+to `connectrpc::axum::serve_tls` (added in 0.4.2). It is the companion to
+`axum::serve` for the TLS path:
 
 ```rust
 use std::sync::Arc;
@@ -72,24 +73,27 @@ use rustls::ServerConfig;
 
 let tls: Arc<ServerConfig> = build_server_config()?;
 
-// Standalone:
+let app = service.register(axum::Router::new()).into_axum_router();
+let listener = tokio::net::TcpListener::bind("0.0.0.0:8443").await?;
+
+connectrpc::axum::serve_tls(listener, app, tls)
+    .with_graceful_shutdown(async {
+        tokio::signal::ctrl_c().await.ok();
+    })
+    .await?;
+```
+
+Why use the helper rather than wrapping `axum::serve` with
+`tokio_rustls::TlsAcceptor` yourself: the naive wrapper hangs on h2 ALPN
+negotiation. `serve_tls` owns the accept loop and TLS handshake correctly.
+
+If you have no axum stack and just want a TLS server, use the standalone:
+
+```rust
 connectrpc::Server::new(router)
     .with_tls(tls)
     .serve("0.0.0.0:8443".parse()?)
     .await?;
-
-// Axum + tokio-rustls (more flexible):
-let acceptor = tokio_rustls::TlsAcceptor::from(tls);
-let listener = tokio::net::TcpListener::bind("0.0.0.0:8443").await?;
-loop {
-    let (stream, _) = listener.accept().await?;
-    let acceptor = acceptor.clone();
-    let app = app.clone();
-    tokio::spawn(async move {
-        let stream = acceptor.accept(stream).await?;
-        axum::serve::serve(stream, app).await
-    });
-}
 ```
 
 In production, terminate TLS at a reverse proxy (Envoy, ALB, ngrok) unless
@@ -116,8 +120,17 @@ verification.
 
 ## mTLS
 
-The `eliza` example covers the full client-CA pattern: generate a CA,
-issue server and client certs, and pin them on both sides:
+The `examples/mtls-identity/` example is the canonical reference. It:
+
+- Generates an in-memory PKI (CA, server cert, two workload client certs)
+  with `rcgen` — no PEM files on disk.
+- Hosts on axum behind `connectrpc::axum::serve_tls`.
+- The TLS layer stamps `PeerCerts` and `PeerAddr` into request extensions
+  (same convention `connectrpc::Server::with_tls` uses).
+- A handler parses the leaf cert's DNS SAN to derive a workload identity
+  and enforces an ACL against it.
+
+The configs themselves:
 
 ```rust
 let client_cfg = rustls::ClientConfig::builder()
@@ -129,6 +142,12 @@ let server_cfg = rustls::ServerConfig::builder()
     .with_single_cert(server_chain, server_key)?;
 ```
 
-Pull authenticated identity off the connection via `RequestContext::extensions`
-once your TLS layer inserts it (`tokio_rustls::server::TlsStream` exposes the
-peer cert chain).
+In your handler, pull peer identity off the extensions:
+
+```rust
+let peer_certs = ctx.extensions.get::<PeerCerts>()
+    .ok_or_else(|| ConnectError::new(ErrorCode::Unauthenticated, "no client cert"))?;
+```
+
+`PeerCerts` is the same shape whether you use `serve_tls` or
+`Server::with_tls`, so handler code is portable between the two.

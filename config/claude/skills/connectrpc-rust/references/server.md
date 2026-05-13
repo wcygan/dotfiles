@@ -11,9 +11,12 @@
 - [Tower middleware via Axum](#tower-middleware-via-axum)
 - [Passing data from middleware to handlers](#passing-data-from-middleware-to-handlers)
 
+For testing handlers in isolation and over the wire, see `testing.md`.
+For tonic migrations, see `migration-tonic.md`.
+
 For exact trait signatures, sealed traits, and feature gates, fetch
-<https://docs.rs/connectrpc/latest/connectrpc/> — the API surface evolves across
-0.3.x.
+<https://docs.rs/connectrpc/latest/connectrpc/>. See SKILL.md "Compatibility"
+for the pinned versions this skill targets.
 
 ## Service trait shape
 
@@ -94,66 +97,32 @@ let router = inventory_svc.register(router);
 Standalone (no Axum): `connectrpc::Server::new(router).serve(addr).await?`. Use
 this only when there is no existing HTTP stack to merge into.
 
+**Under the hood**, `register` wires each RPC into the `connectrpc::dispatcher`
+machinery (`Dispatcher`, `MethodDescriptor`, `Chain`) for monomorphic dispatch
+— that's the type-level path generated code uses. You normally never touch
+those types directly; reach for `docs.rs` only if you're reading generated
+code or writing your own codec/middleware that hooks into the dispatcher.
+
 ## Streaming RPCs
 
-All four kinds are first-class. Pattern by direction:
-
-**Server streaming** — single request, stream of responses:
-
-```rust
-async fn range(
-    &self,
-    _ctx: RequestContext,
-    req: OwnedView<RangeRequestView<'static>>,
-) -> ServiceResult<ServiceStream<RangeResponse>> {
-    let stream = futures::stream::iter(
-        (req.start..req.end).map(|n| Ok(RangeResponse { value: n, ..Default::default() })),
-    );
-    Response::stream_ok(stream)
-}
-```
-
-**Client streaming** — stream of requests, single response:
+All four kinds (unary, server stream, client stream, bidi) are first-class.
+Handler shapes, client-side API, cancellation semantics, and backpressure
+have enough subtle behavior that they live in their own file:
+**`streaming.md`**. Shape sketch:
 
 ```rust
-async fn sum(
-    &self,
-    _ctx: RequestContext,
-    mut requests: ServiceStream<OwnedView<SumRequestView<'static>>>,
-) -> ServiceResult<SumResponse> {
-    let mut total: i64 = 0;
-    while let Some(req) = requests.next().await {
-        total += req?.value as i64;
-    }
-    Response::ok(SumResponse { total, ..Default::default() })
-}
+// Server streaming
+async fn range(&self, _ctx: RequestContext, req: OwnedView<RangeRequestView<'static>>)
+    -> ServiceResult<ServiceStream<RangeResponse>> { /* … */ }
+
+// Client streaming
+async fn sum(&self, _ctx: RequestContext, mut requests: ServiceStream<OwnedView<SumRequestView<'static>>>)
+    -> ServiceResult<SumResponse> { /* … */ }
+
+// Bidi
+async fn running_sum(&self, _ctx: RequestContext, requests: ServiceStream<OwnedView<...>>)
+    -> ServiceResult<ServiceStream<RunningSumResponse>> { /* … */ }
 ```
-
-**Bidirectional streaming** — both sides stream concurrently:
-
-```rust
-async fn running_sum(
-    &self,
-    _ctx: RequestContext,
-    requests: ServiceStream<OwnedView<RunningSumRequestView<'static>>>,
-) -> ServiceResult<ServiceStream<RunningSumResponse>> {
-    let resp = futures::stream::unfold((0i64, requests), |(acc, mut rs)| async move {
-        let next = rs.next().await?;
-        match next {
-            Ok(req) => {
-                let acc = acc + req.delta as i64;
-                Some((Ok(RunningSumResponse { value: acc, ..Default::default() }), (acc, rs)))
-            }
-            Err(e) => Some((Err(e), (acc, rs))),
-        }
-    });
-    Response::stream_ok(resp)
-}
-```
-
-Cancellation flows through the stream end — when the client disconnects, the
-input stream returns `None` (or an error) and your output stream's drop
-propagates closure to the dispatcher.
 
 ## Tower middleware via Axum
 

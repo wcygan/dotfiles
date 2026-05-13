@@ -8,8 +8,11 @@ Read before debugging anything that "should just work."
 - [extern_path orphan rule](#extern_path-orphan-rule)
 - [refining_impl_trait lint](#refining_impl_trait-lint)
 - [No built-in health or reflection endpoints](#no-built-in-health-or-reflection-endpoints)
-- [MSRV 1.88 and pre-1.0 status](#msrv-188-and-pre-10-status)
-- [Migrating from tonic — what differs](#migrating-from-tonic--what-differs)
+- [server feature and tokio/macros](#server-feature-and-tokiomacros)
+- [Codegen filename moved in 0.4.0](#codegen-filename-moved-in-040)
+- [Toolchain floors: MSRV 1.88 + edition 2024](#toolchain-floors-msrv-188--edition-2024)
+
+For porting from tonic, see `migration-tonic.md`.
 
 ## JSON requests + view bodies
 
@@ -40,13 +43,25 @@ view-path optimization out of cross-crate types.
 
 ## refining_impl_trait lint
 
-Returning a view from a handler tightens `impl Encodable<M>` further than the
-trait declares. Rust's `refining_impl_trait` lint flags this. The crate-level
-fix:
+The generated service trait declares each RPC as returning
+`ServiceResult<impl Encodable<Out> + ...>`. Handler impls then return one of
+`ServiceResult<Out>` (owned), a view, or `MaybeBorrowed<M, V>`. All three
+*refine* the trait's impl-trait return — that's the mechanism that lets you
+pick the cheapest shape per handler.
 
-```rust
-// in lib.rs / main.rs
-#![allow(refining_impl_trait)]
+`refining_impl_trait_internal` (warn-by-default since Rust 1.86,
+[rust-lang/rust#121718](https://github.com/rust-lang/rust/issues/121718))
+fires on every handler `impl`. The refinement is intentional and benign:
+handler impls are not part of your service's public API, and there is no
+spot inside the generated module tree where `#[allow(...)]` could reach
+the handler impl from the codegen side.
+
+If you build with `-D warnings`, suppress it where the handler lives:
+
+```toml
+# Cargo.toml — workspace or per-crate
+[lints.rust]
+refining_impl_trait_internal = "allow"
 ```
 
 Or per-impl:
@@ -56,8 +71,11 @@ Or per-impl:
 impl GreetService for MyGreet { /* … */ }
 ```
 
-This is documented in the guide. It's a deliberate trade — the refinement
-buys the zero-copy return.
+(The bare `refining_impl_trait` group covers both `_reachable` and
+`_internal`.) The codegen-side `#[allow(...)]` block already handles
+`impl_trait_redundant_captures` and `unused_qualifications` for the
+generated module tree — you only need lint suppressions for your own
+handler impls.
 
 ## No built-in health or reflection endpoints
 
@@ -73,47 +91,44 @@ For gRPC reflection specifically, a Rust server intended to interop with
 `grpcurl` users will need to roll a reflection RPC by hand or expose the
 service descriptors via a separate endpoint.
 
-## MSRV 1.88 and pre-1.0 status
+## server feature and tokio/macros
 
-- **MSRV 1.88, edition 2024.** This is recent — older toolchains and Linux
-  distro packages will not work. Pin a `rust-toolchain.toml`.
-- **Pre-1.0.** APIs may shift across 0.3.x. The 6,558-test conformance suite
-  is a strong stability signal for *protocol* behavior, not Rust API
-  stability. When upgrading, expect minor type-level churn.
-- **Crate published 2025-10-14, repo open-sourced 2026-03-04.** Look at recent
-  release notes (`gh release list -R anthropics/connect-rust`) before
-  trusting older third-party tutorials.
+In 0.4.2, the `server` feature began enabling `tokio/macros` (it previously
+only enabled `tokio/net`). The accept loop in `Server::serve` and
+`axum::serve_tls` both use `tokio::select!`, which requires the `macros`
+feature.
 
-## Migrating from tonic — what differs
+If you're on an older 0.4 release **and** your downstream `tokio` deps don't
+enable `macros` elsewhere in the dependency closure, the build fails with a
+missing-macro error. Either upgrade to 0.4.2+ or add
+`tokio = { version = "1", features = ["macros"] }` to your `Cargo.toml`.
 
-For someone fluent in tonic, the deltas are:
+## Codegen filename moved in 0.4.0
 
-| Concept | tonic | connectrpc |
-|---------|-------|------------|
-| Service trait | `#[tonic::async_trait]` decorated | Plain `async fn` (Rust 2024 edition) |
-| Request type | `tonic::Request<T>` | `(RequestContext, OwnedView<TView<'static>>)` |
-| Response type | `tonic::Response<T>` | `Response<T>` (different module) |
-| Server entrypoint | `Server::builder().add_service(...).serve(addr)` | `service.register(Router::new()).into_axum_router()` + `axum::serve` |
-| Interceptors | `tonic::Interceptor` trait | Axum / Tower middleware via `http::Extensions` |
-| Error type | `tonic::Status` | `ConnectError` (same code set, different name) |
-| Codegen | `tonic-build` / `prost-build` | `connectrpc-build` / `buffa` |
-| Streaming type | `tonic::Streaming<T>` | `ServiceStream<T>` |
-| Feature flag for transport | `transport` (default) | `axum` + `client` etc. (more granular) |
+In 0.4.0 (May 2026), generated service stubs moved from `<stem>.rs` to
+`<stem>.__connect.rs`. Buffa message types are still in `<stem>.rs`.
 
-Behavioral wins on the connectrpc side:
+If you check codegen into the repo (`buf generate` to a tracked directory,
+or `protoc-gen-connect-rust` with a fixed `--connect-rust_out`):
+**regenerate and delete the old `<stem>.rs` service files** when bumping
+past 0.4.0. Stale 0.3-era service files left next to new
+`<stem>.__connect.rs` files produce duplicate-item compile errors.
 
-- **One server speaks all three protocols.** No separate setup for gRPC vs
-  gRPC-Web vs Connect.
-- **JSON encoding is built in.** No tonic-equivalent of `application/json`.
-- **Tower composition is first-class.** No special interceptor abstraction —
-  you use the same middleware everywhere else in your Axum app uses.
-- **Zero-copy decode** for handlers that opt into the view path.
+`build.rs` + `include!(env!("OUT_DIR"))` users are unaffected — the include
+file references both names.
 
-Behavioral *losses*:
+## Toolchain floors: MSRV 1.88 + edition 2024
 
-- **No `tonic-health`, `tonic-reflection`, `tonic-web` story.** Roll-your-own
-  for health; reflection requires manual work.
-- **Pre-1.0 churn risk.** tonic is 0.x but mature; connectrpc is 0.x and young.
-- **`prost` ecosystem doesn't apply directly.** `buffa`-typed messages work
-  differently (views vs owned). Code that hand-builds `prost::Message` impls
-  needs reworking.
+- **Rust 1.88, edition 2024.** This is recent — older toolchains and Linux
+  distro packages will not work. Pin a `rust-toolchain.toml`. Downstream
+  crates on edition 2021 can still consume `connectrpc` (edition is
+  per-crate), but you'll be on the receiving end of any `use<...>`
+  precise-capture clauses in generated code.
+- **`protoc` v27+** is required at build time when running codegen
+  (CONTRIBUTING.md on the repo). CI images that ship older `protoc`
+  versions will fail in `connectrpc-build`.
+- **Look at release notes before trusting tutorials.** `gh release list -R
+  anthropics/connect-rust` shows the current shape — there have been two
+  patch releases in 0.4 alone with material additions (`serve_tls`,
+  `tokio/macros` fix).
+

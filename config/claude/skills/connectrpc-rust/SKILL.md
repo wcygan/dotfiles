@@ -1,6 +1,6 @@
 ---
 name: connectrpc-rust
-description: ConnectRPC Rust expert for the `connectrpc` crate (anthropics/connect-rust). Use when building Tower-based ConnectRPC servers/clients in Rust, generating code via `connectrpc-build` or `protoc-gen-connect-rust`, working with `OwnedView`/`ServiceStream`/`ConnectError`/`RequestContext`/`Encodable`, or porting from tonic. Prefers Axum integration. Auto-loads on `connectrpc` crate imports, `connectrpc-build` in build.rs, or ConnectRPC mentions in Rust contexts. Keywords connectrpc, connect-rust, connectrpc-build, protoc-gen-connect-rust, OwnedView, ServiceStream, ConnectError, Encodable, buffa, axum, tower, rustls, tonic migration.
+description: ConnectRPC Rust expert for the `connectrpc` crate (anthropics/connect-rust). Use when building Tower-based ConnectRPC servers/clients in Rust, generating code via `connectrpc-build` or `protoc-gen-connect-rust`, writing streaming RPCs (unary, server/client/bidi), testing handlers and integration-testing against the generated client, porting from tonic, configuring `serve_tls` / mTLS, or working with `OwnedView`/`ServiceStream`/`ConnectError`/`RequestContext`/`Encodable`. Prefers Axum integration. Auto-loads on `connectrpc` crate imports, `connectrpc-build` in build.rs, or ConnectRPC mentions in Rust contexts. Keywords connectrpc, connect-rust, connectrpc-build, protoc-gen-connect-rust, OwnedView, ServiceStream, BidiStream, ConnectError, Encodable, buffa, axum, tower, rustls, serve_tls, mTLS, tonic migration, streaming RPC, testing handlers.
 ---
 
 # ConnectRPC for Rust
@@ -9,12 +9,30 @@ Tower-based Rust implementation of the ConnectRPC protocol. One server speaks
 **Connect**, **gRPC**, and **gRPC-Web** over HTTP/1.1 and HTTP/2 with binary or
 JSON protobuf. Zero-copy decoding via `buffa` borrowed views.
 
-- Crate: `connectrpc` v0.3.x — Apache-2.0, **MSRV 1.88** (2024 edition)
 - Repo: <https://github.com/anthropics/connect-rust>
 - API docs: <https://docs.rs/connectrpc/latest/connectrpc/>
 - Guide: <https://github.com/anthropics/connect-rust/blob/main/docs/guide.md>
-- Status: pre-1.0, passes all 6,558 Connect conformance tests
+- Passes all 6,558 Connect conformance tests
 - Reported perf vs tonic 0.14: 1.35×–1.95× lower single-request latency
+
+## Compatibility
+
+The pinned versions and toolchain used throughout this skill. Update here when
+you bump and the reference docs will follow:
+
+| Thing | Version |
+|-------|---------|
+| `connectrpc` / `connectrpc-build` | `0.4` (latest 0.4.2) |
+| Rust MSRV | `1.88` (edition 2024) |
+| `axum` | `0.8` (workspace declares 0.8) |
+| `buffa` | `0.5` (codegen floor `buffa-codegen >= 0.5.1`) |
+| `protoc` | `v27+` (build-time, when generating proto) |
+| License | Apache-2.0 |
+
+**Upgrading from 0.3 → 0.4:** generated service stubs moved from `<stem>.rs`
+to `<stem>.__connect.rs`. If you check codegen in, regenerate and delete the
+old files — stale `<stem>.rs` next to `<stem>.__connect.rs` breaks builds.
+See `gotchas.md`.
 
 ## Preferences (codified)
 
@@ -25,9 +43,14 @@ JSON protobuf. Zero-copy decoding via `buffa` borrowed views.
    the Tower ecosystem.
 2. **Codegen via `connectrpc-build` from `build.rs`** by default. Switch to
    `buf generate` only when checked-in code or multi-language repos demand it.
+   `connectrpc-codegen` is the underlying library + `protoc-gen-connect-rust`
+   binary; `connectrpc-build` is the recommended wrapper. See `codegen.md`.
 3. **Return owned messages from handlers** unless a benchmark proves the view
    path matters. View returns break JSON clients — see `gotchas.md`.
 4. **TLS via rustls** (`client-tls` / `server-tls` features). No native-tls.
+   For TLS termination in-process, prefer `connectrpc::axum::serve_tls`
+   (added in 0.4.2) — wrapping `axum::serve` with `tokio_rustls` directly
+   hangs on h2 ALPN.
 
 ## Where to look — always
 
@@ -48,12 +71,12 @@ See `references/upstream-docs.md` for a navigation index of both.
 
 ```toml
 [dependencies]
-connectrpc = { version = "0.3", features = ["axum", "client", "tls"] }
+connectrpc = { version = "0.4", features = ["axum", "client", "tls"] }
 tokio = { version = "1", features = ["full"] }
-axum = "0.7"
+axum = "0.8"
 
 [build-dependencies]
-connectrpc-build = "0.3"
+connectrpc-build = "0.4"
 ```
 
 Feature flags: `gzip` / `zstd` / `streaming` (default), `client`, `client-tls`,
@@ -86,20 +109,27 @@ serves all three. `RequestContext` carries headers, deadline, and
 |------|-----------|
 | [`upstream-docs.md`](references/upstream-docs.md) | Looking something up — canonical URLs, module map for docs.rs, examples directory index |
 | [`quickstart-axum.md`](references/quickstart-axum.md) | Bootstrapping a new project end-to-end with Axum |
-| [`server.md`](references/server.md) | Handlers, `RequestContext`, `OwnedView`, response builder, registration, streaming |
+| [`server.md`](references/server.md) | Handlers, `RequestContext`, `OwnedView`, response builder, registration |
 | [`client.md`](references/client.md) | `HttpClient`, `ClientConfig`, `CallOptions`, response access patterns |
+| [`streaming.md`](references/streaming.md) | All four RPC kinds in depth — handler/client shapes, cancellation, backpressure, client-drop, mid-stream errors, graceful drain |
+| [`testing.md`](references/testing.md) | Unit-testing handlers (synthetic `RequestContext`/`OwnedView`) and integration-testing against the generated client (ephemeral `axum::serve`) |
+| [`migration-tonic.md`](references/migration-tonic.md) | Side-by-side tonic→connectrpc port: codegen, handler signatures, `Status`→`ConnectError`, interceptors, transport, client |
 | [`errors.md`](references/errors.md) | `ConnectError`, codes, `ErrorDetail`, HTTP status mapping |
 | [`protocols.md`](references/protocols.md) | Connect / gRPC / gRPC-Web matrix and conformance |
-| [`compression-tls.md`](references/compression-tls.md) | gzip/zstd negotiation, custom `CompressionProvider`, rustls server/client |
-| [`codegen.md`](references/codegen.md) | `connectrpc-build` vs `buf generate` vs `protoc-gen-connect-rust` |
-| [`gotchas.md`](references/gotchas.md) | JSON+view incompatibility, `extern_path` orphan rule, `refining_impl_trait` lint, no built-in health, pre-1.0 caveats, tonic-migration deltas |
+| [`compression-tls.md`](references/compression-tls.md) | gzip/zstd negotiation, custom `CompressionProvider`, rustls server/client, `serve_tls`, mTLS |
+| [`codegen.md`](references/codegen.md) | `connectrpc-build` vs `buf generate` vs `protoc-gen-connect-rust`; 0.3→0.4 filename change |
+| [`gotchas.md`](references/gotchas.md) | JSON+view incompatibility, `extern_path` orphan rule, `refining_impl_trait` lint, no built-in health, `server` feature + `tokio/macros`, 0.4.0 codegen filename change |
 
 ## Quick triage
 
 - "Add a new RPC service" → `quickstart-axum.md` then `server.md`
+- "How do I write a streaming RPC?" → `streaming.md`
+- "How do I test this handler?" → `testing.md`
 - "Hook this into our auth middleware" → `server.md` (Extensions) + Axum middleware
 - "Why does the JSON client get `unimplemented`?" → `gotchas.md`
 - "What error code should I return?" → `errors.md`
-- "Migrating from tonic" → `gotchas.md` (deltas) + `server.md` + `client.md`
+- "Migrating from tonic" → `migration-tonic.md`
 - "How do I generate code without `build.rs`?" → `codegen.md`
-- "TLS / mTLS setup" → `compression-tls.md`
+- "TLS in-process / mTLS / client identity" → `compression-tls.md` (and the
+  upstream `examples/mtls-identity/` for client-cert extraction)
+- "Upgrading from 0.3.x" → `gotchas.md` (codegen filename moved to `__connect.rs`)

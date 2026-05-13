@@ -18,6 +18,7 @@ Use this skill for Rust Temporal SDK work grounded in the current codebase and o
 ## Reference Map
 
 - `references/doc-map.md`: official Temporal docs index and when to verify docs.rs or live docs.
+- `references/documentation-explorer.md`: how to inspect Temporal's rendered docs and matching raw MDX sources in `temporalio/documentation`.
 - `references/repo-map.md`: sdk-rust crate layout, high-value local code anchors, and repo command rules.
 - `references/setup-env-client.md`: quickstart setup, dependencies, Temporal CLI dev server, env/config loading, Cloud connection, starting workflows, results, signals, queries, and updates.
 - `references/workflows.md`: workflow macros, inputs/returns, deterministic execution, state access, messages, timers, cancellation, continue-as-new, patching, and common gotchas.

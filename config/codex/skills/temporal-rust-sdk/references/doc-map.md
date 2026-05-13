@@ -2,6 +2,8 @@
 
 Use this file to choose the smallest official source before giving precise Rust Temporal SDK guidance.
 
+For raw MDX source lookup and rendered-page-to-GitHub mappings, read `documentation-explorer.md`.
+
 ## Official Docs
 
 - Rust SDK developer guide: https://docs.temporal.io/develop/rust

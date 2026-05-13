@@ -1,0 +1,4 @@
+interface:
+  display_name: "Temporal Rust SDK"
+  short_description: "Work with the Temporal Rust SDK"
+  default_prompt: "Use $temporal-rust-sdk to implement or review Temporal Rust SDK code using repo references and official docs."

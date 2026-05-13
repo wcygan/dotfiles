@@ -1,0 +1,4 @@
+interface:
+  display_name: "Idiomatic Rust"
+  short_description: "Review and write idiomatic Rust"
+  default_prompt: "Use $idiomatic-rust to review Rust code for idiomatic ownership, errors, API design, and style."

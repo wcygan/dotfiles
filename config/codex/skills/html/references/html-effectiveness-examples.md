@@ -4,7 +4,7 @@ Use this catalog when a user asks for an HTML artifact and the requested shape r
 
 https://thariqs.github.io/html-effectiveness/
 
-Reviewed on 2026-05-08. The likely upstream repository is `ThariqS/html-effectiveness`; GitHub reported `license: null` at review time. Raw upstream HTML is not vendored. Local first-party production starters live in `references/html-files/` and show when to use each pattern. Starter 21 is a first-party vendored pattern from local artifact comparison, not from the upstream review set.
+Reviewed on 2026-05-08. The likely upstream repository is `ThariqS/html-effectiveness`; GitHub reported `license: null` at review time. Raw upstream HTML is not vendored. Local first-party production starters live in `references/html-files/` and show when to use each pattern.
 
 ## How To Use This Catalog
 
@@ -38,7 +38,6 @@ Reviewed on 2026-05-08. The likely upstream repository is `ThariqS/html-effectiv
 | [18 - Ticket triage board](html-files/18-editor-triage-board.html) | The user needs to sort, prioritize, or bucket work items. | Drag cards across Now/Next/Later/Cut columns, tag filtering, counts, reset, and copy-as-Markdown export. |
 | [19 - Feature flag editor](html-files/19-editor-feature-flags.html) | The user needs a purpose-built editor for structured config with constraints. | Grouped toggles, dependency warnings, derived summary, changed-key diff, copy full JSON, copy diff, and reset. |
 | [20 - Prompt tuner](html-files/20-editor-prompt-tuner.html) | The user wants to tune a prompt, template, or copy with live examples. | Contenteditable template, highlighted variable slots, sample inputs, live rendered previews, token/character counts, reset, and copy prompt. |
-| [21 - Animated graph data flow](html-files/21-animated-graph-data-flow.html) | The user needs to understand data moving through a topology: gossip/flooding, routing, queues, replication, dependency traversal, retries, or graph state. | Inline SVG node-edge graph, active animated edges, muted inactive topology, edge labels, rule/state side panels, and reduced-motion fallback. |
 
 ## Selection Heuristics
 
@@ -47,7 +46,6 @@ Reviewed on 2026-05-08. The likely upstream repository is `ThariqS/html-effectiv
 - Start with a PR review or PR writeup artifact when the input is a diff, branch, or pull request.
 - Start with a code-understanding or feature-explainer artifact when the user asks "how does this work?"
 - Start with a prototype when the key uncertainty is feel, motion, or workflow ergonomics.
-- Start with an animated graph/data-flow artifact when topology, direction, fanout, duplicates, or state movement is the core teaching problem.
 - Start with a report when the output is for stakeholders and the important work is synthesis.
 - Start with a custom editor when text prompts are a poor way to express the desired changes and the user needs to export the edited state back to Codex.
 
@@ -56,7 +54,7 @@ Reviewed on 2026-05-08. The likely upstream repository is `ThariqS/html-effectiv
 - Native form controls are enough for most useful interactivity: range inputs, radios, checkboxes, buttons, details, and contenteditable.
 - Copy/export buttons matter most for editors and tuning sandboxes. Include a `file://` clipboard fallback.
 - SVG is the dominant diagram mechanism: request paths, architecture maps, flowcharts, charts, visual concepts, and downloadable illustrations.
-- Animated SVG edges can be the clearest way to explain data flow through a graph. Animate only meaningful paths, label the active edges, and keep a static legend and reduced-motion fallback.
+- SVG is useful for explaining data flow through a graph. Prefer static labels, legends, and step details over animated edge effects.
 - Sticky navigation helps long reports, code explainers, PR writeups, and editors.
 - Collapsible details work well for optional code snippets and lower-priority files, but keep conclusions visible by default.
 - For drag/drop, include clear counts, reset behavior, and an export format the user can paste back into the agent.

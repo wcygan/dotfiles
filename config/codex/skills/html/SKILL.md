@@ -9,7 +9,7 @@ Create readable, shareable, single-file HTML documents that communicate complex 
 
 ## Reference Map
 
-- `references/example-selector.md`: choose among the 21 local production starters; load when routing is unclear.
+- `references/example-selector.md`: choose among the 20 local production starters; load when routing is unclear.
 - `references/html-effectiveness-examples.md`: compact catalog of all local starters.
 - `references/html-files/index.html`: browser-readable index of local starter files.
 - `references/html-files/*.html`: production starter files to copy, adapt, and expand into the final standalone artifact.
@@ -32,7 +32,7 @@ Classify the task by the user's main uncertainty:
 
 - **Which option should we choose?** Use exploration patterns: implementation approaches, visual directions, or implementation plan.
 - **What changed or what should reviewers inspect?** Use PR/code review patterns: annotated PR review or PR writeup.
-- **How does this work?** Use code understanding, feature explainer, concept explainer, flowchart, animated graph/data-flow, or SVG illustration patterns.
+- **How does this work?** Use code understanding, feature explainer, concept explainer, flowchart, or SVG illustration patterns.
 - **How should this look or feel?** Use design system, component variants, animation sandbox, or clickable prototype patterns.
 - **What happened or what is the status?** Use weekly status or incident report patterns.
 - **How can the user edit structured choices visually?** Use ticket triage, feature flag editor, or prompt tuner patterns.
@@ -43,7 +43,7 @@ Then refine by input and output:
 - Source files or architecture input: prefer `04-code-understanding.html`; use `14-research-feature-explainer.html` when the answer is a teachable feature summary with gotchas.
 - Visual UI/design input: prefer `02-exploration-visual-designs.html`, `05-design-system.html`, or `06-component-variants.html`.
 - Motion or workflow feel input: prefer `07-prototype-animation.html` for timing/easing, `08-prototype-interaction.html` for gesture/flow.
-- Network propagation, graph topology, fanout, dependency traversal, state-machine movement, or "show data moving" input: prefer `21-animated-graph-data-flow.html`; pair with `13-flowchart-diagram.html` for step details or `15-research-concept-explainer.html` for adjustable parameters.
+- Network propagation, graph topology, fanout, dependency traversal, state-machine movement, or "show data moving" input: prefer `13-flowchart-diagram.html` for step details or `15-research-concept-explainer.html` for adjustable parameters.
 - Operational timeline or metrics input: prefer `11-status-report.html` for routine updates, `12-incident-report.html` for postmortems.
 - Data to reorder, toggle, or tune: prefer `18-editor-triage-board.html`, `19-editor-feature-flags.html`, or `20-editor-prompt-tuner.html`.
 
@@ -51,7 +51,7 @@ Then refine by input and output:
 
 Use these production starters as starting points, then adapt them to the user's actual task.
 
-For detailed selection guidance, load `references/example-selector.md`. For concrete inspiration, load `references/html-effectiveness-examples.md` or open `references/html-files/index.html`. They catalog 21 local production starters. The first 20 were derived from reviewing `https://thariqs.github.io/html-effectiveness/`, when each one is useful, and which structure or interaction model to adapt. The animated graph/data-flow starter is a first-party vendored example from local artifact comparison. Raw upstream HTML is not vendored because the upstream repository does not declare a license.
+For detailed selection guidance, load `references/example-selector.md`. For concrete inspiration, load `references/html-effectiveness-examples.md` or open `references/html-files/index.html`. They catalog 20 local production starters derived from reviewing `https://thariqs.github.io/html-effectiveness/`, when each one is useful, and which structure or interaction model to adapt. Raw upstream HTML is not vendored because the upstream repository does not declare a license.
 
 | User Need | Strong HTML Shape |
 | --- | --- |
@@ -64,7 +64,6 @@ For detailed selection guidance, load `references/example-selector.md`. For conc
 | Component variants | Matrix of props, states, sizes, themes, and density controls with notes on when to use each variant. |
 | Prototype interaction or motion | Working mini-prototype with sliders, toggles, timing controls, reset, and copyable parameters or CSS. |
 | Technical diagram | Inline SVG or canvas with legend, clickable nodes, details panel, and failure paths when relevant. |
-| Animated graph/data-flow explainer | SVG node-edge graph with labeled active edges, animated strokes or packet pulses, muted inactive topology, state chips, and reduced-motion fallback. |
 | Slide deck | Full-screen sections with keyboard navigation, progress indicator, and printable fallback. |
 | Research/report | TL;DR, source list, metric cards, charts/tables, timeline, findings grouped by decision relevance. |
 | Incident report | Sticky table of contents, impact summary, timeline, root cause diagram, action-item checklist. |
@@ -92,16 +91,6 @@ For detailed selection guidance, load `references/example-selector.md`. For conc
 - Keep typography compact and readable. Do not scale text with viewport width. Make long labels wrap cleanly in buttons, badges, tables, and cards.
 - Make the page responsive by design: flexible grids, `minmax()`, horizontal overflow only for dense tables/code, and usable narrow-screen navigation.
 - Preserve printable/read-only value. An artifact should still communicate if JavaScript is disabled, except for explicitly interactive prototypes/editors.
-
-## Animated Graphs And Data Flow
-
-Use animated graphing when movement through a topology is the explanation, not decoration. Good triggers include mesh routing, gossip/flooding, queues, replication, dependency traversal, state machines, retries, event propagation, and "show how data flows" requests.
-
-- Prefer inline SVG for node-edge graphs. Label important nodes and edges directly, keep inactive topology muted, and make active edges visually distinct.
-- Animate only the edges or packets that carry meaning. Use `stroke-dashoffset`, pulsed markers, or small path-following tokens to show direction, timing, fanout, duplicate paths, or state transitions.
-- Pair motion with state evidence beside the graph: TTL chips, visited-set or Bloom-filter bits, queue depth, cache hit/miss, retry count, lock state, or current phase.
-- Keep conclusions readable without motion. Include a legend, static labels, and `prefers-reduced-motion` CSS so the graph remains useful when animation is disabled.
-- For concrete inspiration, load `references/html-files/21-animated-graph-data-flow.html`; it vendors the useful gossip/Bloom-filter pattern with animated A-B, B-D, B-E, C-E, and C-F edges.
 
 ## Data And Evidence
 

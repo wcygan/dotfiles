@@ -10,6 +10,9 @@ cd tests/
 # Pre-flight check (no changes)
 ./test-fish-setup.sh
 
+# uv script exemplar checks
+./test-uv-scripts.sh
+
 # Local isolated test (temp HOME)
 ./test-ephemeral.sh
 
@@ -26,6 +29,11 @@ cd tests/
 - Validates configuration without making changes
 - Checks flake.nix, config files, and dependencies
 - Shows what will be installed
+
+### `test-uv-scripts.sh`
+- Runs the bundled `uv-scripts` exemplars in demo mode
+- Checks each script is executable, exposes help, and passes Ruff
+- Uses a temporary working directory for generated cache and output files
 
 ### `test-ephemeral.sh` 
 - Creates temporary HOME directory

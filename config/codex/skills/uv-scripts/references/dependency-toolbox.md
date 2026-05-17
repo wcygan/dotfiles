@@ -66,6 +66,7 @@ These are the extra libraries to reach for when a script crosses from "small Pyt
 | Date parsing/calendar math | `python-dateutil` | Need robust date parsing, relative deltas, recurrence rules, or timezone helpers. |
 | Persistent local cache | `diskcache` | Results should survive process restarts and be safe across processes. |
 | File watching | `watchfiles` | Need to rerun local automation when files change. |
+| Dev orchestration | `click`, `rich`, `pydantic`, `pydantic-settings`, `platformdirs`, `httpx`, `tenacity`, `PyYAML` | Need to supervise multiple local services, validate config, poll health, show logs, and clean up on Ctrl+C. |
 | Paths by app/user dirs | `platformdirs` | Cache/config/data paths should be cross-platform and conventional. |
 | Globs/gitignore matching | `pathspec` | Need `.gitignore`-style file matching. |
 | Testing | `pytest` | Script logic is non-trivial and should be unit-tested outside process execution. |
@@ -131,6 +132,12 @@ File-watching local automation:
 
 ```sh
 uv add --script script.py watchfiles rich
+```
+
+Long-running dev orchestration:
+
+```sh
+uv add --script script.py click rich pydantic pydantic-settings platformdirs 'httpx<1' tenacity pyyaml
 ```
 
 Script quality check without making the checker a script dependency:

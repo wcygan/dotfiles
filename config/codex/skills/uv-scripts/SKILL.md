@@ -17,9 +17,10 @@ Use this skill to create Python scripts that are easy to run once, easy to rerun
    - Executable command: uv shebang plus inline metadata.
    - Repo application code: use the project's existing uv workflow instead of turning it into a standalone script.
 3. Load the smallest relevant reference file from the map below.
-4. Author scripts with linear control flow, explicit CLI arguments, predictable exit codes, `pathlib`, timeouts for network calls, and no hidden machine-specific paths.
-5. Run the exact script command after editing. Add dependencies with `uv add --script` when the script should be reusable.
-6. For shared, CI, or release-critical scripts, add a lockfile or reproducibility guard and document the one command users should run.
+4. When writing a non-trivial script, inspect the closest exemplar under `scripts/` before inventing structure.
+5. Author scripts with linear control flow, explicit CLI arguments, predictable exit codes, `pathlib`, timeouts for network calls, and no hidden machine-specific paths.
+6. Run the exact script command after editing. Add dependencies with `uv add --script` when the script should be reusable.
+7. For shared, CI, or release-critical scripts, add a lockfile or reproducibility guard and document the one command users should run.
 
 ## Reference Map
 
@@ -28,6 +29,20 @@ Use this skill to create Python scripts that are easy to run once, easy to rerun
 - `references/reproducibility-locks.md`: decide when to lock, pin, use `exclude-newer`, request Python versions, and commit script artifacts.
 - `references/cache-ci-troubleshooting.md`: handle uv cache behavior, refresh/reinstall escape hatches, CI pruning, cache directories, and dynamic metadata.
 - `references/dependency-toolbox.md`: pick high-value third-party libraries for CLI UX, HTTP, config, validation, serialization, data work, scraping, testing, and formatting.
+- `references/gold-standard-scripts.md`: choose which permanent exemplar script to copy before creating a new script.
+
+## Script Exemplars
+
+- `scripts/cli_click_rich.py`: polished Click command surface with Rich output and JSON mode.
+- `scripts/fetch_http.py`: HTTP fetching with `httpx`, bounded retries, durable cache, content handling, and no-network demo mode.
+- `scripts/inspect_files.py`: safe file intake for JSON, YAML, TOML, CSV, Excel, XML, PDF, and image files.
+- `scripts/analyze_duckdb.py`: local CSV/JSON/Parquet analysis with DuckDB, schemas, samples, SQL, and exports.
+- `scripts/render_template.py`: validated YAML data plus Jinja rendering with atomic writes.
+- `scripts/script_quality_gate.py`: minimum-bar checker for uv standalone scripts, with optional help and Ruff checks.
+- `scripts/config_and_secrets.py`: structured settings, portable app paths, and local keyring usage without plaintext secrets.
+- `scripts/orchestrate_dev.py`: long-running dev process supervisor with startup order, health checks, logs, Docker Compose hooks, and cleanup.
+- `scripts/watch_and_run.py`: file-watch loop for local development commands.
+- `scripts/document_assets.py`: practical PDF and image inspection/transformation.
 
 ## Quality Rules
 

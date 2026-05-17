@@ -140,6 +140,9 @@ nix profile upgrade '.*'
 # Edit flake.nix, then:
 nix profile install .
 
+# Repair Rust editor components
+make setup-rustup-components
+
 # Uninstall (configs only, keeps Nix)
 make uninstall
 

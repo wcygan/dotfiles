@@ -1,7 +1,7 @@
 # Nix Dotfiles Makefile
 # Run 'make help' for available commands
 
-.PHONY: help install test test-pre test-local test-docker link git-user clean update latest shell docs install-skills update-skills
+.PHONY: help install test test-pre test-local test-docker link git-user clean update latest shell docs install-skills update-skills setup-rustup-components
 
 # Default target
 help:
@@ -28,6 +28,7 @@ help:
 	@echo "  make latest     - Pull latest changes and reinstall"
 	@echo "  make update     - Update flake and upgrade packages"
 	@echo "  make install-packages - Install/upgrade packages from current flake"
+	@echo "  make setup-rustup-components - Install rustup language-server components"
 	@echo "  make list       - List installed packages"
 	@echo "  make clean      - Garbage collect old packages"
 	@echo ""
@@ -86,6 +87,7 @@ test-pre:
 	@echo "🔍 Running pre-flight checks..."
 	@cd tests && ./test-fish-setup.sh
 	@cd tests && ./test-link-config.sh
+	@cd tests && ./test-rustup-setup.sh
 	@cd tests && ./test-consult-claude.sh
 
 # Local isolated test
@@ -159,6 +161,12 @@ install-packages:
 	@echo "📦 Installing packages from flake..."
 	@nix profile install . --priority 5
 	@echo "✅ Packages installed!"
+
+# Install rustup components expected by editor integrations
+setup-rustup-components:
+	@echo "🦀 Installing rustup language-server components..."
+	@./scripts/setup-rustup-components.sh
+	@echo "✅ Rust components configured!"
 
 # Install curated vendor agent skills (Stripe, Resend, etc.)
 install-skills:

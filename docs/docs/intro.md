@@ -29,7 +29,8 @@ The `install.sh` script performs:
 ### Installation Steps
 1. **Nix Setup**: Installs Nix package manager via Determinate Systems
 2. **Package Installation**: Installs all tools from `flake.nix`
-3. **Configuration Linking**: Symlinks configs to appropriate locations
+3. **Rust Component Setup**: Ensures rustup can resolve `rust-analyzer`
+4. **Configuration Linking**: Symlinks configs to appropriate locations
 
 ### Post-flight Verification
 - Confirms all tools are installed
@@ -110,6 +111,11 @@ nix profile upgrade '.*'
 Edit `flake.nix`, then:
 ```bash
 nix profile install .
+```
+
+### Repair Rust Editor Components
+```bash
+make setup-rustup-components
 ```
 
 ### Uninstall Configs

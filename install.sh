@@ -123,7 +123,15 @@ else
     exit 1
 fi
 
-echo -e "\n${BLUE}Step 3: Linking configuration files and agent skill roots${NC}"
+echo -e "\n${BLUE}Step 3: Ensuring Rust language server component${NC}"
+if "$ROOT/scripts/setup-rustup-components.sh"; then
+    echo -e "${GREEN}✓${NC} Rust components configured"
+else
+    echo -e "${RED}✗${NC} Rust component setup failed"
+    exit 1
+fi
+
+echo -e "\n${BLUE}Step 4: Linking configuration files and agent skill roots${NC}"
 if "$ROOT/scripts/link-config.sh"; then
     echo -e "${GREEN}✓${NC} Configurations linked successfully"
 else
@@ -131,21 +139,21 @@ else
     exit 1
 fi
 
-echo -e "\n${BLUE}Step 4: Configuring shell handoff (bash/zsh → fish)${NC}"
+echo -e "\n${BLUE}Step 5: Configuring shell handoff (bash/zsh → fish)${NC}"
 if "$ROOT/scripts/setup-shell-handoff.sh"; then
     echo -e "${GREEN}✓${NC} Shell handoff configured"
 else
     echo -e "${YELLOW}⚠${NC} Unable to configure shell handoff automatically"
 fi
 
-echo -e "\n${BLUE}Step 5: Registering Hermes skills directory (if Hermes installed)${NC}"
+echo -e "\n${BLUE}Step 6: Registering Hermes skills directory (if Hermes installed)${NC}"
 if "$ROOT/scripts/setup-hermes-skills.sh"; then
     echo -e "${GREEN}✓${NC} Hermes skills setup complete"
 else
     echo -e "${YELLOW}⚠${NC} Hermes skills setup reported an error (non-fatal)"
 fi
 
-echo -e "\n${BLUE}Step 6: Installing vendor agent skills${NC}"
+echo -e "\n${BLUE}Step 7: Installing vendor agent skills${NC}"
 if "$ROOT/scripts/install-skills.sh"; then
     echo -e "${GREEN}✓${NC} Vendor skills install complete"
 else
@@ -171,6 +179,17 @@ for tool in "${TOOLS_TO_CHECK[@]}"; do
         echo -e "${YELLOW}⚠${NC} $tool not found in PATH"
     fi
 done
+
+echo -e "\n${BLUE}Rust toolchain:${NC}"
+if command -v rustup >/dev/null 2>&1; then
+    if RUST_ANALYZER_PATH="$(rustup which rust-analyzer 2>/dev/null)"; then
+        echo -e "${GREEN}✓${NC} rust-analyzer component installed at $RUST_ANALYZER_PATH"
+    else
+        echo -e "${YELLOW}⚠${NC} rust-analyzer component missing; run scripts/setup-rustup-components.sh"
+    fi
+else
+    echo -e "${YELLOW}⚠${NC} rustup not found in PATH"
+fi
 
 # Check config files
 echo -e "\n${BLUE}Configuration files:${NC}"

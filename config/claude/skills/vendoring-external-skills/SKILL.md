@@ -1,6 +1,6 @@
 ---
 name: vendoring-external-skills
-description: Workflow for copying third-party skill packs (e.g. obra/superpowers, coreyhaines31/marketingskills) into this dotfiles repo as namespaced personal skills. Use when the user asks to vendor, import, copy, or "pull in" skills from a GitHub repo or skill pack. Emphasizes audit-first review for prompt injection and malicious scripts, copy-once snapshotting (no sync infrastructure committed), and namespace prefixing to avoid collisions. Keywords vendor skills, import skills, copy skills, third-party skills, skill pack, marketingskills, superpowers.
+description: Workflow for copying third-party skill packs (e.g. coreyhaines31/marketingskills) into this dotfiles repo as namespaced personal skills. Use when the user asks to vendor, import, copy, or "pull in" skills from a GitHub repo or skill pack. Emphasizes audit-first review for prompt injection and malicious scripts, copy-once snapshotting (no sync infrastructure committed), and namespace prefixing to avoid collisions. Keywords vendor skills, import skills, copy skills, third-party skills, skill pack, marketingskills.
 ---
 
 # Vendoring External Skills
@@ -30,7 +30,7 @@ How to bring third-party Claude Code skill packs into `config/claude/skills/` as
 
 Ask the user:
 - Source repo URL
-- Namespace prefix (typically the pack's short name: `superpowers-`, `marketing-`)
+- Namespace prefix (typically the pack's short name: `marketing-`, `docs-`)
 - Allowlist of skills, or "all"
 - License compatibility — only proceed if MIT / Apache-2.0 / similar permissive
 

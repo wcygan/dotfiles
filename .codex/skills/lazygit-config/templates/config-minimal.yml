@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/jesseduffield/lazygit/master/schema/config.json
+# Minimal lazygit config with delta integration
+
+gui:
+  # Theme
+  theme:
+    activeBorderColor:
+      - green
+      - bold
+    selectedLineBgColor:
+      - blue
+
+  # Display
+  showRandomTip: false
+  showCommandLog: true
+
+git:
+  # Delta pager
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never --line-numbers
+
+  # Main branches
+  mainBranches:
+    - master
+    - main
+
+  # Auto-refresh
+  autoFetch: true
+  autoRefresh: true
+
+  # Commit settings
+  commit:
+    autoWrapCommitMessage: true
+    autoWrapWidth: 72
+
+os:
+  # Editor (falls back to $EDITOR if not set)
+  edit: "nvim {{filename}}"
+  editAtLine: "nvim +{{line}} {{filename}}"

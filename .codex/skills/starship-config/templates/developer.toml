@@ -1,0 +1,99 @@
+# Developer Starship Configuration
+# Comprehensive setup for multi-language development
+
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$golang\
+$rust\
+$deno\
+$nodejs\
+$python\
+$java\
+$cmd_duration\
+$line_break\
+$character"""
+
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[➜](bold red)"
+
+[directory]
+truncation_length = 5
+truncate_to_repo = true
+style = "bold cyan"
+read_only = " 🔒"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Development" = " "
+
+[git_branch]
+symbol = "🌱 "
+style = "bold purple"
+format = "on [$symbol$branch]($style) "
+
+[git_status]
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+conflicted = "🏳"
+untracked = "🤷"
+stashed = "📦"
+modified = "📝"
+staged = '[++\($count\)](green)'
+renamed = "👅"
+deleted = "🗑"
+
+[golang]
+symbol = "🐹 "
+format = "via [$symbol($version )]($style)"
+style = "bold cyan"
+
+[rust]
+symbol = "🦀 "
+format = "via [$symbol($version )]($style)"
+style = "bold red"
+
+[deno]
+symbol = "🦕 "
+format = "via [$symbol($version )]($style)"
+style = "bold green"
+
+[nodejs]
+symbol = "⬢ "
+format = "via [$symbol($version )]($style)"
+style = "bold green"
+
+[python]
+symbol = "🐍 "
+format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+style = "bold yellow"
+
+[java]
+symbol = "☕ "
+format = "via [$symbol($version )]($style)"
+style = "bold red"
+
+[cmd_duration]
+min_time = 500
+format = "took [$duration](bold yellow)"
+show_milliseconds = false
+
+[username]
+show_always = false
+format = "[$user]($style)@"
+style_user = "bold yellow"
+
+[hostname]
+ssh_only = true
+format = "[$hostname]($style) in "
+style = "bold green"
+
+# Performance settings
+scan_timeout = 30
+command_timeout = 500

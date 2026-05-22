@@ -1,0 +1,91 @@
+# DevOps Starship Configuration
+# Cloud-focused prompt with Kubernetes, Docker, Terraform context
+
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$kubernetes\
+$docker_context\
+$aws\
+$gcloud\
+$azure\
+$terraform\
+$cmd_duration\
+$line_break\
+$character"""
+
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[➜](bold red)"
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "bold cyan"
+
+[git_branch]
+symbol = "🌱 "
+style = "bold purple"
+format = "on [$symbol$branch]($style) "
+
+[git_status]
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+style = "bold red"
+
+[kubernetes]
+disabled = false
+format = 'on [⛵ $context\($namespace\)](dimmed green) '
+contexts = [
+    { context_pattern = "dev-.*", style = "green", symbol = "🚀 " },
+    { context_pattern = "prod-.*", style = "red", symbol = "⚠️ " },
+]
+
+[docker_context]
+format = "via [🐋 $context](blue bold)"
+only_with_files = false
+
+[aws]
+symbol = "☁️  "
+format = 'on [$symbol($profile )(\($region\) )]($style)'
+style = "bold yellow"
+[aws.region_aliases]
+us-east-1 = "use1"
+us-west-2 = "usw2"
+
+[gcloud]
+symbol = "☁️  "
+format = 'on [$symbol$account(@$domain)(\($region\))]($style) '
+style = "bold blue"
+
+[azure]
+symbol = "️☁️  "
+format = 'on [$symbol($subscription)]($style) '
+style = "bold blue"
+
+[terraform]
+format = "via [💠 $version$workspace]($style) "
+style = "bold purple"
+
+[cmd_duration]
+min_time = 500
+format = "took [$duration](bold yellow)"
+show_milliseconds = false
+
+[username]
+show_always = false
+format = "[$user]($style)@"
+style_user = "bold yellow"
+
+[hostname]
+ssh_only = true
+format = "[$hostname]($style) in "
+style = "bold green"
+
+# Performance settings
+scan_timeout = 30
+command_timeout = 500

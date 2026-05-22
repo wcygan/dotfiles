@@ -1,0 +1,21 @@
+// Simple Two-Pane Layout for Zellij
+// Usage: zellij --layout ~/.config/zellij/layouts/simple-layout.kdl
+
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+
+    tab name="main" focus=true {
+        pane split_direction="vertical" {
+            pane size="60%"
+            pane size="40%"
+        }
+    }
+}

@@ -66,6 +66,7 @@ EXPECTED_FILES=(
     "../config/fish/conf.d/30-starship.fish"
     "../config/fish/functions/nix-try.fish"
     "../config/fish/functions/nix-install.fish"
+    "../config/fish/functions/qmd.fish"
 )
 
 for file in "${EXPECTED_FILES[@]}"; do
@@ -109,6 +110,14 @@ if [[ -d "../config/codex/skills" ]]; then
     pass "config/codex/skills exists for Codex skills"
 else
     fail "config/codex/skills missing"
+fi
+
+if grep -q 'GGML_METAL_NO_RESIDENCY=1' ../config/fish/functions/qmd.fish && \
+   grep -q 'GGML_METAL_TENSOR_DISABLE=1' ../config/fish/functions/qmd.fish && \
+   grep -q 'command qmd' ../config/fish/functions/qmd.fish; then
+    pass "qmd fish wrapper applies stable macOS Metal settings"
+else
+    fail "qmd fish wrapper missing stable macOS Metal settings"
 fi
 
 if [[ -f "../config/codex/config.toml" ]]; then

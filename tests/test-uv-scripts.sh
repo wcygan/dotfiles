@@ -11,6 +11,28 @@ cleanup() {
 }
 trap cleanup EXIT
 
+add_linux_runtime_library_paths() {
+    [[ "$(uname -s)" == "Linux" ]] || return 0
+
+    local dir
+    local lib_dirs=(
+        /usr/lib64
+        /usr/lib/x86_64-linux-gnu
+        /usr/lib/aarch64-linux-gnu
+        /usr/lib
+    )
+
+    for dir in "${lib_dirs[@]}"; do
+        [[ -e "$dir/libstdc++.so.6" ]] || continue
+        case ":${LD_LIBRARY_PATH:-}:" in
+            *":$dir:"*) ;;
+            *) export LD_LIBRARY_PATH="$dir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ;;
+        esac
+    done
+}
+
+add_linux_runtime_library_paths
+
 pass() {
     echo "✓ $1"
 }

@@ -9,7 +9,8 @@ ARG GID=1000
 RUN dnf -y update && \
     dnf -y install \
       curl git make bash sudo which findutils coreutils procps-ng \
-      shadow-utils systemd ca-certificates && \
+      shadow-utils systemd ca-certificates \
+      libstdc++ && \
     dnf clean all
 
 # Non-root user

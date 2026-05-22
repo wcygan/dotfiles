@@ -109,6 +109,11 @@ jobs:
       - name: Nix version
         run: nix --version
 
+      - name: Install uv script native runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libstdc++6
+
       - name: Run install script
         run: |
           chmod +x install.sh

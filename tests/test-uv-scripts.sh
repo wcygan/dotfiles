@@ -15,11 +15,15 @@ add_linux_runtime_library_paths() {
     [[ "$(uname -s)" == "Linux" ]] || return 0
 
     local dir
-    local lib_dirs=(
-        /usr/lib64
-        /usr/lib/x86_64-linux-gnu
-        /usr/lib/aarch64-linux-gnu
-        /usr/lib
+    local lib_dirs=()
+
+    if [[ -n "${NIX_PROFILE:-}" ]]; then
+        lib_dirs+=("$NIX_PROFILE/lib")
+    fi
+
+    lib_dirs+=(
+        "$HOME/.nix-profile/lib"
+        /nix/var/nix/profiles/default/lib
     )
 
     for dir in "${lib_dirs[@]}"; do

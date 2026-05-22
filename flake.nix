@@ -133,6 +133,9 @@
 
                 # Terminal multiplexer
                 zellij
+              ] ++ lib.optionals stdenv.isLinux [
+                # Runtime for uv-managed binary wheels such as DuckDB.
+                stdenv.cc.cc.lib
               ];
             };
         }

@@ -9,8 +9,7 @@ ARG GID=1001
 RUN apt-get update && \
     apt-get install -y \
       curl git make bash sudo findutils coreutils procps \
-      systemd ca-certificates \
-      libstdc++6 && \
+      systemd ca-certificates && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Non-root user

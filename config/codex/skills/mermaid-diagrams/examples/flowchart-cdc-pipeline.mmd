@@ -1,0 +1,19 @@
+flowchart LR
+    user["User updates plan"] --> app["Application"]
+    app -- "transaction commit" --> pg[("Postgres users table")]
+    pg -- "WAL change" --> debezium["Debezium connector"]
+    debezium -- "user.plan_changed" --> kafka[["Kafka topic"]]
+    kafka --> projector["Projection worker"]
+    projector -- "index document" --> search[("OpenSearch")]
+    search --> read_api["Read API"]
+    read_api --> ui["UI"]
+
+    pg -. "source of truth" .-> read_api
+    projector -. "dead letter" .-> dlq[["DLQ topic"]]
+
+    classDef source fill:#dcfce7,stroke:#15803d,color:#052e16
+    classDef stream fill:#e0f2fe,stroke:#0369a1,color:#082f49
+    classDef derived fill:#fef3c7,stroke:#b45309,color:#451a03
+    class pg source
+    class kafka,dlq stream
+    class search derived

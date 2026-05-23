@@ -1,0 +1,21 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant API as API service
+    participant Temporal as Temporal service
+    participant Worker as Worker
+    participant Postgres as Postgres
+    participant Kafka as Kafka topic
+    participant Projector as Projection worker
+    participant TiDB as TiDB serving
+
+    User->>API: POST /orders
+    API->>Temporal: Start OrderWorkflow
+    Temporal-->>Worker: Schedule activity task
+    Worker->>Postgres: Insert order and outbox row
+    Worker-->>Temporal: Activity completed
+    Worker->>Kafka: Publish order.created
+    Kafka-->>Projector: Deliver event
+    Projector->>TiDB: Upsert order projection
+    Temporal-->>API: Workflow result
+    API-->>User: 202 Accepted

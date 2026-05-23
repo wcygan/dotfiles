@@ -4,10 +4,10 @@ Use these examples as copyable starting points.
 
 | File | Use |
 | --- | --- |
-| `examples/architecture-data-platform-icons.mmd` | Architecture map with Postgres, MySQL, Temporal, Kafka, Redis, TiDB, Flink, Spark, HDFS, and custom-icon placeholders for DragonflyDB and Redpanda. |
+| `examples/architecture-data-platform-icons.mmd` | Flowchart architecture map with Postgres, MySQL, Temporal, Kafka, Redis, TiDB, Flink, Spark, HDFS, and custom-icon placeholders for DragonflyDB and Redpanda. |
 | `examples/flowchart-icon-data-stack.mmd` | Flowchart with Iconify icon-shaped nodes. |
-| `examples/flowchart-cdc-pipeline.mmd` | CDC and stale-read explanation without custom icon dependencies. |
-| `examples/sequence-temporal-kafka.mmd` | Request, workflow, activity, Kafka publish, and projection update sequence. |
+| `examples/flowchart-cdc-pipeline.mmd` | CDC lane diagram with write path, change capture, read model, fallback read, and DLQ handling. |
+| `examples/sequence-temporal-kafka.mmd` | Request, workflow activity, outbox relay, Kafka publish, and projection update sequence. |
 | `examples/erd-commerce-events.mmd` | ERD for orders, payments, outbox events, and projections. |
 | `examples/state-workflow-retries.mmd` | Workflow retry, compensation, completion, and failure lifecycle. |
 

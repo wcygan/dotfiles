@@ -5,17 +5,26 @@ sequenceDiagram
     participant Temporal as Temporal service
     participant Worker as Worker
     participant Postgres as Postgres
+    participant Relay as Outbox relay
     participant Kafka as Kafka topic
     participant Projector as Projection worker
     participant TiDB as TiDB serving
 
     User->>API: POST /orders
+    activate API
     API->>Temporal: Start OrderWorkflow
     Temporal-->>Worker: Schedule activity task
+    activate Worker
     Worker->>Postgres: Insert order and outbox row
+    Postgres-->>Worker: Commit transaction
     Worker-->>Temporal: Activity completed
-    Worker->>Kafka: Publish order.created
+    deactivate Worker
+    Temporal-->>API: Workflow accepted
+    API-->>User: 202 Accepted
+    deactivate API
+
+    Relay->>Postgres: Poll unpublished outbox rows
+    Postgres-->>Relay: order.created
+    Relay->>Kafka: Publish order.created
     Kafka-->>Projector: Deliver event
     Projector->>TiDB: Upsert order projection
-    Temporal-->>API: Workflow result
-    API-->>User: 202 Accepted

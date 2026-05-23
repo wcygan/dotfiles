@@ -3,7 +3,7 @@ erDiagram
     ORDER ||--o{ PAYMENT : authorizes
     ORDER ||--o{ OUTBOX_EVENT : emits
     OUTBOX_EVENT ||--o{ KAFKA_MESSAGE : publishes
-    KAFKA_MESSAGE ||--o{ ORDER_PROJECTION : updates
+    KAFKA_MESSAGE }o--|| ORDER_PROJECTION : updates
 
     CUSTOMER {
         uuid id PK
@@ -30,16 +30,19 @@ erDiagram
     OUTBOX_EVENT {
         uuid id PK
         uuid aggregate_id
+        string aggregate_type
         string event_type
         json payload
+        timestamp created_at
         timestamp published_at
     }
 
     KAFKA_MESSAGE {
-        string topic
-        int partition
-        bigint offset
+        string topic PK
+        int partition PK
+        bigint offset PK
         string key
+        timestamp produced_at
     }
 
     ORDER_PROJECTION {

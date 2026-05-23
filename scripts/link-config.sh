@@ -141,7 +141,7 @@ install_codex_config_toml() {
 configure_npm_settings() {
   local npmrc="$HOME/.npmrc"
   local prefix='${HOME}/.local'
-  local min_release_age_days="3"
+  local min_release_age_days="1"
 
   if $DRY_RUN; then
     echo "[DRY] Would ensure npm global prefix in $npmrc: $prefix"

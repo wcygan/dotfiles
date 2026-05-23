@@ -92,10 +92,10 @@ else
     fail "$HOME/.npmrc does not configure npm global prefix"
 fi
 
-if grep -Fxq 'min-release-age=3' "$HOME/.npmrc"; then
-    pass "npm minimum release age is configured"
+if grep -Fxq 'min-release-age=1' "$HOME/.npmrc"; then
+    pass "npm minimum release age is one day"
 else
-    fail "$HOME/.npmrc does not configure npm minimum release age"
+    fail "$HOME/.npmrc does not configure npm one-day minimum release age"
 fi
 
 cat >>"$CODEX_HOME/config.toml" <<'LOCAL_CODEX_STATE'
@@ -140,10 +140,10 @@ else
 fi
 
 if [[ "$(grep -Ec '^[[:space:]]*min-release-age[[:space:]]*=' "$HOME/.npmrc")" == "1" ]] && \
-   grep -Fxq 'min-release-age=3' "$HOME/.npmrc"; then
-    pass "npm minimum release age is updated idempotently"
+   grep -Fxq 'min-release-age=1' "$HOME/.npmrc"; then
+    pass "npm minimum release age is one day idempotently"
 else
-    fail "npm minimum release age was not updated idempotently"
+    fail "npm minimum release age was not set to one day idempotently"
 fi
 
 if [[ -f "$ROOT/config/bunfig.toml" ]]; then

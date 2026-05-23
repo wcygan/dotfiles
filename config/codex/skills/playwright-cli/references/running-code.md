@@ -90,11 +90,6 @@ playwright-cli run-code "async page => {
 ## Wait Strategies
 
 ```bash
-# Wait for network idle
-playwright-cli run-code "async page => {
-  await page.waitForLoadState('networkidle');
-}"
-
 # Wait for specific element
 playwright-cli run-code "async page => {
   await page.locator('.loading').waitFor({ state: 'hidden' });
@@ -110,6 +105,8 @@ playwright-cli run-code "async page => {
   await page.locator('.result').waitFor({ timeout: 10000 });
 }"
 ```
+
+Avoid `networkidle` for test fixes. Prefer explicit element, URL, response, or app-readiness waits.
 
 ## Frames and Iframes
 

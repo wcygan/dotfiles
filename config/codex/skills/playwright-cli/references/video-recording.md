@@ -46,14 +46,14 @@ It allows pulling appropriate pauses between the actions and annotating the vide
 2) Create a file with the intended script for video (below). Use pressSequentially w/ delay for nice typing, make reasonable pauses.
 3) Use playwright-cli run-code --filename your-script.js
 
-**Important**: Overlays are `pointer-events: none` — they do not interfere with page interactions. You can safely keep sticky overlays visible while clicking, filling, or performing any actions on the page.
+**Important**: Overlays are `pointer-events: none` - they do not interfere with page interactions. You can safely keep sticky overlays visible while clicking, filling, or performing any actions on the page.
 
 ```js
 async page => {
   await page.screencast.start({ path: 'video.webm', size: { width: 1280, height: 800 } });
   await page.goto('https://demo.playwright.dev/todomvc');
 
-  // Show a chapter card — blurs the page and shows a dialog.
+  // Show a chapter card - blurs the page and shows a dialog.
   // Blocks until duration expires, then auto-removes.
   // Use this for simple use cases, but always feel free to hand-craft your own beautiful
   // overlay via await page.screencast.showOverlay().
@@ -79,7 +79,7 @@ async page => {
     <div style="position: absolute; top: 8px; right: 8px;
       padding: 6px 12px; background: rgba(0,0,0,0.7);
       border-radius: 8px; font-size: 13px; color: white;">
-      ✓ Item added successfully
+      OK Item added successfully
     </div>
   `);
 
@@ -123,8 +123,8 @@ Embrace creativity, overlays are powerful.
 
 | Method | Use Case |
 |--------|----------|
-| `page.screencast.showChapter(title, { description?, duration?, styleSheet? })` | Full-screen chapter card with blurred backdrop — ideal for section transitions |
-| `page.screencast.showOverlay(html, { duration? })` | Custom HTML overlay — use for callouts, labels, highlights |
+| `page.screencast.showChapter(title, { description?, duration?, styleSheet? })` | Full-screen chapter card with blurred backdrop - ideal for section transitions |
+| `page.screencast.showOverlay(html, { duration? })` | Custom HTML overlay - use for callouts, labels, highlights |
 | `disposable.dispose()` | Remove a sticky overlay added without duration |
 | `page.screencast.hideOverlays()` / `page.screencast.showOverlays()` | Temporarily hide/show all overlays |
 

@@ -79,11 +79,11 @@ playwright-cli click e5
 
 Generated code captures actions but not assertions. Add expectations in your test using one of the recommended matchers:
 
-- `toBeVisible()` — element is rendered and visible
-- `toHaveText(text)` — element text content matches
-- `toHaveValue(value) / toBeEmpty()` — input/select value matches
-- `toBeChecked() / toBeUnchecked()` — checkbox state matches
-- `toMatchAriaSnapshot(snapshot)` — page (or locator) matches a partial accessibility snapshot
+- `toBeVisible()` - element is rendered and visible
+- `toHaveText(text)` - element text content matches
+- `toHaveValue(value) / toBeEmpty()` - input/select value matches
+- `toBeChecked() / toBeUnchecked()` - checkbox state matches
+- `toMatchAriaSnapshot(snapshot)` - page (or locator) matches a partial accessibility snapshot
 
 Use `playwright-cli generate-locator <target>` to produce the locator expression for the assertion, and the snapshot/eval commands to capture the expected value.
 

@@ -111,7 +111,7 @@ Use `attach` to connect to a browser that is already running, instead of launchi
 
 ### Attach by channel name
 
-Connect to a running Chrome or Edge instance by its channel name. The browser must have remote debugging enabled — navigate to `chrome://inspect/#remote-debugging` in the target browser and check "Allow remote debugging for this browser instance".
+Connect to a running Chrome or Edge instance by its channel name. The browser must have remote debugging enabled - navigate to `chrome://inspect/#remote-debugging` in the target browser and check "Allow remote debugging for this browser instance".
 
 ```bash
 # Attach to Chrome

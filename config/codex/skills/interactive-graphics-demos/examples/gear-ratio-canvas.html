@@ -16,6 +16,7 @@
         --gold: #d59b24;
         --green: #1d8b65;
         --canvas: #ffffff;
+        --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
       }
 
       * {
@@ -134,12 +135,30 @@
         font: inherit;
         font-weight: 700;
         cursor: pointer;
+        transition:
+          transform 140ms var(--ease-out-ui),
+          border-color 140ms ease,
+          background-color 140ms ease;
       }
 
       button.primary {
         border-color: var(--blue);
         color: #fff;
         background: var(--blue);
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        button:hover {
+          transform: translateY(-1px);
+        }
+
+        button:hover:active {
+          transform: scale(0.98);
+        }
       }
 
       button:focus-visible,
@@ -232,6 +251,13 @@
 
         .metric strong {
           font-size: 0.92rem;
+        }
+      }
+
+      @media (max-width: 440px) {
+        .button-row,
+        .metric-strip {
+          grid-template-columns: 1fr;
         }
       }
     </style>
@@ -353,20 +379,32 @@
         return (radiansValue * 180) / Math.PI;
       }
 
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function smoothStep(t) {
+        const x = Math.max(0, Math.min(1, t));
+        return x * x * (3 - 2 * x);
+      }
+
       function deriveModel(cssWidth) {
         const ratio = state.outputTeeth / state.inputTeeth;
         const outputAngle = -state.inputAngle / ratio;
-        const toothDepth = 9;
-        const maxPitchSum = Math.max(80, (cssWidth - 72) / 2 - toothDepth);
+        const maxAddendum = 8;
+        const maxPitchSum = Math.max(80, (cssWidth - 72) / 2 - maxAddendum);
         const radiusScale = Math.min(
           3.4,
           maxPitchSum / (state.inputTeeth + state.outputTeeth),
         );
+        const addendum = Math.max(4.5, Math.min(maxAddendum, radiusScale * 2.3));
+        const dedendum = addendum + 3;
 
         return {
           ratio,
           outputAngle,
-          toothDepth,
+          addendum,
+          dedendum,
           inputRadius: state.inputTeeth * radiusScale,
           outputRadius: state.outputTeeth * radiusScale,
         };
@@ -452,20 +490,42 @@
         ctx.restore();
       }
 
+      function toothRadiusAt(theta, gear) {
+        const cycle =
+          (((theta * gear.teeth + gear.profilePhase) / (Math.PI * 2)) % 1 + 1) %
+          1;
+        const distanceFromToothCenter = Math.min(cycle, 1 - cycle);
+        const topHalfWidth = 0.15;
+        const flankWidth = 0.2;
+        const outerRadius = gear.radius + gear.addendum;
+        const rootRadius = gear.radius - gear.dedendum;
+
+        if (distanceFromToothCenter <= topHalfWidth) {
+          return outerRadius;
+        }
+
+        if (distanceFromToothCenter >= topHalfWidth + flankWidth) {
+          return rootRadius;
+        }
+
+        const flankProgress =
+          (distanceFromToothCenter - topHalfWidth) / flankWidth;
+        return lerp(outerRadius, rootRadius, smoothStep(flankProgress));
+      }
+
       function drawGear(gear) {
         const toothCount = gear.teeth;
-        const toothDepth = 9;
-        const rootRadius = gear.radius - toothDepth * 0.55;
-        const outerRadius = gear.radius + toothDepth;
+        const rootRadius = gear.radius - gear.dedendum;
+        const sampleCount = toothCount * 20;
 
         ctx.save();
         ctx.translate(gear.center.x, gear.center.y);
         ctx.rotate(gear.angle);
 
         ctx.beginPath();
-        for (let i = 0; i < toothCount * 2; i += 1) {
-          const radius = i % 2 === 0 ? outerRadius : rootRadius;
-          const theta = (i / (toothCount * 2)) * Math.PI * 2;
+        for (let i = 0; i < sampleCount; i += 1) {
+          const theta = (i / sampleCount) * Math.PI * 2;
+          const radius = toothRadiusAt(theta, gear);
           const x = Math.cos(theta) * radius;
           const y = Math.sin(theta) * radius;
           if (i === 0) ctx.moveTo(x, y);
@@ -484,6 +544,12 @@
         ctx.setLineDash([5, 5]);
         ctx.stroke();
         ctx.setLineDash([]);
+
+        ctx.beginPath();
+        ctx.arc(0, 0, rootRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(23, 32, 51, 0.12)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
         ctx.lineWidth = 3;
         ctx.strokeStyle = gear.stroke;
@@ -521,9 +587,9 @@
         drawGrid(view);
 
         const pitchSum = model.inputRadius + model.outputRadius;
-        const fullWidth = 2 * pitchSum + model.toothDepth * 2;
+        const fullWidth = 2 * pitchSum + model.addendum * 2;
         const leftEdge = (view.cssWidth - fullWidth) / 2;
-        const centerX = leftEdge + model.inputRadius + model.toothDepth;
+        const centerX = leftEdge + model.inputRadius + model.addendum;
         const centerY = view.cssHeight * 0.46;
         const inputCenter = { x: centerX, y: centerY };
         const outputCenter = {
@@ -546,6 +612,9 @@
           radius: model.inputRadius,
           teeth: state.inputTeeth,
           angle: state.inputAngle,
+          addendum: model.addendum,
+          dedendum: model.dedendum,
+          profilePhase: 0,
           fill: "rgba(47, 105, 240, 0.18)",
           stroke: "#2f69f0",
         });
@@ -555,6 +624,9 @@
           radius: model.outputRadius,
           teeth: state.outputTeeth,
           angle: model.outputAngle,
+          addendum: model.addendum,
+          dedendum: model.dedendum,
+          profilePhase: state.outputTeeth % 2 === 0 ? Math.PI : 0,
           fill: "rgba(210, 74, 68, 0.18)",
           stroke: "#d24a44",
         });

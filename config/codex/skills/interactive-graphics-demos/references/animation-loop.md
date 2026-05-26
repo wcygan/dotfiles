@@ -88,6 +88,11 @@ Every good explainer should be inspectable:
 - Scrub sets the parameter directly.
 - Reset returns to a meaningful first frame.
 
+If a demo has a time dimension, start it playing by default. The first view
+should feel alive without the reader discovering a play button. Pause
+automatically for reduced motion, hidden/offscreen demos, or after the user
+grabs a scrubber.
+
 Do not bind explanation solely to elapsed wall-clock time. Article prose often needs exact states such as "contact begins", "normal crosses the pitch point", or "output gear completes one turn".
 
 ## Reduced Motion

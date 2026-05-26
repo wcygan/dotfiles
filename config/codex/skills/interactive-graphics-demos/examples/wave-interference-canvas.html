@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wave Interference Canvas Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #172033;
+        --muted: #5c667a;
+        --line: #d9deea;
+        --blue: #2f69f0;
+        --red: #d24a44;
+        --gold: #d59b24;
+        --green: #1d8b65;
+        --canvas: #ffffff;
+        --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        color: var(--ink);
+        background: #eef1f7;
+      }
+
+      main {
+        width: min(1100px, calc(100vw - 32px));
+        margin: 32px auto;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.6rem, 2.5vw, 2.3rem);
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+
+      p {
+        max-width: 760px;
+        margin: 0 0 20px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .demo-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 18px;
+        padding: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgb(23 32 51 / 6%);
+      }
+
+      .demo-nav a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 0 10px;
+        border-radius: 6px;
+        color: var(--muted);
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition:
+          transform 140ms var(--ease-out-ui),
+          color 140ms ease,
+          background-color 140ms ease;
+      }
+
+      .demo-nav a[aria-current="page"] {
+        color: #fff;
+        background: var(--ink);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .demo-nav a:hover {
+          color: var(--ink);
+          background: #eef1f7;
+          transform: translateY(-1px);
+        }
+
+        .demo-nav a[aria-current="page"]:hover {
+          color: #fff;
+          background: var(--ink);
+        }
+      }
+
+      .demo {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 310px;
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      .stage,
+      .controls {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--canvas);
+        box-shadow: 0 12px 34px rgb(23 32 51 / 8%);
+      }
+
+      .stage {
+        position: relative;
+        min-height: 440px;
+        overflow: hidden;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-height: 440px;
+      }
+
+      .metric-strip {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        pointer-events: none;
+      }
+
+      .metric {
+        border: 1px solid rgb(217 222 234 / 84%);
+        border-radius: 7px;
+        padding: 10px 12px;
+        background: rgb(255 255 255 / 88%);
+        backdrop-filter: blur(8px);
+      }
+
+      .metric span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.76rem;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 3px;
+        font-size: 1rem;
+      }
+
+      .controls {
+        padding: 16px;
+      }
+
+      .button-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      button {
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        color: var(--ink);
+        background: #fff;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          transform 140ms var(--ease-out-ui),
+          border-color 140ms ease,
+          background-color 140ms ease;
+      }
+
+      button.primary {
+        border-color: var(--blue);
+        color: #fff;
+        background: var(--blue);
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        button:hover {
+          transform: translateY(-1px);
+        }
+
+        button:hover:active {
+          transform: scale(0.98);
+        }
+      }
+
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid rgb(47 105 240 / 28%);
+        outline-offset: 2px;
+      }
+
+      .control {
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .control:first-of-type {
+        border-top: 0;
+      }
+
+      label {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      label strong {
+        color: var(--ink);
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--blue);
+      }
+
+      .legend {
+        display: grid;
+        gap: 8px;
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .legend span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--blue);
+      }
+
+      .swatch.trough {
+        background: var(--red);
+      }
+
+      .swatch.probe {
+        background: var(--gold);
+      }
+
+      @media (max-width: 840px) {
+        main {
+          width: min(100vw - 20px, 720px);
+          margin: 20px auto;
+        }
+
+        .demo {
+          grid-template-columns: 1fr;
+        }
+
+        .stage,
+        canvas {
+          min-height: 380px;
+        }
+
+        .metric-strip {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .metric {
+          padding: 8px;
+        }
+
+        .metric strong {
+          font-size: 0.92rem;
+        }
+      }
+
+      @media (max-width: 440px) {
+        .demo-nav {
+          gap: 6px;
+          padding: 6px;
+        }
+
+        .demo-nav a {
+          flex: 1 1 calc(50% - 6px);
+          min-height: 32px;
+          padding: 0 8px;
+          font-size: 0.78rem;
+        }
+
+        .button-row,
+        .metric-strip {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav class="demo-nav" aria-label="Interactive demo navigation">
+        <a href="gear-ratio-canvas.html">Gears</a>
+        <a href="optics-pinhole-camera-canvas.html">Pinhole</a>
+        <a href="orbital-transfer-canvas.html">Orbit</a>
+        <a href="wave-interference-canvas.html" aria-current="page">Waves</a>
+        <a href="consistent-hashing-ring-canvas.html">Hash Ring</a>
+        <a href="quorum-replication-canvas.html">Quorums</a>
+        <a href="raft-log-replication-canvas.html">Raft Log</a>
+      </nav>
+
+      <h1>Wave Interference Canvas Demo</h1>
+      <p>
+        Two coherent sources send out circular waves. The field brightens where
+        crests add together and fades where one source cancels the other.
+      </p>
+
+      <section class="demo" aria-label="Interactive wave interference demo">
+        <div class="stage">
+          <canvas id="demo-canvas" aria-label="Animated two-source wave interference field"></canvas>
+          <div class="metric-strip" aria-live="polite">
+            <div class="metric">
+              <span>Path difference</span>
+              <strong id="path-label">0.00 waves</strong>
+            </div>
+            <div class="metric">
+              <span>Probe amplitude</span>
+              <strong id="amplitude-label">0.00</strong>
+            </div>
+            <div class="metric">
+              <span>Phase offset</span>
+              <strong id="phase-label">0 deg</strong>
+            </div>
+          </div>
+        </div>
+
+        <form class="controls" id="controls">
+          <div class="button-row">
+            <button type="button" class="primary" id="play-button">Pause</button>
+            <button type="button" id="reset-button">Reset</button>
+          </div>
+
+          <div class="control">
+            <label for="wavelength">
+              Wavelength
+              <strong><span id="wavelength-value">48</span> px</strong>
+            </label>
+            <input id="wavelength" type="range" min="24" max="90" value="48" />
+          </div>
+
+          <div class="control">
+            <label for="separation">
+              Source spacing
+              <strong><span id="separation-value">118</span> px</strong>
+            </label>
+            <input id="separation" type="range" min="50" max="180" value="118" />
+          </div>
+
+          <div class="control">
+            <label for="phase">
+              Phase offset
+              <strong><span id="phase-value">0</span> deg</strong>
+            </label>
+            <input id="phase" type="range" min="0" max="360" value="0" />
+          </div>
+
+          <div class="control">
+            <label for="speed">
+              Wave speed
+              <strong><span id="speed-value">42</span></strong>
+            </label>
+            <input id="speed" type="range" min="0" max="100" value="42" />
+          </div>
+
+          <div class="legend" aria-label="Drawing legend">
+            <span><i class="swatch"></i>Positive crest</span>
+            <span><i class="swatch trough"></i>Negative trough</span>
+            <span><i class="swatch probe"></i>Probe point</span>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const canvas = document.querySelector("#demo-canvas");
+      const ctx = canvas.getContext("2d");
+
+      const controls = {
+        play: document.querySelector("#play-button"),
+        reset: document.querySelector("#reset-button"),
+        wavelength: document.querySelector("#wavelength"),
+        separation: document.querySelector("#separation"),
+        phase: document.querySelector("#phase"),
+        speed: document.querySelector("#speed"),
+      };
+
+      const labels = {
+        path: document.querySelector("#path-label"),
+        amplitude: document.querySelector("#amplitude-label"),
+        phase: document.querySelector("#phase-label"),
+        wavelength: document.querySelector("#wavelength-value"),
+        separation: document.querySelector("#separation-value"),
+        phaseValue: document.querySelector("#phase-value"),
+        speed: document.querySelector("#speed-value"),
+      };
+
+      const state = {
+        playing: true,
+        time: 0,
+        wavelength: Number(controls.wavelength.value),
+        separation: Number(controls.separation.value),
+        phaseDeg: Number(controls.phase.value),
+        speed: Number(controls.speed.value),
+      };
+
+      let lastTimestamp = 0;
+      let frameId = 0;
+
+      function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const width = Math.max(1, Math.round(rect.width * dpr));
+        const height = Math.max(1, Math.round(rect.height * dpr));
+
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width;
+          canvas.height = height;
+        }
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return { cssWidth: rect.width, cssHeight: rect.height };
+      }
+
+      function clear(view) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, view.cssWidth, view.cssHeight);
+      }
+
+      function drawLabel(text, x, y, color, align = "center") {
+        ctx.save();
+        ctx.font = "700 14px Inter, system-ui, sans-serif";
+        ctx.fillStyle = color;
+        ctx.textAlign = align;
+        ctx.fillText(text, x, y);
+        ctx.restore();
+      }
+
+      function distance(a, b) {
+        return Math.hypot(a.x - b.x, a.y - b.y);
+      }
+
+      function farthestViewportDistance(point, view) {
+        return Math.max(
+          Math.hypot(point.x, point.y),
+          Math.hypot(view.cssWidth - point.x, point.y),
+          Math.hypot(point.x, view.cssHeight - point.y),
+          Math.hypot(view.cssWidth - point.x, view.cssHeight - point.y),
+        );
+      }
+
+      function deriveModel(view) {
+        const centerY = view.cssHeight * 0.45;
+        const sourceX = view.cssWidth * 0.32;
+        const spacing = Math.min(state.separation, view.cssHeight * 0.42);
+        const sourceA = {
+          x: sourceX,
+          y: centerY - spacing / 2,
+        };
+        const sourceB = {
+          x: sourceX,
+          y: centerY + spacing / 2,
+        };
+        const probe = {
+          x: view.cssWidth * 0.74,
+          y: centerY,
+        };
+        const phase = (state.phaseDeg * Math.PI) / 180;
+        const d1 = distance(sourceA, probe);
+        const d2 = distance(sourceB, probe);
+        const pathDifference = (d1 - d2) / state.wavelength;
+        const amplitude =
+          (Math.sin((Math.PI * 2 * d1) / state.wavelength - state.time) +
+            Math.sin((Math.PI * 2 * d2) / state.wavelength - state.time + phase)) /
+          2;
+
+        return {
+          centerY,
+          sourceA,
+          sourceB,
+          probe,
+          phase,
+          pathDifference,
+          amplitude,
+        };
+      }
+
+      function drawField(view, model) {
+        const step = Math.max(4, Math.floor(view.cssWidth / 150));
+        const waveNumber = (Math.PI * 2) / state.wavelength;
+
+        for (let y = 0; y < view.cssHeight; y += step) {
+          for (let x = 0; x < view.cssWidth; x += step) {
+            const point = { x, y };
+            const d1 = distance(model.sourceA, point);
+            const d2 = distance(model.sourceB, point);
+            const value =
+              (Math.sin(waveNumber * d1 - state.time) +
+                Math.sin(waveNumber * d2 - state.time + model.phase)) /
+              2;
+            const strength = Math.abs(value);
+            const alpha = 0.06 + strength * 0.34;
+
+            if (value >= 0) {
+              ctx.fillStyle = `rgba(47, 105, 240, ${alpha})`;
+            } else {
+              ctx.fillStyle = `rgba(210, 74, 68, ${alpha})`;
+            }
+
+            ctx.fillRect(x, y, step + 1, step + 1);
+          }
+        }
+      }
+
+      function drawWaveRings(source, color, maxRadius) {
+        const cycle = (state.time * state.wavelength) / (Math.PI * 2);
+        const offset = cycle % state.wavelength;
+
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.4;
+
+        for (let radius = offset; radius < maxRadius; radius += state.wavelength) {
+          const alpha = Math.max(0, 1 - radius / maxRadius);
+          ctx.globalAlpha = alpha * 0.65;
+          ctx.beginPath();
+          ctx.arc(source.x, source.y, radius, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      function drawSource(source, label, color) {
+        ctx.save();
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(source.x, source.y, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(source.x, source.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        drawLabel(label, source.x - 14, source.y - 14, color, "right");
+      }
+
+      function drawProbe(model) {
+        const barHeight = 58;
+        const y = model.probe.y - model.amplitude * barHeight;
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(23, 32, 51, 0.4)";
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(model.sourceA.x, model.sourceA.y);
+        ctx.lineTo(model.probe.x, model.probe.y);
+        ctx.moveTo(model.sourceB.x, model.sourceB.y);
+        ctx.lineTo(model.probe.x, model.probe.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.strokeStyle = "#d59b24";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(model.probe.x + 22, model.probe.y + barHeight);
+        ctx.lineTo(model.probe.x + 22, model.probe.y - barHeight);
+        ctx.stroke();
+        ctx.fillStyle = "#d59b24";
+        ctx.beginPath();
+        ctx.arc(model.probe.x + 22, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#7a570c";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(model.probe.x, model.probe.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+
+        drawLabel("probe", model.probe.x, model.probe.y - 18, "#7a570c");
+      }
+
+      function draw() {
+        const view = resizeCanvas();
+        const model = deriveModel(view);
+        const sourceARadius = farthestViewportDistance(model.sourceA, view);
+        const sourceBRadius = farthestViewportDistance(model.sourceB, view);
+
+        clear(view);
+        drawField(view, model);
+        drawWaveRings(model.sourceA, "#2f69f0", sourceARadius);
+        drawWaveRings(model.sourceB, "#d24a44", sourceBRadius);
+        drawSource(model.sourceA, "source A", "#2f69f0");
+        drawSource(model.sourceB, "source B", "#d24a44");
+        drawProbe(model);
+
+        labels.path.textContent = `${model.pathDifference.toFixed(2)} waves`;
+        labels.amplitude.textContent = model.amplitude.toFixed(2);
+        labels.phase.textContent = `${state.phaseDeg} deg`;
+        labels.wavelength.textContent = String(state.wavelength);
+        labels.separation.textContent = String(state.separation);
+        labels.phaseValue.textContent = String(state.phaseDeg);
+        labels.speed.textContent = String(state.speed);
+      }
+
+      function syncControls() {
+        state.wavelength = Number(controls.wavelength.value);
+        state.separation = Number(controls.separation.value);
+        state.phaseDeg = Number(controls.phase.value);
+        state.speed = Number(controls.speed.value);
+        draw();
+      }
+
+      function frame(timestamp) {
+        const dt = lastTimestamp === 0 ? 0 : Math.min(timestamp - lastTimestamp, 50);
+        lastTimestamp = timestamp;
+
+        if (state.playing) {
+          state.time += (dt / 1000) * (0.6 + state.speed / 18);
+          draw();
+        }
+
+        frameId = requestAnimationFrame(frame);
+      }
+
+      controls.play.addEventListener("click", () => {
+        state.playing = !state.playing;
+        controls.play.textContent = state.playing ? "Pause" : "Play";
+        lastTimestamp = 0;
+        draw();
+      });
+
+      controls.reset.addEventListener("click", () => {
+        state.playing = false;
+        state.time = 0;
+        controls.wavelength.value = "48";
+        controls.separation.value = "118";
+        controls.phase.value = "0";
+        controls.speed.value = "42";
+        controls.play.textContent = "Play";
+        syncControls();
+      });
+
+      controls.wavelength.addEventListener("input", syncControls);
+      controls.separation.addEventListener("input", syncControls);
+      controls.phase.addEventListener("input", syncControls);
+      controls.speed.addEventListener("input", syncControls);
+      window.addEventListener("resize", draw);
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        state.playing = false;
+        controls.play.textContent = "Play";
+      }
+
+      draw();
+      frameId = requestAnimationFrame(frame);
+
+      window.addEventListener("pagehide", () => {
+        cancelAnimationFrame(frameId);
+      });
+    </script>
+  </body>
+</html>

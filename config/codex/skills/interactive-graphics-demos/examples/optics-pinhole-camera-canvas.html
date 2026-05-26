@@ -3,13 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gear Ratio Canvas Demo</title>
+    <title>Pinhole Camera Canvas Demo</title>
     <style>
       :root {
         color-scheme: light;
         --ink: #172033;
         --muted: #5c667a;
-        --panel: #f7f8fb;
         --line: #d9deea;
         --blue: #2f69f0;
         --red: #d24a44;
@@ -265,11 +264,11 @@
         background: var(--blue);
       }
 
-      .swatch.output {
+      .swatch.image {
         background: var(--red);
       }
 
-      .swatch.contact {
+      .swatch.aperture {
         background: var(--gold);
       }
 
@@ -324,8 +323,8 @@
   <body>
     <main>
       <nav class="demo-nav" aria-label="Interactive demo navigation">
-        <a href="gear-ratio-canvas.html" aria-current="page">Gears</a>
-        <a href="optics-pinhole-camera-canvas.html">Pinhole</a>
+        <a href="gear-ratio-canvas.html">Gears</a>
+        <a href="optics-pinhole-camera-canvas.html" aria-current="page">Pinhole</a>
         <a href="orbital-transfer-canvas.html">Orbit</a>
         <a href="wave-interference-canvas.html">Waves</a>
         <a href="consistent-hashing-ring-canvas.html">Hash Ring</a>
@@ -333,28 +332,28 @@
         <a href="raft-log-replication-canvas.html">Raft Log</a>
       </nav>
 
-      <h1>Gear Ratio Canvas Demo</h1>
+      <h1>Pinhole Camera Canvas Demo</h1>
       <p>
-        Two stylized gears rotate in opposite directions. The pitch circles
-        carry the ratio, while the simplified teeth use extra clearance so the
-        interleaving remains readable as the model changes.
+        Light travels in straight lines through a small aperture. Moving the
+        sensor changes magnification, while widening the aperture makes the
+        projected image brighter but less sharp.
       </p>
 
-      <section class="demo" aria-label="Interactive gear ratio demo">
+      <section class="demo" aria-label="Interactive pinhole camera demo">
         <div class="stage">
-          <canvas id="gear-canvas" aria-label="Animated pair of meshed gears"></canvas>
+          <canvas id="demo-canvas" aria-label="Animated pinhole camera ray diagram"></canvas>
           <div class="metric-strip" aria-live="polite">
             <div class="metric">
-              <span>Ratio</span>
-              <strong id="ratio-label">1.50:1</strong>
+              <span>Magnification</span>
+              <strong id="magnification-label">1.00x</strong>
             </div>
             <div class="metric">
-              <span>Input angle</span>
-              <strong id="input-label">0 deg</strong>
+              <span>Blur estimate</span>
+              <strong id="blur-label">12 px</strong>
             </div>
             <div class="metric">
-              <span>Output angle</span>
-              <strong id="output-label">0 deg</strong>
+              <span>Sensor distance</span>
+              <strong id="distance-label">230 px</strong>
             </div>
           </div>
         </div>
@@ -366,118 +365,80 @@
           </div>
 
           <div class="control">
-            <label for="angle">
-              Input angle
-              <strong><span id="angle-value">0</span> deg</strong>
+            <label for="object-height">
+              Object height
+              <strong><span id="object-height-value">110</span> px</strong>
             </label>
-            <input id="angle" type="range" min="0" max="360" value="0" />
+            <input id="object-height" type="range" min="60" max="160" value="110" />
           </div>
 
           <div class="control">
-            <label for="input-teeth">
-              Input teeth
-              <strong><span id="input-teeth-value">18</span></strong>
+            <label for="aperture">
+              Aperture
+              <strong><span id="aperture-value">12</span> px</strong>
             </label>
-            <input id="input-teeth" type="range" min="8" max="36" value="18" />
+            <input id="aperture" type="range" min="3" max="34" value="12" />
           </div>
 
           <div class="control">
-            <label for="output-teeth">
-              Output teeth
-              <strong><span id="output-teeth-value">27</span></strong>
+            <label for="sensor-distance">
+              Sensor distance
+              <strong><span id="sensor-distance-value">230</span> px</strong>
             </label>
-            <input id="output-teeth" type="range" min="12" max="48" value="27" />
+            <input id="sensor-distance" type="range" min="120" max="330" value="230" />
           </div>
 
           <div class="control">
             <label for="speed">
-              Speed
-              <strong><span id="speed-value">36</span> deg/s</strong>
+              Pulse speed
+              <strong><span id="speed-value">48</span></strong>
             </label>
-            <input id="speed" type="range" min="0" max="120" value="36" />
+            <input id="speed" type="range" min="0" max="100" value="48" />
           </div>
 
           <div class="legend" aria-label="Drawing legend">
-            <span><i class="swatch"></i>Input gear</span>
-            <span><i class="swatch output"></i>Output gear</span>
-            <span><i class="swatch contact"></i>Shared pitch point</span>
+            <span><i class="swatch"></i>Object</span>
+            <span><i class="swatch image"></i>Inverted image</span>
+            <span><i class="swatch aperture"></i>Aperture</span>
           </div>
         </form>
       </section>
     </main>
 
     <script>
-      const canvas = document.querySelector("#gear-canvas");
+      const canvas = document.querySelector("#demo-canvas");
       const ctx = canvas.getContext("2d");
 
       const controls = {
         play: document.querySelector("#play-button"),
         reset: document.querySelector("#reset-button"),
-        angle: document.querySelector("#angle"),
-        inputTeeth: document.querySelector("#input-teeth"),
-        outputTeeth: document.querySelector("#output-teeth"),
+        objectHeight: document.querySelector("#object-height"),
+        aperture: document.querySelector("#aperture"),
+        sensorDistance: document.querySelector("#sensor-distance"),
         speed: document.querySelector("#speed"),
       };
 
       const labels = {
-        ratio: document.querySelector("#ratio-label"),
-        input: document.querySelector("#input-label"),
-        output: document.querySelector("#output-label"),
-        angleValue: document.querySelector("#angle-value"),
-        inputTeethValue: document.querySelector("#input-teeth-value"),
-        outputTeethValue: document.querySelector("#output-teeth-value"),
-        speedValue: document.querySelector("#speed-value"),
+        magnification: document.querySelector("#magnification-label"),
+        blur: document.querySelector("#blur-label"),
+        distance: document.querySelector("#distance-label"),
+        objectHeight: document.querySelector("#object-height-value"),
+        aperture: document.querySelector("#aperture-value"),
+        sensorDistance: document.querySelector("#sensor-distance-value"),
+        speed: document.querySelector("#speed-value"),
       };
 
       const state = {
         playing: true,
-        inputAngle: 0,
-        inputTeeth: Number(controls.inputTeeth.value),
-        outputTeeth: Number(controls.outputTeeth.value),
-        speedDegPerSecond: Number(controls.speed.value),
+        time: 0,
+        objectHeight: Number(controls.objectHeight.value),
+        aperture: Number(controls.aperture.value),
+        sensorDistance: Number(controls.sensorDistance.value),
+        speed: Number(controls.speed.value),
       };
 
       let lastTimestamp = 0;
       let frameId = 0;
-
-      function radians(degrees) {
-        return (degrees * Math.PI) / 180;
-      }
-
-      function degrees(radiansValue) {
-        return (radiansValue * 180) / Math.PI;
-      }
-
-      function lerp(a, b, t) {
-        return a + (b - a) * t;
-      }
-
-      function smoothStep(t) {
-        const x = Math.max(0, Math.min(1, t));
-        return x * x * (3 - 2 * x);
-      }
-
-      function deriveModel(cssWidth) {
-        const ratio = state.outputTeeth / state.inputTeeth;
-        const outputAngle = -state.inputAngle / ratio;
-        const maxAddendum = 5.5;
-        const maxPitchSum = Math.max(80, (cssWidth - 72) / 2 - maxAddendum);
-        const radiusScale = Math.min(
-          3.4,
-          maxPitchSum / (state.inputTeeth + state.outputTeeth),
-        );
-        const addendum = Math.max(3.2, Math.min(maxAddendum, radiusScale * 1.45));
-        const dedendum = addendum * 2.1 + 2;
-
-        return {
-          ratio,
-          outputAngle,
-          addendum,
-          dedendum,
-          inputRadius: state.inputTeeth * radiusScale,
-          outputRadius: state.outputTeeth * radiusScale,
-        };
-      }
 
       function resizeCanvas() {
         const rect = canvas.getBoundingClientRect();
@@ -491,11 +452,7 @@
         }
 
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        return {
-          cssWidth: rect.width,
-          cssHeight: rect.height,
-          dpr,
-        };
+        return { cssWidth: rect.width, cssHeight: rect.height };
       }
 
       function clear(view) {
@@ -509,19 +466,18 @@
       }
 
       function drawGrid(view) {
-        const step = 36;
         ctx.save();
         ctx.strokeStyle = "#eef1f7";
         ctx.lineWidth = 1;
 
-        for (let x = 0; x <= view.cssWidth; x += step) {
+        for (let x = 0; x <= view.cssWidth; x += 36) {
           ctx.beginPath();
           ctx.moveTo(x, 0);
           ctx.lineTo(x, view.cssHeight);
           ctx.stroke();
         }
 
-        for (let y = 0; y <= view.cssHeight; y += step) {
+        for (let y = 0; y <= view.cssHeight; y += 36) {
           ctx.beginPath();
           ctx.moveTo(0, y);
           ctx.lineTo(view.cssWidth, y);
@@ -544,7 +500,7 @@
         ctx.save();
         ctx.strokeStyle = color;
         ctx.fillStyle = color;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(from.x, from.y);
         ctx.lineTo(to.x, to.y);
@@ -559,204 +515,193 @@
         ctx.restore();
       }
 
-      function toothRadiusAt(theta, gear) {
-        const cycle =
-          (((theta * gear.teeth + gear.profilePhase) / (Math.PI * 2)) % 1 + 1) %
-          1;
-        const distanceFromToothCenter = Math.min(cycle, 1 - cycle);
-        const topHalfWidth = 0.07;
-        const flankWidth = 0.13;
-        const outerRadius = gear.radius + gear.addendum;
-        const rootRadius = gear.radius - gear.dedendum;
-
-        if (distanceFromToothCenter <= topHalfWidth) {
-          return outerRadius;
-        }
-
-        if (distanceFromToothCenter >= topHalfWidth + flankWidth) {
-          return rootRadius;
-        }
-
-        const flankProgress =
-          (distanceFromToothCenter - topHalfWidth) / flankWidth;
-        return lerp(outerRadius, rootRadius, smoothStep(flankProgress));
-      }
-
-      function drawGear(gear) {
-        const toothCount = gear.teeth;
-        const rootRadius = gear.radius - gear.dedendum;
-        const sampleCount = toothCount * 24;
-
-        ctx.save();
-        ctx.translate(gear.center.x, gear.center.y);
-        ctx.rotate(gear.angle);
-
-        ctx.beginPath();
-        for (let i = 0; i < sampleCount; i += 1) {
-          const theta = (i / sampleCount) * Math.PI * 2;
-          const radius = toothRadiusAt(theta, gear);
-          const x = Math.cos(theta) * radius;
-          const y = Math.sin(theta) * radius;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fillStyle = gear.fill;
-        ctx.strokeStyle = gear.stroke;
-        ctx.lineWidth = 2;
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(0, 0, gear.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(23, 32, 51, 0.35)";
-        ctx.setLineDash([5, 5]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.beginPath();
-        ctx.arc(0, 0, rootRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(23, 32, 51, 0.12)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = gear.stroke;
-        for (let i = 0; i < 6; i += 1) {
-          const theta = (i / 6) * Math.PI * 2;
-          ctx.beginPath();
-          ctx.moveTo(Math.cos(theta) * 14, Math.sin(theta) * 14);
-          ctx.lineTo(Math.cos(theta) * (gear.radius - 15), Math.sin(theta) * (gear.radius - 15));
-          ctx.stroke();
-        }
-
-        ctx.beginPath();
-        ctx.arc(0, 0, 12, 0, Math.PI * 2);
-        ctx.fillStyle = "#ffffff";
-        ctx.fill();
-        ctx.strokeStyle = gear.stroke;
-        ctx.stroke();
-
-        ctx.restore();
-      }
-
-      function drawLabel(text, x, y, color) {
+      function drawLabel(text, x, y, color, align = "center") {
         ctx.save();
         ctx.font = "700 14px Inter, system-ui, sans-serif";
         ctx.fillStyle = color;
-        ctx.textAlign = "center";
+        ctx.textAlign = align;
         ctx.fillText(text, x, y);
+        ctx.restore();
+      }
+
+      function deriveModel(view) {
+        const centerY = view.cssHeight * 0.46;
+        const pinholeX = view.cssWidth * 0.48;
+        const objectX = Math.max(64, pinholeX - 210);
+        const sensorX = Math.min(view.cssWidth - 70, pinholeX + state.sensorDistance);
+        const objectDistance = Math.max(1, pinholeX - objectX);
+        const sensorDistance = Math.max(1, sensorX - pinholeX);
+        const magnification = sensorDistance / objectDistance;
+        const imageHeight = state.objectHeight * magnification;
+        const blur = state.aperture * magnification * 0.8;
+
+        return {
+          centerY,
+          objectX,
+          pinholeX,
+          sensorX,
+          objectDistance,
+          sensorDistance,
+          magnification,
+          imageHeight,
+          blur,
+        };
+      }
+
+      function sensorPoint(model, objectY, apertureY) {
+        const slope = (apertureY - objectY) / (model.pinholeX - model.objectX);
+        return apertureY + slope * (model.sensorX - model.pinholeX);
+      }
+
+      function drawRay(from, through, to, color, width, alpha) {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(through.x, through.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawPulse(points, color, offset) {
+        const t = (state.time * state.speed * 0.016 + offset) % 1;
+        const segment = t < 0.5 ? 0 : 1;
+        const localT = segment === 0 ? t * 2 : (t - 0.5) * 2;
+        const a = points[segment];
+        const b = points[segment + 1];
+        const x = a.x + (b.x - a.x) * localT;
+        const y = a.y + (b.y - a.y) * localT;
+
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
       }
 
       function draw() {
         const view = resizeCanvas();
-        const model = deriveModel(view.cssWidth);
+        const model = deriveModel(view);
+        const apertureHalf = state.aperture / 2;
+        const topObject = {
+          x: model.objectX,
+          y: model.centerY - state.objectHeight / 2,
+        };
+        const bottomObject = {
+          x: model.objectX,
+          y: model.centerY + state.objectHeight / 2,
+        };
+        const pinhole = { x: model.pinholeX, y: model.centerY };
+        const apertureTop = { x: model.pinholeX, y: model.centerY - apertureHalf };
+        const apertureBottom = { x: model.pinholeX, y: model.centerY + apertureHalf };
+        const imageTopY = sensorPoint(model, topObject.y, model.centerY);
+        const imageBottomY = sensorPoint(model, bottomObject.y, model.centerY);
+
         clear(view);
         drawGrid(view);
 
-        const pitchSum = model.inputRadius + model.outputRadius;
-        const fullWidth = 2 * pitchSum + model.addendum * 2;
-        const leftEdge = (view.cssWidth - fullWidth) / 2;
-        const centerX = leftEdge + model.inputRadius + model.addendum;
-        const centerY = view.cssHeight * 0.46;
-        const inputCenter = { x: centerX, y: centerY };
-        const outputCenter = {
-          x: centerX + pitchSum,
-          y: centerY,
-        };
-        const contact = { x: inputCenter.x + model.inputRadius, y: centerY };
-
         ctx.save();
-        ctx.strokeStyle = "#bbc3d4";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(inputCenter.x, inputCenter.y);
-        ctx.lineTo(outputCenter.x, outputCenter.y);
-        ctx.stroke();
+        ctx.fillStyle = "rgba(29, 139, 101, 0.08)";
+        ctx.fillRect(model.pinholeX, 0, model.sensorX - model.pinholeX, view.cssHeight);
         ctx.restore();
 
-        drawGear({
-          center: inputCenter,
-          radius: model.inputRadius,
-          teeth: state.inputTeeth,
-          angle: state.inputAngle,
-          addendum: model.addendum,
-          dedendum: model.dedendum,
-          profilePhase: 0,
-          fill: "rgba(47, 105, 240, 0.18)",
-          stroke: "#2f69f0",
-        });
-
-        drawGear({
-          center: outputCenter,
-          radius: model.outputRadius,
-          teeth: state.outputTeeth,
-          angle: model.outputAngle,
-          addendum: model.addendum,
-          dedendum: model.dedendum,
-          profilePhase: state.outputTeeth % 2 === 0 ? Math.PI : 0,
-          fill: "rgba(210, 74, 68, 0.18)",
-          stroke: "#d24a44",
-        });
+        drawRay(
+          topObject,
+          apertureTop,
+          { x: model.sensorX, y: sensorPoint(model, topObject.y, apertureTop.y) },
+          "#2f69f0",
+          1,
+          0.24,
+        );
+        drawRay(
+          topObject,
+          apertureBottom,
+          { x: model.sensorX, y: sensorPoint(model, topObject.y, apertureBottom.y) },
+          "#2f69f0",
+          1,
+          0.18,
+        );
+        drawRay(
+          bottomObject,
+          apertureTop,
+          { x: model.sensorX, y: sensorPoint(model, bottomObject.y, apertureTop.y) },
+          "#d24a44",
+          1,
+          0.18,
+        );
+        drawRay(
+          bottomObject,
+          apertureBottom,
+          { x: model.sensorX, y: sensorPoint(model, bottomObject.y, apertureBottom.y) },
+          "#d24a44",
+          1,
+          0.24,
+        );
+        drawRay(topObject, pinhole, { x: model.sensorX, y: imageTopY }, "#2f69f0", 2, 0.85);
+        drawRay(bottomObject, pinhole, { x: model.sensorX, y: imageBottomY }, "#d24a44", 2, 0.85);
 
         ctx.save();
-        ctx.fillStyle = "rgba(213, 155, 36, 0.2)";
-        ctx.strokeStyle = "#7a570c";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#172033";
+        ctx.lineWidth = 5;
         ctx.beginPath();
-        ctx.arc(contact.x, contact.y, 5, 0, Math.PI * 2);
+        ctx.moveTo(model.pinholeX, 42);
+        ctx.lineTo(model.pinholeX, apertureTop.y - 7);
+        ctx.moveTo(model.pinholeX, apertureBottom.y + 7);
+        ctx.lineTo(model.pinholeX, view.cssHeight - 88);
+        ctx.stroke();
+
+        ctx.fillStyle = "#d59b24";
+        ctx.beginPath();
+        ctx.arc(model.pinholeX, model.centerY, 5, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.strokeStyle = "#1d8b65";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(model.sensorX, model.centerY - model.imageHeight / 2 - model.blur);
+        ctx.lineTo(model.sensorX, model.centerY + model.imageHeight / 2 + model.blur);
         ctx.stroke();
         ctx.restore();
 
         drawArrow(
-          {
-            x: inputCenter.x + Math.cos(state.inputAngle) * 24,
-            y: inputCenter.y + Math.sin(state.inputAngle) * 24,
-          },
-          {
-            x: inputCenter.x + Math.cos(state.inputAngle) * (model.inputRadius - 26),
-            y: inputCenter.y + Math.sin(state.inputAngle) * (model.inputRadius - 26),
-          },
+          { x: model.objectX, y: model.centerY + state.objectHeight / 2 },
+          { x: model.objectX, y: model.centerY - state.objectHeight / 2 },
           "#2f69f0",
         );
-
         drawArrow(
-          {
-            x: outputCenter.x + Math.cos(model.outputAngle) * 24,
-            y: outputCenter.y + Math.sin(model.outputAngle) * 24,
-          },
-          {
-            x: outputCenter.x + Math.cos(model.outputAngle) * (model.outputRadius - 26),
-            y: outputCenter.y + Math.sin(model.outputAngle) * (model.outputRadius - 26),
-          },
+          { x: model.sensorX, y: model.centerY - model.imageHeight / 2 },
+          { x: model.sensorX, y: model.centerY + model.imageHeight / 2 },
           "#d24a44",
         );
 
-        drawLabel(`input ${state.inputTeeth} teeth`, inputCenter.x, inputCenter.y - model.inputRadius - 26, "#2f69f0");
-        drawLabel(`output ${state.outputTeeth} teeth`, outputCenter.x, outputCenter.y - model.outputRadius - 26, "#d24a44");
-        drawLabel("pitch point", contact.x, contact.y + 44, "#7a570c");
+        drawPulse([topObject, pinhole, { x: model.sensorX, y: imageTopY }], "#2f69f0", 0);
+        drawPulse([bottomObject, pinhole, { x: model.sensorX, y: imageBottomY }], "#d24a44", 0.35);
 
-        labels.ratio.textContent = `${model.ratio.toFixed(2)}:1`;
-        labels.input.textContent = `${Math.round(degrees(state.inputAngle)) % 360} deg`;
-        labels.output.textContent = `${Math.round(degrees(model.outputAngle))} deg`;
-        labels.angleValue.textContent = String(Math.round(degrees(state.inputAngle)) % 360);
-        labels.inputTeethValue.textContent = String(state.inputTeeth);
-        labels.outputTeethValue.textContent = String(state.outputTeeth);
-        labels.speedValue.textContent = String(state.speedDegPerSecond);
-      }
+        drawLabel("object", model.objectX, model.centerY - state.objectHeight / 2 - 16, "#2f69f0");
+        drawLabel("aperture", model.pinholeX, model.centerY + apertureHalf + 28, "#7a570c");
+        drawLabel("sensor", model.sensorX, model.centerY - model.imageHeight / 2 - 18, "#1d8b65");
+        drawLabel("inverted image", model.sensorX - 8, model.centerY + model.imageHeight / 2 + 22, "#d24a44", "right");
 
-      function setInputAngleFromDegrees(value) {
-        state.inputAngle = radians(Number(value));
-        controls.angle.value = String(Math.round(Number(value)) % 360);
-        draw();
+        labels.magnification.textContent = `${model.magnification.toFixed(2)}x`;
+        labels.blur.textContent = `${Math.round(model.blur)} px`;
+        labels.distance.textContent = `${Math.round(model.sensorDistance)} px`;
+        labels.objectHeight.textContent = String(state.objectHeight);
+        labels.aperture.textContent = String(state.aperture);
+        labels.sensorDistance.textContent = String(state.sensorDistance);
+        labels.speed.textContent = String(state.speed);
       }
 
       function syncControls() {
-        state.inputTeeth = Number(controls.inputTeeth.value);
-        state.outputTeeth = Number(controls.outputTeeth.value);
-        state.speedDegPerSecond = Number(controls.speed.value);
+        state.objectHeight = Number(controls.objectHeight.value);
+        state.aperture = Number(controls.aperture.value);
+        state.sensorDistance = Number(controls.sensorDistance.value);
+        state.speed = Number(controls.speed.value);
         draw();
       }
 
@@ -765,9 +710,7 @@
         lastTimestamp = timestamp;
 
         if (state.playing) {
-          state.inputAngle += radians(state.speedDegPerSecond) * (dt / 1000);
-          const angleDegrees = ((degrees(state.inputAngle) % 360) + 360) % 360;
-          controls.angle.value = String(Math.round(angleDegrees));
+          state.time += dt / 1000;
           draw();
         }
 
@@ -783,22 +726,19 @@
 
       controls.reset.addEventListener("click", () => {
         state.playing = false;
-        state.inputAngle = 0;
-        controls.angle.value = "0";
+        state.time = 0;
+        controls.objectHeight.value = "110";
+        controls.aperture.value = "12";
+        controls.sensorDistance.value = "230";
+        controls.speed.value = "48";
         controls.play.textContent = "Play";
-        draw();
+        syncControls();
       });
 
-      controls.angle.addEventListener("input", (event) => {
-        state.playing = false;
-        controls.play.textContent = "Play";
-        setInputAngleFromDegrees(event.target.value);
-      });
-
-      controls.inputTeeth.addEventListener("input", syncControls);
-      controls.outputTeeth.addEventListener("input", syncControls);
+      controls.objectHeight.addEventListener("input", syncControls);
+      controls.aperture.addEventListener("input", syncControls);
+      controls.sensorDistance.addEventListener("input", syncControls);
       controls.speed.addEventListener("input", syncControls);
-
       window.addEventListener("resize", draw);
 
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {

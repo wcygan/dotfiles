@@ -1,0 +1,4 @@
+interface:
+  display_name: "Job Application Computer Use"
+  short_description: "Apply to jobs with guarded browser steps"
+  default_prompt: "Use $job-application-computer-use to help me apply to this job posting through a browser while preserving confirmation boundaries."

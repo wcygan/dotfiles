@@ -1,0 +1,4 @@
+interface:
+  display_name: "Autoresearch"
+  short_description: "Run metric-driven improvement loops"
+  default_prompt: "Use $autoresearch plan to turn this improvement goal into a bounded metric-driven loop."

@@ -266,9 +266,9 @@
     <main>
       <h1>Gear Ratio Canvas Demo</h1>
       <p>
-        Two meshed gears rotate in opposite directions. The output angle is
-        driven by the tooth-count ratio, so changing either gear updates the
-        model and the drawing from the same state.
+        Two stylized gears rotate in opposite directions. The pitch circles
+        carry the ratio, while the simplified teeth use extra clearance so the
+        interleaving remains readable as the model changes.
       </p>
 
       <section class="demo" aria-label="Interactive gear ratio demo">
@@ -391,14 +391,14 @@
       function deriveModel(cssWidth) {
         const ratio = state.outputTeeth / state.inputTeeth;
         const outputAngle = -state.inputAngle / ratio;
-        const maxAddendum = 8;
+        const maxAddendum = 5.5;
         const maxPitchSum = Math.max(80, (cssWidth - 72) / 2 - maxAddendum);
         const radiusScale = Math.min(
           3.4,
           maxPitchSum / (state.inputTeeth + state.outputTeeth),
         );
-        const addendum = Math.max(4.5, Math.min(maxAddendum, radiusScale * 2.3));
-        const dedendum = addendum + 3;
+        const addendum = Math.max(3.2, Math.min(maxAddendum, radiusScale * 1.45));
+        const dedendum = addendum * 2.1 + 2;
 
         return {
           ratio,
@@ -495,8 +495,8 @@
           (((theta * gear.teeth + gear.profilePhase) / (Math.PI * 2)) % 1 + 1) %
           1;
         const distanceFromToothCenter = Math.min(cycle, 1 - cycle);
-        const topHalfWidth = 0.15;
-        const flankWidth = 0.2;
+        const topHalfWidth = 0.07;
+        const flankWidth = 0.13;
         const outerRadius = gear.radius + gear.addendum;
         const rootRadius = gear.radius - gear.dedendum;
 
@@ -516,7 +516,7 @@
       function drawGear(gear) {
         const toothCount = gear.teeth;
         const rootRadius = gear.radius - gear.dedendum;
-        const sampleCount = toothCount * 20;
+        const sampleCount = toothCount * 24;
 
         ctx.save();
         ctx.translate(gear.center.x, gear.center.y);
@@ -632,11 +632,11 @@
         });
 
         ctx.save();
-        ctx.fillStyle = "#d59b24";
+        ctx.fillStyle = "rgba(213, 155, 36, 0.2)";
         ctx.strokeStyle = "#7a570c";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(contact.x, contact.y, 8, 0, Math.PI * 2);
+        ctx.arc(contact.x, contact.y, 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
         ctx.restore();
@@ -667,7 +667,7 @@
 
         drawLabel(`input ${state.inputTeeth} teeth`, inputCenter.x, inputCenter.y - model.inputRadius - 26, "#2f69f0");
         drawLabel(`output ${state.outputTeeth} teeth`, outputCenter.x, outputCenter.y - model.outputRadius - 26, "#d24a44");
-        drawLabel("pitch point", contact.x, contact.y + 30, "#7a570c");
+        drawLabel("pitch point", contact.x, contact.y + 44, "#7a570c");
 
         labels.ratio.textContent = `${model.ratio.toFixed(2)}:1`;
         labels.input.textContent = `${Math.round(degrees(state.inputAngle)) % 360} deg`;

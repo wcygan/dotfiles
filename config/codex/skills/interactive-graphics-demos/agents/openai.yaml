@@ -1,0 +1,4 @@
+interface:
+  display_name: "Interactive Graphics Demos"
+  short_description: "Build article-ready graphics demos"
+  default_prompt: "Use $interactive-graphics-demos to design and implement an interactive mechanical explainer for my blog."

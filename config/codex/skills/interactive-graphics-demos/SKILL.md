@@ -33,20 +33,21 @@ Success means the demo explains one concept clearly, runs as a live model rather
 
 1. Inspect the article and repo context first: framework, MDX pipeline, existing demo components, CSS constraints, build commands, and browser verification path.
 2. Name the concept being explained in one sentence. If the concept cannot be stated narrowly, split it into smaller demos.
-3. Choose the renderer:
+3. Choose the representation before the renderer. Name the visual form that makes the concept easiest to inspect: inline annotated figure, timeline, log, ring, map, field, small multiples, state table, direct-manipulation scene, instrument panel, or another concept-specific shape.
+4. Choose the renderer:
    - Canvas 2D for most mechanical, geometric, ray, chart-like, and annotated 2D systems.
    - SVG for mostly static vector diagrams, selectable labels, and low-element-count state diagrams.
    - Canvas or WebGL plus DOM/SVG overlays for dense visuals with readable labels and controls.
    - Three.js for 3D objects, cameras, lighting, depth, rotations, spatial mechanisms, or many mesh instances.
    - A physics library only when the simulation needs collisions, rigid bodies, joints, or constraint solving beyond a few formulas.
-4. Design the model before drawing. Keep parameters, derived values, and simulation state separate from rendering details.
-5. Build a tiny vertical slice: static render, then one controlled parameter, then animation, then labels and polish.
-6. For software diagrams, identify the invariant and keep ownership, quorum, message, or commit truth in derived model state before styling it.
-7. Verify the runtime lifecycle: resize, pause, cleanup, reduced motion, mobile pointer input, and prerender/static build behavior.
+5. Design the model before drawing. Keep parameters, derived values, and simulation state separate from rendering details.
+6. Build a tiny vertical slice: static render, then one controlled parameter, then animation, then labels and polish.
+7. For software diagrams, identify the invariant and keep ownership, quorum, message, or commit truth in derived model state before styling it.
+8. Verify the runtime lifecycle: resize, pause, cleanup, reduced motion, mobile pointer input, and prerender/static build behavior.
 
 ## Implementation Shape
 
-Prefer a React shell plus plain TypeScript engine for blog embeds:
+For blog embeds with real behavior, prefer a React shell plus plain TypeScript engine:
 
 ```text
 src/components/GearTrainDemo.tsx
@@ -62,6 +63,8 @@ Use this boundary:
 - The engine owns state, math, rendering, pointer mapping, and animation timing.
 - The model is deterministic and testable without a canvas when practical.
 - The renderer reads state; it should not be the source of truth.
+
+Scale this file shape to the demo. Keep a small static SVG or simple single-state figure in one component when the boundary would add ceremony. Split into `model`, `render`, `viewport`, and `input` modules when the demo has animation, pointer input, reusable math, or meaningful state transitions.
 
 For prerendered React sites, never access `window`, `document`, canvas contexts, WebGL contexts, or `matchMedia` at module top level. Start them inside an effect and clean them up.
 
@@ -110,18 +113,28 @@ Keep time-driven animation optional. When a demo does include playback, it shoul
 
 Use `examples/*.html` as runnable teaching artifacts. They are intentionally standalone HTML files with inline CSS and JavaScript so they can be opened directly, inspected without a build step, and adapted into React/MDX components later.
 
-## Visual Design System
+## Visual Direction
 
-Use the example demos as the default visual system for new standalone artifacts and website embeds:
+Goal: Give each concept the visual form that makes its model easiest to inspect.
 
-- Start from the shared palette: ink `#172033`, muted text `#5c667a`, line `#d9deea`, page background `#eef1f7`, canvas/panel white `#ffffff`, primary blue `#2f69f0`, semantic red `#d24a44`, probe/highlight gold `#d59b24`, and success/available green `#1d8b65`.
+Success means:
+
+- The representation choice is named before layout or styling starts.
+- Existing examples provide reusable vocabulary: palette, control feel, label density, and model/render boundaries.
+- The final composition fits the concept, article position, and interaction model.
+
+Stop when the demo's renderer, layout, controls, and framing all follow from the concept sentence and model invariant.
+
+Use the example demos as a pattern library. Select only the pieces that serve the current concept:
+
+- Start from the shared palette when it supports the subject: ink `#172033`, muted text `#5c667a`, line `#d9deea`, page background `#eef1f7`, canvas/panel white `#ffffff`, primary blue `#2f69f0`, semantic red `#d24a44`, probe/highlight gold `#d59b24`, and success/available green `#1d8b65`.
 - Map colors semantically and consistently: blue for primary action, selected state, positive direction, or source A; red for negative direction, conflict, failure, or source B; gold for probes, highlighted paths, moving handles, or active focus; green for healthy, available, committed, or successful state. Add a legend when color carries meaning.
-- Use the common page shell for standalone examples: Inter/system font stack, constrained `main` width around `min(1100px, calc(100vw - 32px))`, compact headings, muted explanatory copy, and a reusable demo nav with the active page in ink.
-- Frame demos with the established panel treatment: 1px `--line` border, radius up to 8px, white surfaces, subtle shadows such as `0 12px 34px rgb(23 32 51 / 8%)`, and single-level cards reserved for metric tiles, controls, modals, or repeated items.
-- Keep the default layout pattern: a responsive two-column demo area with `minmax(0, 1fr)` stage plus roughly `310px` controls, `16px` gaps, one-column layout below tablet widths, and stable min heights for canvas stages.
-- Style controls like the examples: primary buttons in blue, secondary buttons on white, range and checkbox accents in blue, focus rings using translucent blue, and short transform/color transitions using `--ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1)`.
-- Render metrics and legends as quiet supporting UI: translucent white metric overlays with compact labels, muted legends with circular swatches, and labels placed near the marks they explain.
-- When adapting a standalone demo into the website, map these values onto the site tokens and component primitives while preserving the same visual hierarchy, semantic color roles, spacing rhythm, and control behavior.
+- Choose the page shape from the concept: inline figure, narrow annotated sketch, full-width stage, tall mobile-first sequence, small multiples, side-by-side comparison, instrument panel, ring, timeline, log, table, map, or freeform canvas.
+- Use a framed panel when the demo reads as a contained instrument or figure. Use an unframed, inline, edge-to-edge, or prose-integrated composition when that makes the relationship clearer.
+- Place controls where the reader needs them: beside the stage for parameter-heavy instruments, directly under the mark for scrubbers, inline with prose for sentence-level exploration, or hidden behind presets when interaction would distract from the invariant.
+- Style controls like the examples when the site has no stronger local primitive: primary buttons in blue, secondary buttons on white, range and checkbox accents in blue, focus rings using translucent blue, and short transform/color transitions using `--ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1)`.
+- Render metrics and legends as quiet supporting UI: translucent white overlays, compact labels, muted legends with circular swatches, and labels placed near the marks they explain.
+- When adapting a standalone demo into a website, map these values onto the site tokens and component primitives while preserving semantic color roles, readable spacing, and the chosen concept-specific composition.
 
 ## First Demo Ladder
 
@@ -154,7 +167,8 @@ For software protocol or state-machine diagrams, build in this order:
 - Live demos should start playing by default, with pause, step, scrub, and reset controls available.
 - Use color semantically and consistently; include labels or legends for non-obvious mappings.
 - Connectors, arrows, and selected paths must be built from shared geometry or named ports, not eyeballed offsets.
-- Do not copy large source files, article prose, or distinctive visual assets from example creators. Study patterns, summarize, and link.
+- Begin new demos and meaningful revisions with a short representation note: concept, invariant, visual form, renderer, controls, layout, and validation path.
+- Study creator patterns, summarize the parts you use, and write original code, prose, and visual assets.
 
 ## Validation
 

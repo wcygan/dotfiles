@@ -37,6 +37,12 @@ Success means:
 - `references/css-architecture.md`: cascade, specificity, layers, custom properties, naming, resets, and keeping component CSS maintainable.
 - `references/visual-design.md`: spacing, typography, hierarchy, color, density, shadows, borders, and clean design constraints.
 - `references/accessibility-states.md`: keyboard paths, focus, labels, forms, landmarks, contrast, target size, and ARIA fallback.
+- `references/media-images.md`: images, figures, aspect ratios, object fit, responsive media, and layout stability.
+- `references/forms-validation.md`: form structure, labels, field groups, client validation, errors, and submission states.
+- `references/tables-data.md`: tabular semantics, captions, header scope, responsive table containers, and data density.
+- `references/navigation-disclosure.md`: nav patterns, skip links, details/summary, dialogs, popovers, tabs, and disclosure behavior.
+- `references/motion-interaction.md`: transitions, animations, interaction feedback, view transitions, and reduced-motion safeguards.
+- `references/debugging-validation.md`: DevTools workflows, layout overlays, computed styles, browser support checks, and validation passes.
 
 ## Demo Map
 
@@ -48,6 +54,12 @@ Use `examples/*.html` as vendored teaching artifacts. Each demo is static, share
 - `examples/responsive-cards.html`: intrinsic card gallery with `auto-fit`, `minmax()`, `aspect-ratio`, and readable metadata.
 - `examples/form-accessibility.html`: accessible form layout with labels, help text, fieldsets, focus states, and error copy.
 - `examples/cascade-tokens.html`: cascade layers, tokens, component variants, and theme-like overrides without specificity fights.
+- `examples/media-objects.html`: stable media cards with figures, captions, aspect ratios, and `object-fit`.
+- `examples/data-table.html`: accessible table with caption, scoped headers, status chips, and a responsive overflow wrapper.
+- `examples/disclosure-navigation.html`: native details/summary disclosure groups, skip link, and section navigation.
+- `examples/page-shell.html`: responsive app shell with header, sidebar navigation, main content, and aside regions.
+- `examples/motion-states.html`: visible component states, transition tokens, and reduced-motion fallback.
+- `examples/debugging-checklist.html`: inspectable layout debugging checklist for overflow, box model, cascade, and responsive checks.
 
 ## Implementation Rules
 

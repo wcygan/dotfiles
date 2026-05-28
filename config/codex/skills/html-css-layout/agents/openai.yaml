@@ -1,0 +1,4 @@
+interface:
+  display_name: "HTML CSS Layout"
+  short_description: "Structure semantic HTML and clean CSS layouts"
+  default_prompt: "Use $html-css-layout to design a responsive component layout with semantic HTML, Grid or Flexbox, and accessible states."

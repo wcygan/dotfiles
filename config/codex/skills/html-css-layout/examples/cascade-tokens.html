@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cascade Tokens Demo</title>
+    <link rel="stylesheet" href="demo-styles.css">
+    <style>
+      @layer components {
+        .token-board {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+          gap: var(--space-4);
+        }
+
+        .token-card {
+          --accent: var(--primary);
+          display: grid;
+          gap: var(--space-3);
+          border: 1px solid var(--line);
+          border-top: 5px solid var(--accent);
+          border-radius: var(--radius);
+          padding: var(--space-4);
+          background: var(--surface);
+        }
+
+        .token-card[data-tone="success"] {
+          --accent: var(--success);
+        }
+
+        .token-card[data-tone="warning"] {
+          --accent: var(--warning);
+        }
+
+        .swatch {
+          width: 100%;
+          min-height: 4rem;
+          border-radius: 7px;
+          background: var(--accent);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <strong>HTML CSS Layout Lab</strong>
+          <span>Cascade and tokens</span>
+        </div>
+        <nav class="demo-nav" aria-label="Demo navigation">
+          <a href="semantic-document.html">Semantic</a>
+          <a href="grid-dashboard.html">Grid</a>
+          <a href="flex-toolbar.html">Flexbox</a>
+          <a href="responsive-cards.html">Responsive</a>
+          <a href="form-accessibility.html">Forms</a>
+          <a href="cascade-tokens.html" aria-current="page">Cascade</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="pill">Low-specificity variants</p>
+        <h1 id="page-title">Tokens and layers reduce override pressure</h1>
+        <p>Component variants change custom properties instead of competing with deeper selectors.</p>
+      </section>
+
+      <section class="token-board" aria-label="Tokenized component variants">
+        <article class="token-card">
+          <div class="swatch" aria-hidden="true"></div>
+          <h2>Default</h2>
+          <p class="muted">The component owns `--accent`, then uses it for the border and swatch.</p>
+        </article>
+
+        <article class="token-card" data-tone="success">
+          <div class="swatch" aria-hidden="true"></div>
+          <h2>Success</h2>
+          <p class="muted">A variant changes the token, not every property that consumes it.</p>
+        </article>
+
+        <article class="token-card" data-tone="warning">
+          <div class="swatch" aria-hidden="true"></div>
+          <h2>Warning</h2>
+          <p class="muted">The selector stays shallow and the cascade remains easy to inspect.</p>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

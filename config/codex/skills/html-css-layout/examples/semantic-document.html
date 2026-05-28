@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Semantic Document Demo</title>
+    <link rel="stylesheet" href="demo-styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <strong>HTML CSS Layout Lab</strong>
+          <span>Semantic structure</span>
+        </div>
+        <nav class="demo-nav" aria-label="Demo navigation">
+          <a href="semantic-document.html" aria-current="page">Semantic</a>
+          <a href="grid-dashboard.html">Grid</a>
+          <a href="flex-toolbar.html">Flexbox</a>
+          <a href="responsive-cards.html">Responsive</a>
+          <a href="form-accessibility.html">Forms</a>
+          <a href="cascade-tokens.html">Cascade</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="pill">Landmarks and sectioning</p>
+        <h1 id="page-title">A document shell with meaningful regions</h1>
+        <p>Headers, navigation, main content, articles, asides, and footers describe the page before CSS starts arranging it.</p>
+      </section>
+
+      <div class="two-column">
+        <section class="section-stack" aria-labelledby="articles-title">
+          <h2 id="articles-title">Recent implementation notes</h2>
+          <article class="panel">
+            <header class="cluster">
+              <span class="pill">Article</span>
+              <p class="meta">Updated May 28</p>
+            </header>
+            <h3>Use elements for what they mean</h3>
+            <p>A card can still be an `article` when it is a self-contained unit that could stand on its own in a feed or search result.</p>
+          </article>
+          <article class="panel">
+            <header class="cluster">
+              <span class="pill">Article</span>
+              <p class="meta">4 min read</p>
+            </header>
+            <h3>Let headings create the scan path</h3>
+            <p>The heading order shows readers and assistive technology how the content is grouped.</p>
+          </article>
+        </section>
+
+        <aside class="panel panel-muted" aria-labelledby="aside-title">
+          <h2 id="aside-title">Region checklist</h2>
+          <ul>
+            <li>One primary `main` landmark.</li>
+            <li>Navigation labeled by purpose.</li>
+            <li>Articles for standalone items.</li>
+            <li>Aside for supporting context.</li>
+          </ul>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="page">
+      <p class="muted">Footer content remains outside the primary document flow but inside the page landmark structure.</p>
+    </footer>
+  </body>
+</html>

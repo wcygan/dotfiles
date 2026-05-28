@@ -42,7 +42,7 @@ ensure_line "$BASHRC" "DOTFILES:NIX_SHELL_HELPERS" "source \"$HOME/.config/shell
 # 2) Interactive exec to fish
 # Multi-line block to exec fish only in interactive bash
 BASH_EXEC_FISH='
-if case $- in *i*) true;; *) false;; esac; then
+if case $- in *i*) true;; *) false;; esac && [ -t 1 ]; then
   if command -v fish >/dev/null 2>&1; then
     exec fish -l
   fi
@@ -81,8 +81,12 @@ ensure_line "$ZSHRC" "DOTFILES:NIX_SHELL_HELPERS" "source \"$HOME/.config/shell-
 
 # 2) Interactive exec to fish
 # Multi-line block to exec fish only in interactive zsh
+# Require a TTY on stdout (-t 1): Zed/VSCode capture the environment with an
+# *interactive* login shell whose stdout is a pipe, so [[ -o interactive ]]
+# alone is not enough — without -t 1, exec fish hijacks the capture shell and
+# the editor gets no env back (PATH, etc.).
 ZSH_EXEC_FISH='
-if [[ -o interactive ]] && command -v fish >/dev/null 2>&1; then
+if [[ -o interactive && -t 1 ]] && command -v fish >/dev/null 2>&1; then
   exec fish -l
 fi
 '

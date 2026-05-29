@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Orbital Transfer Canvas Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #172033;
+        --muted: #5c667a;
+        --line: #d9deea;
+        --blue: #2f69f0;
+        --red: #d24a44;
+        --gold: #d59b24;
+        --green: #1d8b65;
+        --canvas: #ffffff;
+        --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        color: var(--ink);
+        background: #eef1f7;
+      }
+
+      main {
+        width: min(1100px, calc(100vw - 32px));
+        margin: 32px auto;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.6rem, 2.5vw, 2.3rem);
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+
+      p {
+        max-width: 760px;
+        margin: 0 0 20px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .demo-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 18px;
+        padding: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgb(23 32 51 / 6%);
+      }
+
+      .demo-nav a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 0 10px;
+        border-radius: 6px;
+        color: var(--muted);
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition:
+          transform 140ms var(--ease-out-ui),
+          color 140ms ease,
+          background-color 140ms ease;
+      }
+
+      .demo-nav a[aria-current="page"] {
+        color: #fff;
+        background: var(--ink);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .demo-nav a:hover {
+          color: var(--ink);
+          background: #eef1f7;
+          transform: translateY(-1px);
+        }
+
+        .demo-nav a[aria-current="page"]:hover {
+          color: #fff;
+          background: var(--ink);
+        }
+      }
+
+      .demo {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 310px;
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      .stage,
+      .controls {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--canvas);
+        box-shadow: 0 12px 34px rgb(23 32 51 / 8%);
+      }
+
+      .stage {
+        position: relative;
+        min-height: 440px;
+        overflow: hidden;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-height: 440px;
+      }
+
+      .metric-strip {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        pointer-events: none;
+      }
+
+      .metric {
+        border: 1px solid rgb(217 222 234 / 84%);
+        border-radius: 7px;
+        padding: 10px 12px;
+        background: rgb(255 255 255 / 88%);
+        backdrop-filter: blur(8px);
+      }
+
+      .metric span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.76rem;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 3px;
+        font-size: 1rem;
+      }
+
+      .controls {
+        padding: 16px;
+      }
+
+      .button-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      button {
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        color: var(--ink);
+        background: #fff;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          transform 140ms var(--ease-out-ui),
+          border-color 140ms ease,
+          background-color 140ms ease;
+      }
+
+      button.primary {
+        border-color: var(--blue);
+        color: #fff;
+        background: var(--blue);
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        button:hover {
+          transform: translateY(-1px);
+        }
+
+        button:hover:active {
+          transform: scale(0.98);
+        }
+      }
+
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid rgb(47 105 240 / 28%);
+        outline-offset: 2px;
+      }
+
+      .control {
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .control:first-of-type {
+        border-top: 0;
+      }
+
+      label {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      label strong {
+        color: var(--ink);
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--blue);
+      }
+
+      .legend {
+        display: grid;
+        gap: 8px;
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .legend span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--blue);
+      }
+
+      .swatch.outer {
+        background: var(--green);
+      }
+
+      .swatch.transfer {
+        background: var(--red);
+      }
+
+      @media (max-width: 840px) {
+        main {
+          width: min(100vw - 20px, 720px);
+          margin: 20px auto;
+        }
+
+        .demo {
+          grid-template-columns: 1fr;
+        }
+
+        .stage,
+        canvas {
+          min-height: 380px;
+        }
+
+        .metric-strip {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .metric {
+          padding: 8px;
+        }
+
+        .metric strong {
+          font-size: 0.92rem;
+        }
+      }
+
+      @media (max-width: 440px) {
+        .demo-nav {
+          gap: 6px;
+          padding: 6px;
+        }
+
+        .demo-nav a {
+          flex: 1 1 calc(50% - 6px);
+          min-height: 32px;
+          padding: 0 8px;
+          font-size: 0.78rem;
+        }
+
+        .button-row,
+        .metric-strip {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav class="demo-nav" aria-label="Interactive demo navigation">
+        <a href="gear-ratio-canvas.html">Gears</a>
+        <a href="optics-pinhole-camera-canvas.html">Pinhole</a>
+        <a href="orbital-transfer-canvas.html" aria-current="page">Orbit</a>
+        <a href="wave-interference-canvas.html">Waves</a>
+        <a href="consistent-hashing-ring-canvas.html">Hash Ring</a>
+        <a href="quorum-replication-canvas.html">Quorums</a>
+        <a href="raft-log-replication-canvas.html">Raft Log</a>
+      </nav>
+
+      <h1>Orbital Transfer Canvas Demo</h1>
+      <p>
+        A Hohmann-style transfer uses an ellipse tangent to two circular
+        orbits. The scrubber moves the spacecraft from the lower orbit burn to
+        the upper orbit burn while preserving the shared focus.
+      </p>
+
+      <section class="demo" aria-label="Interactive orbital transfer demo">
+        <div class="stage">
+          <canvas id="demo-canvas" aria-label="Animated orbital transfer diagram"></canvas>
+          <div class="metric-strip" aria-live="polite">
+            <div class="metric">
+              <span>Transfer</span>
+              <strong id="transfer-label">0%</strong>
+            </div>
+            <div class="metric">
+              <span>Current radius</span>
+              <strong id="radius-label">90 px</strong>
+            </div>
+            <div class="metric">
+              <span>Semi-major axis</span>
+              <strong id="axis-label">140 px</strong>
+            </div>
+          </div>
+        </div>
+
+        <form class="controls" id="controls">
+          <div class="button-row">
+            <button type="button" class="primary" id="play-button">Pause</button>
+            <button type="button" id="reset-button">Reset</button>
+          </div>
+
+          <div class="control">
+            <label for="transfer">
+              Transfer scrub
+              <strong><span id="transfer-value">0</span>%</strong>
+            </label>
+            <input id="transfer" type="range" min="0" max="100" value="0" />
+          </div>
+
+          <div class="control">
+            <label for="inner-radius">
+              Inner orbit
+              <strong><span id="inner-radius-value">90</span> px</strong>
+            </label>
+            <input id="inner-radius" type="range" min="60" max="130" value="90" />
+          </div>
+
+          <div class="control">
+            <label for="outer-radius">
+              Outer orbit
+              <strong><span id="outer-radius-value">190</span> px</strong>
+            </label>
+            <input id="outer-radius" type="range" min="140" max="230" value="190" />
+          </div>
+
+          <div class="control">
+            <label for="speed">
+              Scrub speed
+              <strong><span id="speed-value">18</span></strong>
+            </label>
+            <input id="speed" type="range" min="0" max="60" value="18" />
+          </div>
+
+          <div class="legend" aria-label="Drawing legend">
+            <span><i class="swatch"></i>Inner orbit</span>
+            <span><i class="swatch outer"></i>Outer orbit</span>
+            <span><i class="swatch transfer"></i>Transfer ellipse</span>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const canvas = document.querySelector("#demo-canvas");
+      const ctx = canvas.getContext("2d");
+
+      const controls = {
+        play: document.querySelector("#play-button"),
+        reset: document.querySelector("#reset-button"),
+        transfer: document.querySelector("#transfer"),
+        innerRadius: document.querySelector("#inner-radius"),
+        outerRadius: document.querySelector("#outer-radius"),
+        speed: document.querySelector("#speed"),
+      };
+
+      const labels = {
+        transfer: document.querySelector("#transfer-label"),
+        radius: document.querySelector("#radius-label"),
+        axis: document.querySelector("#axis-label"),
+        transferValue: document.querySelector("#transfer-value"),
+        innerRadius: document.querySelector("#inner-radius-value"),
+        outerRadius: document.querySelector("#outer-radius-value"),
+        speed: document.querySelector("#speed-value"),
+      };
+
+      const state = {
+        playing: true,
+        transfer: Number(controls.transfer.value),
+        innerRadius: Number(controls.innerRadius.value),
+        outerRadius: Number(controls.outerRadius.value),
+        speed: Number(controls.speed.value),
+      };
+
+      let lastTimestamp = 0;
+      let frameId = 0;
+
+      function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const width = Math.max(1, Math.round(rect.width * dpr));
+        const height = Math.max(1, Math.round(rect.height * dpr));
+
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width;
+          canvas.height = height;
+        }
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return { cssWidth: rect.width, cssHeight: rect.height };
+      }
+
+      function clear(view) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, view.cssWidth, view.cssHeight);
+      }
+
+      function drawGrid(view) {
+        ctx.save();
+        ctx.strokeStyle = "#eef1f7";
+        ctx.lineWidth = 1;
+
+        for (let x = 0; x <= view.cssWidth; x += 36) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, view.cssHeight);
+          ctx.stroke();
+        }
+
+        for (let y = 0; y <= view.cssHeight; y += 36) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(view.cssWidth, y);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      function drawArrow(from, to, color) {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const length = Math.hypot(dx, dy);
+        if (length < 1) return;
+
+        const ux = dx / length;
+        const uy = dy / length;
+        const head = 10;
+
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(to.x, to.y);
+        ctx.lineTo(to.x - ux * head - uy * 5, to.y - uy * head + ux * 5);
+        ctx.lineTo(to.x - ux * head + uy * 5, to.y - uy * head - ux * 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawLabel(text, x, y, color, align = "center") {
+        ctx.save();
+        ctx.font = "700 14px Inter, system-ui, sans-serif";
+        ctx.fillStyle = color;
+        ctx.textAlign = align;
+        ctx.fillText(text, x, y);
+        ctx.restore();
+      }
+
+      function deriveModel(view) {
+        const availableRadius = Math.min(view.cssWidth * 0.32, view.cssHeight * 0.33, 210);
+        const scale = availableRadius / 230;
+        const innerRadius = state.innerRadius * scale;
+        const outerRadius = Math.max(state.outerRadius, state.innerRadius + 45) * scale;
+        const star = {
+          x: view.cssWidth * 0.55,
+          y: view.cssHeight * 0.43,
+        };
+        const semiMajor = (innerRadius + outerRadius) / 2;
+        const focusOffset = (outerRadius - innerRadius) / 2;
+        const semiMinor = Math.sqrt(innerRadius * outerRadius);
+        const ellipseCenter = {
+          x: star.x - focusOffset,
+          y: star.y,
+        };
+        const eccentricAnomaly = (state.transfer / 100) * Math.PI;
+        const ship = {
+          x: ellipseCenter.x + semiMajor * Math.cos(eccentricAnomaly),
+          y: ellipseCenter.y + semiMinor * Math.sin(eccentricAnomaly),
+        };
+        const radius = Math.hypot(ship.x - star.x, ship.y - star.y);
+        const tangent = {
+          x: -semiMajor * Math.sin(eccentricAnomaly),
+          y: semiMinor * Math.cos(eccentricAnomaly),
+        };
+
+        return {
+          innerRadius,
+          outerRadius,
+          semiMajor,
+          semiMinor,
+          focusOffset,
+          ellipseCenter,
+          star,
+          ship,
+          radius,
+          tangent,
+        };
+      }
+
+      function drawOrbit(center, radius, color, dashed) {
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        if (dashed) ctx.setLineDash([7, 7]);
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function draw() {
+        const view = resizeCanvas();
+        const model = deriveModel(view);
+        clear(view);
+        drawGrid(view);
+
+        ctx.save();
+        ctx.fillStyle = "rgba(213, 155, 36, 0.1)";
+        ctx.beginPath();
+        ctx.arc(model.star.x, model.star.y, model.outerRadius + 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        drawOrbit(model.star, model.innerRadius, "#2f69f0", false);
+        drawOrbit(model.star, model.outerRadius, "#1d8b65", true);
+
+        ctx.save();
+        ctx.strokeStyle = "#d24a44";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(
+          model.ellipseCenter.x,
+          model.ellipseCenter.y,
+          model.semiMajor,
+          model.semiMinor,
+          0,
+          0,
+          Math.PI,
+        );
+        ctx.stroke();
+        ctx.restore();
+
+        const burnOne = {
+          x: model.star.x + model.innerRadius,
+          y: model.star.y,
+        };
+        const burnTwo = {
+          x: model.star.x - model.outerRadius,
+          y: model.star.y,
+        };
+
+        drawArrow(
+          { x: burnOne.x - 16, y: burnOne.y - 20 },
+          { x: burnOne.x + 18, y: burnOne.y - 20 },
+          "#d59b24",
+        );
+        drawArrow(
+          { x: burnTwo.x + 16, y: burnTwo.y + 20 },
+          { x: burnTwo.x - 18, y: burnTwo.y + 20 },
+          "#d59b24",
+        );
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(23, 32, 51, 0.35)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(model.star.x, model.star.y);
+        ctx.lineTo(model.ship.x, model.ship.y);
+        ctx.stroke();
+        ctx.restore();
+
+        const tangentLength = Math.hypot(model.tangent.x, model.tangent.y) || 1;
+        const tangentUnit = {
+          x: model.tangent.x / tangentLength,
+          y: model.tangent.y / tangentLength,
+        };
+        drawArrow(
+          {
+            x: model.ship.x - tangentUnit.x * 18,
+            y: model.ship.y - tangentUnit.y * 18,
+          },
+          {
+            x: model.ship.x + tangentUnit.x * 30,
+            y: model.ship.y + tangentUnit.y * 30,
+          },
+          "#d24a44",
+        );
+
+        ctx.save();
+        ctx.fillStyle = "#d59b24";
+        ctx.strokeStyle = "#7a570c";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(model.star.x, model.star.y, 13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#d24a44";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(model.ship.x, model.ship.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+
+        drawLabel(
+          "inner orbit",
+          model.star.x + model.innerRadius * 0.45,
+          model.star.y - model.innerRadius - 12,
+          "#2f69f0",
+          "left",
+        );
+        drawLabel("outer orbit", model.star.x - model.outerRadius - 10, model.star.y - 10, "#1d8b65", "right");
+        drawLabel("transfer ellipse", model.ellipseCenter.x, model.star.y + model.semiMinor + 24, "#d24a44");
+        drawLabel("burn 1", burnOne.x + 12, burnOne.y + 30, "#7a570c", "left");
+        drawLabel("burn 2", burnTwo.x - 12, burnTwo.y + 42, "#7a570c", "right");
+
+        labels.transfer.textContent = `${Math.round(state.transfer)}%`;
+        labels.radius.textContent = `${Math.round(model.radius)} px`;
+        labels.axis.textContent = `${Math.round(model.semiMajor)} px`;
+        labels.transferValue.textContent = String(Math.round(state.transfer));
+        labels.innerRadius.textContent = String(state.innerRadius);
+        labels.outerRadius.textContent = String(state.outerRadius);
+        labels.speed.textContent = String(state.speed);
+      }
+
+      function syncControls() {
+        state.transfer = Number(controls.transfer.value);
+        state.innerRadius = Number(controls.innerRadius.value);
+        state.outerRadius = Number(controls.outerRadius.value);
+        state.speed = Number(controls.speed.value);
+        draw();
+      }
+
+      function frame(timestamp) {
+        const dt = lastTimestamp === 0 ? 0 : Math.min(timestamp - lastTimestamp, 50);
+        lastTimestamp = timestamp;
+
+        if (state.playing) {
+          state.transfer = (state.transfer + state.speed * dt * 0.003) % 100;
+          controls.transfer.value = String(Math.round(state.transfer));
+          draw();
+        }
+
+        frameId = requestAnimationFrame(frame);
+      }
+
+      controls.play.addEventListener("click", () => {
+        state.playing = !state.playing;
+        controls.play.textContent = state.playing ? "Pause" : "Play";
+        lastTimestamp = 0;
+        draw();
+      });
+
+      controls.reset.addEventListener("click", () => {
+        state.playing = false;
+        state.transfer = 0;
+        controls.transfer.value = "0";
+        controls.innerRadius.value = "90";
+        controls.outerRadius.value = "190";
+        controls.speed.value = "18";
+        controls.play.textContent = "Play";
+        syncControls();
+      });
+
+      controls.transfer.addEventListener("input", (event) => {
+        state.playing = false;
+        controls.play.textContent = "Play";
+        state.transfer = Number(event.target.value);
+        draw();
+      });
+      controls.innerRadius.addEventListener("input", syncControls);
+      controls.outerRadius.addEventListener("input", syncControls);
+      controls.speed.addEventListener("input", syncControls);
+      window.addEventListener("resize", draw);
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        state.playing = false;
+        controls.play.textContent = "Play";
+      }
+
+      draw();
+      frameId = requestAnimationFrame(frame);
+
+      window.addEventListener("pagehide", () => {
+        cancelAnimationFrame(frameId);
+      });
+    </script>
+  </body>
+</html>

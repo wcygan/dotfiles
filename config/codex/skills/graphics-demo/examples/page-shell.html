@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page Shell Demo</title>
+    <link rel="stylesheet" href="demo-styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <strong>HTML CSS Layout Lab</strong>
+          <span>App shell</span>
+        </div>
+        <nav class="demo-nav" aria-label="Demo navigation">
+          <a href="semantic-document.html">Semantic</a>
+          <a href="grid-dashboard.html">Grid</a>
+          <a href="flex-toolbar.html">Flexbox</a>
+          <a href="responsive-cards.html">Responsive</a>
+          <a href="form-accessibility.html">Forms</a>
+          <a href="cascade-tokens.html">Cascade</a>
+          <a href="media-objects.html">Media</a>
+          <a href="data-table.html">Tables</a>
+          <a href="disclosure-navigation.html">Disclosure</a>
+          <a href="page-shell.html" aria-current="page">Shell</a>
+          <a href="motion-states.html">Motion</a>
+          <a href="debugging-checklist.html">Debugging</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="pill">Composed regions</p>
+        <h1 id="page-title">A shell places regions; panels manage themselves</h1>
+        <p>The parent grid owns sidebar, main, and aside placement. Each region keeps its own internal layout simple.</p>
+      </section>
+
+      <section class="app-shell" aria-label="Project shell">
+        <nav class="panel side-nav" aria-label="Project sections">
+          <a href="#" aria-current="page">Overview</a>
+          <a href="#">Backlog</a>
+          <a href="#">Risks</a>
+          <a href="#">Settings</a>
+        </nav>
+
+        <article class="panel">
+          <header class="cluster">
+            <h2>Release readiness</h2>
+            <span class="pill success">On track</span>
+          </header>
+          <p class="muted">The main panel uses normal flow. The shell does not need to know how this content arranges headings, badges, and body copy.</p>
+          <div class="card-grid">
+            <div class="mini-card metric">
+              <span class="meta">Open issues</span>
+              <strong>14</strong>
+            </div>
+            <div class="mini-card metric">
+              <span class="meta">Owners</span>
+              <strong>5</strong>
+            </div>
+          </div>
+        </article>
+
+        <aside class="panel panel-muted">
+          <h2>Review notes</h2>
+          <p class="muted">Aside content supports the main work without interrupting the document hierarchy.</p>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>

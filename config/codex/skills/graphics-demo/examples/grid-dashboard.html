@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Grid Dashboard Demo</title>
+    <link rel="stylesheet" href="demo-styles.css">
+    <style>
+      .dashboard {
+        display: grid;
+        grid-template-columns: minmax(12rem, 0.28fr) minmax(0, 1fr);
+        gap: var(--space-4);
+        align-items: start;
+      }
+
+      .dashboard-main {
+        display: grid;
+        gap: var(--space-4);
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-4);
+      }
+
+      @media (max-width: 860px) {
+        .dashboard,
+        .metric-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <strong>HTML CSS Layout Lab</strong>
+          <span>Grid dashboard</span>
+        </div>
+        <nav class="demo-nav" aria-label="Demo navigation">
+          <a href="semantic-document.html">Semantic</a>
+          <a href="grid-dashboard.html" aria-current="page">Grid</a>
+          <a href="flex-toolbar.html">Flexbox</a>
+          <a href="responsive-cards.html">Responsive</a>
+          <a href="form-accessibility.html">Forms</a>
+          <a href="cascade-tokens.html">Cascade</a>
+          <a href="media-objects.html">Media</a>
+          <a href="data-table.html">Tables</a>
+          <a href="disclosure-navigation.html">Disclosure</a>
+          <a href="page-shell.html">Shell</a>
+          <a href="motion-states.html">Motion</a>
+          <a href="debugging-checklist.html">Debugging</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="pill">Two-dimensional layout</p>
+        <h1 id="page-title">Grid places page regions and panel sets</h1>
+        <p>The shell has a sidebar and main region, while the main region owns its own card tracks.</p>
+      </section>
+
+      <section class="dashboard" aria-label="Operations dashboard">
+        <aside class="panel panel-muted">
+          <h2>Queue groups</h2>
+          <div class="section-stack">
+            <span class="pill">Payments</span>
+            <span class="pill">Invoices</span>
+            <span class="pill">Notifications</span>
+            <span class="pill">Exports</span>
+          </div>
+        </aside>
+
+        <div class="dashboard-main">
+          <section class="metric-grid" aria-label="Queue metrics">
+            <article class="mini-card metric">
+              <span class="meta">Processed</span>
+              <strong>18.4k</strong>
+              <span class="success">+12% today</span>
+            </article>
+            <article class="mini-card metric">
+              <span class="meta">Waiting</span>
+              <strong>231</strong>
+              <span class="warning">Above target</span>
+            </article>
+            <article class="mini-card metric">
+              <span class="meta">Failed</span>
+              <strong>9</strong>
+              <span class="danger">Needs review</span>
+            </article>
+          </section>
+
+          <article class="panel">
+            <header class="cluster">
+              <h2>Throughput</h2>
+              <span class="pill">8 track columns</span>
+            </header>
+            <div class="fake-chart" aria-label="Bar chart showing rising throughput">
+              <span style="height: 38%"></span>
+              <span style="height: 58%"></span>
+              <span style="height: 45%"></span>
+              <span style="height: 67%"></span>
+              <span style="height: 71%"></span>
+              <span style="height: 83%"></span>
+              <span style="height: 76%"></span>
+              <span style="height: 92%"></span>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

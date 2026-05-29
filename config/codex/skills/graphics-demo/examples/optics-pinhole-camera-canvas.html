@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pinhole Camera Canvas Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #172033;
+        --muted: #5c667a;
+        --line: #d9deea;
+        --blue: #2f69f0;
+        --red: #d24a44;
+        --gold: #d59b24;
+        --green: #1d8b65;
+        --canvas: #ffffff;
+        --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        color: var(--ink);
+        background: #eef1f7;
+      }
+
+      main {
+        width: min(1100px, calc(100vw - 32px));
+        margin: 32px auto;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.6rem, 2.5vw, 2.3rem);
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+
+      p {
+        max-width: 760px;
+        margin: 0 0 20px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .demo-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 18px;
+        padding: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgb(23 32 51 / 6%);
+      }
+
+      .demo-nav a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 0 10px;
+        border-radius: 6px;
+        color: var(--muted);
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition:
+          transform 140ms var(--ease-out-ui),
+          color 140ms ease,
+          background-color 140ms ease;
+      }
+
+      .demo-nav a[aria-current="page"] {
+        color: #fff;
+        background: var(--ink);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .demo-nav a:hover {
+          color: var(--ink);
+          background: #eef1f7;
+          transform: translateY(-1px);
+        }
+
+        .demo-nav a[aria-current="page"]:hover {
+          color: #fff;
+          background: var(--ink);
+        }
+      }
+
+      .demo {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 310px;
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      .stage,
+      .controls {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--canvas);
+        box-shadow: 0 12px 34px rgb(23 32 51 / 8%);
+      }
+
+      .stage {
+        position: relative;
+        min-height: 440px;
+        overflow: hidden;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-height: 440px;
+      }
+
+      .metric-strip {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        pointer-events: none;
+      }
+
+      .metric {
+        border: 1px solid rgb(217 222 234 / 84%);
+        border-radius: 7px;
+        padding: 10px 12px;
+        background: rgb(255 255 255 / 88%);
+        backdrop-filter: blur(8px);
+      }
+
+      .metric span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.76rem;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 3px;
+        font-size: 1rem;
+      }
+
+      .controls {
+        padding: 16px;
+      }
+
+      .button-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      button {
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        color: var(--ink);
+        background: #fff;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          transform 140ms var(--ease-out-ui),
+          border-color 140ms ease,
+          background-color 140ms ease;
+      }
+
+      button.primary {
+        border-color: var(--blue);
+        color: #fff;
+        background: var(--blue);
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        button:hover {
+          transform: translateY(-1px);
+        }
+
+        button:hover:active {
+          transform: scale(0.98);
+        }
+      }
+
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid rgb(47 105 240 / 28%);
+        outline-offset: 2px;
+      }
+
+      .control {
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .control:first-of-type {
+        border-top: 0;
+      }
+
+      label {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      label strong {
+        color: var(--ink);
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--blue);
+      }
+
+      .legend {
+        display: grid;
+        gap: 8px;
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .legend span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--blue);
+      }
+
+      .swatch.image {
+        background: var(--red);
+      }
+
+      .swatch.aperture {
+        background: var(--gold);
+      }
+
+      @media (max-width: 840px) {
+        main {
+          width: min(100vw - 20px, 720px);
+          margin: 20px auto;
+        }
+
+        .demo {
+          grid-template-columns: 1fr;
+        }
+
+        .stage,
+        canvas {
+          min-height: 380px;
+        }
+
+        .metric-strip {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .metric {
+          padding: 8px;
+        }
+
+        .metric strong {
+          font-size: 0.92rem;
+        }
+      }
+
+      @media (max-width: 440px) {
+        .demo-nav {
+          gap: 6px;
+          padding: 6px;
+        }
+
+        .demo-nav a {
+          flex: 1 1 calc(50% - 6px);
+          min-height: 32px;
+          padding: 0 8px;
+          font-size: 0.78rem;
+        }
+
+        .button-row,
+        .metric-strip {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav class="demo-nav" aria-label="Interactive demo navigation">
+        <a href="gear-ratio-canvas.html">Gears</a>
+        <a href="optics-pinhole-camera-canvas.html" aria-current="page">Pinhole</a>
+        <a href="orbital-transfer-canvas.html">Orbit</a>
+        <a href="wave-interference-canvas.html">Waves</a>
+        <a href="consistent-hashing-ring-canvas.html">Hash Ring</a>
+        <a href="quorum-replication-canvas.html">Quorums</a>
+        <a href="raft-log-replication-canvas.html">Raft Log</a>
+      </nav>
+
+      <h1>Pinhole Camera Canvas Demo</h1>
+      <p>
+        Light travels in straight lines through a small aperture. Moving the
+        sensor changes magnification, while widening the aperture makes the
+        projected image brighter but less sharp.
+      </p>
+
+      <section class="demo" aria-label="Interactive pinhole camera demo">
+        <div class="stage">
+          <canvas id="demo-canvas" aria-label="Animated pinhole camera ray diagram"></canvas>
+          <div class="metric-strip" aria-live="polite">
+            <div class="metric">
+              <span>Magnification</span>
+              <strong id="magnification-label">1.00x</strong>
+            </div>
+            <div class="metric">
+              <span>Blur estimate</span>
+              <strong id="blur-label">12 px</strong>
+            </div>
+            <div class="metric">
+              <span>Sensor distance</span>
+              <strong id="distance-label">230 px</strong>
+            </div>
+          </div>
+        </div>
+
+        <form class="controls" id="controls">
+          <div class="button-row">
+            <button type="button" class="primary" id="play-button">Pause</button>
+            <button type="button" id="reset-button">Reset</button>
+          </div>
+
+          <div class="control">
+            <label for="object-height">
+              Object height
+              <strong><span id="object-height-value">110</span> px</strong>
+            </label>
+            <input id="object-height" type="range" min="60" max="160" value="110" />
+          </div>
+
+          <div class="control">
+            <label for="aperture">
+              Aperture
+              <strong><span id="aperture-value">12</span> px</strong>
+            </label>
+            <input id="aperture" type="range" min="3" max="34" value="12" />
+          </div>
+
+          <div class="control">
+            <label for="sensor-distance">
+              Sensor distance
+              <strong><span id="sensor-distance-value">230</span> px</strong>
+            </label>
+            <input id="sensor-distance" type="range" min="120" max="330" value="230" />
+          </div>
+
+          <div class="control">
+            <label for="speed">
+              Pulse speed
+              <strong><span id="speed-value">48</span></strong>
+            </label>
+            <input id="speed" type="range" min="0" max="100" value="48" />
+          </div>
+
+          <div class="legend" aria-label="Drawing legend">
+            <span><i class="swatch"></i>Object</span>
+            <span><i class="swatch image"></i>Inverted image</span>
+            <span><i class="swatch aperture"></i>Aperture</span>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const canvas = document.querySelector("#demo-canvas");
+      const ctx = canvas.getContext("2d");
+
+      const controls = {
+        play: document.querySelector("#play-button"),
+        reset: document.querySelector("#reset-button"),
+        objectHeight: document.querySelector("#object-height"),
+        aperture: document.querySelector("#aperture"),
+        sensorDistance: document.querySelector("#sensor-distance"),
+        speed: document.querySelector("#speed"),
+      };
+
+      const labels = {
+        magnification: document.querySelector("#magnification-label"),
+        blur: document.querySelector("#blur-label"),
+        distance: document.querySelector("#distance-label"),
+        objectHeight: document.querySelector("#object-height-value"),
+        aperture: document.querySelector("#aperture-value"),
+        sensorDistance: document.querySelector("#sensor-distance-value"),
+        speed: document.querySelector("#speed-value"),
+      };
+
+      const state = {
+        playing: true,
+        time: 0,
+        objectHeight: Number(controls.objectHeight.value),
+        aperture: Number(controls.aperture.value),
+        sensorDistance: Number(controls.sensorDistance.value),
+        speed: Number(controls.speed.value),
+      };
+
+      let lastTimestamp = 0;
+      let frameId = 0;
+
+      function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const width = Math.max(1, Math.round(rect.width * dpr));
+        const height = Math.max(1, Math.round(rect.height * dpr));
+
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width;
+          canvas.height = height;
+        }
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return { cssWidth: rect.width, cssHeight: rect.height };
+      }
+
+      function clear(view) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, view.cssWidth, view.cssHeight);
+      }
+
+      function drawGrid(view) {
+        ctx.save();
+        ctx.strokeStyle = "#eef1f7";
+        ctx.lineWidth = 1;
+
+        for (let x = 0; x <= view.cssWidth; x += 36) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, view.cssHeight);
+          ctx.stroke();
+        }
+
+        for (let y = 0; y <= view.cssHeight; y += 36) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(view.cssWidth, y);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      function drawArrow(from, to, color) {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const length = Math.hypot(dx, dy);
+        if (length < 1) return;
+
+        const ux = dx / length;
+        const uy = dy / length;
+        const head = 10;
+
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(to.x, to.y);
+        ctx.lineTo(to.x - ux * head - uy * 5, to.y - uy * head + ux * 5);
+        ctx.lineTo(to.x - ux * head + uy * 5, to.y - uy * head - ux * 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawLabel(text, x, y, color, align = "center") {
+        ctx.save();
+        ctx.font = "700 14px Inter, system-ui, sans-serif";
+        ctx.fillStyle = color;
+        ctx.textAlign = align;
+        ctx.fillText(text, x, y);
+        ctx.restore();
+      }
+
+      function deriveModel(view) {
+        const centerY = view.cssHeight * 0.46;
+        const pinholeX = view.cssWidth * 0.48;
+        const objectX = Math.max(64, pinholeX - 210);
+        const sensorX = Math.min(view.cssWidth - 70, pinholeX + state.sensorDistance);
+        const objectDistance = Math.max(1, pinholeX - objectX);
+        const sensorDistance = Math.max(1, sensorX - pinholeX);
+        const magnification = sensorDistance / objectDistance;
+        const imageHeight = state.objectHeight * magnification;
+        const blur = state.aperture * magnification * 0.8;
+
+        return {
+          centerY,
+          objectX,
+          pinholeX,
+          sensorX,
+          objectDistance,
+          sensorDistance,
+          magnification,
+          imageHeight,
+          blur,
+        };
+      }
+
+      function sensorPoint(model, objectY, apertureY) {
+        const slope = (apertureY - objectY) / (model.pinholeX - model.objectX);
+        return apertureY + slope * (model.sensorX - model.pinholeX);
+      }
+
+      function drawRay(from, through, to, color, width, alpha) {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(through.x, through.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawPulse(points, color, offset) {
+        const t = (state.time * state.speed * 0.016 + offset) % 1;
+        const segment = t < 0.5 ? 0 : 1;
+        const localT = segment === 0 ? t * 2 : (t - 0.5) * 2;
+        const a = points[segment];
+        const b = points[segment + 1];
+        const x = a.x + (b.x - a.x) * localT;
+        const y = a.y + (b.y - a.y) * localT;
+
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function draw() {
+        const view = resizeCanvas();
+        const model = deriveModel(view);
+        const apertureHalf = state.aperture / 2;
+        const topObject = {
+          x: model.objectX,
+          y: model.centerY - state.objectHeight / 2,
+        };
+        const bottomObject = {
+          x: model.objectX,
+          y: model.centerY + state.objectHeight / 2,
+        };
+        const pinhole = { x: model.pinholeX, y: model.centerY };
+        const apertureTop = { x: model.pinholeX, y: model.centerY - apertureHalf };
+        const apertureBottom = { x: model.pinholeX, y: model.centerY + apertureHalf };
+        const imageTopY = sensorPoint(model, topObject.y, model.centerY);
+        const imageBottomY = sensorPoint(model, bottomObject.y, model.centerY);
+
+        clear(view);
+        drawGrid(view);
+
+        ctx.save();
+        ctx.fillStyle = "rgba(29, 139, 101, 0.08)";
+        ctx.fillRect(model.pinholeX, 0, model.sensorX - model.pinholeX, view.cssHeight);
+        ctx.restore();
+
+        drawRay(
+          topObject,
+          apertureTop,
+          { x: model.sensorX, y: sensorPoint(model, topObject.y, apertureTop.y) },
+          "#2f69f0",
+          1,
+          0.24,
+        );
+        drawRay(
+          topObject,
+          apertureBottom,
+          { x: model.sensorX, y: sensorPoint(model, topObject.y, apertureBottom.y) },
+          "#2f69f0",
+          1,
+          0.18,
+        );
+        drawRay(
+          bottomObject,
+          apertureTop,
+          { x: model.sensorX, y: sensorPoint(model, bottomObject.y, apertureTop.y) },
+          "#d24a44",
+          1,
+          0.18,
+        );
+        drawRay(
+          bottomObject,
+          apertureBottom,
+          { x: model.sensorX, y: sensorPoint(model, bottomObject.y, apertureBottom.y) },
+          "#d24a44",
+          1,
+          0.24,
+        );
+        drawRay(topObject, pinhole, { x: model.sensorX, y: imageTopY }, "#2f69f0", 2, 0.85);
+        drawRay(bottomObject, pinhole, { x: model.sensorX, y: imageBottomY }, "#d24a44", 2, 0.85);
+
+        ctx.save();
+        ctx.strokeStyle = "#172033";
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(model.pinholeX, 42);
+        ctx.lineTo(model.pinholeX, apertureTop.y - 7);
+        ctx.moveTo(model.pinholeX, apertureBottom.y + 7);
+        ctx.lineTo(model.pinholeX, view.cssHeight - 88);
+        ctx.stroke();
+
+        ctx.fillStyle = "#d59b24";
+        ctx.beginPath();
+        ctx.arc(model.pinholeX, model.centerY, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.strokeStyle = "#1d8b65";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(model.sensorX, model.centerY - model.imageHeight / 2 - model.blur);
+        ctx.lineTo(model.sensorX, model.centerY + model.imageHeight / 2 + model.blur);
+        ctx.stroke();
+        ctx.restore();
+
+        drawArrow(
+          { x: model.objectX, y: model.centerY + state.objectHeight / 2 },
+          { x: model.objectX, y: model.centerY - state.objectHeight / 2 },
+          "#2f69f0",
+        );
+        drawArrow(
+          { x: model.sensorX, y: model.centerY - model.imageHeight / 2 },
+          { x: model.sensorX, y: model.centerY + model.imageHeight / 2 },
+          "#d24a44",
+        );
+
+        drawPulse([topObject, pinhole, { x: model.sensorX, y: imageTopY }], "#2f69f0", 0);
+        drawPulse([bottomObject, pinhole, { x: model.sensorX, y: imageBottomY }], "#d24a44", 0.35);
+
+        drawLabel("object", model.objectX, model.centerY - state.objectHeight / 2 - 16, "#2f69f0");
+        drawLabel("aperture", model.pinholeX, model.centerY + apertureHalf + 28, "#7a570c");
+        drawLabel("sensor", model.sensorX, model.centerY - model.imageHeight / 2 - 18, "#1d8b65");
+        drawLabel("inverted image", model.sensorX - 8, model.centerY + model.imageHeight / 2 + 22, "#d24a44", "right");
+
+        labels.magnification.textContent = `${model.magnification.toFixed(2)}x`;
+        labels.blur.textContent = `${Math.round(model.blur)} px`;
+        labels.distance.textContent = `${Math.round(model.sensorDistance)} px`;
+        labels.objectHeight.textContent = String(state.objectHeight);
+        labels.aperture.textContent = String(state.aperture);
+        labels.sensorDistance.textContent = String(state.sensorDistance);
+        labels.speed.textContent = String(state.speed);
+      }
+
+      function syncControls() {
+        state.objectHeight = Number(controls.objectHeight.value);
+        state.aperture = Number(controls.aperture.value);
+        state.sensorDistance = Number(controls.sensorDistance.value);
+        state.speed = Number(controls.speed.value);
+        draw();
+      }
+
+      function frame(timestamp) {
+        const dt = lastTimestamp === 0 ? 0 : Math.min(timestamp - lastTimestamp, 50);
+        lastTimestamp = timestamp;
+
+        if (state.playing) {
+          state.time += dt / 1000;
+          draw();
+        }
+
+        frameId = requestAnimationFrame(frame);
+      }
+
+      controls.play.addEventListener("click", () => {
+        state.playing = !state.playing;
+        controls.play.textContent = state.playing ? "Pause" : "Play";
+        lastTimestamp = 0;
+        draw();
+      });
+
+      controls.reset.addEventListener("click", () => {
+        state.playing = false;
+        state.time = 0;
+        controls.objectHeight.value = "110";
+        controls.aperture.value = "12";
+        controls.sensorDistance.value = "230";
+        controls.speed.value = "48";
+        controls.play.textContent = "Play";
+        syncControls();
+      });
+
+      controls.objectHeight.addEventListener("input", syncControls);
+      controls.aperture.addEventListener("input", syncControls);
+      controls.sensorDistance.addEventListener("input", syncControls);
+      controls.speed.addEventListener("input", syncControls);
+      window.addEventListener("resize", draw);
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        state.playing = false;
+        controls.play.textContent = "Play";
+      }
+
+      draw();
+      frameId = requestAnimationFrame(frame);
+
+      window.addEventListener("pagehide", () => {
+        cancelAnimationFrame(frameId);
+      });
+    </script>
+  </body>
+</html>

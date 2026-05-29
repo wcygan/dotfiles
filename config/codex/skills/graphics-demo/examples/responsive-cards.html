@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Responsive Cards Demo</title>
+    <link rel="stylesheet" href="demo-styles.css">
+    <style>
+      .resource-card {
+        container-type: inline-size;
+        display: grid;
+        gap: var(--space-3);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: var(--space-3);
+        background: var(--surface);
+      }
+
+      .resource-card footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+      }
+
+      @container (min-width: 22rem) {
+        .resource-card {
+          grid-template-columns: 9rem minmax(0, 1fr);
+        }
+
+        .resource-card footer {
+          grid-column: 1 / -1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <strong>HTML CSS Layout Lab</strong>
+          <span>Responsive cards</span>
+        </div>
+        <nav class="demo-nav" aria-label="Demo navigation">
+          <a href="semantic-document.html">Semantic</a>
+          <a href="grid-dashboard.html">Grid</a>
+          <a href="flex-toolbar.html">Flexbox</a>
+          <a href="responsive-cards.html" aria-current="page">Responsive</a>
+          <a href="form-accessibility.html">Forms</a>
+          <a href="cascade-tokens.html">Cascade</a>
+          <a href="media-objects.html">Media</a>
+          <a href="data-table.html">Tables</a>
+          <a href="disclosure-navigation.html">Disclosure</a>
+          <a href="page-shell.html">Shell</a>
+          <a href="motion-states.html">Motion</a>
+          <a href="debugging-checklist.html">Debugging</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="pill">Intrinsic layout</p>
+        <h1 id="page-title">Cards adapt to their own available space</h1>
+        <p>The gallery uses `auto-fit` and `minmax()`. Each card uses a container query to change its internal layout.</p>
+      </section>
+
+      <section class="card-grid" aria-label="Resource cards">
+        <article class="resource-card">
+          <div class="media-block" aria-hidden="true"></div>
+          <div class="section-stack">
+            <h2>Layout decision tree</h2>
+            <p class="muted">Choose normal flow, Grid, or Flexbox by the shape of the content.</p>
+          </div>
+          <footer>
+            <span class="pill">Guide</span>
+            <span class="meta">12 min</span>
+          </footer>
+        </article>
+
+        <article class="resource-card">
+          <div class="media-block" aria-hidden="true"></div>
+          <div class="section-stack">
+            <h2>Component spacing</h2>
+            <p class="muted">Keep internal rhythm local to the component and placement on the parent.</p>
+          </div>
+          <footer>
+            <span class="pill">Pattern</span>
+            <span class="meta">8 min</span>
+          </footer>
+        </article>
+
+        <article class="resource-card">
+          <div class="media-block" aria-hidden="true"></div>
+          <div class="section-stack">
+            <h2>Responsive verification</h2>
+            <p class="muted">Test long labels, narrow viewports, and uneven card bodies before shipping.</p>
+          </div>
+          <footer>
+            <span class="pill">Checklist</span>
+            <span class="meta">5 min</span>
+          </footer>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

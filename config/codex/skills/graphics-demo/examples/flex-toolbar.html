@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Flexbox Toolbar Demo</title>
+    <link rel="stylesheet" href="demo-styles.css">
+    <style>
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+      }
+
+      .toolbar-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .message-row {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-3);
+      }
+
+      .avatar {
+        display: grid;
+        flex: 0 0 2.75rem;
+        width: 2.75rem;
+        aspect-ratio: 1;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--primary-soft);
+        color: #1748b6;
+        font-weight: 850;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <strong>HTML CSS Layout Lab</strong>
+          <span>Flexbox toolbar</span>
+        </div>
+        <nav class="demo-nav" aria-label="Demo navigation">
+          <a href="semantic-document.html">Semantic</a>
+          <a href="grid-dashboard.html">Grid</a>
+          <a href="flex-toolbar.html" aria-current="page">Flexbox</a>
+          <a href="responsive-cards.html">Responsive</a>
+          <a href="form-accessibility.html">Forms</a>
+          <a href="cascade-tokens.html">Cascade</a>
+          <a href="media-objects.html">Media</a>
+          <a href="data-table.html">Tables</a>
+          <a href="disclosure-navigation.html">Disclosure</a>
+          <a href="page-shell.html">Shell</a>
+          <a href="motion-states.html">Motion</a>
+          <a href="debugging-checklist.html">Debugging</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="pill">One-dimensional alignment</p>
+        <h1 id="page-title">Flexbox keeps toolbars and media rows stable</h1>
+        <p>Controls can wrap as groups while icons, avatars, and text align along one axis.</p>
+      </section>
+
+      <section class="section-stack">
+        <div class="panel toolbar" aria-label="Inbox toolbar">
+          <div class="toolbar-group">
+            <button class="button">Archive</button>
+            <button class="button secondary">Snooze</button>
+            <button class="button secondary">Assign</button>
+          </div>
+          <div class="toolbar-group" aria-label="Filters">
+            <span class="pill">Open</span>
+            <span class="pill">High priority</span>
+            <span class="pill">Unassigned</span>
+          </div>
+        </div>
+
+        <article class="panel message-row">
+          <div class="avatar" aria-hidden="true">NR</div>
+          <div class="section-stack">
+            <header class="cluster">
+              <h2>Notification retry policy</h2>
+              <span class="pill">Needs decision</span>
+            </header>
+            <p class="muted">The row aligns one avatar beside flexible content. The title, badge, and body wrap without needing manual widths.</p>
+          </div>
+        </article>
+
+        <article class="panel message-row">
+          <div class="avatar" aria-hidden="true">DB</div>
+          <div class="section-stack">
+            <header class="cluster">
+              <h2>Database maintenance window</h2>
+              <span class="pill">Scheduled</span>
+            </header>
+            <p class="muted">Flexbox handles the one-dimensional relationship between the fixed avatar and the fluid text block.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

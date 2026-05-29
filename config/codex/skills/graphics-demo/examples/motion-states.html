@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Motion States Demo</title>
+    <link rel="stylesheet" href="demo-styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <strong>HTML CSS Layout Lab</strong>
+          <span>Motion and states</span>
+        </div>
+        <nav class="demo-nav" aria-label="Demo navigation">
+          <a href="semantic-document.html">Semantic</a>
+          <a href="grid-dashboard.html">Grid</a>
+          <a href="flex-toolbar.html">Flexbox</a>
+          <a href="responsive-cards.html">Responsive</a>
+          <a href="form-accessibility.html">Forms</a>
+          <a href="cascade-tokens.html">Cascade</a>
+          <a href="media-objects.html">Media</a>
+          <a href="data-table.html">Tables</a>
+          <a href="disclosure-navigation.html">Disclosure</a>
+          <a href="page-shell.html">Shell</a>
+          <a href="motion-states.html" aria-current="page">Motion</a>
+          <a href="debugging-checklist.html">Debugging</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="pill">Feedback without surprise</p>
+        <h1 id="page-title">Motion should clarify component state</h1>
+        <p>Hover and focus use the same visual language, while reduced-motion settings shorten nonessential transitions.</p>
+      </section>
+
+      <section class="state-grid" aria-label="Stateful cards">
+        <article class="state-card" tabindex="0">
+          <span class="pill">Hover or focus</span>
+          <h2>Inspectable lift</h2>
+          <p class="muted">The card moves slightly to show it is interactive, but the layout around it stays stable.</p>
+        </article>
+        <article class="state-card" tabindex="0">
+          <span class="pill success">Complete</span>
+          <h2>Semantic status</h2>
+          <p class="muted">Motion does not replace text, color meaning, or state labels.</p>
+        </article>
+        <article class="state-card" tabindex="0">
+          <span class="pill warning">Pending</span>
+          <h2>Reduced motion path</h2>
+          <p class="muted">The shared stylesheet includes a `prefers-reduced-motion` fallback for transitions and animations.</p>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

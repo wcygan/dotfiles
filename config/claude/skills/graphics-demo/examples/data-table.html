@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data Table Demo</title>
+    <link rel="stylesheet" href="demo-styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <strong>HTML CSS Layout Lab</strong>
+          <span>Tables and data</span>
+        </div>
+        <nav class="demo-nav" aria-label="Demo navigation">
+          <a href="semantic-document.html">Semantic</a>
+          <a href="grid-dashboard.html">Grid</a>
+          <a href="flex-toolbar.html">Flexbox</a>
+          <a href="responsive-cards.html">Responsive</a>
+          <a href="form-accessibility.html">Forms</a>
+          <a href="cascade-tokens.html">Cascade</a>
+          <a href="media-objects.html">Media</a>
+          <a href="data-table.html" aria-current="page">Tables</a>
+          <a href="disclosure-navigation.html">Disclosure</a>
+          <a href="page-shell.html">Shell</a>
+          <a href="motion-states.html">Motion</a>
+          <a href="debugging-checklist.html">Debugging</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="pill">Tabular relationships</p>
+        <h1 id="page-title">Tables should explain rows and columns</h1>
+        <p>Captions, row groups, scoped headers, and local overflow make dense data usable without turning the page into a horizontal scroller.</p>
+      </section>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Queue health by subsystem. The status column uses text and color together.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Subsystem</th>
+              <th scope="col">Owner</th>
+              <th scope="col">Waiting</th>
+              <th scope="col">p95 latency</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Payments</th>
+              <td>Platform</td>
+              <td>24</td>
+              <td>180 ms</td>
+              <td><span class="pill success">Healthy</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Invoices</th>
+              <td>Revenue</td>
+              <td>118</td>
+              <td>420 ms</td>
+              <td><span class="pill warning">Watch</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Exports</th>
+              <td>Data</td>
+              <td>7</td>
+              <td>210 ms</td>
+              <td><span class="pill success">Healthy</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Graphics Demo"
+  short_description: "Build static HTML/CSS or live interactive demos"
+  default_prompt: "Use $graphics-demo to design and build a demo for my article — pick the lowest tier that fits, from a static semantic HTML/CSS figure to a live model-driven canvas explainer."

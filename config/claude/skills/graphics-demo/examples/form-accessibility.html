@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessible Form Demo</title>
+    <link rel="stylesheet" href="demo-styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <strong>HTML CSS Layout Lab</strong>
+          <span>Forms and states</span>
+        </div>
+        <nav class="demo-nav" aria-label="Demo navigation">
+          <a href="semantic-document.html">Semantic</a>
+          <a href="grid-dashboard.html">Grid</a>
+          <a href="flex-toolbar.html">Flexbox</a>
+          <a href="responsive-cards.html">Responsive</a>
+          <a href="form-accessibility.html" aria-current="page">Forms</a>
+          <a href="cascade-tokens.html">Cascade</a>
+          <a href="media-objects.html">Media</a>
+          <a href="data-table.html">Tables</a>
+          <a href="disclosure-navigation.html">Disclosure</a>
+          <a href="page-shell.html">Shell</a>
+          <a href="motion-states.html">Motion</a>
+          <a href="debugging-checklist.html">Debugging</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="pill">Labels, help, and validation</p>
+        <h1 id="page-title">Forms need structure before styling</h1>
+        <p>Labels, fieldsets, help text, errors, and focus states are part of the component API.</p>
+      </section>
+
+      <form class="panel form-grid" aria-labelledby="form-title">
+        <h2 id="form-title">Create project</h2>
+
+        <div class="field-row">
+          <label for="project-name">Project name</label>
+          <div class="control-stack">
+            <input id="project-name" name="project-name" value="Customer billing audit">
+            <p class="help" id="project-help">Use a short name that appears in navigation and reports.</p>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label for="owner">Owner</label>
+          <div class="control-stack">
+            <select id="owner" name="owner">
+              <option>Payments platform</option>
+              <option>Revenue operations</option>
+              <option>Customer support</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label for="budget">Budget code</label>
+          <div class="control-stack">
+            <input id="budget" name="budget" value="REV-" aria-invalid="true" aria-describedby="budget-error">
+            <p class="error" id="budget-error">Enter the full code, such as REV-2048.</p>
+          </div>
+        </div>
+
+        <fieldset>
+          <legend class="legend-label">Delivery mode</legend>
+          <label><input type="radio" name="mode" checked> Weekly review</label>
+          <label><input type="radio" name="mode"> One-time export</label>
+        </fieldset>
+
+        <div class="cluster">
+          <button class="button" type="submit">Save project</button>
+          <button class="button secondary" type="button">Cancel</button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

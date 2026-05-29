@@ -27,6 +27,7 @@ Reproducible tools with Nix; portable, editable configs via symlinks; fast onboa
   * Only symlink to `~/.config/` for XDG-compliant programs (fish, starship, zed). Legacy programs like tmux expect `~/.tmux.conf` — check before symlinking.
 * **Need per-project dev environment?** Use the nix-direnv pattern — see README.md.
 * **Need a vendor agent skill?** Add it to the `SKILLS` array in `scripts/install-skills.sh` → `make install-skills`.
+* **Need a global pi-coding-agent skill?** Drop a `SKILL.md`-rooted dir under `config/pi/skills/`. `link_pi_skills` symlinks the whole dir to `~/.pi/agent/skills`. Link only that leaf — never all of `~/.pi/agent`, which holds `auth.json`/`sessions/`.
 * **Unsure?** Prefer plain files + symlinks over bespoke derivations.
 
 ## Workflow

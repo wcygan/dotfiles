@@ -54,6 +54,8 @@ This adds hooks and skills to your local `~/.claude/` config. These files are gi
 
 Claude Code config is linked from `config/claude` to `~/.claude`. Codex is managed narrowly: `config/codex/config.toml` is a portable template copied to `${CODEX_HOME:-~/.codex}/config.toml` only when missing, `config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`, and `config/codex/skills` points to `${CODEX_HOME:-~/.codex}/skills`, while the rest of `CODEX_HOME` remains machine-local runtime state. Codex may write machine-specific `[projects]` trust entries into the local config; keep those out of the tracked template.
 
+The pi coding agent is managed the same narrow way: `config/pi/skills` links to `~/.pi/agent/skills`, so global pi skills are version-controlled while sibling runtime state in `~/.pi/agent` (`auth.json`, `sessions/`, `models.json`) stays machine-local. Drop a `SKILL.md`-rooted directory under `config/pi/skills/` and re-run `scripts/link-config.sh`; pi discovers it as `/skill:<name>`.
+
 ### npm Global Tools
 
 The installer configures npm's user prefix and a one-day dependency release

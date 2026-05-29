@@ -176,5 +176,17 @@ else
     fail "config/codex/skills is missing"
 fi
 
+if [[ -d "$ROOT/config/pi/skills" ]]; then
+    pass "config/pi/skills exists as the pi skills source"
+else
+    fail "config/pi/skills is missing"
+fi
+
+if grep -q "link_pi_skills" "$ROOT/scripts/link-config.sh"; then
+    pass "link-config.sh wires pi skills into ~/.pi/agent/skills"
+else
+    fail "link-config.sh does not call link_pi_skills"
+fi
+
 echo ""
 echo "All link-config checks passed."

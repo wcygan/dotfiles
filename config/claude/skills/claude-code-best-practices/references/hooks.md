@@ -38,10 +38,81 @@ Hooks are shell commands that execute at specific lifecycle points in Claude Cod
 - **2** — block the action (stderr fed back to Claude)
 - **Other** — proceed (stderr logged, not shown)
 
+Exit codes are the blunt instrument. For finer control, print JSON on stdout — see below.
+
+### Returning Structured Output (stdout JSON)
+
+A hook can print a JSON object on stdout to shape Claude's behavior precisely. Event-specific fields nest under `hookSpecificOutput` with a matching `hookEventName` — a **flat** `{"permissionDecision": ...}` is silently ignored. (The full per-event schema lives in the reference, not the guide: https://code.claude.com/docs/en/hooks — WebFetch it before relying on a field.)
+
+**Universal fields** (any event): `continue` (`false` aborts the turn), `stopReason` (shown when `continue:false`), `suppressOutput`, `systemMessage` (warning surfaced to the user).
+
+**`PreToolUse` — decide and rewrite a tool call before it runs:**
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "deny",
+    "permissionDecisionReason": "Writes to .env are blocked by policy",
+    "updatedInput": { "command": "git push origin main --dry-run" },
+    "additionalContext": "Pushes are dry-run only on this branch."
+  }
+}
+```
+
+- `permissionDecision`: `allow` | `deny` | `ask` | `defer` (`defer` = fall through to normal permission flow)
+- `updatedInput`: replaces the tool's input (same schema as `tool_input`) — e.g. inject `--dry-run` mid-flight
+- `additionalContext`: text injected alongside the decision
+
+**`SessionStart` — inject context and arm file watching:**
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "Branch: feat/auth. 3 uncommitted files.",
+    "watchPaths": ["/abs/path/.env", "/abs/path/tsconfig.json"],
+    "initialUserMessage": "Resume the auth refactor.",
+    "reloadSkills": true
+  }
+}
+```
+
+`watchPaths` takes **absolute** paths and fires `FileChanged` events on change. `initialUserMessage` applies in `-p` (headless) mode.
+
+**`PostToolUse` / `UserPromptSubmit` — block or annotate after the fact:** top-level `decision: "block"` + `reason`, plus `hookSpecificOutput.additionalContext`. `PermissionRequest` is different again — it returns `hookSpecificOutput.decision` as an object (`{ "behavior": "allow|deny", "updatedInput": {...}, "rules": [...] }`). Confirm the exact shape per event in the reference.
+
+### Async & One-Shot Hooks
+
+Three config fields sit alongside `type` / `command` / `matcher` / `timeout` and change *when* a hook runs:
+
+| Field | Effect |
+|-------|--------|
+| `async: true` | Runs in the background, never blocks. Fire-and-forget (audit logs, metrics). Cannot block via exit 2. |
+| `asyncRewake: true` | Implies `async`. Non-blocking on the happy path; the operation proceeds. But exit 2 **wakes Claude after the fact** — the hook's stderr (or stdout if stderr is empty) is injected as a system reminder so Claude can react to a slow background failure. Use for long secret/security scans. |
+| `once: true` | Runs once per session, then removes itself. **Only honored in skill frontmatter** — ignored in `settings.json` and agent frontmatter. |
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Bash",
+      "hooks": [{
+        "type": "command",
+        "command": "jq -r '.tool_input.command' >> ~/.claude/audit.log",
+        "async": true
+      }]
+    }]
+  }
+}
+```
+
 ### Matchers
 
 Filter hooks by tool name, session start type, etc. Regex patterns supported.
 Example: `"matcher": "Edit|Write"` fires only on file edits.
+
+The `if` field (and permission rules generally) use **glob** syntax, not regex: `Bash(npm *)`, `Bash(git commit *)`, `Read(src/**/*.ts)`, `Write(.env*)`, and MCP tools as `mcp__<server>__<tool>` (e.g. `mcp__slack__post_message`, `mcp__slack__*`). Full pattern language: https://code.claude.com/docs/en/permissions.
 
 ### Where to Configure
 

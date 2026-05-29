@@ -30,6 +30,7 @@ Reference knowledge for Claude Code features. Each topic has a local summary and
 | Spawning isolated subagents | [sub-agents](references/sub-agents.md) | https://code.claude.com/docs/en/sub-agents |
 | Multi-session agent teams | [agent-teams](references/agent-teams.md) | https://code.claude.com/docs/en/agent-teams |
 | Lifecycle hooks and automation | [hooks](references/hooks.md) | https://code.claude.com/docs/en/hooks-guide |
+| Permission rule glob syntax (`Bash(npm *)`, `Read(src/**)`, `mcp__server__tool`) | — | https://code.claude.com/docs/en/permissions |
 | Programmatic / CLI usage | [headless](references/headless.md) | https://code.claude.com/docs/en/headless |
 | /loop, cron, reminders | [scheduled-tasks](references/scheduled-tasks.md) | https://code.claude.com/docs/en/scheduled-tasks |
 | Push events into sessions | [channels](references/channels.md) | https://code.claude.com/docs/en/channels |

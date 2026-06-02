@@ -1,0 +1,4 @@
+interface:
+  display_name: "TiDB Docs"
+  short_description: "Navigate current official TiDB documentation."
+  default_prompt: "Use tidb-docs to find and cite the relevant official TiDB documentation for my question."

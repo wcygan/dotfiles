@@ -28,11 +28,12 @@ Effect.Effect<A, E, R>
 1. Identify the task: explain, design, migrate Promise code, fix a type error, implement a feature, review Effect code, or evaluate adoption.
 2. Inspect local context before editing: `package.json`, lockfile, installed `effect` version when available, TypeScript config, imports, nearby style, and tests.
 3. Load the smallest relevant reference file from the map below for idioms and tradeoffs.
-4. Use `references/doc-map.md` to choose official docs when the right page is not obvious.
-5. Fetch the current official page from `https://effect.website/docs/...` before making precise claims about APIs, signatures, examples, or recommended patterns.
-6. Use the API list or installed package exports when exact functions, methods, overloads, or module members matter.
-7. Make changes in the project's existing style. Match import style, package manager, test framework, Effect version, and boundary conventions.
-8. Verify with the narrowest meaningful local command first: typecheck, targeted tests, affected build, or package-specific checks.
+4. For architecture, migration, adoption, or boundary-design questions, inspect one or two matching files under `examples/` before prescribing a pattern. Treat them as real-world pattern checks, not API authority.
+5. Use `references/doc-map.md` to choose official docs when the right page is not obvious.
+6. Fetch the current official page from `https://effect.website/docs/...` before making precise claims about APIs, signatures, examples, or recommended patterns.
+7. Use the API list or installed package exports when exact functions, methods, overloads, or module members matter.
+8. Make changes in the project's existing style. Match import style, package manager, test framework, Effect version, and boundary conventions.
+9. Verify with the narrowest meaningful local command first: typecheck, targeted tests, affected build, or package-specific checks.
 
 ## Quick Decisions
 
@@ -62,6 +63,16 @@ Effect.Effect<A, E, R>
 - Logging, metrics, tracing, or supervision: start with Observability.
 - Comparisons, migration, or evaluating adoption: start with Additional Resources.
 
+## Example Selection
+
+Use the `examples/` files when the question is less about a single API and more about how Effect fits into a real codebase:
+
+- Production CLI/backend with many external systems: read `examples/example-anomalyco-opencode.md`.
+- Local-first sync, browser/worker channels, RPC, or reconnect loops: read `examples/example-livestorejs-livestore.md`.
+- Incremental adoption inside a mostly conventional TypeScript app: read `examples/example-triggerdotdev-trigger.dev.md`.
+- Effect-native framework/library architecture: read `examples/example-tylors-typed.md`.
+- Teaching runtime behavior, fibers, finalizers, retries, or visual state: read `examples/example-kitlangton-visual-effect.md`.
+
 ## Reference Map
 
 - `references/fundamentals.md`: `Effect<A, E, R>`, laziness, constructors, generator vs pipe style, running at the edge.
@@ -72,6 +83,7 @@ Effect.Effect<A, E, R>
 - `references/streams-platform-observability.md`: Stream/Sink choice, platform APIs, logging, metrics, tracing, supervision.
 - `references/adoption-gotchas.md`: incremental adoption, boundary friction, bundle/typechecker risk, alternatives.
 - `references/doc-map.md`: official docs navigation index generated from `https://effect.website/llms.txt`, grouped by docs area with the API list link.
+- `examples/example-*.md`: pinned GitHub permalinks to real-world Effect usage in open source projects, useful when comparing adoption patterns.
 
 ## Quality Rules
 

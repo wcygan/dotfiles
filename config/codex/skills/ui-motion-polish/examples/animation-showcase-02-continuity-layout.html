@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Animation Showcase 02 - Continuity Layout</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #182030;
+      --muted: #5b6477;
+      --line: #d8deea;
+      --paper: #eef1f7;
+      --panel: #ffffff;
+      --blue: #2f69f0;
+      --green: #1d8b65;
+      --gold: #c78b19;
+      --red: #cf4a43;
+      --ease-in-out-ui: cubic-bezier(0.77, 0, 0.175, 1);
+      --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    main,
+    .shell,
+    .list,
+    .choice,
+    .detail,
+    .spec,
+    .spec-grid,
+    .spec-item {
+      min-width: 0;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    .demo-nav {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      border-bottom: 1px solid rgba(216, 222, 234, 0.8);
+      background: color-mix(in srgb, var(--paper) 88%, white);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 28px rgba(24, 32, 48, 0.06);
+    }
+
+    .demo-nav__inner {
+      width: min(1120px, calc(100% - 32px));
+      min-height: 56px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .demo-nav a {
+      text-decoration: none;
+    }
+
+    .demo-nav__brand {
+      color: var(--ink);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .demo-nav__links {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 6px 0;
+      min-width: 0;
+      scrollbar-width: none;
+    }
+
+    .demo-nav__links::-webkit-scrollbar {
+      display: none;
+    }
+
+    .demo-nav__links a {
+      flex: 0 0 auto;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: var(--muted);
+      padding: 7px 10px;
+      font-size: 14px;
+      font-weight: 800;
+      transition:
+        color 140ms ease,
+        background-color 140ms ease,
+        border-color 140ms ease,
+        transform 140ms var(--ease-out-ui);
+    }
+
+    .demo-nav__links a[aria-current="page"] {
+      border-color: color-mix(in srgb, var(--blue) 40%, white);
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 8px 18px rgba(47, 105, 240, 0.18);
+    }
+
+    .demo-nav__links a:focus-visible,
+    .demo-nav__brand:focus-visible {
+      outline: 3px solid rgba(47, 105, 240, 0.24);
+      outline-offset: 3px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .demo-nav__links a:hover {
+        border-color: color-mix(in srgb, var(--blue) 35%, white);
+        color: var(--ink);
+        transform: translateY(-1px);
+      }
+
+      .demo-nav__links a[aria-current="page"]:hover {
+        color: white;
+      }
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    .shell {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: minmax(280px, 0.86fr) minmax(0, 1.14fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .list,
+    .detail,
+    .spec {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 18px 46px rgba(24, 32, 48, 0.08);
+    }
+
+    .list {
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .choice {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+      gap: 12px;
+      padding: 10px;
+      text-align: left;
+      background: white;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease,
+        transform 160ms var(--ease-out-ui);
+    }
+
+    .choice[aria-pressed="true"] {
+      border-color: color-mix(in srgb, var(--blue) 55%, white);
+      box-shadow: 0 0 0 3px rgba(47, 105, 240, 0.14);
+    }
+
+    .choice:active {
+      transform: scale(0.99);
+    }
+
+    .choice:focus-visible {
+      outline: 3px solid rgba(47, 105, 240, 0.24);
+      outline-offset: 3px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .choice:hover {
+        border-color: color-mix(in srgb, var(--blue) 40%, white);
+        transform: translateY(-1px);
+      }
+    }
+
+    .swatch {
+      width: 64px;
+      height: 64px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 900;
+    }
+
+    .choice[data-key="blue"] .swatch,
+    .detail[data-key="blue"] .hero-mark { background: var(--blue); }
+    .choice[data-key="green"] .swatch,
+    .detail[data-key="green"] .hero-mark { background: var(--green); }
+    .choice[data-key="gold"] .swatch,
+    .detail[data-key="gold"] .hero-mark { background: var(--gold); }
+
+    .choice strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .choice span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .choice .swatch {
+      color: white;
+    }
+
+    .detail {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 148px minmax(0, 1fr);
+      gap: 20px;
+      align-items: center;
+      min-height: 310px;
+    }
+
+    .hero-mark {
+      width: 148px;
+      aspect-ratio: 1;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 42px;
+      font-weight: 900;
+      box-shadow: 0 20px 36px rgba(24, 32, 48, 0.18);
+      view-transition-name: route-detail-mark;
+      transition:
+        background-color 220ms ease,
+        transform 280ms var(--ease-in-out-ui),
+        border-radius 280ms var(--ease-in-out-ui);
+    }
+
+    .traveling-mark {
+      position: fixed;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 18px;
+      font-weight: 900;
+      pointer-events: none;
+      transform-origin: top left;
+      will-change: transform, opacity, border-radius;
+      box-shadow: 0 18px 32px rgba(24, 32, 48, 0.2);
+    }
+
+    .detail-copy {
+      opacity: 1;
+      transform: translateY(0);
+      transition:
+        opacity 180ms ease,
+        transform 220ms var(--ease-out-ui);
+    }
+
+    .detail.is-swapping .detail-copy {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    .detail h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+    }
+
+    .meter {
+      margin-top: 18px;
+      height: 10px;
+      border-radius: 999px;
+      background: #e8ecf5;
+      overflow: hidden;
+    }
+
+    .meter span {
+      display: block;
+      height: 100%;
+      width: var(--meter-width);
+      border-radius: inherit;
+      background: var(--meter-color);
+      transition:
+        width 280ms var(--ease-in-out-ui),
+        background-color 180ms ease;
+    }
+
+    .spec {
+      grid-column: 1 / -1;
+      padding: 18px;
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .spec-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcff;
+    }
+
+    .spec-item strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .spec-item span {
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    ::view-transition-old(route-detail-mark),
+    ::view-transition-new(route-detail-mark) {
+      animation-duration: 320ms;
+      animation-timing-function: var(--ease-in-out-ui);
+    }
+
+    @media (max-width: 800px) {
+      .demo-nav__inner {
+        grid-template-columns: 1fr;
+        gap: 2px;
+        padding: 8px 0;
+      }
+
+      .demo-nav__links {
+        gap: 5px;
+      }
+
+      .demo-nav__links a {
+        padding: 5px 7px;
+        font-size: 13px;
+      }
+
+      .shell,
+      .detail,
+      .spec-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-mark {
+        width: min(180px, 100%);
+      }
+
+      .traveling-mark {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        transition-duration: 1ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="demo-nav" aria-label="Animation showcase navigation">
+    <div class="demo-nav__inner">
+      <a class="demo-nav__brand" href="animation-showcase-01-staggered-entrance.html">Animation Showcase</a>
+      <div class="demo-nav__links">
+        <a href="animation-showcase-01-staggered-entrance.html">Stagger</a>
+        <a href="animation-showcase-02-continuity-layout.html" aria-current="page">Continuity</a>
+        <a href="animation-showcase-03-scroll-reveal-parallax.html">Scroll</a>
+        <a href="animation-showcase-04-spring-drag-rubberband.html">Spring</a>
+        <a href="animation-showcase-05-line-drawing-number-ticker.html">Ticker</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <h1>Continuity Layout Transition</h1>
+    <p>Select an item. The color mark keeps its identity while the detail panel changes around it.</p>
+
+    <section class="shell" aria-label="Continuity transition demo">
+      <div class="list" role="group" aria-label="States">
+        <button class="choice" type="button" data-key="blue" aria-pressed="true">
+          <span class="swatch" aria-hidden="true">A</span>
+          <span><strong>Active route</strong><span>Shared element expands into the detail panel.</span></span>
+        </button>
+        <button class="choice" type="button" data-key="green" aria-pressed="false">
+          <span class="swatch" aria-hidden="true">B</span>
+          <span><strong>Healthy route</strong><span>Layout adjusts while preserving orientation.</span></span>
+        </button>
+        <button class="choice" type="button" data-key="gold" aria-pressed="false">
+          <span class="swatch" aria-hidden="true">C</span>
+          <span><strong>Observed route</strong><span>State copy crossfades after the identity shift.</span></span>
+        </button>
+      </div>
+
+      <article class="detail" id="detail" data-key="blue" style="--meter-width: 72%; --meter-color: var(--blue);">
+        <div class="hero-mark" id="heroMark">A</div>
+        <div class="detail-copy" id="detailCopy">
+          <h2>Active route</h2>
+          <p>The mark uses a shared element transition, while supporting copy and metrics crossfade.</p>
+          <div class="meter" aria-label="Completion"><span></span></div>
+        </div>
+      </article>
+
+      <aside class="spec">
+        <strong>Motion spec</strong>
+        <div class="spec-grid">
+          <div class="spec-item"><strong>Purpose</strong><span>Preserve spatial continuity between list and detail states.</span></div>
+          <div class="spec-item"><strong>Pattern</strong><span>Shared element transition plus layout animation and crossfade.</span></div>
+          <div class="spec-item"><strong>Timing</strong><span>320ms continuity motion, 220ms copy movement, reduced-motion fallback.</span></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const data = {
+      blue: {
+        letter: "A",
+        title: "Active route",
+        copy: "The mark uses a shared element transition, while supporting copy and metrics crossfade.",
+        width: "72%",
+        color: "var(--blue)"
+      },
+      green: {
+        letter: "B",
+        title: "Healthy route",
+        copy: "The same visual identity moves into place so the user does not lose track of the selected state.",
+        width: "88%",
+        color: "var(--green)"
+      },
+      gold: {
+        letter: "C",
+        title: "Observed route",
+        copy: "The detail content changes after the identity shift, keeping the transition legible.",
+        width: "54%",
+        color: "var(--gold)"
+      }
+    };
+
+    const detail = document.querySelector("#detail");
+    const copy = document.querySelector("#detailCopy");
+    const heroMark = document.querySelector("#heroMark");
+    const choices = Array.from(document.querySelectorAll(".choice"));
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function render(key) {
+      const state = data[key];
+      detail.dataset.key = key;
+      detail.style.setProperty("--meter-width", state.width);
+      detail.style.setProperty("--meter-color", state.color);
+      heroMark.textContent = state.letter;
+      copy.innerHTML = `
+        <h2>${state.title}</h2>
+        <p>${state.copy}</p>
+        <div class="meter" aria-label="Completion"><span></span></div>
+      `;
+      choices.forEach((choice) => {
+        choice.setAttribute("aria-pressed", String(choice.dataset.key === key));
+      });
+    }
+
+    function animateTravelingMark(sourceChoice, key) {
+      if (prefersReducedMotion || !sourceChoice || !Element.prototype.animate) return;
+
+      const source = sourceChoice.querySelector(".swatch");
+      const from = source.getBoundingClientRect();
+      const to = heroMark.getBoundingClientRect();
+      const mark = document.createElement("div");
+      mark.className = "traveling-mark";
+      mark.textContent = data[key].letter;
+      mark.style.left = `${from.left}px`;
+      mark.style.top = `${from.top}px`;
+      mark.style.width = `${from.width}px`;
+      mark.style.height = `${from.height}px`;
+      mark.style.borderRadius = "8px";
+      mark.style.background = data[key].color;
+      document.body.appendChild(mark);
+
+      const dx = to.left - from.left;
+      const dy = to.top - from.top;
+      const scale = to.width / from.width;
+      const animation = mark.animate([
+        { opacity: 0.96, borderRadius: "8px", transform: "translate3d(0, 0, 0) scale(1)" },
+        { opacity: 0.16, borderRadius: "18px", transform: `translate3d(${dx}px, ${dy}px, 0) scale(${scale})` }
+      ], {
+        duration: 320,
+        easing: "cubic-bezier(0.77, 0, 0.175, 1)",
+        fill: "forwards"
+      });
+
+      animation.finished.finally(() => mark.remove());
+    }
+
+    function selectState(key, sourceChoice) {
+      if (detail.dataset.key === key) return;
+      detail.classList.add("is-swapping");
+      animateTravelingMark(sourceChoice, key);
+      const update = () => render(key);
+      if (!prefersReducedMotion && document.startViewTransition) {
+        document.startViewTransition(update).finished.finally(() => {
+          requestAnimationFrame(() => detail.classList.remove("is-swapping"));
+        });
+      } else {
+        update();
+        setTimeout(() => detail.classList.remove("is-swapping"), 180);
+      }
+    }
+
+    choices.forEach((choice) => {
+      choice.addEventListener("click", () => selectState(choice.dataset.key, choice));
+    });
+  </script>
+</body>
+</html>

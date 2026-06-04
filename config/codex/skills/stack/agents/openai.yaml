@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stack"
+  short_description: "Guard stacked PR sync and repair"
+  default_prompt: "Use $stack to manage a guarded stacked pull request workflow with kitlangton/stack."

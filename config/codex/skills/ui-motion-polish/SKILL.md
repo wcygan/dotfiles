@@ -9,13 +9,42 @@ description: Use when Codex is building, styling, or reviewing frontend UI where
 
 Apply practical design-engineering judgment to make interface motion feel fast, intentional, accessible, and cohesive. This skill is a condensed local guide inspired by Emil Kowalski's public design-engineering writing and skill: https://github.com/emilkowalski/skill.
 
+## Reference Map
+
+- `references/animation-vocabulary.md`: prompt-ready vocabulary from https://animations.dev/vocabulary for animation patterns, timing, easing, springs, interaction feedback, performance, and reduced-motion constraints. Read this before adding, tuning, or reviewing motion; use its terms to turn vague animation asks into a concrete motion spec.
+- `examples/animation-showcase-*.html`: standalone, browser-runnable examples for staggered entrance, continuity transition, scroll-driven reveal, spring drag/rubber-banding, and line drawing with number ticker. Open these when the user wants examples, asks for motion inspiration, or needs a concrete implementation pattern to adapt.
+
 ## Workflow
 
 1. Inspect the existing UI patterns before changing code: framework, component library, animation library, design tokens, accessibility helpers, and current transition conventions.
 2. Decide whether motion should exist before tuning it. Remove or reduce animation for high-frequency actions, keyboard-driven flows, dense work surfaces, or anything that blocks repeated use.
-3. State the purpose of each animation in implementation terms: spatial continuity, state feedback, explanation, confirmation, or making an otherwise abrupt state change legible.
-4. Prefer the project's existing primitives. Use CSS transitions for predictable state changes, CSS animations for predetermined non-interactive motion, spring animation for gesture-driven or interruptible motion, and WAAPI when JavaScript control is needed with browser-native animation behavior.
-5. Verify visually after editing. Slow animations down temporarily, test reduced-motion behavior, and check representative desktop and mobile viewports.
+3. Read `references/animation-vocabulary.md` when any animation or motion quality matters. Restate the request with the exact vocabulary: purpose, pattern, timing, easing or spring physics, spatial rules, feedback behavior, performance constraints, and reduced-motion fallback.
+4. State the purpose of each animation in implementation terms: spatial continuity, state feedback, explanation, confirmation, or making an otherwise abrupt state change legible.
+5. Prefer the project's existing primitives. Use CSS transitions for predictable state changes, CSS animations for predetermined non-interactive motion, spring animation for gesture-driven or interruptible motion, and WAAPI when JavaScript control is needed with browser-native animation behavior.
+6. Verify visually after editing. Slow animations down temporarily, test reduced-motion behavior, and check representative desktop and mobile viewports.
+
+## Vocabulary Contract
+
+Do not implement from a vague direction like "make it smoother," "make it pop," or "add some animation." Translate it first:
+
+- Purpose: orientation, feedback, continuity, confirmation, reveal, or perceived performance.
+- Pattern: fade, slide, scale, pop, reveal, crossfade, continuity transition, layout animation, origin-aware overlay, direction-aware transition, press feedback, drag, swipe, hold to confirm, number ticker, shimmer, or another named pattern from `references/animation-vocabulary.md`.
+- Timing and orchestration: duration, delay, stagger, keyframes, fill mode, interruptibility, loop behavior, or scroll linkage.
+- Easing or physics: ease-out, ease-in-out, cubic-bezier token, spring stiffness, damping, mass, velocity, momentum, or bounce.
+- Spatial and interaction rules: transform origin, direction, anchor, pointer capture, cancellation, velocity thresholds, focus and keyboard behavior.
+- Constraints: transform/opacity preference, no `transition: all`, no layout thrashing unless layout animation is intentional, reduced motion behavior, and browser/device validation.
+
+## Examples
+
+Use `examples/*.html` as compact implementation references. They are standalone files with inline CSS and JavaScript, shared navigation, motion specs embedded in the page, focus states, reduced-motion handling, and desktop/mobile layout checks.
+
+- `examples/animation-showcase-01-staggered-entrance.html`: fade, slide, scale, pop-in, short stagger, replay button, and transform/opacity-only entrance.
+- `examples/animation-showcase-02-continuity-layout.html`: continuity transition, shared-element-style traveling mark, layout change, state copy crossfade, and active selection state.
+- `examples/animation-showcase-03-scroll-reveal-parallax.html`: scroll-driven animation, parallax, route line drawing, scroll reveal, and `requestAnimationFrame`-throttled scroll updates.
+- `examples/animation-showcase-04-spring-drag-rubberband.html`: drag, pointer capture, rubber-banding, momentum, interruptible spring return, and animation-loop cleanup at rest.
+- `examples/animation-showcase-05-line-drawing-number-ticker.html`: SVG line drawing, path-synchronized checkpoint reveal, tabular number ticker, replay, and reduced-motion final state.
+
+When adapting an example, keep the motion contract visible in implementation terms: purpose, pattern, timing, easing or physics, spatial rule, feedback behavior, performance constraint, and reduced-motion fallback. Do not copy the styling wholesale when a project has its own design system.
 
 ## Motion Decisions
 
@@ -225,6 +254,7 @@ For implementation tasks, make the code change directly and mention the relevant
 - Check for durations over 300ms on routine UI.
 - Check for keyboard-triggered animations.
 - Check popover/menu/tooltip transform origin.
+- Check whether vague animation language has been translated into the vocabulary contract.
 - Check hover effects on touch devices.
 - Check missing active states on pressable controls.
 - Check transform or opacity alternatives before layout animation.

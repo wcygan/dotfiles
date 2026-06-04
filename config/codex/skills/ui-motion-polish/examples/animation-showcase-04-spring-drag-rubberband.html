@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Animation Showcase 04 - Spring Drag Rubber Band</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #182030;
+      --muted: #5c667a;
+      --line: #d8deea;
+      --paper: #eef7f2;
+      --panel: #ffffff;
+      --blue: #2f69f0;
+      --green: #1d8b65;
+      --gold: #c78b19;
+      --red: #cf4a43;
+      --x: 0px;
+      --y: 0px;
+      --tilt: 0deg;
+      --stretch: 1;
+      --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    main,
+    .layout,
+    .stage,
+    .spec,
+    .target,
+    .readout {
+      min-width: 0;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    .demo-nav {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      border-bottom: 1px solid rgba(216, 222, 234, 0.8);
+      background: color-mix(in srgb, var(--paper) 88%, white);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 28px rgba(24, 32, 48, 0.06);
+    }
+
+    .demo-nav__inner {
+      width: min(1120px, calc(100% - 32px));
+      min-height: 56px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .demo-nav a {
+      text-decoration: none;
+    }
+
+    .demo-nav__brand {
+      color: var(--ink);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .demo-nav__links {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 6px 0;
+      min-width: 0;
+      scrollbar-width: none;
+    }
+
+    .demo-nav__links::-webkit-scrollbar {
+      display: none;
+    }
+
+    .demo-nav__links a {
+      flex: 0 0 auto;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: var(--muted);
+      padding: 7px 10px;
+      font-size: 14px;
+      font-weight: 800;
+      transition:
+        color 140ms ease,
+        background-color 140ms ease,
+        border-color 140ms ease,
+        transform 140ms var(--ease-out-ui);
+    }
+
+    .demo-nav__links a[aria-current="page"] {
+      border-color: color-mix(in srgb, var(--blue) 40%, white);
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 8px 18px rgba(47, 105, 240, 0.18);
+    }
+
+    .demo-nav__links a:focus-visible,
+    .demo-nav__brand:focus-visible {
+      outline: 3px solid rgba(47, 105, 240, 0.24);
+      outline-offset: 3px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .demo-nav__links a:hover {
+        border-color: color-mix(in srgb, var(--blue) 35%, white);
+        color: var(--ink);
+        transform: translateY(-1px);
+      }
+
+      .demo-nav__links a[aria-current="page"]:hover {
+        color: white;
+      }
+    }
+
+    main {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+      padding: 40px 16px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    .layout {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .stage,
+    .spec {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 18px 46px rgba(24, 32, 48, 0.08);
+    }
+
+    .stage {
+      min-height: 520px;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      touch-action: none;
+    }
+
+    .boundary {
+      position: absolute;
+      inset: 46px;
+      border: 1px dashed #bdc8dc;
+      border-radius: 18px;
+      background:
+        linear-gradient(to right, rgba(47, 105, 240, 0.08), transparent 36%, transparent 64%, rgba(207, 74, 67, 0.08));
+    }
+
+    .target {
+      width: 220px;
+      min-height: 250px;
+      border: 1px solid color-mix(in srgb, var(--blue) 34%, var(--line));
+      border-radius: 18px;
+      background: white;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: grab;
+      user-select: none;
+      position: relative;
+      z-index: 1;
+      transform:
+        translate3d(var(--x), var(--y), 0)
+        rotate(var(--tilt))
+        scaleX(var(--stretch));
+      box-shadow: 0 26px 54px rgba(24, 32, 48, 0.18);
+      will-change: transform;
+    }
+
+    .target:active {
+      cursor: grabbing;
+    }
+
+    .target:focus-visible {
+      outline: 3px solid rgba(47, 105, 240, 0.24);
+      outline-offset: 4px;
+    }
+
+    .target strong {
+      font-size: 22px;
+      line-height: 1.15;
+    }
+
+    .target span {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .handle {
+      width: 54px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--blue);
+    }
+
+    .readout {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      right: 18px;
+      border: 1px solid rgba(216, 222, 234, 0.94);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      backdrop-filter: blur(8px);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .readout small {
+      display: block;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 800;
+      font-size: 11px;
+    }
+
+    .readout output {
+      font-weight: 900;
+    }
+
+    .spec {
+      padding: 20px;
+    }
+
+    .spec h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .spec dl {
+      display: grid;
+      grid-template-columns: 100px minmax(0, 1fr);
+      gap: 10px 12px;
+      margin: 0;
+    }
+
+    .spec dt {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .spec dd {
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 800px) {
+      .demo-nav__inner {
+        grid-template-columns: 1fr;
+        gap: 2px;
+        padding: 8px 0;
+      }
+
+      .demo-nav__links {
+        gap: 5px;
+      }
+
+      .demo-nav__links a {
+        padding: 5px 7px;
+        font-size: 13px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .stage {
+        min-height: 460px;
+      }
+
+      .readout {
+        grid-template-columns: 1fr;
+      }
+
+      .spec dl {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .target {
+        transform: none;
+        will-change: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="demo-nav" aria-label="Animation showcase navigation">
+    <div class="demo-nav__inner">
+      <a class="demo-nav__brand" href="animation-showcase-01-staggered-entrance.html">Animation Showcase</a>
+      <div class="demo-nav__links">
+        <a href="animation-showcase-01-staggered-entrance.html">Stagger</a>
+        <a href="animation-showcase-02-continuity-layout.html">Continuity</a>
+        <a href="animation-showcase-03-scroll-reveal-parallax.html">Scroll</a>
+        <a href="animation-showcase-04-spring-drag-rubberband.html" aria-current="page">Spring</a>
+        <a href="animation-showcase-05-line-drawing-number-ticker.html">Ticker</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <h1>Spring Drag And Rubber-Banding</h1>
+    <p>Drag the card past the dashed boundary. Resistance increases, then the card springs back with carried velocity.</p>
+
+    <section class="layout" aria-label="Spring drag demo">
+      <div class="stage" id="stage">
+        <div class="boundary" aria-hidden="true"></div>
+        <article class="target" id="target" tabindex="0" aria-label="Draggable spring card">
+          <div class="handle" aria-hidden="true"></div>
+          <strong>Interruptible spring</strong>
+          <span>Momentum, damping, velocity, rubber-banding, and follow-through are visible in one interaction.</span>
+        </article>
+        <div class="readout" aria-live="polite">
+          <span><small>X</small><output id="xOut">0px</output></span>
+          <span><small>Velocity</small><output id="vOut">0.00</output></span>
+          <span><small>Mode</small><output id="modeOut">resting</output></span>
+        </div>
+      </div>
+
+      <aside class="spec">
+        <h2>Motion spec</h2>
+        <dl>
+          <dt>Purpose</dt>
+          <dd>Show drag feedback and a physical return to rest.</dd>
+          <dt>Pattern</dt>
+          <dd>Drag, rubber-banding, spring, momentum, interruptible animation.</dd>
+          <dt>Physics</dt>
+          <dd>Stiffness 0.11, damping 0.78, velocity carried between drag and release.</dd>
+          <dt>Spatial</dt>
+          <dd>Translate3d for movement, rotation from horizontal offset, mild squash/stretch near the boundary.</dd>
+          <dt>Reduced motion</dt>
+          <dd>Pointer motion is disabled by the media query transform fallback.</dd>
+        </dl>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const target = document.querySelector("#target");
+    const xOut = document.querySelector("#xOut");
+    const vOut = document.querySelector("#vOut");
+    const modeOut = document.querySelector("#modeOut");
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const state = {
+      dragging: false,
+      pointerId: null,
+      startX: 0,
+      startY: 0,
+      x: 0,
+      y: 0,
+      velocityX: 0,
+      velocityY: 0,
+      lastX: 0,
+      lastY: 0,
+      lastTime: performance.now(),
+      animating: false,
+      frame: 0
+    };
+
+    const bounds = { x: 180, y: 140 };
+    const spring = { stiffness: 0.11, damping: 0.78 };
+
+    function rubberBand(value, limit) {
+      const sign = Math.sign(value);
+      const abs = Math.abs(value);
+      if (abs <= limit) return value;
+      const overflow = abs - limit;
+      return sign * (limit + overflow * 0.32);
+    }
+
+    function setPosition(x, y) {
+      state.x = x;
+      state.y = y;
+      const tilt = Math.max(-8, Math.min(8, x / 28));
+      const stretch = 1 + Math.min(0.08, Math.abs(x) / 3000);
+      target.style.setProperty("--x", `${x.toFixed(2)}px`);
+      target.style.setProperty("--y", `${y.toFixed(2)}px`);
+      target.style.setProperty("--tilt", `${tilt.toFixed(2)}deg`);
+      target.style.setProperty("--stretch", stretch.toFixed(3));
+      xOut.value = `${Math.round(x)}px`;
+      vOut.value = Math.abs(state.velocityX).toFixed(2);
+      modeOut.value = state.dragging ? "dragging" : Math.abs(x) + Math.abs(y) > 1 ? "springing" : "resting";
+    }
+
+    function isSettled() {
+      return Math.abs(state.x) < 0.35
+        && Math.abs(state.y) < 0.35
+        && Math.abs(state.velocityX) < 0.035
+        && Math.abs(state.velocityY) < 0.035;
+    }
+
+    function scheduleSpring() {
+      if (state.animating || prefersReducedMotion) return;
+      state.animating = true;
+      state.lastTime = performance.now();
+      state.frame = requestAnimationFrame(animate);
+    }
+
+    function animate(now) {
+      const dt = Math.min((now - state.lastTime) / 16.67, 2);
+      state.lastTime = now;
+
+      if (!state.dragging && !prefersReducedMotion) {
+        state.velocityX += (0 - state.x) * spring.stiffness * dt;
+        state.velocityY += (0 - state.y) * spring.stiffness * dt;
+        state.velocityX *= spring.damping;
+        state.velocityY *= spring.damping;
+        setPosition(state.x + state.velocityX * dt, state.y + state.velocityY * dt);
+      }
+
+      if (isSettled()) {
+        state.velocityX = 0;
+        state.velocityY = 0;
+        setPosition(0, 0);
+        state.animating = false;
+        return;
+      }
+
+      state.frame = requestAnimationFrame(animate);
+    }
+
+    function onPointerDown(event) {
+      if (prefersReducedMotion || state.dragging || event.isPrimary === false) return;
+      cancelAnimationFrame(state.frame);
+      state.animating = false;
+      state.dragging = true;
+      state.pointerId = event.pointerId;
+      state.startX = event.clientX - state.x;
+      state.startY = event.clientY - state.y;
+      state.lastX = event.clientX;
+      state.lastY = event.clientY;
+      state.lastTime = performance.now();
+      target.setPointerCapture(event.pointerId);
+    }
+
+    function onPointerMove(event) {
+      if (!state.dragging || event.pointerId !== state.pointerId) return;
+      const now = performance.now();
+      const elapsed = Math.max(now - state.lastTime, 1);
+      const rawX = event.clientX - state.startX;
+      const rawY = event.clientY - state.startY;
+      state.velocityX = (event.clientX - state.lastX) / elapsed * 16.67;
+      state.velocityY = (event.clientY - state.lastY) / elapsed * 16.67;
+      state.lastX = event.clientX;
+      state.lastY = event.clientY;
+      state.lastTime = now;
+      setPosition(rubberBand(rawX, bounds.x), rubberBand(rawY, bounds.y));
+    }
+
+    function onPointerUp(event) {
+      if (event.pointerId !== state.pointerId) return;
+      state.dragging = false;
+      state.pointerId = null;
+      if (target.hasPointerCapture(event.pointerId)) {
+        target.releasePointerCapture(event.pointerId);
+      }
+      scheduleSpring();
+    }
+
+    target.addEventListener("pointerdown", onPointerDown);
+    target.addEventListener("pointermove", onPointerMove);
+    target.addEventListener("pointerup", onPointerUp);
+    target.addEventListener("pointercancel", onPointerUp);
+    setPosition(0, 0);
+  </script>
+</body>
+</html>

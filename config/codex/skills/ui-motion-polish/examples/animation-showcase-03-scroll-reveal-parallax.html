@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Animation Showcase 03 - Scroll Driven Reveal</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #182030;
+      --muted: #5c667a;
+      --line: #d8deea;
+      --paper: #f7f2e8;
+      --panel: #ffffff;
+      --blue: #2f69f0;
+      --green: #1d8b65;
+      --gold: #c78b19;
+      --red: #cf4a43;
+      --scroll: 0;
+      --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    main,
+    .scene,
+    .sticky-stage,
+    .chapters,
+    .chapter,
+    .spec {
+      min-width: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 220vh;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    .demo-nav {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      border-bottom: 1px solid rgba(216, 222, 234, 0.8);
+      background: color-mix(in srgb, var(--paper) 88%, white);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 28px rgba(24, 32, 48, 0.06);
+    }
+
+    .demo-nav__inner {
+      width: min(1120px, calc(100% - 32px));
+      min-height: 56px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .demo-nav a {
+      text-decoration: none;
+    }
+
+    .demo-nav__brand {
+      color: var(--ink);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .demo-nav__links {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 6px 0;
+      min-width: 0;
+      scrollbar-width: none;
+    }
+
+    .demo-nav__links::-webkit-scrollbar {
+      display: none;
+    }
+
+    .demo-nav__links a {
+      flex: 0 0 auto;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: var(--muted);
+      padding: 7px 10px;
+      font-size: 14px;
+      font-weight: 800;
+      transition:
+        color 140ms ease,
+        background-color 140ms ease,
+        border-color 140ms ease,
+        transform 140ms var(--ease-out-ui);
+    }
+
+    .demo-nav__links a[aria-current="page"] {
+      border-color: color-mix(in srgb, var(--blue) 40%, white);
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 8px 18px rgba(47, 105, 240, 0.18);
+    }
+
+    .demo-nav__links a:focus-visible,
+    .demo-nav__brand:focus-visible {
+      outline: 3px solid rgba(47, 105, 240, 0.24);
+      outline-offset: 3px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .demo-nav__links a:hover {
+        border-color: color-mix(in srgb, var(--blue) 35%, white);
+        color: var(--ink);
+        transform: translateY(-1px);
+      }
+
+      .demo-nav__links a[aria-current="page"]:hover {
+        color: white;
+      }
+    }
+
+    .progress {
+      position: fixed;
+      inset: 0 0 auto;
+      height: 5px;
+      background: var(--blue);
+      transform-origin: left center;
+      transform: scaleX(var(--scroll));
+      z-index: 10;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 42px 0 80px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    .scene {
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .sticky-stage {
+      position: sticky;
+      top: 32px;
+      height: min(72vh, 620px);
+      min-height: 420px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, #ffffff, #eef4ff 55%, #f8fbff);
+      overflow: hidden;
+      box-shadow: 0 18px 46px rgba(24, 32, 48, 0.08);
+    }
+
+    .layer {
+      position: absolute;
+      inset: 0;
+      transform: translateY(calc(var(--scroll) * var(--depth) * -1px));
+    }
+
+    .grid-lines {
+      --depth: 36;
+      opacity: 0.36;
+      background-image:
+        linear-gradient(to right, rgba(24, 32, 48, 0.12) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(24, 32, 48, 0.12) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    .route {
+      --depth: 92;
+    }
+
+    .route svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .route .ghost-path {
+      fill: none;
+      stroke: #d7deea;
+      stroke-width: 8;
+      stroke-linecap: round;
+      opacity: 0.9;
+    }
+
+    .route .draw-path {
+      fill: none;
+      stroke: var(--blue);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 1;
+      stroke-dashoffset: calc(1 - var(--scroll));
+      filter: drop-shadow(0 10px 20px rgba(47, 105, 240, 0.22));
+    }
+
+    .marker {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: 4px solid white;
+      box-shadow: 0 14px 26px rgba(24, 32, 48, 0.22);
+      left: calc(10% + var(--scroll) * 70%);
+      top: calc(72% - var(--scroll) * 48%);
+      transform: translate(-50%, -50%) scale(calc(0.82 + var(--scroll) * 0.28));
+    }
+
+    .label {
+      position: absolute;
+      left: 22px;
+      bottom: 22px;
+      right: 22px;
+      border: 1px solid rgba(216, 222, 234, 0.9);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      padding: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .label strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .chapters {
+      display: grid;
+      gap: 18px;
+      padding-bottom: 80vh;
+    }
+
+    .chapter {
+      min-height: 240px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 20px;
+      box-shadow: 0 18px 46px rgba(24, 32, 48, 0.06);
+      opacity: 0;
+      transform: translateY(12px);
+      transition:
+        opacity 320ms var(--ease-out-ui),
+        transform 320ms var(--ease-out-ui),
+        border-color 180ms ease;
+    }
+
+    .chapter.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      border-color: color-mix(in srgb, var(--blue) 34%, var(--line));
+    }
+
+    .chapter strong {
+      display: block;
+      color: var(--blue);
+      margin-bottom: 8px;
+    }
+
+    .spec {
+      margin-top: 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 18px;
+    }
+
+    .spec ul {
+      margin: 10px 0 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    @media (max-width: 860px) {
+      .demo-nav__inner {
+        grid-template-columns: 1fr;
+        gap: 2px;
+        padding: 8px 0;
+      }
+
+      .demo-nav__links {
+        gap: 5px;
+      }
+
+      .demo-nav__links a {
+        padding: 5px 7px;
+        font-size: 13px;
+      }
+
+      .scene {
+        grid-template-columns: 1fr;
+      }
+
+      .sticky-stage {
+        position: relative;
+        top: auto;
+      }
+
+      .chapters {
+        padding-bottom: 24px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        transition-duration: 1ms !important;
+      }
+
+      .layer {
+        transform: none;
+      }
+
+      .route .draw-path {
+        stroke-dashoffset: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"></div>
+  <nav class="demo-nav" aria-label="Animation showcase navigation">
+    <div class="demo-nav__inner">
+      <a class="demo-nav__brand" href="animation-showcase-01-staggered-entrance.html">Animation Showcase</a>
+      <div class="demo-nav__links">
+        <a href="animation-showcase-01-staggered-entrance.html">Stagger</a>
+        <a href="animation-showcase-02-continuity-layout.html">Continuity</a>
+        <a href="animation-showcase-03-scroll-reveal-parallax.html" aria-current="page">Scroll</a>
+        <a href="animation-showcase-04-spring-drag-rubberband.html">Spring</a>
+        <a href="animation-showcase-05-line-drawing-number-ticker.html">Ticker</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <h1>Scroll Driven Reveal</h1>
+    <p>Scroll to drive a route drawing, marker movement, parallax depth, and chapter reveal.</p>
+
+    <section class="scene" aria-label="Scroll driven animation">
+      <figure class="sticky-stage">
+        <div class="layer grid-lines" aria-hidden="true"></div>
+        <div class="layer route" aria-hidden="true">
+          <svg viewBox="0 0 900 620" preserveAspectRatio="none">
+            <path class="ghost-path" d="M 90 450 C 210 330, 330 510, 440 330 S 640 160, 780 210" />
+            <path class="draw-path" pathLength="1" d="M 90 450 C 210 330, 330 510, 440 330 S 640 160, 780 210" />
+          </svg>
+        </div>
+        <div class="marker" aria-hidden="true"></div>
+        <figcaption class="label">
+          <strong>Motion spec</strong>
+          <p>Pattern: scroll-driven animation, parallax, line drawing, scroll reveal. The route and marker share one scroll progress value.</p>
+        </figcaption>
+      </figure>
+
+      <div class="chapters">
+        <article class="chapter">
+          <strong>Step 1 - Reveal</strong>
+          <p>Content fades and slides into place when it enters the viewport. The purpose is orientation, not decoration.</p>
+        </article>
+        <article class="chapter">
+          <strong>Step 2 - Scroll linkage</strong>
+          <p>The line dash offset and marker position are tied directly to scroll progress, so the animation is inspectable frame by frame.</p>
+        </article>
+        <article class="chapter">
+          <strong>Step 3 - Parallax depth</strong>
+          <p>The background grid and route move at different speeds. Depth is subtle so it does not compete with the route.</p>
+        </article>
+        <aside class="spec">
+          <strong>Constraints</strong>
+          <ul>
+            <li>One scroll progress value drives all state.</li>
+            <li>Transform and SVG stroke offset animate instead of layout properties.</li>
+            <li>Reduced motion shows the final route without parallax.</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const chapters = Array.from(document.querySelectorAll(".chapter"));
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let scrollFrame = 0;
+
+    function updateScrollProgress() {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = max > 0 ? Math.min(Math.max(window.scrollY / max, 0), 1) : 0;
+      document.documentElement.style.setProperty("--scroll", progress.toFixed(4));
+    }
+
+    function requestScrollUpdate() {
+      if (scrollFrame) return;
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = 0;
+        updateScrollProgress();
+      });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        entry.target.classList.toggle("is-visible", entry.isIntersecting);
+      });
+    }, { threshold: 0.32 });
+
+    chapters.forEach((chapter) => observer.observe(chapter));
+
+    if (!prefersReducedMotion) {
+      updateScrollProgress();
+      window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+      window.addEventListener("resize", requestScrollUpdate);
+    } else {
+      document.documentElement.style.setProperty("--scroll", "1");
+      chapters.forEach((chapter) => chapter.classList.add("is-visible"));
+    }
+  </script>
+</body>
+</html>

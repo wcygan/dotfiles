@@ -1,4 +1,4 @@
 interface:
   display_name: "UI Motion Polish"
   short_description: "Polish UI motion and interaction details"
-  default_prompt: "Use $ui-motion-polish to review and refine this interface motion, interaction feedback, and component polish."
+  default_prompt: "Use $ui-motion-polish to review and refine this interface motion with explicit animation vocabulary, interaction feedback, and component polish."

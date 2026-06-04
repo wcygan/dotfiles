@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Animation Showcase 01 - Staggered Entrance</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #182030;
+      --muted: #5c667a;
+      --line: #d8deea;
+      --paper: #f6f4ee;
+      --panel: #ffffff;
+      --blue: #2f69f0;
+      --green: #1d8b65;
+      --gold: #c78b19;
+      --red: #cf4a43;
+      --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    main,
+    header,
+    .stage,
+    .panel,
+    .spec,
+    .cards,
+    .card {
+      min-width: 0;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(47, 105, 240, 0.08), transparent 34%),
+        linear-gradient(315deg, rgba(29, 139, 101, 0.08), transparent 38%),
+        var(--paper);
+    }
+
+    .demo-nav {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      border-bottom: 1px solid rgba(216, 222, 234, 0.8);
+      background: color-mix(in srgb, var(--paper) 88%, white);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 28px rgba(24, 32, 48, 0.06);
+    }
+
+    .demo-nav__inner {
+      width: min(1120px, calc(100% - 32px));
+      min-height: 56px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .demo-nav a {
+      text-decoration: none;
+    }
+
+    .demo-nav__brand {
+      color: var(--ink);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .demo-nav__links {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 6px 0;
+      min-width: 0;
+      scrollbar-width: none;
+    }
+
+    .demo-nav__links::-webkit-scrollbar {
+      display: none;
+    }
+
+    .demo-nav__links a {
+      flex: 0 0 auto;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: var(--muted);
+      padding: 7px 10px;
+      font-size: 14px;
+      font-weight: 800;
+      transition:
+        color 140ms ease,
+        background-color 140ms ease,
+        border-color 140ms ease,
+        transform 140ms var(--ease-out-ui);
+    }
+
+    .demo-nav__links a[aria-current="page"] {
+      border-color: color-mix(in srgb, var(--blue) 40%, white);
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 8px 18px rgba(47, 105, 240, 0.18);
+    }
+
+    .demo-nav__links a:focus-visible,
+    .demo-nav__brand:focus-visible {
+      outline: 3px solid rgba(47, 105, 240, 0.24);
+      outline-offset: 3px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .demo-nav__links a:hover {
+        border-color: color-mix(in srgb, var(--blue) 35%, white);
+        color: var(--ink);
+        transform: translateY(-1px);
+      }
+
+      .demo-nav__links a[aria-current="page"]:hover {
+        color: white;
+      }
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    button {
+      border: 1px solid color-mix(in srgb, var(--blue) 35%, white);
+      border-radius: 8px;
+      background: var(--blue);
+      color: white;
+      min-height: 42px;
+      padding: 0 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition:
+        transform 140ms var(--ease-out-ui),
+        background-color 140ms ease,
+        box-shadow 140ms ease;
+      box-shadow: 0 10px 22px rgba(47, 105, 240, 0.18);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button:focus-visible {
+      outline: 3px solid rgba(47, 105, 240, 0.24);
+      outline-offset: 3px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 28px rgba(47, 105, 240, 0.22);
+      }
+
+      button:hover:active {
+        transform: scale(0.97);
+      }
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .panel,
+    .spec {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      box-shadow: 0 18px 48px rgba(24, 32, 48, 0.08);
+    }
+
+    .panel {
+      padding: 22px;
+      overflow: hidden;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      min-height: 430px;
+      align-content: center;
+    }
+
+    .card {
+      min-height: 168px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      opacity: 0;
+      transform: translateY(12px) scale(0.97);
+      animation: card-enter 420ms var(--ease-out-ui) both;
+      animation-delay: calc(var(--index) * 70ms);
+    }
+
+    .card:nth-child(1) { --index: 0; border-top: 4px solid var(--blue); }
+    .card:nth-child(2) { --index: 1; border-top: 4px solid var(--green); }
+    .card:nth-child(3) { --index: 2; border-top: 4px solid var(--gold); }
+    .card:nth-child(4) { --index: 3; border-top: 4px solid var(--red); }
+
+    .replay .card {
+      animation-name: none;
+    }
+
+    .replay.is-running .card {
+      animation-name: card-enter;
+    }
+
+    .card strong {
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .card span {
+      color: var(--muted);
+      line-height: 1.45;
+      margin-top: 12px;
+    }
+
+    .chip {
+      align-self: flex-start;
+      border-radius: 999px;
+      background: #eef3ff;
+      color: #234ca8;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .spec {
+      padding: 20px;
+    }
+
+    .spec h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+
+    dl {
+      display: grid;
+      grid-template-columns: 120px minmax(0, 1fr);
+      gap: 10px 14px;
+      margin: 0;
+    }
+
+    dt {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    dd {
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    @keyframes card-enter {
+      0% {
+        opacity: 0;
+        transform: translateY(18px) scale(0.96);
+      }
+
+      72% {
+        opacity: 1;
+        transform: translateY(-2px) scale(1.015);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .demo-nav__inner {
+        grid-template-columns: 1fr;
+        gap: 2px;
+        padding: 8px 0;
+      }
+
+      .demo-nav__links {
+        gap: 5px;
+      }
+
+      .demo-nav__links a {
+        padding: 5px 7px;
+        font-size: 13px;
+      }
+
+      header,
+      .stage {
+        grid-template-columns: 1fr;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+        min-height: 0;
+      }
+
+      dl {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+        scroll-behavior: auto !important;
+      }
+
+      .card {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="demo-nav" aria-label="Animation showcase navigation">
+    <div class="demo-nav__inner">
+      <a class="demo-nav__brand" href="animation-showcase-01-staggered-entrance.html">Animation Showcase</a>
+      <div class="demo-nav__links">
+        <a href="animation-showcase-01-staggered-entrance.html" aria-current="page">Stagger</a>
+        <a href="animation-showcase-02-continuity-layout.html">Continuity</a>
+        <a href="animation-showcase-03-scroll-reveal-parallax.html">Scroll</a>
+        <a href="animation-showcase-04-spring-drag-rubberband.html">Spring</a>
+        <a href="animation-showcase-05-line-drawing-number-ticker.html">Ticker</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header>
+      <div>
+        <h1>Staggered Entrance</h1>
+        <p>Four cards enter as a coordinated cascade: fade, slide, scale, and a small overshoot.</p>
+      </div>
+      <button id="replay" type="button">Replay</button>
+    </header>
+
+    <section class="stage" aria-label="Staggered entrance animation">
+      <div class="panel replay is-running" id="panel">
+        <div class="cards">
+          <article class="card">
+            <span class="chip">Fade in</span>
+            <strong>Opacity starts at zero</strong>
+            <span>The element appears without popping abruptly into the reading flow.</span>
+          </article>
+          <article class="card">
+            <span class="chip">Slide in</span>
+            <strong>Vertical translate creates direction</strong>
+            <span>Motion starts below the final position and settles upward.</span>
+          </article>
+          <article class="card">
+            <span class="chip">Scale in</span>
+            <strong>Scale adds physical arrival</strong>
+            <span>The card starts at 0.96 scale, briefly overshoots, then lands at 1.</span>
+          </article>
+          <article class="card">
+            <span class="chip">Stagger</span>
+            <strong>Delay creates orchestration</strong>
+            <span>Each card waits 70ms after the previous card, forming a readable sequence.</span>
+          </article>
+        </div>
+      </div>
+
+      <aside class="spec" aria-label="Motion spec">
+        <h2>Motion spec</h2>
+        <dl>
+          <dt>Purpose</dt>
+          <dd>Orient the reader to a new group of related items.</dd>
+          <dt>Pattern</dt>
+          <dd>Staggered entrance with fade, slide, scale, and pop-in overshoot.</dd>
+        <dt>Timing</dt>
+          <dd>420ms per item, 70ms stagger, fill mode both.</dd>
+          <dt>Easing</dt>
+          <dd>Ease-out cubic-bezier for responsive arrival.</dd>
+          <dt>Performance</dt>
+          <dd>Transform and opacity only. No layout properties animate.</dd>
+          <dt>Reduced motion</dt>
+          <dd>Cards render instantly in final position.</dd>
+        </dl>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const panel = document.querySelector("#panel");
+    const replayButton = document.querySelector("#replay");
+
+    replayButton.addEventListener("click", () => {
+      panel.classList.remove("is-running");
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          panel.classList.add("is-running");
+        });
+      });
+    });
+  </script>
+</body>
+</html>

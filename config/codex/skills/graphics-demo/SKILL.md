@@ -10,6 +10,7 @@ Build demos that explain one idea clearly, from a static semantic figure to a li
 Success means:
 - The concept is named in one sentence before any layout, markup, or renderer is chosen.
 - The demo uses the lowest-complexity tier that still conveys the idea (static HTML/CSS before canvas, canvas before WebGL).
+- Motion requests use explicit vocabulary from `references/animation-vocabulary.md`: purpose, pattern, timing, easing or physics, spatial rules, interaction feedback, performance, and reduced-motion constraints.
 - HTML expresses meaning before visual structure; interactive demos keep model state separate from rendering.
 - Components own their internal styling; parents own placement.
 - The work respects the host page's render/runtime constraints (especially prerender-safe React) and has a narrow validation path.
@@ -25,6 +26,10 @@ Choose the lowest tier that conveys the concept. Most "demos" only need the firs
 When a concept spans tiers, split it: a static figure to frame the idea, then a live demo for the part that benefits from manipulation.
 
 ## Reference Map
+
+### Motion vocabulary
+- `references/animation-vocabulary.md`: prompt-ready vocabulary for animation patterns, timing, easing, springs, interaction feedback, performance, and reduced-motion constraints. Read this before adding or reviewing motion; use its terms to restate vague animation asks into a concrete motion spec.
+- For UI motion implementation examples, see the sibling `ui-motion-polish` skill's `examples/animation-showcase-*.html` files. Use those for staggered entrances, continuity transitions, scroll-driven reveal, spring drag/rubber-banding, and line drawing/number ticker patterns before inventing a fresh animation surface.
 
 ### Non-interactive: HTML & CSS layout
 - `references/semantic-html.md`: document structure, sectioning, landmarks, native controls, and when `div` is acceptable.
@@ -85,17 +90,18 @@ Use `examples/*` as runnable teaching artifacts. Each is standalone — open it 
 1. Inspect the article/repo context first: framework, MDX or build pipeline, CSS strategy, design tokens, existing components, accessibility helpers, and browser verification path.
 2. Name the concept in one sentence. If it cannot be stated narrowly, split it into smaller demos.
 3. **Pick the tier** (above). Default to non-interactive; only escalate to a live model when manipulation or motion is essential.
-4. Choose the representation before the renderer: the visual form that makes the concept easiest to inspect — annotated figure, timeline, log, ring, map, field, small multiples, state table, direct-manipulation scene, instrument panel, or another concept-specific shape.
-5. For static work, choose layout by dimensionality: Flexbox for one-dimensional rows/toolbars/wrapping chips, Grid for two-dimensional shells/dashboards/galleries, normal flow when it already reads correctly. Prefer native semantics over ARIA.
-6. For interactive work, choose the renderer:
+4. If motion is involved, read `references/animation-vocabulary.md` and name the animation vocabulary before coding: purpose, pattern, timing, easing or physics, spatial rules, feedback behavior, performance constraints, and reduced-motion fallback. Do not proceed from "make it smooth" or "make it animated" without translating it into a motion spec.
+5. Choose the representation before the renderer: the visual form that makes the concept easiest to inspect — annotated figure, timeline, log, ring, map, field, small multiples, state table, direct-manipulation scene, instrument panel, or another concept-specific shape.
+6. For static work, choose layout by dimensionality: Flexbox for one-dimensional rows/toolbars/wrapping chips, Grid for two-dimensional shells/dashboards/galleries, normal flow when it already reads correctly. Prefer native semantics over ARIA.
+7. For interactive work, choose the renderer:
    - Canvas 2D for most mechanical, geometric, ray, chart-like, and annotated 2D systems.
    - SVG for mostly static vector diagrams, selectable labels, and low-element-count state diagrams.
    - Canvas/WebGL plus DOM/SVG overlays for dense visuals with readable labels and controls.
    - Three.js for 3D objects, cameras, lighting, depth, rotations, spatial mechanisms, or many mesh instances.
    - A physics library only when the simulation needs collisions, rigid bodies, joints, or constraint solving beyond a few formulas.
-7. Design the model before drawing. Keep parameters, derived values, and simulation state separate from rendering.
-8. Build a tiny vertical slice: static render, then one controlled parameter, then animation, then labels and polish.
-9. Verify the runtime lifecycle: resize, pause, cleanup, reduced motion, mobile pointer input, and prerender/static build behavior.
+8. Design the model before drawing. Keep parameters, derived values, and simulation state separate from rendering.
+9. Build a tiny vertical slice: static render, then one controlled parameter, then animation, then labels and polish.
+10. Verify the runtime lifecycle: resize, pause, cleanup, reduced motion, mobile pointer input, and prerender/static build behavior.
 
 ## Implementation Shape
 
@@ -186,6 +192,7 @@ When adapting a standalone demo into a website, map these values onto the site's
 - Color carries meaning and maintains WCAG contrast.
 - Styling stays boring where the product is operational; be expressive only when the domain warrants it.
 - Do not fake physics with arbitrary easing when the article claims a mechanical or physical relationship — use formulas, constraints, or clearly labeled illustrative motion.
+- Use animation vocabulary as an implementation contract: state the purpose, named pattern, timing/orchestration, easing or physics, spatial continuity rule, interaction feedback, performance target, and reduced-motion behavior.
 - Prefer readable math and named intermediate values over compressed vector cleverness.
 - Keep controls close to the visual they affect; make default states useful (the first frame should explain something before interaction).
 - Live demos start playing by default, with pause, step, scrub, and reset available.

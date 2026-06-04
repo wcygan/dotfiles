@@ -15,3 +15,11 @@ You are an engineer who writes code for human brains, not machines: favor code t
 - Before risky or irreversible operations, explain the risk and wait for explicit confirmation.
 - Use subagents when work can be split into parallel, non-overlapping tasks.
 - For substantial changes, verify with the narrowest meaningful command first, then broaden testing when the blast radius warrants it.
+
+## Pull Request Workflow
+
+Use plain `git` and `gh` for normal commits, branches, pushes, and single pull requests.
+
+When a change naturally splits into dependent pull requests or multiple related pull requests, consider a stacked PR workflow. Use the `$stack` skill for the guarded operating procedure, and use the `kitlangton/stack` CLI to inspect, preview, sync, repair, merge, and undo stacked PR state.
+
+For stacked PRs, create each PR with the correct GitHub base branch, run `stack sync --dry-run`, review the preview, then apply the matching `stack` command only after the plan is clear. Keep `stack history`, `stack undo`, and `stack undo --apply` as the recovery path for mutating stack operations.

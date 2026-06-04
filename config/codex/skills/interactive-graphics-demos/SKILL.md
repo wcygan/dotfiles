@@ -7,10 +7,11 @@ description: "Design, build, review, or debug article-embedded interactive graph
 
 Build model-driven visual explanations for articles. Treat each demo as a small graphics system: domain model, renderer, controls, lifecycle, and article integration.
 
-Success means the demo explains one concept clearly, runs as a live model rather than a video, respects the host page's render/runtime constraints, and has a narrow validation path.
+Success means the demo explains one concept clearly, runs as a live model rather than a video, uses explicit animation vocabulary when motion matters, respects the host page's render/runtime constraints, and has a narrow validation path.
 
 ## Reference Map
 
+- `references/animation-vocabulary.md`: prompt-ready vocabulary for animation patterns, timing, easing, springs, interaction feedback, performance, and reduced-motion constraints. Read this before adding or reviewing motion; use its terms to restate vague animation asks into a concrete motion spec.
 - `references/canvas-2d.md`: Canvas 2D renderer structure, drawing order, transforms, hit testing, and common primitives.
 - `references/animation-loop.md`: `requestAnimationFrame`, fixed/variable timestep choices, play/pause/scrub behavior, and cleanup.
 - `references/spatial-math.md`: vectors, coordinate spaces, transforms, curves, projections, and mechanical geometry.
@@ -34,16 +35,17 @@ Success means the demo explains one concept clearly, runs as a live model rather
 1. Inspect the article and repo context first: framework, MDX pipeline, existing demo components, CSS constraints, build commands, and browser verification path.
 2. Name the concept being explained in one sentence. If the concept cannot be stated narrowly, split it into smaller demos.
 3. Choose the representation before the renderer. Name the visual form that makes the concept easiest to inspect: inline annotated figure, timeline, log, ring, map, field, small multiples, state table, direct-manipulation scene, instrument panel, or another concept-specific shape.
-4. Choose the renderer:
+4. If motion is involved, read `references/animation-vocabulary.md` and name the animation vocabulary before coding: purpose, pattern, timing, easing or physics, spatial rules, feedback behavior, performance constraints, and reduced-motion fallback. Do not proceed from "make it smooth" or "make it animated" without translating it into a motion spec.
+5. Choose the renderer:
    - Canvas 2D for most mechanical, geometric, ray, chart-like, and annotated 2D systems.
    - SVG for mostly static vector diagrams, selectable labels, and low-element-count state diagrams.
    - Canvas or WebGL plus DOM/SVG overlays for dense visuals with readable labels and controls.
    - Three.js for 3D objects, cameras, lighting, depth, rotations, spatial mechanisms, or many mesh instances.
    - A physics library only when the simulation needs collisions, rigid bodies, joints, or constraint solving beyond a few formulas.
-5. Design the model before drawing. Keep parameters, derived values, and simulation state separate from rendering details.
-6. Build a tiny vertical slice: static render, then one controlled parameter, then animation, then labels and polish.
-7. For software diagrams, identify the invariant and keep ownership, quorum, message, or commit truth in derived model state before styling it.
-8. Verify the runtime lifecycle: resize, pause, cleanup, reduced motion, mobile pointer input, and prerender/static build behavior.
+6. Design the model before drawing. Keep parameters, derived values, and simulation state separate from rendering details.
+7. Build a tiny vertical slice: static render, then one controlled parameter, then animation, then labels and polish.
+8. For software diagrams, identify the invariant and keep ownership, quorum, message, or commit truth in derived model state before styling it.
+9. Verify the runtime lifecycle: resize, pause, cleanup, reduced motion, mobile pointer input, and prerender/static build behavior.
 
 ## Implementation Shape
 
@@ -161,6 +163,7 @@ For software protocol or state-machine diagrams, build in this order:
 ## Quality Bar
 
 - Do not fake physics with arbitrary easing when the article claims a mechanical or physical relationship. Use formulas, constraints, or clearly labeled illustrative motion.
+- Use animation vocabulary as an implementation contract: state the purpose, named pattern, timing/orchestration, easing or physics, spatial continuity rule, interaction feedback, performance target, and reduced-motion behavior.
 - Prefer readable math and named intermediate values over compressed vector cleverness.
 - Keep controls close to the visual they affect.
 - Make default states useful: the first frame should explain something even before interaction.

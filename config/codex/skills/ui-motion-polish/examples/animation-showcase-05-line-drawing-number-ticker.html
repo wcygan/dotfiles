@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Animation Showcase 05 - Line Drawing And Number Ticker</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #182030;
+      --muted: #5c667a;
+      --line: #d8deea;
+      --paper: #f4f4f0;
+      --panel: #ffffff;
+      --blue: #2f69f0;
+      --green: #1d8b65;
+      --gold: #c78b19;
+      --red: #cf4a43;
+      --progress: 0;
+      --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    main,
+    header,
+    .layout,
+    .stage,
+    .spec,
+    .metrics,
+    .metric {
+      min-width: 0;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    .demo-nav {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      border-bottom: 1px solid rgba(216, 222, 234, 0.8);
+      background: color-mix(in srgb, var(--paper) 88%, white);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 28px rgba(24, 32, 48, 0.06);
+    }
+
+    .demo-nav__inner {
+      width: min(1120px, calc(100% - 32px));
+      min-height: 56px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .demo-nav a {
+      text-decoration: none;
+    }
+
+    .demo-nav__brand {
+      color: var(--ink);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .demo-nav__links {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 6px 0;
+      min-width: 0;
+      scrollbar-width: none;
+    }
+
+    .demo-nav__links::-webkit-scrollbar {
+      display: none;
+    }
+
+    .demo-nav__links a {
+      flex: 0 0 auto;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: var(--muted);
+      padding: 7px 10px;
+      font-size: 14px;
+      font-weight: 800;
+      transition:
+        color 140ms ease,
+        background-color 140ms ease,
+        border-color 140ms ease,
+        transform 140ms var(--ease-out-ui);
+    }
+
+    .demo-nav__links a[aria-current="page"] {
+      border-color: color-mix(in srgb, var(--blue) 40%, white);
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 8px 18px rgba(47, 105, 240, 0.18);
+    }
+
+    .demo-nav__links a:focus-visible,
+    .demo-nav__brand:focus-visible {
+      outline: 3px solid rgba(47, 105, 240, 0.24);
+      outline-offset: 3px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .demo-nav__links a:hover {
+        border-color: color-mix(in srgb, var(--blue) 35%, white);
+        color: var(--ink);
+        transform: translateY(-1px);
+      }
+
+      .demo-nav__links a[aria-current="page"]:hover {
+        color: white;
+      }
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 26px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    button {
+      border: 1px solid color-mix(in srgb, var(--green) 40%, white);
+      border-radius: 8px;
+      background: var(--green);
+      color: white;
+      min-height: 42px;
+      padding: 0 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition:
+        transform 140ms var(--ease-out-ui),
+        box-shadow 140ms ease;
+      box-shadow: 0 12px 24px rgba(29, 139, 101, 0.18);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button:focus-visible {
+      outline: 3px solid rgba(29, 139, 101, 0.24);
+      outline-offset: 3px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 20px;
+    }
+
+    .stage,
+    .spec {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 18px 46px rgba(24, 32, 48, 0.08);
+    }
+
+    .stage {
+      padding: 22px;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, #fafdff, #f4f8fb);
+      border: 1px solid var(--line);
+    }
+
+    .grid {
+      stroke: #dfe5ef;
+      stroke-width: 1;
+    }
+
+    .draw-path {
+      fill: none;
+      stroke: var(--blue);
+      stroke-width: 9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 1;
+      stroke-dashoffset: calc(1 - var(--progress));
+      filter: drop-shadow(0 8px 18px rgba(47, 105, 240, 0.22));
+    }
+
+    .checkpoint {
+      fill: white;
+      stroke: var(--green);
+      stroke-width: 5;
+      transform-box: fill-box;
+      transform-origin: center;
+      transform: scale(calc(0.72 + var(--point-progress) * 0.28));
+      opacity: calc(0.28 + var(--point-progress) * 0.72);
+    }
+
+    .metrics {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcff;
+      padding: 14px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .metric output {
+      display: block;
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .spec {
+      padding: 20px;
+    }
+
+    .spec h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .spec ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    @media (max-width: 820px) {
+      .demo-nav__inner {
+        grid-template-columns: 1fr;
+        gap: 2px;
+        padding: 8px 0;
+      }
+
+      .demo-nav__links {
+        gap: 5px;
+      }
+
+      .demo-nav__links a {
+        padding: 5px 7px;
+        font-size: 13px;
+      }
+
+      header,
+      .layout,
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        transition-duration: 1ms !important;
+      }
+
+      :root {
+        --progress: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="demo-nav" aria-label="Animation showcase navigation">
+    <div class="demo-nav__inner">
+      <a class="demo-nav__brand" href="animation-showcase-01-staggered-entrance.html">Animation Showcase</a>
+      <div class="demo-nav__links">
+        <a href="animation-showcase-01-staggered-entrance.html">Stagger</a>
+        <a href="animation-showcase-02-continuity-layout.html">Continuity</a>
+        <a href="animation-showcase-03-scroll-reveal-parallax.html">Scroll</a>
+        <a href="animation-showcase-04-spring-drag-rubberband.html">Spring</a>
+        <a href="animation-showcase-05-line-drawing-number-ticker.html" aria-current="page">Ticker</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header>
+      <div>
+        <h1>Line Drawing And Number Ticker</h1>
+        <p>An SVG path draws itself while tabular numbers tick toward the same progress value.</p>
+      </div>
+      <button id="replay" type="button">Replay</button>
+    </header>
+
+    <section class="layout" aria-label="Line drawing and ticker animation">
+      <div class="stage">
+        <svg viewBox="0 0 900 460" role="img" aria-label="Route line drawing with checkpoints">
+          <g class="grid" aria-hidden="true">
+            <path d="M80 80H820M80 160H820M80 240H820M80 320H820M80 400H820" />
+            <path d="M120 50V420M260 50V420M400 50V420M540 50V420M680 50V420M820 50V420" />
+          </g>
+          <path class="draw-path" pathLength="1" d="M90 350 C170 260 230 305 300 220 S455 115 540 190 S650 335 790 145" />
+          <circle class="checkpoint" cx="90" cy="350" r="16" style="--point-progress: var(--p1)" />
+          <circle class="checkpoint" cx="300" cy="220" r="16" style="--point-progress: var(--p2)" />
+          <circle class="checkpoint" cx="540" cy="190" r="16" style="--point-progress: var(--p3)" />
+          <circle class="checkpoint" cx="790" cy="145" r="16" style="--point-progress: var(--p4)" />
+        </svg>
+
+        <div class="metrics" aria-live="polite">
+          <div class="metric"><span>Progress</span><output id="progressOut">0%</output></div>
+          <div class="metric"><span>Points</span><output id="pointsOut">0</output></div>
+          <div class="metric"><span>Duration</span><output>1800ms</output></div>
+        </div>
+      </div>
+
+      <aside class="spec">
+        <h2>Motion spec</h2>
+        <ul>
+          <li>Purpose: reveal path construction and keep numeric state synchronized.</li>
+          <li>Pattern: line drawing, number ticker, tabular numbers, checkpoint scale-in.</li>
+          <li>Timing: 1800ms ease-out, replayable, fill mode through JS final state.</li>
+          <li>Performance: SVG stroke dash offset plus text updates.</li>
+          <li>Reduced motion: route renders at complete progress.</li>
+        </ul>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const root = document.documentElement;
+    const progressOut = document.querySelector("#progressOut");
+    const pointsOut = document.querySelector("#pointsOut");
+    const replay = document.querySelector("#replay");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let animationFrame = 0;
+    let startedAt = 0;
+    const duration = 1800;
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function clamp01(value) {
+      return Math.min(Math.max(value, 0), 1);
+    }
+
+    function checkpointProgress(progress, start) {
+      return clamp01((progress - start) / 0.08);
+    }
+
+    function render(progress) {
+      root.style.setProperty("--progress", progress.toFixed(4));
+      root.style.setProperty("--p1", checkpointProgress(progress, 0.02).toFixed(4));
+      root.style.setProperty("--p2", checkpointProgress(progress, 0.32).toFixed(4));
+      root.style.setProperty("--p3", checkpointProgress(progress, 0.58).toFixed(4));
+      root.style.setProperty("--p4", checkpointProgress(progress, 0.9).toFixed(4));
+      progressOut.value = `${Math.round(progress * 100)}%`;
+      pointsOut.value = String(Math.floor(progress * 1280));
+    }
+
+    function tick(now) {
+      if (!startedAt) startedAt = now;
+      const raw = Math.min((now - startedAt) / duration, 1);
+      const eased = easeOutCubic(raw);
+      render(eased);
+      if (raw < 1) {
+        animationFrame = requestAnimationFrame(tick);
+      }
+    }
+
+    function start() {
+      cancelAnimationFrame(animationFrame);
+      startedAt = 0;
+      if (reduced) {
+        render(1);
+      } else {
+        render(0);
+        animationFrame = requestAnimationFrame(tick);
+      }
+    }
+
+    replay.addEventListener("click", start);
+    start();
+  </script>
+</body>
+</html>

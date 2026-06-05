@@ -1,4 +1,4 @@
 interface:
   display_name: "Goal Shaping"
   short_description: "Anchor Codex goals in evidence"
-  default_prompt: "Use $goal-shaping to turn my direction, references, and rough task ideas into the strongest anchored Codex goal, set it with the available goal tool when context is sufficient, and start the first checkpoint."
+  default_prompt: "Use $goal-shaping to turn my direction, references, rough task ideas, and success criteria into an anchored, measurable Codex goal with a realistic validation loop, set it with the available goal tool when context is sufficient, and start the first checkpoint."

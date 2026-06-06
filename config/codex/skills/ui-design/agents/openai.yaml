@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI Design"
+  short_description: "Polish UI, components, and motion details"
+  default_prompt: "Use $ui-design to review this interface for polish, motion, and component details."

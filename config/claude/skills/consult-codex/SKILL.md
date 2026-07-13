@@ -1,6 +1,6 @@
 ---
 name: consult-codex
-description: "Use when Claude should ask OpenAI's Codex CLI for a focused second opinion, independent codebase analysis, architecture review, bug-hypothesis check, implementation critique, or planning help from a separate model. Grounds Codex in the local `config/codex/skills/codex-docs` skill and defaults to read-only headless consultation via `codex exec --sandbox read-only`."
+description: "Use when Claude should ask OpenAI's Codex CLI for a focused second opinion, independent codebase analysis, architecture review, bug-hypothesis check, implementation critique, or planning help from a separate model. Defaults to read-only headless consultation via `codex exec --sandbox read-only`."
 ---
 
 # Consult Codex
@@ -36,8 +36,7 @@ PROMPT
 
 `scripts/consult_codex.sh`:
 
-- Resolves the local Codex docs skill from `$CODEX_DOCS_DIR`, `$DOTFILES_DIR`, this dotfiles checkout, `$HOME/.codex/skills`, or the current repo.
-- Grounds Codex by prepending a system block to the prompt that points at `codex-docs/SKILL.md` plus the relevant references: `agents-md.md`, `skills.md`, `subagents.md`, `hooks.md`, `rules.md`, `config-basic.md`, and `config-advanced.md`.
+- Grounds Codex with a self-contained read-only consultation contract and asks it to inspect applicable `AGENTS.md` files before answering.
 - Runs `codex exec --skip-git-repo-check --color never --sandbox read-only` with `--model` honoring `$CODEX_MODEL` or the user's `config.toml` default.
 - Captures the final assistant message via `--output-last-message` and prints it to stdout, suppressing the event-stream noise. Use `--raw-output` to passthrough the full event stream instead.
 
@@ -50,7 +49,6 @@ scripts/consult_codex.sh --bare "Skip ~/.codex/config.toml and execpolicy rules 
 scripts/consult_codex.sh --output-format json "Stream JSONL events instead of the final message"
 scripts/consult_codex.sh --raw-output "Print Codex's full stdout instead of just the last message"
 scripts/consult_codex.sh --unsafe "Bypass approvals and sandboxing on a trusted worktree"
-scripts/consult_codex.sh --codex-docs /path/to/codex-docs "Use this specific reference copy"
 scripts/consult_codex.sh --print-prompt "Show the assembled prompts without calling codex"
 scripts/consult_codex.sh --print-command "Show the codex command without running it"
 ```

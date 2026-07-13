@@ -1,4 +1,0 @@
-interface:
-  display_name: "Interactive Graphics Demos"
-  short_description: "Build article-ready graphics demos"
-  default_prompt: "Use $interactive-graphics-demos to design and implement an article-ready explainer, including a concrete animation-vocabulary spec for any motion."

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Temporal Python SDK"
-  short_description: "Work with Temporal Python SDK apps"
-  default_prompt: "Use $temporal-python-sdk to implement or review Temporal Python SDK code using official docs and focused references."

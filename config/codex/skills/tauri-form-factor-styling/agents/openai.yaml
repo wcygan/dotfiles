@@ -1,4 +1,0 @@
-interface:
-  display_name: "Tauri Form Factor Styling"
-  short_description: "Responsive Tauri app styling across devices"
-  default_prompt: "Use $tauri-form-factor-styling to improve this Tauri app's desktop, tablet, and phone layout safely."

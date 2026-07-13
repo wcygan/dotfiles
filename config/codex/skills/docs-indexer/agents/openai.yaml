@@ -1,4 +1,0 @@
-interface:
-  display_name: "Docs Indexer"
-  short_description: "Build concise indexes from documentation sources."
-  default_prompt: "Use $docs-indexer to crawl these docs and produce a relevance-ranked page index."

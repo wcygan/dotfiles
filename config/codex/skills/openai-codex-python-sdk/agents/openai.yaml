@@ -1,4 +1,0 @@
-interface:
-  display_name: "OpenAI Codex Python SDK"
-  short_description: "Build with the openai-codex Python SDK"
-  default_prompt: "Use $openai-codex-python-sdk to build or debug this Python Codex SDK workflow."

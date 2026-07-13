@@ -1,4 +1,0 @@
-interface:
-  display_name: "Mermaid Diagrams"
-  short_description: "Create Mermaid diagrams"
-  default_prompt: "Use $mermaid-diagrams to create a clear architecture diagram with validated Mermaid syntax."

@@ -1,4 +1,0 @@
-interface:
-  display_name: "TiDB Query Tuning"
-  short_description: "Diagnose slow queries and bad TiDB plans"
-  default_prompt: "Use $tidb-query-tuning to analyze this TiDB query plan and suggest the smallest verified fix."

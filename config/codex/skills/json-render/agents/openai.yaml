@@ -1,4 +1,0 @@
-interface:
-  display_name: "json-render"
-  short_description: "Generative JSON UI for Bun and React"
-  default_prompt: "Use $json-render to add a Bun-friendly json-render catalog, registry, or generated UI flow."

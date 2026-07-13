@@ -1,4 +1,0 @@
-interface:
-  display_name: "Effect TypeScript Guide"
-  short_description: "Build idiomatic Effect TypeScript"
-  default_prompt: "Use $effect-typescript-docs to implement idiomatic Effect TypeScript code with official-doc verification."

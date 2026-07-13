@@ -1,4 +1,0 @@
-interface:
-  display_name: "Deno Docs"
-  short_description: "Navigate official Deno runtime docs"
-  default_prompt: "Use $deno-docs to verify Deno runtime guidance against the official docs."

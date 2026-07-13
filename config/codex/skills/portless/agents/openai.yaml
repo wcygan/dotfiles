@@ -1,4 +1,0 @@
-interface:
-  display_name: "Portless"
-  short_description: "Use stable local dev URLs"
-  default_prompt: "Use $portless to configure this app with stable named .localhost development URLs."

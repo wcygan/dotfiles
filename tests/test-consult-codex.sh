@@ -12,10 +12,8 @@ fail() {
 [[ -x "$SCRIPT" ]] || fail "consult_codex.sh is not executable"
 
 prompt_output="$("$SCRIPT" --print-prompt "Do a read-only smoke check.")"
-grep -F -- "$ROOT/config/codex/skills/codex-docs" <<<"$prompt_output" >/dev/null \
-    || fail "prompt did not resolve codex-docs path"
-grep -F -- "references/agents-md.md" <<<"$prompt_output" >/dev/null \
-    || fail "prompt did not cite agents-md reference"
+grep -F -- "Inspect applicable AGENTS.md files" <<<"$prompt_output" >/dev/null \
+    || fail "prompt did not require project instruction discovery"
 grep -F -- "Do not edit files" <<<"$prompt_output" >/dev/null \
     || fail "prompt did not include read-only instruction"
 

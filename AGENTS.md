@@ -64,6 +64,6 @@ Rollback: re-link configs (script backs up physical dirs), or `nix profile rollb
 * **Fish aliases & abbreviations policy** → `fish-aliases-policy` skill
 * **nix-direnv perf, concurrent rebuilds, Nix daemon troubleshooting** → `nix-direnv-perf` skill
 
-## Migrations (none outstanding)
+## Migrations
 
-Record any one-time steps here in future PRs.
+* **2026-07-13 — Reset global Codex skills**: active global skills now live only under `config/codex/skills`; the previous catalog was removed and remains recoverable from Git history. Existing `~/.codex/skills` symlinks require no manual migration because they immediately reflect the emptied active directory.

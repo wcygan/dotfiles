@@ -86,10 +86,9 @@ test: test-pre test-local test-shell
 test-pre:
 	@echo "🔍 Running pre-flight checks..."
 	@cd tests && ./test-fish-setup.sh
-	@cd tests && ./test-uv-scripts.sh
 	@cd tests && ./test-link-config.sh
 	@cd tests && ./test-rustup-setup.sh
-	@cd tests && ./test-consult-claude.sh
+	@cd tests && ./test-consult-codex.sh
 
 # Local isolated test
 test-local:
@@ -169,7 +168,7 @@ setup-rustup-components:
 	@./scripts/setup-rustup-components.sh
 	@echo "✅ Rust components configured!"
 
-# Install curated vendor agent skills (Stripe, Resend, etc.)
+# Install curated vendor agent skills (Uv and Portless)
 install-skills:
 	@echo "🧠 Installing vendor agent skills..."
 	@./scripts/install-skills.sh

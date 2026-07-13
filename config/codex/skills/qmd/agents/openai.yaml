@@ -1,4 +1,0 @@
-interface:
-  display_name: "qmd"
-  short_description: "Search indexed local Markdown"
-  default_prompt: "Use $qmd to find and retrieve relevant local Markdown sources before answering."

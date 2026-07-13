@@ -1,4 +1,0 @@
-interface:
-  display_name: "TiDB MySQL"
-  short_description: "Review TiDB via MySQL clients and SQL"
-  default_prompt: "Use $tidb-mysql to review this MySQL-compatible schema or query for TiDB handoff and compatibility."

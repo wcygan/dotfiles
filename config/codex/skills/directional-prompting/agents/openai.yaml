@@ -1,4 +1,0 @@
-interface:
-  display_name: "Directional Prompting"
-  short_description: "Outcome-first plus directional language for any prompt"
-  default_prompt: "Use $directional-prompting to write or audit prompts, agent directives, skill descriptions, slash commands, AGENTS.md, CLAUDE.md, tool descriptions, and eval rubrics with an outcome block followed by directional execution."

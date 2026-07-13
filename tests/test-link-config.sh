@@ -176,6 +176,12 @@ else
     fail "config/codex/skills is missing"
 fi
 
+if find "$ROOT/config/codex/skills" -name SKILL.md -type f | grep -q .; then
+    fail "config/codex/skills should start without active global skills"
+else
+    pass "config/codex/skills starts without active global skills"
+fi
+
 if [[ -d "$ROOT/config/pi/skills" ]]; then
     pass "config/pi/skills exists as the pi skills source"
 else
@@ -187,6 +193,22 @@ if grep -q "link_pi_skills" "$ROOT/scripts/link-config.sh"; then
 else
     fail "link-config.sh does not call link_pi_skills"
 fi
+
+if grep -Fq 'astral-sh/claude-code-plugins@uv' "$ROOT/scripts/install-skills.sh" &&
+   grep -Fq 'vercel-labs/portless@portless' "$ROOT/scripts/install-skills.sh"; then
+    pass "vendor installer retains Uv and Portless"
+else
+    fail "vendor installer is missing Uv or Portless"
+fi
+
+for removed_skill in \
+    stripe-best-practices resend resend-cli react-email email-best-practices oauth; do
+    if grep -Eq "^[[:space:]]+\"[^\"]+@${removed_skill}\"$" "$ROOT/scripts/install-skills.sh"; then
+        fail "vendor installer still includes $removed_skill"
+    else
+        pass "vendor installer excludes $removed_skill"
+    fi
+done
 
 echo ""
 echo "All link-config checks passed."

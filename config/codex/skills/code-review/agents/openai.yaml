@@ -1,4 +1,0 @@
-interface:
-  display_name: "Code Review"
-  short_description: "Strict maintainability code reviews"
-  default_prompt: "Use $code-review to perform a strict maintainability review of the current branch."

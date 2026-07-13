@@ -1,4 +1,0 @@
-interface:
-  display_name: "Playwright CLI"
-  short_description: "Drive browser sessions and Playwright tests"
-  default_prompt: "Use $playwright-cli to inspect this web page, drive the browser with snapshots, and debug the Playwright test flow."

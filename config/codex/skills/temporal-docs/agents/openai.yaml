@@ -1,4 +1,0 @@
-interface:
-  display_name: "Temporal Docs"
-  short_description: "Navigate Temporal concepts docs"
-  default_prompt: "Use $temporal-docs to explain a Temporal concept from the official docs."

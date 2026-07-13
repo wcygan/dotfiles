@@ -1,5 +1,0 @@
-interface:
-  display_name: "Data Systems Concepts"
-  short_description: "Study and implement database and distributed-systems concepts"
-  default_prompt: "Use $data-systems-concepts to explain this data-systems topic and suggest a focused implementation exercise."
-

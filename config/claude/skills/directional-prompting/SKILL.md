@@ -6,7 +6,7 @@ metadata:
   version: "2.0.0"
   source: "https://github.com/kingbootoshi/directional-prompting/blob/main/plugins/directional-prompting/skills/directional-prompting/SKILL.md"
   license: "MIT"
-  adapted-for: "Claude Code skill (translated from the Codex skill at config/codex/skills/directional-prompting)"
+  adapted-for: "Claude Code skill translated from the former global Codex version"
 ---
 
 # Directional Prompting

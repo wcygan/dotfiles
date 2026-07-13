@@ -1,4 +1,0 @@
-interface:
-  display_name: "Codex Docs"
-  short_description: "Official Codex CLI docs guide"
-  default_prompt: "Use $codex-docs to answer this Codex CLI configuration question from official docs."

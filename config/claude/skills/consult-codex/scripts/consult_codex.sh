@@ -18,7 +18,6 @@ Options:
   --raw-output              Print Codex's full stdout event stream instead of just the last message.
   --append-prompt <text>    Append extra context to the assembled prompt.
   --codex-arg <arg>         Pass one additional raw argument to codex. Repeat as needed.
-  --codex-docs <path>       Path to codex-docs skill. Defaults are auto-detected.
   --print-prompt            Print the assembled prompts without running codex.
   --print-command           Print the codex command without running it.
   -h, --help                Show this help.
@@ -27,7 +26,6 @@ USAGE
 
 model="${CODEX_MODEL:-}"
 sandbox="read-only"
-codex_docs_dir="${CODEX_DOCS_DIR:-}"
 output_format="${CONSULT_CODEX_OUTPUT_FORMAT:-text}"
 append_prompt=""
 print_prompt=false
@@ -91,11 +89,6 @@ while [[ $# -gt 0 ]]; do
             extra_codex_args+=("$2")
             shift 2
             ;;
-        --codex-docs)
-            [[ $# -ge 2 ]] || { echo "error: --codex-docs requires a path" >&2; exit 2; }
-            codex_docs_dir="$2"
-            shift 2
-            ;;
         --print-prompt)
             print_prompt=true
             shift
@@ -146,59 +139,6 @@ case "$output_format" in
         ;;
 esac
 
-script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-
-normalize_dir() {
-    local dir="$1"
-    [[ -d "$dir" ]] || return 1
-    (cd "$dir" && pwd -P)
-}
-
-resolve_codex_docs_dir() {
-    local candidate repo_root
-
-    if [[ -n "$codex_docs_dir" ]]; then
-        if [[ -f "$codex_docs_dir/SKILL.md" ]]; then
-            normalize_dir "$codex_docs_dir"
-            return 0
-        fi
-        echo "error: --codex-docs does not contain SKILL.md: $codex_docs_dir" >&2
-        return 1
-    fi
-
-    if [[ -n "${DOTFILES_DIR:-}" ]]; then
-        candidate="$DOTFILES_DIR/config/codex/skills/codex-docs"
-        if [[ -f "$candidate/SKILL.md" ]]; then
-            normalize_dir "$candidate"
-            return 0
-        fi
-    fi
-
-    if repo_root="$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null)"; then
-        candidate="$repo_root/config/codex/skills/codex-docs"
-        if [[ -f "$candidate/SKILL.md" ]]; then
-            normalize_dir "$candidate"
-            return 0
-        fi
-    fi
-
-    for candidate in \
-        "$script_dir/../../../../codex/skills/codex-docs" \
-        "$HOME/.codex/skills/codex-docs" \
-        "$PWD/config/codex/skills/codex-docs"
-    do
-        if [[ -f "$candidate/SKILL.md" ]]; then
-            normalize_dir "$candidate"
-            return 0
-        fi
-    done
-
-    echo "error: could not find codex-docs skill" >&2
-    echo "Set CODEX_DOCS_DIR or pass --codex-docs /path/to/skill." >&2
-    return 1
-}
-
-codex_docs_dir="$(resolve_codex_docs_dir)"
 cwd="$(pwd -P)"
 
 # Codex has no system-prompt flag, so the grounding instructions are folded
@@ -206,16 +146,7 @@ cwd="$(pwd -P)"
 grounding_prompt="$(cat <<PROMPT
 You are Codex being consulted by Claude Code as an external, mostly read-only subagent.
 
-First inspect the local Codex docs skill:
-$codex_docs_dir
-
-Read its SKILL.md before answering. Then read the specific references that match the request:
-- references/agents-md.md for AGENTS.md discovery and instruction layering.
-- references/skills.md for skill format, discovery, and progressive disclosure.
-- references/subagents.md for delegation patterns and sandbox inheritance.
-- references/hooks.md for lifecycle hooks and matchers.
-- references/rules.md for command execution rules and execpolicy.
-- references/config-basic.md and references/config-advanced.md for config.toml layering, profiles, sandbox, MCP, and providers.
+Inspect applicable AGENTS.md files and the relevant working-tree context before answering. Follow repository instructions and existing project conventions.
 
 Default mode: read-only consultation. Do not edit files, create files, run destructive commands, or perform irreversible actions unless the request explicitly asks for changes.
 PROMPT

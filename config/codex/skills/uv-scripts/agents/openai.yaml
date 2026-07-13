@@ -1,4 +1,0 @@
-interface:
-  display_name: "uv Scripts"
-  short_description: "Write portable uv Python scripts"
-  default_prompt: "Use $uv-scripts to write a portable Python script with inline uv metadata."

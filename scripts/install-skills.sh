@@ -22,13 +22,7 @@ NC='\033[0m'
 # new vendor skills become useful. Format: <owner>/<repo>@<skill>
 SKILLS=(
     "astral-sh/claude-code-plugins@uv"
-    "stripe/ai@stripe-best-practices"
-    "resend/resend-skills@resend"
-    "resend/resend-skills@resend-cli"
-    "resend/react-email@react-email"
-    "resend/email-best-practices@email-best-practices"
     "vercel-labs/portless@portless"
-    "vercel-labs/portless@oauth"
 )
 
 MODE="install"
@@ -39,10 +33,9 @@ fi
 echo -e "${BLUE}=== Vendor skills $MODE ===${NC}"
 
 # Keep .gitignore in sync with the SKILLS array. The skills CLI installs real
-# files into ~/.agents/skills/ and symlinks them into ~/.claude/skills/, which
-# resolves into this repo because ~/.claude is a symlink to config/claude.
-# Without these ignores, every vendor symlink shows up as untracked (and
-# lazygit errors trying to recurse into targets outside the work tree).
+# files into ~/.agents/skills/ and symlinks them into the repo-backed Claude
+# and Pi skill directories. Without these ignores, every vendor symlink shows
+# up as untracked and points outside the work tree.
 sync_gitignore() {
     local repo_root gitignore tmp begin end
     repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -69,9 +62,10 @@ sync_gitignore() {
         cat "$tmp"
         printf '\n%s\n' "$begin"
         printf '%s\n' "# Symlinks created by 'bunx skills add'. Real content lives in ~/.agents/skills/;"
-        printf '%s\n' "# the CLI symlinks them into ~/.claude/skills/ which resolves into this repo."
+        printf '%s\n' "# the CLI links them into the repo-backed Claude and Pi skill directories."
         for skill in "${SKILLS[@]}"; do
             printf 'config/claude/skills/%s\n' "${skill##*@}"
+            printf 'config/pi/skills/%s\n' "${skill##*@}"
         done
         printf '%s\n' "$end"
     } > "$gitignore"

@@ -1,4 +1,0 @@
-interface:
-  display_name: "TiDB SQL"
-  short_description: "Write and adapt SQL for TiDB"
-  default_prompt: "Use $tidb-sql to review this SQL for TiDB compatibility and safer TiDB-native patterns."

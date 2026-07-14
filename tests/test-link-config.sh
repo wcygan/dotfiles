@@ -176,10 +176,15 @@ else
     fail "config/codex/skills is missing"
 fi
 
-if find "$ROOT/config/codex/skills" -name SKILL.md -type f | grep -q .; then
-    fail "config/codex/skills should start without active global skills"
+codex_skill_inventory="$(
+    find "$ROOT/config/codex/skills" -name SKILL.md -type f -print |
+        sed "s|^$ROOT/config/codex/skills/||" |
+        sort
+)"
+if [[ "$codex_skill_inventory" == "goal-supervisor/SKILL.md" ]]; then
+    pass "config/codex/skills contains only the goal-supervisor skill"
 else
-    pass "config/codex/skills starts without active global skills"
+    fail "config/codex/skills inventory mismatch: ${codex_skill_inventory:-none}"
 fi
 
 if [[ -d "$ROOT/config/pi/skills" ]]; then

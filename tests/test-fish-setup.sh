@@ -153,39 +153,6 @@ else
     fail "link-config.sh missing Codex AGENTS.md symlink command"
 fi
 
-# Test 4b: Validate Codex skill metadata shape
-section "Codex Skill Metadata"
-if [[ -d "../config/codex/skills" ]]; then
-    while IFS= read -r -d '' skill_file; do
-        skill_dir="$(basename "$(dirname "$skill_file")")"
-        frontmatter="$(awk '
-            /^---$/ { count++; next }
-            count == 1 { print }
-            count == 2 { exit }
-        ' "$skill_file")"
-
-        if ! grep -qE '^name:[[:space:]]*"?[a-z0-9-]+"?[[:space:]]*$' <<<"$frontmatter"; then
-            fail "$skill_file missing valid skill name"
-            continue
-        fi
-
-        if ! grep -qE '^description:[[:space:]]*"?[^"]+' <<<"$frontmatter"; then
-            fail "$skill_file missing skill description"
-            continue
-        fi
-
-        declared_name="$(sed -nE 's/^name:[[:space:]]*"?([a-z0-9-]+)"?[[:space:]]*$/\1/p' <<<"$frontmatter" | head -n 1)"
-        if [[ "$declared_name" != "$skill_dir" ]]; then
-            fail "$skill_file declares '$declared_name', expected '$skill_dir'"
-            continue
-        fi
-
-        pass "$declared_name skill metadata valid"
-    done < <(find ../config/codex/skills -name SKILL.md -type f -print0)
-else
-    fail "Cannot validate Codex skill metadata without config/codex/skills"
-fi
-
 # Test 5: Check for potential conflicts
 section "Conflict Detection"
 if [[ -e "$HOME/.config/fish" ]]; then

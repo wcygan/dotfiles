@@ -74,13 +74,13 @@ For each selected skill:
 2. Choose project-local scope for workflows specific to this repo: `.codex/skills/<name>/`.
 3. Choose global scope for portable workflows: `config/codex/skills/<name>/`.
 4. Add `references/`, `scripts/`, `assets/`, or `agents/openai.yaml` only when they reduce context load or make the workflow more reliable.
-5. Validate the result:
+5. For a global skill, update the expected inventory and validate the full catalog:
 
 ```bash
-uv run --with pyyaml config/codex/skills/.system/skill-creator/scripts/quick_validate.py .codex/skills/<skill-name>
+./tests/test-codex-skills.sh
 ```
 
-Use the global skill path instead when creating a global skill.
+For a project-local skill, verify its frontmatter name against its directory and run the narrowest relevant repository test. The tracked global validator intentionally does not inventory project-local skills.
 
 ## Authoring Notes
 

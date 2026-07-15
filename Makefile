@@ -1,7 +1,7 @@
 # Nix Dotfiles Makefile
 # Run 'make help' for available commands
 
-.PHONY: help install test test-pre test-local test-docker link git-user clean update latest shell docs install-skills update-skills setup-rustup-components
+.PHONY: help install test test-pre test-codex-skills test-local test-docker link git-user clean update latest shell docs install-skills update-skills setup-rustup-components
 
 # Default target
 help:
@@ -17,6 +17,7 @@ help:
 	@echo "Testing:"
 	@echo "  make test       - Run all tests (pre-flight + local + shell)"
 	@echo "  make test-pre   - Pre-flight checks only"
+	@echo "  make test-codex-skills - Validate the global Codex skill catalog"
 	@echo "  make test-local - Local isolated test"
 	@echo "  make test-shell - Shell handoff test (bash/zsh → fish)"
 	@echo "  make setup-shell-handoff - Configure bash/zsh → fish handoff"
@@ -85,10 +86,15 @@ test: test-pre test-local test-shell
 # Pre-flight checks
 test-pre:
 	@echo "🔍 Running pre-flight checks..."
+	@cd tests && ./test-codex-skills.sh
 	@cd tests && ./test-fish-setup.sh
 	@cd tests && ./test-link-config.sh
 	@cd tests && ./test-rustup-setup.sh
 	@cd tests && ./test-consult-codex.sh
+
+# Validate tracked global Codex skills
+test-codex-skills:
+	@cd tests && ./test-codex-skills.sh
 
 # Local isolated test
 test-local:

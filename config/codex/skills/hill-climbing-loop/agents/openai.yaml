@@ -1,0 +1,6 @@
+interface:
+  display_name: "Hill-Climbing Loop"
+  short_description: "Run guarded metric-driven experiments"
+  default_prompt: "Use $hill-climbing-loop to turn this measurable goal into bounded keep-or-discard experiments."
+policy:
+  allow_implicit_invocation: false

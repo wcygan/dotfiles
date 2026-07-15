@@ -1,6 +1,6 @@
 # Test Suite
 
-Comprehensive testing for fish configuration and shell compatibility.
+Preflight and integration tests for the tracked dotfiles configuration.
 
 ## Quick Start
 
@@ -10,8 +10,8 @@ cd tests/
 # Pre-flight check (no changes)
 ./test-fish-setup.sh
 
-# uv script exemplar checks
-./test-uv-scripts.sh
+# Global Codex skill catalog
+./test-codex-skills.sh
 
 # Local isolated test (temp HOME)
 ./test-ephemeral.sh
@@ -30,10 +30,11 @@ cd tests/
 - Checks flake.nix, config files, and dependencies
 - Shows what will be installed
 
-### `test-uv-scripts.sh`
-- Runs the bundled `uv-scripts` exemplars in demo mode
-- Checks each script is executable, exposes help, and passes Ruff
-- Uses a temporary working directory for generated cache and output files
+### `test-codex-skills.sh`
+- Validates the exact active global Codex skill inventory
+- Checks Codex-compatible frontmatter and directory names
+- Verifies loop composition, explicit invocation policy, and deprecation routing
+- Rejects destructive Git recipes and machine-specific home paths
 
 ### `test-ephemeral.sh` 
 - Creates temporary HOME directory

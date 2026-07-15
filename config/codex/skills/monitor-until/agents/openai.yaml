@@ -1,0 +1,6 @@
+interface:
+  display_name: "Monitor Until"
+  short_description: "Watch state without mutating it"
+  default_prompt: "Use $monitor-until to define a target, terminal states, cadence, and deadline, then watch it read-only."
+policy:
+  allow_implicit_invocation: false

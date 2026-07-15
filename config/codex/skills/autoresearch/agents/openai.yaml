@@ -1,0 +1,6 @@
+interface:
+  display_name: "Autoresearch (Deprecated)"
+  short_description: "Compatibility name for Hill Climbing"
+  default_prompt: "Use $autoresearch only for compatibility; route this request to $hill-climbing-loop."
+policy:
+  allow_implicit_invocation: false

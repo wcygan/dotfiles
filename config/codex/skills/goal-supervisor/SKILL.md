@@ -7,6 +7,12 @@ description: "Supervise a difficult Codex task through a separate visible worker
 
 Supervise a difficult implementation in a separate visible Codex task while the current task owns oversight and acceptance.
 
+## Shared loop contract
+
+Before delegation, read and apply ../loop-protocol/SKILL.md completely. Treat each observe, compare, steer, and verify pass as one bounded cycle with explicit progress and stopping evidence.
+
+Goal Supervisor specializes that baseline by assigning mutation to one visible worker, keeping acceptance with the supervisor, and using distinct goal state only when this workflow was explicitly invoked. Its rules may tighten the shared protocol but never weaken its scope, authority, one-writer, rollback, wakeup, or terminal-evidence boundaries.
+
 ## Operating model
 
 - Treat the supervisor and worker as separate tasks with separate context, permissions, and goal state. A goal created in one task never creates or updates a goal in the other.

@@ -176,26 +176,6 @@ else
     fail "config/codex/skills is missing"
 fi
 
-codex_skill_inventory="$(
-    find "$ROOT/config/codex/skills" -name SKILL.md -type f -print |
-        sed "s|^$ROOT/config/codex/skills/||" |
-        sort
-)"
-if [[ "$codex_skill_inventory" == "goal-supervisor/SKILL.md" ]]; then
-    pass "config/codex/skills contains only the goal-supervisor skill"
-else
-    fail "config/codex/skills inventory mismatch: ${codex_skill_inventory:-none}"
-fi
-
-goal_supervisor_skill="$ROOT/config/codex/skills/goal-supervisor/SKILL.md"
-if grep -Fq '**Supervisor:** `gpt-5.6-sol` with `high` reasoning.' "$goal_supervisor_skill" &&
-   grep -Fq '**Worker:** `gpt-5.6-terra` with `medium` reasoning.' "$goal_supervisor_skill" &&
-   grep -Fq 'thinking: "medium"' "$goal_supervisor_skill"; then
-    pass "goal-supervisor pins the Sol-high and Terra-medium model profile"
-else
-    fail "goal-supervisor model profile is missing or incomplete"
-fi
-
 if [[ -d "$ROOT/config/pi/skills" ]]; then
     pass "config/pi/skills exists as the pi skills source"
 else

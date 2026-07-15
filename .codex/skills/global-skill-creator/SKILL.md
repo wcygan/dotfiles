@@ -15,24 +15,19 @@ Stop when the skill is created or updated, validation passes, and the user has a
 
 ## Workflow
 
-1. Read `config/codex/skills/.system/skill-creator/SKILL.md` for the current Codex skill-authoring rules.
+1. Read the current Codex skill-authoring instructions exposed in the session, then inspect an active tracked skill and `tests/test-codex-skills.sh`. Do not depend on the system-managed, gitignored `config/codex/skills/.system` directory.
 2. Ask for the skill's reusable purpose, trigger scenarios, and whether it needs references, scripts, templates, or assets.
 3. Create `config/codex/skills/<skill-name>/` with a matching `SKILL.md` frontmatter `name`.
 4. Use concise `description` text that front-loads the key task and trigger words.
 5. Keep detailed docs in `references/`, deterministic helpers in `scripts/`, and output resources in `assets/`.
-6. Generate `agents/openai.yaml` when UI metadata is useful:
+6. Add `agents/openai.yaml` when UI metadata or explicit-invocation policy is useful. Keep it to the supported `interface` and `policy` fields used by active skills.
+7. Add the skill to the expected inventory in `tests/test-codex-skills.sh` and run:
 
 ```bash
-uv run --with pyyaml config/codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py config/codex/skills/<skill-name>
+./tests/test-codex-skills.sh
 ```
 
-7. Validate the skill:
-
-```bash
-uv run --with pyyaml config/codex/skills/.system/skill-creator/scripts/quick_validate.py config/codex/skills/<skill-name>
-```
-
-8. Run `make test-pre` when the change affects shared skill infrastructure, install/link behavior, or repo tests.
+8. Run `make test-pre` for every global skill change.
 
 ## Dotfiles Context
 

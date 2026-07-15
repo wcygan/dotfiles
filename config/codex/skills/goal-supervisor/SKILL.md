@@ -14,6 +14,17 @@ Supervise a difficult implementation in a separate visible Codex task while the 
 - Keep the supervisor responsible for scope, steering, independent verification, and the final completion decision. The worker is responsible for implementation and its own narrow validation.
 - Check which task-management and goal tools are actually available before acting. Codex Desktop commonly exposes `list_projects`, `create_thread`, `read_thread`, and `send_message_to_thread`; use the names and schemas present in the current session. Never invent a tool or imply that an unavailable capability exists.
 
+## Model profile
+
+Use this standing profile unless the user explicitly requests different settings:
+
+- **Supervisor:** `gpt-5.6-sol` with `high` reasoning. The current visible task is the supervisor, so its model must be selected before invoking this workflow; task-creation tools cannot change the calling task's model.
+- **Worker:** `gpt-5.6-terra` with `medium` reasoning. Pass these values explicitly when creating the worker task, using the model and reasoning fields exposed by the available task-creation tool.
+
+When the session exposes the supervisor's current model settings, verify them before delegation. If it does not, state that the supervisor profile is assumed rather than verified. If either model or reasoning level is unavailable on the selected host, stop and report the mismatch instead of silently substituting another profile.
+
+Keep the worker on Terra with medium reasoning for follow-up turns by omitting model overrides when steering it. Change either role's profile only when the user explicitly requests the change.
+
 ## 1. Define acceptance before delegation
 
 Read the current project instructions and inspect the real checkout. Record:
@@ -63,7 +74,7 @@ Create one visible worker task with a prompt containing:
 - a requirement to report concrete evidence: changed files, command exit results, and unresolved uncertainty;
 - a requirement not to mark its goal complete merely because code was written.
 
-Do not override the model or reasoning settings unless the user requested that choice.
+Create the worker with `model: "gpt-5.6-terra"` and medium reasoning. Use the exact reasoning field name exposed by the tool, such as `thinking: "medium"`. This standing profile is the user's explicit preference; do not omit it and fall back to the general Codex default.
 
 ## 4. Monitor and steer with evidence
 

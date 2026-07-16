@@ -20,6 +20,17 @@ Goal Supervisor specializes that baseline by assigning mutation to one visible w
 - Keep the supervisor responsible for scope, steering, independent verification, and the final completion decision. The worker is responsible for implementation and its own narrow validation.
 - Check which task-management and goal tools are actually available before acting. Codex Desktop commonly exposes `list_projects`, `create_thread`, `read_thread`, and `send_message_to_thread`; use the names and schemas present in the current session. Never invent a tool or imply that an unavailable capability exists.
 
+## Task titles and identity
+
+When task-title management is available, rename the current visible supervisor task early in the workflow to `[Supervisor] <base title>`. A title is a convenience for humans, not task identity: use only the current supervisor ID and worker IDs returned by this workflow for follow-ups, reads, and mutations. Never rename an unrelated task.
+
+- Make every role title idempotent. Before applying a role, remove all consecutive leading recognized role prefixes matching `[Supervisor] ` or `[Worker N] `, then apply exactly the intended prefix. Never stack prefixes.
+- Preserve the meaningful observable base title. If no meaningful title is observable, derive a concise base title from the delegated outcome.
+- Number workers from 1 in creation order. Reuse an existing worker's recorded index when revisiting that worker; allocate the next number only when creating a new worker. Name each worker `[Worker N] <base title>`.
+- Rename a new worker immediately after creation, then verify the title through the rename result or a direct task read when available. If search or list indexing is stale, treat the direct read or rename result as authoritative for that task.
+- If title inspection or renaming is unavailable, disclose the limitation and continue using task IDs. Do not invent title support or treat a title as a substitute for identity.
+- Keep supervisor task state for each worker: task ID, worker index, title, host, and checkout. Use that state to preserve numbering and to target only the intended task.
+
 ## Model profile
 
 Use this standing profile unless the user explicitly requests different settings:
@@ -80,11 +91,11 @@ Create one visible worker task with a prompt containing:
 - a requirement to report concrete evidence: changed files, command exit results, and unresolved uncertainty;
 - a requirement not to mark its goal complete merely because code was written.
 
-Create the worker with `model: "gpt-5.6-terra"` and medium reasoning. Use the exact reasoning field name exposed by the tool, such as `thinking: "medium"`. This standing profile is the user's explicit preference; do not omit it and fall back to the general Codex default.
+Create the worker with `model: "gpt-5.6-terra"` and medium reasoning. Use the exact reasoning field name exposed by the tool, such as `thinking: "medium"`. This standing profile is the user's explicit preference; do not omit it and fall back to the general Codex default. Immediately rename the returned worker ID according to the task-title rules, verify the result when the capability exists, and record its ID, index, title, host, and checkout in supervisor task state.
 
 ## 4. Monitor and steer with evidence
 
-Store the worker task identifier and host or checkout details returned by task creation. Then repeat this loop while the supervisor goal is active:
+Store the worker task identifier, index, title, host, and checkout details returned by task creation. Then repeat this loop while the supervisor goal is active:
 
 1. Read the worker task, including relevant command output when available.
 2. Compare its current state with the acceptance criteria and the actual checkout.

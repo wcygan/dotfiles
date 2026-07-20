@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review Animations"
+  short_description: "Review animation and motion craft"
+  default_prompt: "Use $review-animations to review motion code against the bundled standards and return findings plus an explicit verdict."
+policy:
+  allow_implicit_invocation: false

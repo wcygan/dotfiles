@@ -35,11 +35,18 @@ fi
 
 expected_inventory="$(
     printf '%s\n' \
+        "animation-vocabulary/SKILL.md" \
         "autoresearch/SKILL.md" \
+        "better-colors/SKILL.md" \
+        "better-typography/SKILL.md" \
+        "better-ui/SKILL.md" \
+        "find-animation-opportunities/SKILL.md" \
         "goal-supervisor/SKILL.md" \
         "hill-climbing-loop/SKILL.md" \
+        "improve-animations/SKILL.md" \
         "loop-protocol/SKILL.md" \
-        "monitor-until/SKILL.md"
+        "monitor-until/SKILL.md" \
+        "review-animations/SKILL.md"
 )"
 actual_inventory="$(
     find "$SKILLS_ROOT" \
@@ -157,7 +164,7 @@ assert_contains \
     "performs no discovery, edits, commands, commits, rollback, or looping by itself" \
     "autoresearch remains a routing shim"
 
-for explicit_skill in autoresearch hill-climbing-loop monitor-until; do
+for explicit_skill in autoresearch hill-climbing-loop monitor-until review-animations; do
     metadata_file="$SKILLS_ROOT/$explicit_skill/agents/openai.yaml"
     assert_contains \
         "$metadata_file" \

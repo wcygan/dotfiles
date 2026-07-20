@@ -40,6 +40,7 @@ expected_inventory="$(
         "better-colors/SKILL.md" \
         "better-typography/SKILL.md" \
         "better-ui/SKILL.md" \
+        "effect/SKILL.md" \
         "find-animation-opportunities/SKILL.md" \
         "goal-supervisor/SKILL.md" \
         "hill-climbing-loop/SKILL.md" \
@@ -83,8 +84,8 @@ while IFS= read -r -d '' skill_file; do
         fail "$skill_file is missing a valid kebab-case name"
     fi
 
-    if ! grep -qE '^description:[[:space:]]*".+"[[:space:]]*$' <<<"$frontmatter"; then
-        fail "$skill_file is missing a non-empty single-line description"
+    if ! grep -qE '^description:[[:space:]]*(".+"|\|)[[:space:]]*$' <<<"$frontmatter"; then
+        fail "$skill_file is missing a non-empty description"
     fi
 
     declared_name="$(

@@ -25,6 +25,18 @@ assert_contains() {
     fi
 }
 
+assert_not_contains() {
+    local file="$1"
+    local unexpected="$2"
+    local label="$3"
+
+    if grep -Fq -- "$unexpected" "$file"; then
+        fail "$file contains unexpected text: $unexpected"
+    else
+        pass "$label"
+    fi
+}
+
 echo "Codex global skill checks"
 echo "========================="
 echo ""
@@ -113,16 +125,44 @@ done < <(
 goal_supervisor="$SKILLS_ROOT/goal-supervisor/SKILL.md"
 assert_contains \
     "$goal_supervisor" \
-    "gpt-5.6-sol" \
-    "goal-supervisor pins the Sol supervisor"
+    '**Supervisor:** `gpt-5.6-sol`' \
+    "goal-supervisor pins the Sol supervisor profile"
 assert_contains \
     "$goal_supervisor" \
-    "gpt-5.6-terra" \
-    "goal-supervisor pins the Terra worker"
+    '**Worker:** `gpt-5.6-sol`' \
+    "goal-supervisor pins the Sol worker profile"
 assert_contains \
     "$goal_supervisor" \
     'thinking: "medium"' \
-    "goal-supervisor preserves the worker reasoning field"
+    "goal-supervisor defaults workers to medium reasoning"
+assert_contains \
+    "$goal_supervisor" \
+    'use `xhigh` only for especially difficult oversight' \
+    "goal-supervisor permits xhigh for especially difficult oversight"
+assert_contains \
+    "$goal_supervisor" \
+    'select `high` for a genuinely difficult implementation task' \
+    "goal-supervisor permits high reasoning for a difficult worker task"
+assert_contains \
+    "$goal_supervisor" \
+    'Name each Smart Worker `[smart-worker] <base title>`' \
+    "goal-supervisor applies the exact Smart Worker title prefix"
+assert_contains \
+    "$goal_supervisor" \
+    'matching `[Supervisor] `, `[Worker N] `, or `[smart-worker] `' \
+    "goal-supervisor normalizes every recognized role prefix"
+assert_contains \
+    "$goal_supervisor" \
+    "Preserve each worker's originally selected reasoning on follow-up turns" \
+    "goal-supervisor preserves selected reasoning for follow-ups"
+assert_not_contains \
+    "$goal_supervisor" \
+    "gpt-5.6-terra" \
+    "goal-supervisor contains no legacy worker model reference"
+assert_not_contains \
+    "$ROOT/config/codex/AGENTS.md" \
+    "gpt-5.6-terra" \
+    "Codex piloting guidance contains no legacy worker model reference"
 assert_contains \
     "$goal_supervisor" \
     "../loop-protocol/SKILL.md" \

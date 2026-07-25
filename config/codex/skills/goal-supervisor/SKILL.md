@@ -24,23 +24,24 @@ Goal Supervisor specializes that baseline by assigning mutation to one visible w
 
 When task-title management is available, rename the current visible supervisor task early in the workflow to `[Supervisor] <base title>`. A title is a convenience for humans, not task identity: use only the current supervisor ID and worker IDs returned by this workflow for follow-ups, reads, and mutations. Never rename an unrelated task.
 
-- Make every role title idempotent. Before applying a role, remove all consecutive leading recognized role prefixes matching `[Supervisor] ` or `[Worker N] `, then apply exactly the intended prefix. Never stack prefixes.
+- Make every role title idempotent. Before applying a role, remove all consecutive leading recognized role prefixes matching `[Supervisor] `, `[Worker N] `, or `[smart-worker] `, then apply exactly the intended prefix. Never stack prefixes.
 - Preserve the meaningful observable base title. If no meaningful title is observable, derive a concise base title from the delegated outcome.
-- Number workers from 1 in creation order. Reuse an existing worker's recorded index when revisiting that worker; allocate the next number only when creating a new worker. Name each worker `[Worker N] <base title>`.
+- Number ordinary medium-reasoning workers from 1 in creation order. Reuse an existing worker's recorded index when revisiting that worker; allocate the next number only when creating a new ordinary worker. Name each ordinary worker `[Worker N] <base title>`.
+- A high-reasoning worker is a Smart Worker. Name each Smart Worker `[smart-worker] <base title>`; never apply `[Worker N]` to a Smart Worker.
 - Rename a new worker immediately after creation, then verify the title through the rename result or a direct task read when available. If search or list indexing is stale, treat the direct read or rename result as authoritative for that task.
 - If title inspection or renaming is unavailable, disclose the limitation and continue using task IDs. Do not invent title support or treat a title as a substitute for identity.
-- Keep supervisor task state for each worker: task ID, worker index, title, host, and checkout. Use that state to preserve numbering and to target only the intended task.
+- Keep supervisor task state for each worker: task ID, worker type, worker index when applicable, selected reasoning, title, host, and checkout. Use that state to preserve numbering, reasoning, and the intended task identity.
 
 ## Model profile
 
 Use this standing profile unless the user explicitly requests different settings:
 
-- **Supervisor:** `gpt-5.6-sol` with `high` reasoning. The current visible task is the supervisor, so its model must be selected before invoking this workflow; task-creation tools cannot change the calling task's model.
-- **Worker:** `gpt-5.6-terra` with `medium` reasoning. Pass these values explicitly when creating the worker task, using the model and reasoning fields exposed by the available task-creation tool.
+- **Supervisor:** `gpt-5.6-sol` with `high` reasoning by default; use `xhigh` only for especially difficult oversight. The current visible task is the supervisor, so its model and reasoning must be selected before invoking this workflow; task-creation tools cannot change the calling task's profile.
+- **Worker:** `gpt-5.6-sol` with `medium` reasoning by default. The supervisor may select `high` for a genuinely difficult implementation task; that worker is a **Smart Worker**. Pass the model and selected reasoning explicitly when creating the worker task, using the fields exposed by the available task-creation tool.
 
 When the session exposes the supervisor's current model settings, verify them before delegation. If it does not, state that the supervisor profile is assumed rather than verified. If either model or reasoning level is unavailable on the selected host, stop and report the mismatch instead of silently substituting another profile.
 
-Keep the worker on Terra with medium reasoning for follow-up turns by omitting model overrides when steering it. Change either role's profile only when the user explicitly requests the change.
+Preserve each worker's originally selected reasoning on follow-up turns by omitting model and reasoning overrides when steering it. Do not promote an ordinary worker to Smart Worker in response to a recoverable error; choose the worker profile deliberately at creation time.
 
 ## 1. Define acceptance before delegation
 
@@ -91,11 +92,11 @@ Create one visible worker task with a prompt containing:
 - a requirement to report concrete evidence: changed files, command exit results, and unresolved uncertainty;
 - a requirement not to mark its goal complete merely because code was written.
 
-Create the worker with `model: "gpt-5.6-terra"` and medium reasoning. Use the exact reasoning field name exposed by the tool, such as `thinking: "medium"`. This standing profile is the user's explicit preference; do not omit it and fall back to the general Codex default. Immediately rename the returned worker ID according to the task-title rules, verify the result when the capability exists, and record its ID, index, title, host, and checkout in supervisor task state.
+Create the worker with `model: "gpt-5.6-sol"` and `thinking: "medium"` by default. For a genuinely difficult implementation task, create a Smart Worker with the same model and `thinking: "high"`. Do not omit the creation-time profile and fall back to general Codex defaults. Immediately rename the returned worker ID according to its ordinary or Smart Worker title rule, verify the result when the capability exists, and record its ID, type, index when applicable, selected reasoning, title, host, and checkout in supervisor task state.
 
 ## 4. Monitor and steer with evidence
 
-Store the worker task identifier, index, title, host, and checkout details returned by task creation. Then repeat this loop while the supervisor goal is active:
+Store the worker task identifier, type, index when applicable, selected reasoning, title, host, and checkout details returned by task creation. Then repeat this loop while the supervisor goal is active:
 
 1. Read the worker task, including relevant command output when available.
 2. Compare its current state with the acceptance criteria and the actual checkout.

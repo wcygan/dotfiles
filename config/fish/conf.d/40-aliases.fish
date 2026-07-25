@@ -101,6 +101,11 @@ alias lfg 'claude --dangerously-skip-permissions'
 alias lfgt 'claude --dangerously-skip-permissions --tmux --worktree'
 alias reload 'exec fish -l'
 
+# Keep the Mac awake while a command runs (macOS only).
+if type -q caffeinate
+    alias caf 'caffeinate -i'
+end
+
 if type -q lsof
     functions -q murder; or function murder --description 'Kill all processes bound to a TCP port'
         if test (count $argv) -eq 0

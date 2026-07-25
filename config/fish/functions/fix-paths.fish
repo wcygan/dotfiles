@@ -10,6 +10,7 @@ function fix-paths --description 'Reset and rebuild PATH with correct priority'
     test -d $HOME/.deno/bin; and set new_path $HOME/.deno/bin $new_path
     test -d $HOME/go/bin; and set new_path $HOME/go/bin $new_path
     test -d $HOME/.cargo/bin; and set new_path $HOME/.cargo/bin $new_path
+    test -d $HOME/.tiup/bin; and set new_path $HOME/.tiup/bin $new_path
     test -d $HOME/.local/bin; and set new_path $HOME/.local/bin $new_path
     test -d $HOME/bin; and set new_path $HOME/bin $new_path
 

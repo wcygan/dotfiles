@@ -21,7 +21,10 @@ if test -d $HOME/bin
   fish_add_path --path --move --prepend $HOME/bin
 end
 
-
+# TiUP binaries (installed by https://tiup-mirrors.pingcap.com/install.sh)
+if test -d $HOME/.tiup/bin
+  fish_add_path --path --move --prepend $HOME/.tiup/bin
+end
 
 # Cargo/Rust binaries
 if test -d $HOME/.cargo/bin

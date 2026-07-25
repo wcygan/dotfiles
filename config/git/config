@@ -126,3 +126,9 @@
 [user]
 	email = wcygan.io@gmail.com
 	name = Will Cygan
+[credential "https://github.com"]
+	helper = 
+	helper = !/Users/wcygan/.nix-profile/bin/.gh-wrapped auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/Users/wcygan/.nix-profile/bin/.gh-wrapped auth git-credential

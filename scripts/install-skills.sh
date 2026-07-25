@@ -22,6 +22,7 @@ NC='\033[0m'
 # new vendor skills become useful. Format: <owner>/<repo>@<skill>
 SKILLS=(
     "astral-sh/claude-code-plugins@uv"
+    "planetscale/database-skills@mysql"
     "vercel-labs/portless@portless"
 )
 

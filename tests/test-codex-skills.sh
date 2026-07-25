@@ -41,6 +41,7 @@ expected_inventory="$(
         "better-typography/SKILL.md" \
         "better-ui/SKILL.md" \
         "effect/SKILL.md" \
+        "ephemeral-chooser/SKILL.md" \
         "find-animation-opportunities/SKILL.md" \
         "goal-supervisor/SKILL.md" \
         "hill-climbing-loop/SKILL.md" \
@@ -177,6 +178,112 @@ assert_contains \
     "$SKILLS_ROOT/loop-protocol/agents/openai.yaml" \
     "allow_implicit_invocation: true" \
     "loop-protocol may supply baseline safety implicitly"
+
+ephemeral_chooser="$SKILLS_ROOT/ephemeral-chooser"
+ephemeral_reference="$ephemeral_chooser/references/ephemeral-chooser.html"
+ephemeral_contract="$ephemeral_chooser/references/chooser-contract.md"
+
+for required_file in \
+    "$ephemeral_chooser/SKILL.md" \
+    "$ephemeral_chooser/agents/openai.yaml" \
+    "$ephemeral_reference" \
+    "$ephemeral_contract"; do
+    if [[ ! -f "$required_file" ]]; then
+        fail "$required_file is missing"
+    fi
+done
+pass "ephemeral-chooser ships its entrypoint, metadata, and local references"
+
+assert_contains \
+    "$ephemeral_chooser/SKILL.md" \
+    "references/ephemeral-chooser.html" \
+    "ephemeral-chooser routes to the local HTML reference"
+assert_contains \
+    "$ephemeral_chooser/SKILL.md" \
+    "references/chooser-contract.md" \
+    "ephemeral-chooser routes to the promotion contract"
+assert_contains \
+    "$ephemeral_chooser/agents/openai.yaml" \
+    "allow_implicit_invocation: false" \
+    "ephemeral-chooser requires explicit invocation"
+assert_contains \
+    "$ephemeral_reference" \
+    'data-chooser="project-card"' \
+    "ephemeral-chooser includes the project-card example"
+assert_contains \
+    "$ephemeral_reference" \
+    'data-chooser="save-feedback"' \
+    "ephemeral-chooser includes the save-feedback example"
+assert_contains \
+    "$ephemeral_reference" \
+    'data-chooser="filter-summary"' \
+    "ephemeral-chooser includes the filter-summary example"
+assert_contains \
+    "$ephemeral_reference" \
+    'queryKey: "ec.project-card"' \
+    "ephemeral-chooser namespaces selection state"
+assert_contains \
+    "$ephemeral_reference" \
+    "window.history.replaceState" \
+    "ephemeral-chooser persists review state without polluting history"
+assert_contains \
+    "$ephemeral_reference" \
+    'addEventListener("keydown"' \
+    "ephemeral-chooser supports keyboard variant selection"
+assert_contains \
+    "$ephemeral_reference" \
+    "authorizationMatches" \
+    "ephemeral-chooser separates URL state from promotion authorization"
+assert_contains \
+    "$ephemeral_reference" \
+    'id="confirmation-input"' \
+    "ephemeral-chooser requires exact stable-ID confirmation"
+assert_contains \
+    "$ephemeral_reference" \
+    "sessionStorage" \
+    "ephemeral-chooser retains local authorization across final-state reloads"
+assert_contains \
+    "$ephemeral_reference" \
+    "finalizeChooser" \
+    "ephemeral-chooser includes winner finalization"
+assert_contains \
+    "$ephemeral_contract" \
+    '"beforeState": "absent"' \
+    "ephemeral-chooser records generated-file baseline absence"
+assert_contains \
+    "$ephemeral_contract" \
+    '"generatedSha256": "<sha256>"' \
+    "ephemeral-chooser hashes cleanup-owned files"
+
+template_count="$(grep -Fc '<template data-template=' "$ephemeral_reference")"
+if [[ "$template_count" -ne 9 ]]; then
+    fail "ephemeral-chooser expected 9 inert variant templates, found $template_count"
+fi
+pass "ephemeral-chooser ships three variants for each example"
+
+if grep -Eq 'https?://|/Users/|/home/' "$ephemeral_reference"; then
+    fail "ephemeral-chooser HTML reference contains an external or machine-specific path"
+fi
+pass "ephemeral-chooser HTML reference is local and machine-independent"
+
+if node - "$ephemeral_reference" <<'NODE'
+const fs = require("node:fs");
+
+const file = process.argv[2];
+const html = fs.readFileSync(file, "utf8");
+const script = html.match(/<script>([\s\S]*?)<\/script>/);
+
+if (!script) {
+    throw new Error("inline script is missing");
+}
+
+new Function(script[1]);
+NODE
+then
+    pass "ephemeral-chooser inline JavaScript parses"
+else
+    fail "ephemeral-chooser inline JavaScript is invalid"
+fi
 
 loop_skill_paths=(
     "$SKILLS_ROOT/autoresearch"

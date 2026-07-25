@@ -193,6 +193,13 @@ else
     fail "fish does not prefer Nix profile paths"
 fi
 
+if grep -q 'fish_add_path --path --move --prepend $HOME/.tiup/bin' ../config/fish/conf.d/10-nix.fish && \
+   grep -q 'test -d $HOME/.tiup/bin; and set new_path $HOME/.tiup/bin $new_path' ../config/fish/functions/fix-paths.fish; then
+    pass "fish includes TiUP binaries in PATH"
+else
+    fail "fish does not include TiUP binaries in PATH"
+fi
+
 # Test 7: Check other tools in flake
 section "Companion Tools"
 for tool in direnv starship; do

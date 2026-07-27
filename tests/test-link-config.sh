@@ -189,11 +189,13 @@ else
 fi
 
 if grep -Fq 'astral-sh/claude-code-plugins@uv' "$ROOT/scripts/install-skills.sh" &&
+   grep -Fq 'emilkowalski/skills@pick-ui-library' "$ROOT/scripts/install-skills.sh" &&
+   grep -Fq 'emilkowalski/skills@prototype' "$ROOT/scripts/install-skills.sh" &&
    grep -Fq 'planetscale/database-skills@mysql' "$ROOT/scripts/install-skills.sh" &&
    grep -Fq 'vercel-labs/portless@portless' "$ROOT/scripts/install-skills.sh"; then
-    pass "vendor installer retains Uv, MySQL, and Portless"
+    pass "vendor installer retains Uv, Emil Kowalski UI, MySQL, and Portless skills"
 else
-    fail "vendor installer is missing Uv, MySQL, or Portless"
+    fail "vendor installer is missing a curated vendor skill"
 fi
 
 for removed_skill in \

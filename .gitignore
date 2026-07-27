@@ -66,6 +66,10 @@ config/fish/fish_variables
 # the CLI links them into the repo-backed Claude and Pi skill directories.
 config/claude/skills/uv
 config/pi/skills/uv
+config/claude/skills/pick-ui-library
+config/pi/skills/pick-ui-library
+config/claude/skills/prototype
+config/pi/skills/prototype
 config/claude/skills/mysql
 config/pi/skills/mysql
 config/claude/skills/portless

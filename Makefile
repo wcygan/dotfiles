@@ -174,7 +174,7 @@ setup-rustup-components:
 	@./scripts/setup-rustup-components.sh
 	@echo "✅ Rust components configured!"
 
-# Install curated vendor agent skills (Uv and Portless)
+# Install curated vendor agent skills
 install-skills:
 	@echo "🧠 Installing vendor agent skills..."
 	@./scripts/install-skills.sh

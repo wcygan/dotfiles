@@ -1,0 +1,6 @@
+interface:
+  display_name: "Pi Coding Agent"
+  short_description: "Operate and investigate the Pi coding agent"
+  default_prompt: "Use $pi-coding-agent to run, configure, automate, or trace Pi with version-matched evidence."
+policy:
+  allow_implicit_invocation: true

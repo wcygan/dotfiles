@@ -60,6 +60,7 @@ expected_inventory="$(
         "improve-animations/SKILL.md" \
         "loop-protocol/SKILL.md" \
         "monitor-until/SKILL.md" \
+        "pi-coding-agent/SKILL.md" \
         "review-animations/SKILL.md"
 )"
 actual_inventory="$(

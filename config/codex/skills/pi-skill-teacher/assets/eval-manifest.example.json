@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "subject": "Example capability evaluation",
+  "cases": [
+    {
+      "id": "D01",
+      "split": "dev",
+      "question": "Which option follows the documented precedence rule?",
+      "choices": {
+        "A": "Always use the global value.",
+        "B": "Use the project value when present, otherwise the global default.",
+        "C": "Merge both values without validation.",
+        "D": "Ignore both values."
+      },
+      "answer": "B",
+      "rule": "Project configuration takes precedence over the global default.",
+      "required_reads": [
+        "references/precedence.md"
+      ]
+    },
+    {
+      "id": "C01",
+      "split": "certification",
+      "question": "When the project value is absent, which source supplies the default?",
+      "choices": {
+        "A": "The global default.",
+        "B": "A random project file.",
+        "C": "The evaluation manifest.",
+        "D": "No source may be used."
+      },
+      "answer": "A",
+      "rule": "The global value is the fallback only when no project value exists.",
+      "required_reads": [
+        "references/precedence.md"
+      ]
+    }
+  ]
+}

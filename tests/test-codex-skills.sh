@@ -60,7 +60,9 @@ expected_inventory="$(
         "improve-animations/SKILL.md" \
         "loop-protocol/SKILL.md" \
         "monitor-until/SKILL.md" \
+        "pi-agent-controller/SKILL.md" \
         "pi-coding-agent/SKILL.md" \
+        "pi-skill-teacher/SKILL.md" \
         "review-animations/SKILL.md"
 )"
 actual_inventory="$(
@@ -207,7 +209,415 @@ assert_contains \
     "performs no discovery, edits, commands, commits, rollback, or looping by itself" \
     "autoresearch remains a routing shim"
 
-for explicit_skill in autoresearch hill-climbing-loop monitor-until review-animations; do
+pi_agent_controller="$SKILLS_ROOT/pi-agent-controller"
+assert_contains \
+    "$pi_agent_controller/SKILL.md" \
+    'pi --offline --no-session' \
+    "pi-agent-controller uses ephemeral one-shot Pi calls"
+assert_contains \
+    "$pi_agent_controller/SKILL.md" \
+    '/skill:<name>' \
+    "pi-agent-controller invokes discovered Pi skills without paths"
+assert_contains \
+    "$pi_agent_controller/SKILL.md" \
+    'http://127.0.0.1:8080/v1/models' \
+    "pi-agent-controller verifies the deployed local model"
+assert_contains \
+    "$pi_agent_controller/SKILL.md" \
+    'llama-server \' \
+    "pi-agent-controller provides the GLM llama.cpp launch command"
+assert_contains \
+    "$pi_agent_controller/SKILL.md" \
+    'explicitly asks to start the model' \
+    "pi-agent-controller does not start a large model implicitly"
+assert_contains \
+    "$pi_agent_controller/SKILL.md" \
+    'references/standalone-prompt.md' \
+    "pi-agent-controller routes to its standalone prompt contract"
+
+pi_skill_teacher="$SKILLS_ROOT/pi-skill-teacher"
+for required_file in \
+    "$pi_skill_teacher/SKILL.md" \
+    "$pi_skill_teacher/agents/openai.yaml" \
+    "$pi_skill_teacher/assets/eval-manifest.example.json" \
+    "$pi_skill_teacher/references/evaluation-design.md" \
+    "$pi_skill_teacher/references/failure-taxonomy.md" \
+    "$pi_skill_teacher/references/pi-skill-design.md" \
+    "$pi_skill_teacher/scripts/certification-lock.mjs" \
+    "$pi_skill_teacher/scripts/render-mcq.mjs" \
+    "$pi_skill_teacher/scripts/run-eval-suite.sh" \
+    "$pi_skill_teacher/scripts/run-pi-skill-eval.sh" \
+    "$pi_skill_teacher/scripts/score-pi-jsonl.mjs" \
+    "$pi_skill_teacher/scripts/summarize-eval.mjs" \
+    "$pi_skill_teacher/scripts/validate-eval-manifest.mjs"; do
+    if [[ ! -f "$required_file" ]]; then
+        fail "$required_file is missing"
+    fi
+done
+pass "pi-skill-teacher ships its controller, references, assets, and helpers"
+
+assert_contains \
+    "$pi_skill_teacher/SKILL.md" \
+    '../pi-agent-controller/SKILL.md' \
+    "pi-skill-teacher composes the bounded Pi controller"
+assert_contains \
+    "$pi_skill_teacher/SKILL.md" \
+    '../loop-protocol/SKILL.md' \
+    "pi-skill-teacher composes the shared loop contract"
+assert_contains \
+    "$pi_skill_teacher/SKILL.md" \
+    '--skill <skill-path>' \
+    "pi-skill-teacher supplies the exact Pi skill path"
+assert_contains \
+    "$pi_skill_teacher/SKILL.md" \
+    '/skill:<skill-name>' \
+    "pi-skill-teacher forces full Pi skill expansion"
+assert_contains \
+    "$pi_skill_teacher/SKILL.md" \
+    'Use the <skill-name> skill to help solve this:' \
+    "pi-skill-teacher explicitly assigns the skill in the prompt"
+assert_contains \
+    "$pi_skill_teacher/SKILL.md" \
+    'Never infer activation from score' \
+    "pi-skill-teacher verifies activation independently"
+assert_contains \
+    "$pi_skill_teacher/SKILL.md" \
+    'Relabel every observed certification case as development' \
+    "pi-skill-teacher preserves holdout integrity"
+assert_contains \
+    "$pi_skill_teacher/SKILL.md" \
+    'Certify as one locked transaction' \
+    "pi-skill-teacher locks certification across thinking levels"
+assert_contains \
+    "$pi_skill_teacher/SKILL.md" \
+    'root supervisor -> worker/controller (sole skill writer) -> Pi (read-only)' \
+    "pi-skill-teacher preserves nested supervision ownership"
+assert_contains \
+    "$pi_skill_teacher/references/pi-skill-design.md" \
+    'Pure-router profile' \
+    "pi-skill-teacher supports reference-grounded pure routers"
+
+for shell_script in \
+    "$pi_skill_teacher/scripts/run-eval-suite.sh" \
+    "$pi_skill_teacher/scripts/run-pi-skill-eval.sh"; do
+    if ! bash -n "$shell_script"; then
+        fail "$shell_script has invalid Bash syntax"
+    fi
+done
+pass "pi-skill-teacher shell helpers parse"
+
+for node_script in \
+    "$pi_skill_teacher/scripts/certification-lock.mjs" \
+    "$pi_skill_teacher/scripts/render-mcq.mjs" \
+    "$pi_skill_teacher/scripts/score-pi-jsonl.mjs" \
+    "$pi_skill_teacher/scripts/summarize-eval.mjs" \
+    "$pi_skill_teacher/scripts/validate-eval-manifest.mjs"; do
+    if ! node --check "$node_script"; then
+        fail "$node_script has invalid JavaScript syntax"
+    fi
+done
+pass "pi-skill-teacher Node helpers parse"
+
+rendered_teacher_case="$(
+    node \
+        "$pi_skill_teacher/scripts/render-mcq.mjs" \
+        "$pi_skill_teacher/assets/eval-manifest.example.json" \
+        D01
+)"
+if grep -Fq '"answer"' <<<"$rendered_teacher_case" ||
+    grep -Fq 'Project configuration takes precedence' <<<"$rendered_teacher_case"; then
+    fail "pi-skill-teacher renderer leaked controller-only answer data"
+fi
+pass "pi-skill-teacher renderer hides answer and rule fields"
+
+if ! node \
+    "$pi_skill_teacher/scripts/validate-eval-manifest.mjs" \
+    "$pi_skill_teacher/assets/eval-manifest.example.json" \
+    >/dev/null; then
+    fail "pi-skill-teacher example manifest failed validation"
+fi
+pass "pi-skill-teacher example manifest validates"
+
+teacher_test_tmp="$(mktemp -d)"
+trap 'rm -rf "$teacher_test_tmp"' EXIT
+teacher_test_project="$teacher_test_tmp/project"
+teacher_test_skill="$teacher_test_project/.agents/skills/example-skill"
+mkdir -p "$teacher_test_skill/references" "$teacher_test_tmp/bin"
+git init -q "$teacher_test_project"
+
+write_teacher_test_skill() {
+    cat >"$teacher_test_skill/SKILL.md" <<'EOF'
+---
+name: example-skill
+description: Example test skill.
+---
+
+# Example
+
+Read `references/precedence.md`.
+EOF
+    printf '%s\n' 'Project configuration takes precedence.' \
+        >"$teacher_test_skill/references/precedence.md"
+}
+
+write_teacher_test_skill
+teacher_lock="$teacher_test_tmp/certification-lock.json"
+teacher_lock_args=(
+    --manifest "$pi_skill_teacher/assets/eval-manifest.example.json"
+    --skill "$teacher_test_skill"
+    --project "$teacher_test_project"
+    --provider test-provider
+    --model test-model
+    --pi-version "pi-test 1.0"
+    --thinking medium,high
+)
+
+if ! node "$pi_skill_teacher/scripts/certification-lock.mjs" create \
+    "${teacher_lock_args[@]}" \
+    --output "$teacher_lock" \
+    >/dev/null; then
+    fail "pi-skill-teacher could not create a certification lock"
+fi
+if ! node "$pi_skill_teacher/scripts/certification-lock.mjs" verify \
+    "${teacher_lock_args[@]}" \
+    --lock "$teacher_lock" \
+    >/dev/null; then
+    fail "pi-skill-teacher could not verify an unchanged certification lock"
+fi
+pass "pi-skill-teacher certification lock verifies frozen state"
+
+printf '%s\n' '# drift' >>"$teacher_test_skill/SKILL.md"
+if node "$pi_skill_teacher/scripts/certification-lock.mjs" verify \
+    "${teacher_lock_args[@]}" \
+    --lock "$teacher_lock" \
+    >/dev/null 2>&1; then
+    fail "pi-skill-teacher certification lock accepted skill drift"
+fi
+pass "pi-skill-teacher certification lock rejects skill drift"
+write_teacher_test_skill
+printf '%s\n' 'unrelated project drift' >"$teacher_test_project/unrelated.txt"
+if node "$pi_skill_teacher/scripts/certification-lock.mjs" verify \
+    "${teacher_lock_args[@]}" \
+    --lock "$teacher_lock" \
+    >/dev/null 2>&1; then
+    fail "pi-skill-teacher certification lock accepted project drift"
+fi
+pass "pi-skill-teacher certification lock rejects project drift"
+rm "$teacher_test_project/unrelated.txt"
+
+teacher_valid_log="$teacher_test_tmp/valid.jsonl"
+cat >"$teacher_valid_log" <<EOF
+{"type":"message_end","message":{"role":"user","content":[{"type":"text","text":"<skill name=\"example-skill\" location=\"$teacher_test_skill/SKILL.md\">test</skill>"}]}}
+{"type":"tool_execution_start","toolName":"read","args":{"path":"$teacher_test_skill/references/precedence.md"}}
+{"type":"message_end","message":{"role":"assistant","content":[{"type":"text","text":"{\"D01\":\"B\"}"}]}}
+EOF
+
+teacher_score_args=(
+    --manifest "$pi_skill_teacher/assets/eval-manifest.example.json"
+    --case D01
+    --log "$teacher_valid_log"
+    --skill-name example-skill
+    --skill-path "$teacher_test_skill/SKILL.md"
+    --activation forced
+    --thinking medium
+    --allowed-tools read
+    --run-exit-code 0
+)
+teacher_valid_score="$(
+    node "$pi_skill_teacher/scripts/score-pi-jsonl.mjs" \
+        "${teacher_score_args[@]}"
+)"
+if ! grep -Fq '"passed": true' <<<"$teacher_valid_score" ||
+    ! grep -Fq '"skill_location_matched": true' <<<"$teacher_valid_score"; then
+    fail "pi-skill-teacher scorer rejected valid forced evidence"
+fi
+pass "pi-skill-teacher scorer verifies exact forced skill location"
+
+if node "$pi_skill_teacher/scripts/score-pi-jsonl.mjs" \
+    --manifest "$pi_skill_teacher/assets/eval-manifest.example.json" \
+    --case D01 \
+    --log "$teacher_valid_log" \
+    --skill-name example-skill \
+    --skill-path "$teacher_test_tmp/wrong/SKILL.md" \
+    --activation forced \
+    --allowed-tools read \
+    --run-exit-code 0 \
+    >/dev/null 2>&1; then
+    fail "pi-skill-teacher scorer accepted a same-name skill from the wrong path"
+fi
+pass "pi-skill-teacher scorer rejects wrong-path skill expansion"
+
+teacher_unauthorized_log="$teacher_test_tmp/unauthorized.jsonl"
+cat >"$teacher_unauthorized_log" <<EOF
+{"type":"message_end","message":{"role":"user","content":[{"type":"text","text":"<skill name=\"example-skill\" location=\"$teacher_test_skill/SKILL.md\">test</skill>"}]}}
+{"type":"tool_execution_start","toolName":"read","args":{"path":"$teacher_test_skill/references/precedence.md"}}
+{"type":"tool_execution_start","toolName":"bash","args":{"command":"true"}}
+{"type":"message_end","message":{"role":"assistant","content":[{"type":"text","text":"{\"D01\":\"B\"}"}]}}
+EOF
+if node "$pi_skill_teacher/scripts/score-pi-jsonl.mjs" \
+    --manifest "$pi_skill_teacher/assets/eval-manifest.example.json" \
+    --case D01 \
+    --log "$teacher_unauthorized_log" \
+    --skill-name example-skill \
+    --skill-path "$teacher_test_skill/SKILL.md" \
+    --activation forced \
+    --allowed-tools read \
+    --run-exit-code 0 \
+    >/dev/null 2>&1; then
+    fail "pi-skill-teacher scorer accepted an unauthorized tool"
+fi
+pass "pi-skill-teacher scorer rejects unauthorized tools"
+
+teacher_invalid_schema_log="$teacher_test_tmp/invalid-schema.jsonl"
+cat >"$teacher_invalid_schema_log" <<EOF
+{"type":"message_end","message":{"role":"user","content":[{"type":"text","text":"<skill name=\"example-skill\" location=\"$teacher_test_skill/SKILL.md\">test</skill>"}]}}
+{"type":"tool_execution_start","toolName":"read","args":{"path":"$teacher_test_skill/references/precedence.md"}}
+{"type":"message_end","message":{"role":"assistant","content":[{"type":"text","text":"{\"D01\":\"Z\"}"}]}}
+EOF
+if teacher_invalid_schema_score="$(
+    node "$pi_skill_teacher/scripts/score-pi-jsonl.mjs" \
+        --manifest "$pi_skill_teacher/assets/eval-manifest.example.json" \
+        --case D01 \
+        --log "$teacher_invalid_schema_log" \
+        --skill-name example-skill \
+        --skill-path "$teacher_test_skill/SKILL.md" \
+        --activation forced \
+        --allowed-tools read \
+        --run-exit-code 0
+)"; then
+    fail "pi-skill-teacher scorer accepted an invalid choice label"
+fi
+if ! grep -Fq '"schema_exact": false' <<<"$teacher_invalid_schema_score"; then
+    fail "pi-skill-teacher scorer did not classify the invalid choice as schema failure"
+fi
+pass "pi-skill-teacher scorer enforces available choice labels"
+
+teacher_missing_final_log="$teacher_test_tmp/missing-final.jsonl"
+cat >"$teacher_missing_final_log" <<EOF
+{"type":"message_end","message":{"role":"user","content":[{"type":"text","text":"<skill name=\"example-skill\" location=\"$teacher_test_skill/SKILL.md\">test</skill>"}]}}
+EOF
+if teacher_missing_final_score="$(
+    node "$pi_skill_teacher/scripts/score-pi-jsonl.mjs" \
+        --manifest "$pi_skill_teacher/assets/eval-manifest.example.json" \
+        --case D01 \
+        --log "$teacher_missing_final_log" \
+        --skill-name example-skill \
+        --skill-path "$teacher_test_skill/SKILL.md" \
+        --activation forced \
+        --allowed-tools read \
+        --run-exit-code 0
+)"; then
+    fail "pi-skill-teacher scorer accepted a missing final assistant response"
+fi
+if ! grep -Fq '"runtime_status": "missing_final_assistant"' \
+    <<<"$teacher_missing_final_score"; then
+    fail "pi-skill-teacher scorer did not classify the missing final response"
+fi
+pass "pi-skill-teacher scorer separates runtime completion failures"
+
+teacher_batch_log="$teacher_test_tmp/batch.jsonl"
+cat >"$teacher_batch_log" <<EOF
+{"type":"message_end","message":{"role":"user","content":[{"type":"text","text":"<skill name=\"example-skill\" location=\"$teacher_test_skill/SKILL.md\">test</skill>"}]}}
+{"type":"tool_execution_start","toolName":"read","args":{"path":"$teacher_test_skill/references/precedence.md"}}
+{"type":"message_end","message":{"role":"assistant","content":[{"type":"text","text":"{\"D01\":\"B\",\"C01\":\"A\"}"}]}}
+EOF
+if ! node "$pi_skill_teacher/scripts/score-pi-jsonl.mjs" \
+    --manifest "$pi_skill_teacher/assets/eval-manifest.example.json" \
+    --case D01,C01 \
+    --log "$teacher_batch_log" \
+    --skill-name example-skill \
+    --skill-path "$teacher_test_skill/SKILL.md" \
+    --activation forced \
+    --allowed-tools read \
+    --run-exit-code 0 \
+    >/dev/null; then
+    fail "pi-skill-teacher scorer rejected a valid batch"
+fi
+pass "pi-skill-teacher scorer supports exact multi-case batches"
+
+cat >"$teacher_test_tmp/bin/pi" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "--version" ]]; then
+    echo "pi-test 1.0"
+    exit 0
+fi
+
+skill_path=""
+arguments=("$@")
+for ((index = 0; index < ${#arguments[@]}; index++)); do
+    if [[ "${arguments[$index]}" == "--skill" ]]; then
+        skill_path="${arguments[$((index + 1))]}"
+    fi
+done
+
+prompt="${arguments[$((${#arguments[@]} - 1))]}"
+case_id="D01"
+answer="B"
+if [[ "$prompt" == *"C01."* ]]; then
+    case_id="C01"
+    answer="A"
+fi
+
+printf '%s\n' \
+    "{\"type\":\"message_end\",\"message\":{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"<skill name=\\\"example-skill\\\" location=\\\"$skill_path/SKILL.md\\\">test</skill>\"}]}}" \
+    "{\"type\":\"tool_execution_start\",\"toolName\":\"read\",\"args\":{\"path\":\"$skill_path/references/precedence.md\"}}" \
+    "{\"type\":\"message_end\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"$case_id\\\":\\\"$answer\\\"}\"}]}}"
+EOF
+chmod +x "$teacher_test_tmp/bin/pi"
+
+teacher_suite_output="$teacher_test_tmp/suite"
+teacher_suite_summary="$(
+    PATH="$teacher_test_tmp/bin:$PATH" \
+        "$pi_skill_teacher/scripts/run-eval-suite.sh" \
+        --activation forced \
+        --split dev \
+        --manifest "$pi_skill_teacher/assets/eval-manifest.example.json" \
+        --output-dir "$teacher_suite_output" \
+        --cwd "$teacher_test_project" \
+        --provider test-provider \
+        --model test-model \
+        --thinking medium,high \
+        --tools read \
+        --skill "$teacher_test_skill" \
+        --skill-name example-skill
+)"
+if ! grep -Fq '"overall_passed": true' <<<"$teacher_suite_summary" ||
+    ! grep -Fq '"score_files": 2' <<<"$teacher_suite_summary"; then
+    fail "pi-skill-teacher suite runner did not complete both thinking levels"
+fi
+pass "pi-skill-teacher suite runner completes and summarizes locked-shape runs"
+
+teacher_cert_suite_output="$teacher_test_tmp/certification-suite"
+teacher_cert_suite_summary="$(
+    PATH="$teacher_test_tmp/bin:$PATH" \
+        "$pi_skill_teacher/scripts/run-eval-suite.sh" \
+        --activation forced \
+        --split certification \
+        --manifest "$pi_skill_teacher/assets/eval-manifest.example.json" \
+        --output-dir "$teacher_cert_suite_output" \
+        --cwd "$teacher_test_project" \
+        --provider test-provider \
+        --model test-model \
+        --thinking medium,high \
+        --tools read \
+        --skill "$teacher_test_skill" \
+        --skill-name example-skill \
+        --lock "$teacher_lock"
+)"
+if ! grep -Fq '"overall_passed": true' <<<"$teacher_cert_suite_summary" ||
+    ! grep -Fq '"score_files": 2' <<<"$teacher_cert_suite_summary"; then
+    fail "pi-skill-teacher locked certification suite did not finish atomically"
+fi
+pass "pi-skill-teacher locked certification runs all levels before summary"
+
+if grep -R -Eq '/Users/|/home/' "$pi_skill_teacher"; then
+    fail "pi-skill-teacher contains a machine-specific home path"
+fi
+pass "pi-skill-teacher contains no machine-specific home paths"
+
+for explicit_skill in autoresearch hill-climbing-loop monitor-until pi-skill-teacher review-animations; do
     metadata_file="$SKILLS_ROOT/$explicit_skill/agents/openai.yaml"
     assert_contains \
         "$metadata_file" \

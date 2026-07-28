@@ -1,0 +1,6 @@
+interface:
+  display_name: "Pi Skill Teacher"
+  short_description: "Teach Pi through locked, evidence-grounded evals"
+  default_prompt: "Use $pi-skill-teacher to teach Pi this capability through a project-local pure-router skill, medium/high baselines, deterministic activation, bounded iteration, and a locked untouched certification suite."
+policy:
+  allow_implicit_invocation: false

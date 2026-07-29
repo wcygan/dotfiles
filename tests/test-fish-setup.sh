@@ -200,6 +200,18 @@ else
     fail "fish does not include TiUP binaries in PATH"
 fi
 
+bun_path_line="$(grep -nF 'fish_add_path --path --move --prepend $HOME/.bun/bin' ../config/fish/conf.d/10-nix.fish | cut -d: -f1)"
+local_path_line="$(grep -nF 'fish_add_path --path --move --prepend $HOME/.local/bin' ../config/fish/conf.d/10-nix.fish | cut -d: -f1)"
+bun_repair_line="$(grep -nF 'test -d $HOME/.bun/bin; and set new_path $HOME/.bun/bin $new_path' ../config/fish/functions/fix-paths.fish | cut -d: -f1)"
+local_repair_line="$(grep -nF 'test -d $HOME/.local/bin; and set new_path $HOME/.local/bin $new_path' ../config/fish/functions/fix-paths.fish | cut -d: -f1)"
+
+if [[ -n "$bun_path_line" && -n "$local_path_line" && "$bun_path_line" -lt "$local_path_line" && \
+      -n "$bun_repair_line" && -n "$local_repair_line" && "$bun_repair_line" -lt "$local_repair_line" ]]; then
+    pass "fish prefers the repo-managed npm prefix over Bun for duplicate CLIs"
+else
+    fail "fish does not prefer ~/.local/bin over ~/.bun/bin"
+fi
+
 # Test 7: Check other tools in flake
 section "Companion Tools"
 for tool in direnv starship; do

@@ -2,7 +2,8 @@
 # install-skills.sh
 #
 # Installs vendor-published agent skills from the open skills ecosystem
-# (https://skills.sh/) into ~/.claude/skills/ for use with Claude Code.
+# (https://skills.sh/) for pi. The CLI keeps canonical content in
+# ~/.agents/skills/ and links only the selected agent target.
 #
 # Uses bunx (bun is provisioned by flake.nix) so this works on a fresh
 # install without requiring Node.js. Idempotent: re-running upgrades any
@@ -34,9 +35,9 @@ fi
 echo -e "${BLUE}=== Vendor skills $MODE ===${NC}"
 
 # Keep .gitignore in sync with the SKILLS array. The skills CLI installs real
-# files into ~/.agents/skills/ and symlinks them into the repo-backed Claude
-# and Pi skill directories. Without these ignores, every vendor symlink shows
-# up as untracked and points outside the work tree.
+# files into ~/.agents/skills/ and symlinks them into the repo-backed Pi skill
+# directory. Without these ignores, every vendor symlink shows up as untracked
+# and points outside the work tree.
 sync_gitignore() {
     local repo_root gitignore tmp begin end
     repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -63,9 +64,8 @@ sync_gitignore() {
         cat "$tmp"
         printf '\n%s\n' "$begin"
         printf '%s\n' "# Symlinks created by 'bunx skills add'. Real content lives in ~/.agents/skills/;"
-        printf '%s\n' "# the CLI links them into the repo-backed Claude and Pi skill directories."
+        printf '%s\n' "# the CLI links them into the repo-backed Pi skill directory."
         for skill in "${SKILLS[@]}"; do
-            printf 'config/claude/skills/%s\n' "${skill##*@}"
             printf 'config/pi/skills/%s\n' "${skill##*@}"
         done
         printf '%s\n' "$end"
@@ -86,19 +86,13 @@ if ! command -v bunx >/dev/null 2>&1; then
     exit 0
 fi
 
-if [[ "$MODE" == "update" ]]; then
-    echo -e "${BLUE}ℹ${NC}  Updating all global skills via skills CLI"
-    bunx skills update -g -y
-    echo -e "${GREEN}✓${NC} Skills update complete"
-    exit 0
-fi
-
-# Install path: iterate the curated list. The skills CLI handles already-
-# installed skills cleanly with -y (skips prompts, upgrades if newer).
+# Install/update path: iterate the curated list. The skills CLI handles
+# already-installed skills cleanly with -y (skips prompts, upgrades if newer).
+# Pinning the agent prevents the CLI from recreating ~/.claude/skills.
 FAILED=()
 for skill in "${SKILLS[@]}"; do
     echo -e "\n${BLUE}→${NC} $skill"
-    if bunx skills add "$skill" -g -y; then
+    if bunx skills add "$skill" -g -a pi -y; then
         echo -e "${GREEN}✓${NC} $skill"
     else
         echo -e "${RED}✗${NC} $skill failed"

@@ -13,6 +13,12 @@ else if test -d /usr/local/bin
   fish_add_path --path --move --prepend /usr/local/bin
 end
 
+# Bun binaries are a fallback to the user-local npm prefix below. Both may
+# install the same CLI, and ~/.local/bin is the repo-managed npm location.
+if test -d $HOME/.bun/bin
+  fish_add_path --path --move --prepend $HOME/.bun/bin
+end
+
 # User-specific binary locations (for manual installs)
 if test -d $HOME/.local/bin
   fish_add_path --path --move --prepend $HOME/.local/bin
@@ -34,11 +40,6 @@ end
 # Go binaries
 if test -d $HOME/go/bin
   fish_add_path --path --move --prepend $HOME/go/bin
-end
-
-# Bun binaries
-if test -d $HOME/.bun/bin
-  fish_add_path --path --move --prepend $HOME/.bun/bin
 end
 
 # 2. Prefer Nix profile bins for reproducible tools.

@@ -26,7 +26,7 @@ Full documentation available at: https://wcygan.github.io/dotfiles/
 dotfiles/
 ├── config/             # Configuration files
 │   ├── fish/           # Fish shell config
-│   ├── claude/         # Claude Code config and skills
+│   ├── claude/         # Claude Code config
 │   ├── codex/          # Codex config, global instructions, and skills
 │   ├── zed/            # Zed config
 │   ├── ghostty/        # Ghostty config
@@ -48,7 +48,9 @@ dotfiles/
 brew install PeonPing/tap/peon-ping && peon-ping-setup
 ```
 
-This adds hooks and skills to your local `~/.claude/` config. These files are gitignored and will need to be reinstalled on new machines.
+This adds hooks to your local `~/.claude/` config. The setup may also create
+Claude skills; remove `~/.claude/skills` afterward to preserve this dotfiles
+repository's intentionally empty Claude skill catalog.
 
 ### Agent Skills
 
@@ -60,7 +62,10 @@ The active global Codex catalog is deliberately small:
 - `hill-climbing-loop` — explicitly invoked, metric-driven keep-or-discard experiments.
 - `autoresearch` — deprecated Codex compatibility name that routes to `hill-climbing-loop`.
 
-The Claude Code `autoresearch` skill remains unchanged. Its Claude-specific syntax and automatic Git behavior are not reused by the safer Codex implementation.
+Claude skills are intentionally absent from both the project-local
+`.claude/skills` path and the tracked global `config/claude/skills` source.
+Because `~/.claude` links to `config/claude`, no global Claude skill directory
+is exposed.
 
 Claude Code config is linked from `config/claude` to `~/.claude`. Codex is managed narrowly: `config/codex/config.toml` is a portable template copied to `${CODEX_HOME:-~/.codex}/config.toml` only when missing, `config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`, and `config/codex/skills` points to `${CODEX_HOME:-~/.codex}/skills`, while the rest of `CODEX_HOME` remains machine-local runtime state. Codex may write machine-specific `[projects]` trust entries into the local config; keep those out of the tracked template.
 

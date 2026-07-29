@@ -74,6 +74,12 @@ assert_file_copy "$CODEX_HOME/config.toml" "$ROOT/config/codex/config.toml"
 assert_symlink "$CODEX_HOME/AGENTS.md" "$ROOT/config/codex/AGENTS.md"
 assert_symlink "$CODEX_HOME/skills" "$ROOT/config/codex/skills"
 
+if [[ -e "$HOME/.claude/skills" || -L "$HOME/.claude/skills" ]]; then
+    fail "$HOME/.claude/skills should not exist"
+else
+    pass "global Claude skills remain absent"
+fi
+
 if [[ -d "$HOME/.local/bin" ]]; then
     pass "npm global bin directory exists"
 else
@@ -188,12 +194,33 @@ else
     fail "link-config.sh does not call link_pi_skills"
 fi
 
+for claude_skills_path in "$ROOT/.claude/skills" "$ROOT/config/claude/skills"; do
+    if [[ -e "$claude_skills_path" || -L "$claude_skills_path" ]]; then
+        fail "$claude_skills_path should not exist"
+    else
+        pass "$claude_skills_path is absent"
+    fi
+done
+
 if grep -Fq 'astral-sh/claude-code-plugins@uv' "$ROOT/scripts/install-skills.sh" &&
    grep -Fq 'planetscale/database-skills@mysql' "$ROOT/scripts/install-skills.sh" &&
    grep -Fq 'vercel-labs/portless@portless' "$ROOT/scripts/install-skills.sh"; then
     pass "vendor installer retains Uv, MySQL, and Portless"
 else
     fail "vendor installer is missing Uv, MySQL, or Portless"
+fi
+
+if grep -Fq 'bunx skills add "$skill" -g -a pi -y' "$ROOT/scripts/install-skills.sh"; then
+    pass "vendor installer targets pi explicitly"
+else
+    fail "vendor installer does not target pi explicitly"
+fi
+
+if grep -Eq "printf .*config/claude/skills|skills add .*(-a|--agent) claude-code" \
+    "$ROOT/scripts/install-skills.sh"; then
+    fail "vendor installer can recreate Claude skills"
+else
+    pass "vendor installer does not target Claude skills"
 fi
 
 for removed_skill in \

@@ -15,5 +15,3 @@ When invoked:
 4. Use the Hill Climbing defaults when the older prompt omitted a safe field.
 
 This shim performs no discovery, edits, commands, commits, rollback, or looping by itself. It must not reintroduce the former automatic-commit and broad-revert behavior.
-
-The separate Claude Code autoresearch skill is retained unchanged because it has harness-specific syntax and behavior.

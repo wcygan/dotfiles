@@ -90,7 +90,6 @@ test-pre:
 	@cd tests && ./test-fish-setup.sh
 	@cd tests && ./test-link-config.sh
 	@cd tests && ./test-rustup-setup.sh
-	@cd tests && ./test-consult-codex.sh
 
 # Validate tracked global Codex skills
 test-codex-skills:
@@ -174,15 +173,15 @@ setup-rustup-components:
 	@./scripts/setup-rustup-components.sh
 	@echo "✅ Rust components configured!"
 
-# Install curated vendor agent skills (Uv and Portless)
+# Install curated vendor agent skills for pi
 install-skills:
 	@echo "🧠 Installing vendor agent skills..."
 	@./scripts/install-skills.sh
 	@echo "✅ Skills installed!"
 
-# Update all global agent skills
+# Update curated vendor agent skills for pi
 update-skills:
-	@echo "🔄 Updating global agent skills..."
+	@echo "🔄 Updating curated vendor agent skills..."
 	@./scripts/install-skills.sh --update
 
 # List installed packages

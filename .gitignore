@@ -44,12 +44,9 @@ config/claude/sessions/
 config/claude/file-history/
 config/claude/history.jsonl
 config/claude/.last-cleanup
-config/claude/skills/playwright-cli/.playwright-cli/
 
 # peon-ping (installed via brew, recreated by peon-ping-setup)
 config/claude/hooks/peon-ping/
-config/claude/skills/peon-ping-config/
-config/claude/skills/peon-ping-toggle/
 config/claude/mcp-needs-auth-cache.json
 config/claude/image-cache/
 
@@ -63,11 +60,8 @@ config/fish/fish_variables
 
 # BEGIN vendor-skill-symlinks (managed by scripts/install-skills.sh)
 # Symlinks created by 'bunx skills add'. Real content lives in ~/.agents/skills/;
-# the CLI links them into the repo-backed Claude and Pi skill directories.
-config/claude/skills/uv
+# the CLI links them into the repo-backed Pi skill directory.
 config/pi/skills/uv
-config/claude/skills/mysql
 config/pi/skills/mysql
-config/claude/skills/portless
 config/pi/skills/portless
 # END vendor-skill-symlinks

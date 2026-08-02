@@ -1,0 +1,6 @@
+interface:
+  display_name: "Pi SDK"
+  short_description: "Build with the Pi TypeScript SDK"
+  default_prompt: "Use $pi-sdk to build or explain a version-matched Pi SDK integration."
+policy:
+  allow_implicit_invocation: true

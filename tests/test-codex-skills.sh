@@ -62,8 +62,10 @@ expected_inventory="$(
         "monitor-until/SKILL.md" \
         "pi-agent-controller/SKILL.md" \
         "pi-coding-agent/SKILL.md" \
+        "pi-sdk/SKILL.md" \
         "pi-skill-teacher/SKILL.md" \
-        "review-animations/SKILL.md"
+        "review-animations/SKILL.md" \
+        "typst-author/SKILL.md"
 )"
 actual_inventory="$(
     find "$SKILLS_ROOT" \

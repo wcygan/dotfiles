@@ -128,6 +128,7 @@
       "Bash(> /dev/sda*)"
     ]
   },
+  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -246,6 +247,7 @@
       }
     ]
   },
+  "enableWorkflows": true,
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true
   },
@@ -264,7 +266,7 @@
     }
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
+  "effortLevel": "medium",
   "skipDangerousModePermissionPrompt": true,
   "agentPushNotifEnabled": true,
   "enableRemoteControlForAllSessions": true

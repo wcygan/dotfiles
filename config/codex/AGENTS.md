@@ -24,6 +24,12 @@ Requests to answer, explain, review, diagnose, or plan authorize inspection and 
 
 Do not infer permission for external writes, destructive or costly actions, or material scope expansion. Before destructive or irreversible actions, explain the risk and wait for explicit confirmation.
 
+## Browser Selection
+
+For browser tasks, prefer Codex's built-in browser. It keeps browser work separate from the user's regular browser profile and is the default for local routes and public sites.
+
+When a task specifically needs the user's existing authenticated browser data, use Safari through Computer Use on macOS. Use Chrome only as a last resort when its extension-specific capabilities are required, such as existing Chrome tab or profile context, or Chrome DevTools/CDP access.
+
 ## Goal Supervisor Piloting
 
 When `$goal-supervisor` is invoked, use the current visible task as the supervisor and one separate visible Codex task as the worker.

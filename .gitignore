@@ -50,6 +50,11 @@ config/claude/hooks/peon-ping/
 config/claude/mcp-needs-auth-cache.json
 config/claude/image-cache/
 
+# Claude daemon and job runtime state
+config/claude/daemon.*
+config/claude/daemon/
+config/claude/jobs/
+
 # Codex system-managed skills are recreated by Codex inside ~/.codex/skills.
 config/codex/skills/.system/
 

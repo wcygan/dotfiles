@@ -168,6 +168,18 @@ link_codex_agents_md() {
   link "$CFG_SRC/codex/AGENTS.md" "$CODEX_HOME_DIR/AGENTS.md"
 }
 
+link_codex_agents() {
+  local src="$CFG_SRC/codex/agents"
+  local dst="$CODEX_HOME_DIR/agents"
+  local agent_file
+
+  shopt -s nullglob
+  for agent_file in "$src"/*.toml; do
+    link "$agent_file" "$dst/$(basename "$agent_file")"
+  done
+  shopt -u nullglob
+}
+
 install_codex_config_toml() {
   local src="$CFG_SRC/codex/config.toml"
   local dst="$CODEX_HOME_DIR/config.toml"
@@ -312,6 +324,7 @@ link "$CFG_SRC/claude" "$HOME/.claude"
 # Codex config.toml is mutable user state; copy the template once, then preserve it.
 install_codex_config_toml
 link_codex_agents_md
+link_codex_agents
 link_codex_skills
 
 # Pi coding agent: link only the global skills dir into the repo.

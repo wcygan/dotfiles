@@ -134,32 +134,60 @@ assert_contains \
     "goal-supervisor pins the Sol supervisor profile"
 assert_contains \
     "$goal_supervisor" \
-    '**Worker:** `gpt-5.6-sol`' \
-    "goal-supervisor pins the Sol worker profile"
+    '**Preferred worker:** native `agent_type: "luna_worker"`' \
+    "goal-supervisor prefers the Luna max worker profile"
 assert_contains \
     "$goal_supervisor" \
-    'thinking: "medium"' \
-    "goal-supervisor defaults workers to medium reasoning"
+    'spawn `agent_type: "luna_worker"`' \
+    "goal-supervisor spawns the custom Luna agent explicitly"
 assert_contains \
     "$goal_supervisor" \
-    'use `xhigh` only for especially difficult oversight' \
+    'wait sparingly and only when their result blocks the next' \
+    "goal-supervisor avoids reflexive native-agent waits"
+assert_contains \
+    "$goal_supervisor" \
+    'use `xhigh`' \
     "goal-supervisor permits xhigh for especially difficult oversight"
 assert_contains \
     "$goal_supervisor" \
-    'select `high` for a genuinely difficult implementation task' \
-    "goal-supervisor permits high reasoning for a difficult worker task"
+    '**Exceptional fallback:** use a `gpt-5.6-sol` Smart Worker with `high`' \
+    "goal-supervisor limits Sol workers to an exceptional fallback"
 assert_contains \
     "$goal_supervisor" \
-    'Name each Smart Worker `[smart-worker] <base title>`' \
-    "goal-supervisor applies the exact Smart Worker title prefix"
+    'Name an exceptional Sol worker `[smart-worker] <base title>`' \
+    "goal-supervisor applies the exact visible Smart Worker title prefix"
 assert_contains \
     "$goal_supervisor" \
     'matching `[Supervisor] `, `[Worker N] `, or `[smart-worker] `' \
     "goal-supervisor normalizes every recognized role prefix"
 assert_contains \
     "$goal_supervisor" \
-    "Preserve each worker's originally selected reasoning on follow-up turns" \
-    "goal-supervisor preserves selected reasoning for follow-ups"
+    "Preserve a worker's selected profile on follow-ups" \
+    "goal-supervisor preserves the selected worker profile for follow-ups"
+assert_contains \
+    "$goal_supervisor" \
+    'Use a separate visible task through the task-creation tools only when the user' \
+    "goal-supervisor limits separate task creation to the explicit fallback"
+assert_contains \
+    "$goal_supervisor" \
+    'model: "gpt-5.6-luna"' \
+    "goal-supervisor retains the visible-task Luna model fallback"
+assert_contains \
+    "$goal_supervisor" \
+    'thinking: "max"' \
+    "goal-supervisor retains the visible-task Luna reasoning fallback"
+assert_contains \
+    "$goal_supervisor" \
+    'fresh task or Codex restart' \
+    "goal-supervisor reports stale custom-agent discovery before fallback"
+assert_contains \
+    "$ROOT/config/codex/agents/luna-worker.toml" \
+    'name = "luna_worker"' \
+    "tracked Luna worker exposes the expected custom-agent name"
+assert_contains \
+    "$ROOT/config/codex/agents/luna-worker.toml" \
+    'model_reasoning_effort = "max"' \
+    "tracked Luna worker uses maximum reasoning"
 assert_not_contains \
     "$goal_supervisor" \
     "gpt-5.6-terra" \

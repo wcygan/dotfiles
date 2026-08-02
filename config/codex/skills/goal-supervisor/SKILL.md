@@ -1,110 +1,161 @@
 ---
 name: goal-supervisor
-description: "Supervise a difficult Codex task through a separate visible worker task. Use when the user asks for a supervisor/worker workflow, delegated implementation with oversight, evidence-based steering, independent verification, or distinct goals across Codex tasks."
+description: "Supervise a difficult Codex task through a bounded native subagent. Use when the user asks for a supervisor/worker workflow, delegated implementation with oversight, evidence-based steering, independent verification, or a separate visible worker task."
 ---
 
 # Goal Supervisor
 
-Supervise a difficult implementation in a separate visible Codex task while the current task owns oversight and acceptance.
+Supervise a difficult implementation from the current task while a bounded
+worker performs the delegated work. Prefer a native custom subagent; create a
+separate visible task only when its distinct product behavior is required.
 
 ## Shared loop contract
 
-Before delegation, read and apply ../loop-protocol/SKILL.md completely. Treat each observe, compare, steer, and verify pass as one bounded cycle with explicit progress and stopping evidence.
+Before delegation, read and apply ../loop-protocol/SKILL.md completely. Treat
+each observe, compare, steer, and verify pass as one bounded cycle with explicit
+progress and stopping evidence.
 
-Goal Supervisor specializes that baseline by assigning mutation to one visible worker, keeping acceptance with the supervisor, and using distinct goal state only when this workflow was explicitly invoked. Its rules may tighten the shared protocol but never weaken its scope, authority, one-writer, rollback, wakeup, or terminal-evidence boundaries.
+Goal Supervisor specializes that baseline by assigning mutation to one worker,
+keeping acceptance with the supervisor, and using distinct goal state only when
+the relevant worker surface exposes it. Its rules may tighten the shared
+protocol but never weaken its scope, authority, one-writer, rollback, wakeup,
+or terminal-evidence boundaries.
 
 ## Operating model
 
-- Treat the supervisor and worker as separate tasks with separate context, permissions, and goal state. A goal created in one task never creates or updates a goal in the other.
-- Use a visible Codex task for the worker. Internal subagents are implementation details of the current task; they are not visible tasks and are not a substitute for this workflow.
-- Keep the supervisor responsible for scope, steering, independent verification, and the final completion decision. The worker is responsible for implementation and its own narrow validation.
-- Check which task-management and goal tools are actually available before acting. Codex Desktop commonly exposes `list_projects`, `create_thread`, `read_thread`, and `send_message_to_thread`; use the names and schemas present in the current session. Never invent a tool or imply that an unavailable capability exists.
+- Keep the current task as supervisor. It owns scope, steering, independent
+  verification, and the final completion decision.
+- Prefer the native subagent tools: spawn `agent_type: "luna_worker"`, steer
+  with the available agent-input tool, wait only when blocked on its result,
+  and close completed agents when they are no longer needed.
+- A native subagent is the default because it loads the reusable custom-agent
+  configuration and remains part of the supervisor's orchestration context.
+- Use a separate visible task through the task-creation tools only when the user
+  explicitly asks for a standalone task, needs a saved project or selectable
+  worktree environment, or intends to continue the worker independently.
+- Treat native subagents and visible tasks as different surfaces. Never claim a
+  custom agent was loaded when the selected creation tool only accepted model
+  and reasoning overrides.
+- Check which agent, task-management, and goal tools are available before
+  acting. Use only the names and schemas present in the current session.
 
-## Task titles and identity
+## Worker identity
 
-When task-title management is available, rename the current visible supervisor task early in the workflow to `[Supervisor] <base title>`. A title is a convenience for humans, not task identity: use only the current supervisor ID and worker IDs returned by this workflow for follow-ups, reads, and mutations. Never rename an unrelated task.
+For a native subagent, record the returned agent ID, nickname, agent type,
+selected profile, and workspace when exposed. Use the agent ID for every wait,
+steer, or close action; a nickname is only a human-facing label.
 
-- Make every role title idempotent. Before applying a role, remove all consecutive leading recognized role prefixes matching `[Supervisor] `, `[Worker N] `, or `[smart-worker] `, then apply exactly the intended prefix. Never stack prefixes.
-- Preserve the meaningful observable base title. If no meaningful title is observable, derive a concise base title from the delegated outcome.
-- Number ordinary medium-reasoning workers from 1 in creation order. Reuse an existing worker's recorded index when revisiting that worker; allocate the next number only when creating a new ordinary worker. Name each ordinary worker `[Worker N] <base title>`.
-- A high-reasoning worker is a Smart Worker. Name each Smart Worker `[smart-worker] <base title>`; never apply `[Worker N]` to a Smart Worker.
-- Rename a new worker immediately after creation, then verify the title through the rename result or a direct task read when available. If search or list indexing is stale, treat the direct read or rename result as authoritative for that task.
-- If title inspection or renaming is unavailable, disclose the limitation and continue using task IDs. Do not invent title support or treat a title as a substitute for identity.
-- Keep supervisor task state for each worker: task ID, worker type, worker index when applicable, selected reasoning, title, host, and checkout. Use that state to preserve numbering, reasoning, and the intended task identity.
+For a separate visible-task fallback, record its task ID, host, checkout, model,
+reasoning, and title. When task-title management is available:
+
+- Rename the current supervisor task to `[Supervisor] <base title>`.
+- Number Luna workers from 1 and name them `[Worker N] <base title>`.
+- Name an exceptional Sol worker `[smart-worker] <base title>`.
+- Before applying a role, remove all consecutive leading recognized prefixes
+  matching `[Supervisor] `, `[Worker N] `, or `[smart-worker] `, then apply
+  exactly the intended prefix.
+- Verify a rename through its result or a direct task read. Do not rely on stale
+  list or search indexing.
+
+If title management is unavailable, continue with recorded IDs. Never treat a
+title or nickname as task identity.
 
 ## Model profile
 
-Use this standing profile unless the user explicitly requests different settings:
+Use this standing profile unless the user explicitly requests different
+settings:
 
-- **Supervisor:** `gpt-5.6-sol` with `high` reasoning by default; use `xhigh` only for especially difficult oversight. The current visible task is the supervisor, so its model and reasoning must be selected before invoking this workflow; task-creation tools cannot change the calling task's profile.
-- **Worker:** `gpt-5.6-sol` with `medium` reasoning by default. The supervisor may select `high` for a genuinely difficult implementation task; that worker is a **Smart Worker**. Pass the model and selected reasoning explicitly when creating the worker task, using the fields exposed by the available task-creation tool.
+- **Supervisor:** `gpt-5.6-sol` with `high` reasoning by default; use `xhigh`
+  only for especially difficult oversight. The current task must already have
+  that profile because worker tools cannot retune it.
+- **Preferred worker:** native `agent_type: "luna_worker"`. Its custom agent
+  file owns `gpt-5.6-luna`, `max` reasoning, and the bounded delegated-work
+  instructions. Do not duplicate model or reasoning overrides when spawning it.
+- **Visible-task fallback:** when a separate task is required and its launcher
+  has no custom-agent selector, pass `model: "gpt-5.6-luna"` and
+  `thinking: "max"`, and include the bounded delegated-work contract in the
+  prompt.
+- **Exceptional fallback:** use a `gpt-5.6-sol` Smart Worker with `high`
+  reasoning only when the user explicitly requests it or concrete task evidence
+  shows the preferred Luna profile is unsuitable. Explain the deviation before
+  creation and never switch profiles silently.
 
-When the session exposes the supervisor's current model settings, verify them before delegation. If it does not, state that the supervisor profile is assumed rather than verified. If either model or reasoning level is unavailable on the selected host, stop and report the mismatch instead of silently substituting another profile.
-
-Preserve each worker's originally selected reasoning on follow-up turns by omitting model and reasoning overrides when steering it. Do not promote an ordinary worker to Smart Worker in response to a recoverable error; choose the worker profile deliberately at creation time.
+When the supervisor profile is exposed, verify it before delegation; otherwise
+state that it is assumed. If `luna_worker` is not recognized, report the
+discovery mismatch and try a fresh task or Codex restart before using an
+equivalent profile. Preserve a worker's selected profile on follow-ups by
+omitting model and reasoning overrides. Do not promote an existing Luna worker
+to Smart Worker after a recoverable error.
 
 ## 1. Define acceptance before delegation
 
-Read the current project instructions and inspect the real checkout. Record:
+Read the project instructions and inspect the real checkout. Record:
 
 - the requested deliverable and non-goals;
 - files or systems the worker may change;
-- permission boundaries, including whether commits, pushes, deployments, or external writes are allowed;
-- the narrow validation command and any broader project preflight;
-- observable completion criteria;
-- the starting branch, checkout path, and `git status --short` when Git is involved.
+- permission boundaries, including commits, pushes, deployments, and external
+  writes;
+- the narrow validation command and broader project preflight;
+- observable completion criteria; and
+- the starting branch, checkout path, and `git status --short` when Git applies.
 
-Resolve material ambiguity before starting the worker. Preserve existing user changes and do not silently broaden authority.
+Resolve material ambiguity before spawning. Preserve existing user changes and
+do not silently broaden authority.
 
-## 2. Establish distinct goals
+## 2. Establish goal state
 
-Use goal tools only when the user explicitly requests goal-driven pursuit. Explicitly invoking this skill for the supervisor/worker workflow counts as that request.
+Use goal tools only when the user explicitly requests goal-driven pursuit.
+Explicit invocation of this skill counts as that request.
 
-1. Create the supervisor goal in the current task. Phrase it around supervising, steering, independently verifying, and accepting the deliverable.
-2. Put a separate implementation goal in the worker prompt and instruct the worker to create that goal in its own task before editing.
-3. Read the worker task after it starts. If the session exposes the worker's goal tool events or goal state, verify creation there. Otherwise require the worker to report its goal creation and status, and label that evidence as worker-reported rather than independently observed. Never infer it from the supervisor's goal state.
-4. Keep the supervisor goal active through recoverable technical obstacles. Mark it complete only after independent acceptance checks pass.
+1. Create the supervisor goal in the current task around supervising, steering,
+   independently verifying, and accepting the deliverable.
+2. Give the worker a separate bounded implementation objective.
+3. If the worker surface exposes goal tools, instruct it to create its own goal
+   and verify or obtain its reported status. Otherwise treat the delegated
+   objective as worker-local runtime state and do not imply a goal object exists.
+4. Keep the supervisor goal active through recoverable technical obstacles and
+   complete it only after independent acceptance passes.
 
-Example goal split:
+## 3. Spawn the worker
 
-- Supervisor: `Supervise and independently verify <deliverable>; accept it only when <checks> pass.`
-- Worker: `Implement <deliverable> within <scope>; keep working through technical obstacles until <checks> pass.`
+For the default native path, spawn exactly one worker with:
 
-## 3. Create the worker in the correct environment
+```text
+agent_type: "luna_worker"
+fork_context: false
+message: <bounded worker prompt>
+```
 
-Use the available project-listing capability before creating the task. Match the saved Codex project to the actual repository or workspace; do not create project-scoped work in a generic or guessed location.
+Use `fork_context: true` only when the worker genuinely needs the current
+conversation history and that context is safe and useful. Otherwise provide a
+lean, self-contained prompt containing:
 
-Choose the environment deliberately:
-
-- **Shared checkout:** Use the project's local environment when the worker can be the only writer. While it runs, the supervisor may inspect but must not edit the shared checkout. This avoids racing writes and ambiguous ownership.
-- **Worktree:** Use an isolated worktree when both tasks may need to write, when experimentation is risky, or when the worker needs branch isolation. Record the returned checkout details and inspect that exact worktree during verification. Do not assume changes appear in the supervisor checkout.
-
-If neither supported environment provides the required source state, stop and explain the mismatch instead of creating the task in the wrong place.
-
-Create one visible worker task with a prompt containing:
-
-- the exact implementation goal and an instruction to create it locally;
-- the verified project path and applicable instruction files to read;
+- the exact implementation objective;
+- the verified project path and applicable instruction files;
 - scope, non-goals, and permission limits;
-- the writer/isolation rule;
+- the sole-writer or disjoint-write ownership rule;
 - acceptance criteria and validation commands;
-- a requirement to report its goal creation result and final goal status;
-- a requirement to report concrete evidence: changed files, command exit results, and unresolved uncertainty;
-- a requirement not to mark its goal complete merely because code was written.
+- concrete evidence to report: changed files, command exits, and uncertainty;
+- whether worker-local goal creation is required and available; and
+- stop conditions, including missing authority or overlapping user changes.
 
-Create the worker with `model: "gpt-5.6-sol"` and `thinking: "medium"` by default. For a genuinely difficult implementation task, create a Smart Worker with the same model and `thinking: "high"`. Do not omit the creation-time profile and fall back to general Codex defaults. Immediately rename the returned worker ID according to its ordinary or Smart Worker title rule, verify the result when the capability exists, and record its ID, type, index when applicable, selected reasoning, title, host, and checkout in supervisor task state.
+For a visible-task fallback, list projects first, select the exact saved
+project, and choose local versus worktree deliberately. Keep a shared-checkout
+worker as the only writer; when using a worktree, record and verify that exact
+checkout. Apply the visible-task model profile and identity rules above.
 
 ## 4. Monitor and steer with evidence
 
-Store the worker task identifier, type, index when applicable, selected reasoning, title, host, and checkout details returned by task creation. Then repeat this loop while the supervisor goal is active:
+Repeat this bounded loop while the supervisor goal is active:
 
-1. Read the worker task, including relevant command output when available.
-2. Compare its current state with the acceptance criteria and the actual checkout.
-3. Separate progress, a recoverable error, inactivity, and a genuine blocker.
-4. Send a follow-up only when it adds concrete information or a needed correction.
-5. Re-read after the worker responds; do not assume a message was followed.
+1. Observe worker progress through the matching surface: agent status/results
+   for native workers, or direct task reads for visible workers.
+2. Compare progress with the acceptance criteria and actual checkout.
+3. Separate progress, recoverable error, inactivity, and genuine blocker.
+4. Send a follow-up only when it adds concrete evidence or a needed correction.
+5. Re-observe after the worker responds; never assume a message was followed.
 
-Use corrective prompts with this shape:
+Use this correction shape:
 
 ```text
 Observed: <specific gap or failure>
@@ -114,44 +165,59 @@ Validate with: <exact check>
 Stop and report if: <permission boundary or genuine blocker>
 ```
 
-Avoid vague prompts such as "keep trying". Do not take over edits in a shared checkout until the worker has stopped or explicitly relinquished writer ownership.
+For native agents, wait sparingly and only when their result blocks the next
+supervisor action. Continue useful non-overlapping supervisor work while they
+run. Do not take over edits in a shared checkout until the worker has stopped or
+relinquished ownership.
 
 ## 5. Verify independently
 
-A worker's completion message and copied test output are leads, not acceptance evidence. After the worker reports completion:
+A worker completion message is a lead, not acceptance evidence. After it stops:
 
-1. Read its final task state. Confirm its implementation goal status only through goal state or tool evidence the current session exposes; otherwise record the status as worker-reported. This limitation does not relax deliverable verification.
-2. Inspect the target checkout directly: status, untracked files, diff, and relevant file contents.
-3. Compare the final state with the recorded baseline so user-owned changes are not attributed to the worker.
-4. Check scope, maintainability, secrets, generated state, and permission compliance.
-5. Run the narrowest meaningful validation yourself.
-6. Run the broader project preflight when the repository instructions or blast radius require it.
-7. If a check fails, send the failure evidence and a bounded correction back to the worker, then repeat verification.
+1. Inspect its final status and report. Label worker goal status as
+   worker-reported unless independently exposed.
+2. Inspect the target checkout directly: status, untracked files, diff, and
+   relevant contents.
+3. Compare final state with the recorded baseline so user-owned changes are not
+   attributed to the worker.
+4. Check scope, maintainability, secrets, generated state, and permission
+   compliance.
+5. Run the narrowest meaningful validation yourself, then the broader preflight
+   required by the repository or blast radius.
+6. Send bounded failure evidence back to the same worker when correction is
+   still possible; then verify again.
 
-Use exit status and relevant output as evidence. Do not accept "tests passed" without either independently rerunning the tests or inspecting an equally authoritative artifact.
+Close a completed native agent after its output and changes are safely captured
+and no follow-up is needed. Do not archive a visible task unless authorized.
 
 ## 6. Respect stopping and wakeup boundaries
 
-Stop or ask the user when work requires new authority, an irreversible action, unavailable credentials, a material product choice, or access outside the approved scope. Treat a hard problem as recoverable until evidence shows a genuine blocker; follow the active goal tool's blocker rules rather than declaring one early.
+Stop or ask the user when work requires new authority, an irreversible action,
+unavailable credentials, a material product choice, or access outside scope.
+Treat hard technical work as recoverable until evidence establishes a blocker.
 
-Do not promise continuous supervision after ending the current turn. If monitoring must resume later, use an available and authorized goal continuation, heartbeat, automation, or other wakeup mechanism. If none exists, state that supervision resumes only when the task is invoked again.
-
-Honor user cancellation immediately. Do not commit, push, merge, deploy, archive tasks, or mutate external systems unless the user authorized that action.
+Do not promise supervision after ending the current turn. Use an authorized
+continuation, automation, or other wakeup mechanism when monitoring must resume.
+Honor cancellation immediately. Do not commit, push, merge, deploy, archive,
+or mutate external systems unless the user authorized that action.
 
 ## Completion criteria
 
-Complete the supervisor goal only when all of these are true:
+Complete the supervisor goal only when:
 
-- the worker operated in the intended project and environment;
-- the worker's goal status is either externally observed or clearly labeled worker-reported, and the deliverable itself is final;
+- the worker used the intended agent type and workspace, or a disclosed
+  visible-task fallback;
 - the final diff contains only authorized changes;
 - the supervisor independently inspected the deliverable;
 - required narrow and broad checks pass;
-- no unresolved permission issue, blocker, or material uncertainty remains;
-- the final report identifies the worker task, changed files, validation commands and results, and any residual risk.
+- no unresolved permission issue, blocker, or material uncertainty remains; and
+- the final report identifies the worker, files changed, validation commands,
+  results, and residual risk.
 
 Example invocation:
 
 ```text
-$goal-supervisor Have a separate Codex task implement the requested parser in this project. Keep that worker as the only writer, steer it from this task, independently rerun the tests, and do not commit or push.
+$goal-supervisor Use a Luna worker to implement the parser in this project.
+Keep it bounded, steer it with evidence, independently rerun the tests, and do
+not commit or push.
 ```

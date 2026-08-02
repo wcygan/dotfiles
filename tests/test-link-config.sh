@@ -60,7 +60,9 @@ echo "Link config integration test"
 echo "============================"
 echo ""
 
-mkdir -p "$HOME"
+mkdir -p "$HOME" "$CODEX_HOME/agents"
+printf '%s\n' 'machine-local agent placeholder' >"$CODEX_HOME/agents/luna-worker.toml"
+printf '%s\n' 'unrelated machine-local agent' >"$CODEX_HOME/agents/local-agent.toml"
 
 DOTFILES_SKIP_FISH_GREETING=1 "$ROOT/scripts/link-config.sh" >/dev/null
 
@@ -72,7 +74,20 @@ assert_symlink "$HOME/.config/deno" "$ROOT/config/deno"
 assert_symlink "$HOME/.claude" "$ROOT/config/claude"
 assert_file_copy "$CODEX_HOME/config.toml" "$ROOT/config/codex/config.toml"
 assert_symlink "$CODEX_HOME/AGENTS.md" "$ROOT/config/codex/AGENTS.md"
+assert_symlink "$CODEX_HOME/agents/luna-worker.toml" "$ROOT/config/codex/agents/luna-worker.toml"
 assert_symlink "$CODEX_HOME/skills" "$ROOT/config/codex/skills"
+
+if compgen -G "$CODEX_HOME/agents/luna-worker.toml.backup.*" >/dev/null; then
+    pass "existing luna-worker agent config is backed up"
+else
+    fail "existing luna-worker agent config was not backed up"
+fi
+
+if [[ -f "$CODEX_HOME/agents/local-agent.toml" && ! -L "$CODEX_HOME/agents/local-agent.toml" ]]; then
+    pass "unrelated machine-local Codex agents are preserved"
+else
+    fail "unrelated machine-local Codex agent was changed"
+fi
 
 if [[ -e "$HOME/.claude/skills" || -L "$HOME/.claude/skills" ]]; then
     fail "$HOME/.claude/skills should not exist"
@@ -180,6 +195,18 @@ if [[ -d "$ROOT/config/codex/skills" ]]; then
     pass "config/codex/skills exists as the Codex skills source"
 else
     fail "config/codex/skills is missing"
+fi
+
+if [[ -f "$ROOT/config/codex/agents/luna-worker.toml" ]]; then
+    pass "luna-worker exists as a tracked Codex custom agent"
+else
+    fail "luna-worker Codex custom agent is missing"
+fi
+
+if grep -q '^link_codex_agents()' "$ROOT/scripts/link-config.sh"; then
+    pass "link-config.sh wires tracked Codex custom agents"
+else
+    fail "link-config.sh does not link Codex custom agents"
 fi
 
 if [[ -d "$ROOT/config/pi/skills" ]]; then

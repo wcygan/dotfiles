@@ -1,0 +1,6 @@
+interface:
+  display_name: "Parallel Orchestrator"
+  short_description: "Run bounded multi-agent work in staged lanes"
+  default_prompt: "Use $parallel-orchestrator to split this task into independent, evidence-producing lanes and scale concurrency only when useful."
+policy:
+  allow_implicit_invocation: true

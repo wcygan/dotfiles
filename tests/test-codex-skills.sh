@@ -60,6 +60,7 @@ expected_inventory="$(
         "improve-animations/SKILL.md" \
         "loop-protocol/SKILL.md" \
         "monitor-until/SKILL.md" \
+        "parallel-orchestrator/SKILL.md" \
         "pi-agent-controller/SKILL.md" \
         "pi-coding-agent/SKILL.md" \
         "pi-sdk/SKILL.md" \
@@ -127,6 +128,71 @@ done < <(
         -name SKILL.md -type f -print0
 )
 
+codex_config="$ROOT/config/codex/config.toml"
+global_agents="$ROOT/config/codex/AGENTS.md"
+assert_contains \
+    "$codex_config" \
+    'multi_agent_v2 = true' \
+    "Codex config enables multi-agent V2"
+assert_contains \
+    "$codex_config" \
+    'max_concurrent_threads_per_session = 12' \
+    "Codex config raises the spawned-agent concurrency limit"
+assert_contains \
+    "$codex_config" \
+    'Spawned-agent cap; the primary task is additional.' \
+    "Codex config documents that the root is outside the spawned-agent cap"
+assert_contains \
+    "$global_agents" \
+    '## Multi-Agent Coordination' \
+    "global Codex guidance defines multi-agent coordination"
+assert_contains \
+    "$global_agents" \
+    'maintain a concise concurrency ledger' \
+    "multi-agent coordination requires a concurrency ledger"
+assert_contains \
+    "$global_agents" \
+    'normally 2–4 ready lanes' \
+    "multi-agent coordination starts with bounded fan-out"
+assert_contains \
+    "$global_agents" \
+    'Route models by lane:' \
+    "multi-agent coordination routes work by model economics"
+assert_contains \
+    "$global_agents" \
+    'A value of 12 permits twelve spawned agents plus the root.' \
+    "multi-agent coordination explains concurrency-count semantics"
+assert_contains \
+    "$global_agents" \
+    'Keep synthesis and final acceptance with the root agent.' \
+    "multi-agent coordination retains root acceptance"
+
+parallel_orchestrator="$SKILLS_ROOT/parallel-orchestrator/SKILL.md"
+assert_contains \
+    "$parallel_orchestrator" \
+    'normally 2–4 ready lanes' \
+    "parallel-orchestrator starts with a bounded first wave"
+assert_contains \
+    "$parallel_orchestrator" \
+    'Expand toward 8 and then 12 spawned lanes only' \
+    "parallel-orchestrator scales through evidence-gated waves"
+assert_contains \
+    "$parallel_orchestrator" \
+    'Expected value / usage' \
+    "parallel-orchestrator ledger tracks usage value"
+assert_contains \
+    "$parallel_orchestrator" \
+    'agent_type: "luna_lane"' \
+    "parallel-orchestrator routes economical lanes to Luna"
+assert_contains \
+    "$parallel_orchestrator" \
+    'Keep the root on Sol' \
+    "parallel-orchestrator retains root synthesis"
+assert_contains \
+    "$SKILLS_ROOT/parallel-orchestrator/agents/openai.yaml" \
+    'allow_implicit_invocation: true' \
+    "parallel-orchestrator may activate for natural multi-agent requests"
+
 goal_supervisor="$SKILLS_ROOT/goal-supervisor/SKILL.md"
 assert_contains \
     "$goal_supervisor" \
@@ -134,12 +200,16 @@ assert_contains \
     "goal-supervisor pins the Sol supervisor profile"
 assert_contains \
     "$goal_supervisor" \
-    '**Preferred worker:** native `agent_type: "worker"`' \
+    '**Standard implementation worker:** native `agent_type: "worker"`' \
     "goal-supervisor prefers the Terra high worker profile"
 assert_contains \
     "$goal_supervisor" \
-    'spawn `agent_type: "worker"`' \
-    "goal-supervisor spawns the generic worker role explicitly"
+    '**multi-worker mode**' \
+    "goal-supervisor supports a bounded multi-worker topology"
+assert_contains \
+    "$goal_supervisor" \
+    '../parallel-orchestrator/SKILL.md' \
+    "goal-supervisor composes parallel-orchestrator for independent lanes"
 assert_contains \
     "$goal_supervisor" \
     'model: "gpt-5.6-terra"' \
@@ -150,44 +220,60 @@ assert_contains \
     "goal-supervisor pins high worker reasoning"
 assert_contains \
     "$goal_supervisor" \
-    'wait sparingly and only when their result blocks the next' \
-    "goal-supervisor avoids reflexive native-agent waits"
+    'Do not wait on workers one by one' \
+    "goal-supervisor monitors workers as a set"
 assert_contains \
     "$goal_supervisor" \
     'use `xhigh`' \
     "goal-supervisor permits xhigh for especially difficult oversight"
 assert_contains \
     "$goal_supervisor" \
-    '**Exceptional fallback:** use a `gpt-5.6-sol` Smart Worker with `high`' \
+    '**Exceptional worker:** `gpt-5.6-sol` with `high`' \
     "goal-supervisor limits Sol workers to an exceptional fallback"
 assert_contains \
     "$goal_supervisor" \
-    'Name an exceptional Sol worker `[smart-worker] <base title>`' \
+    'Name an exceptional Sol worker `[smart-worker] <base title>`.' \
     "goal-supervisor applies the exact visible Smart Worker title prefix"
 assert_contains \
     "$goal_supervisor" \
-    'matching `[Supervisor] `, `[Worker N] `, or `[smart-worker] `' \
+    'Remove all consecutive leading `[Supervisor] `, `[Worker N] `, or' \
     "goal-supervisor normalizes every recognized role prefix"
 assert_contains \
     "$goal_supervisor" \
-    "Preserve a worker's selected profile on" \
+    "Preserve a worker's creation-time profile on" \
     "goal-supervisor preserves the selected worker profile for follow-ups"
 assert_contains \
     "$goal_supervisor" \
-    'Use a separate visible task through the task-creation tools only when the user' \
+    'Use a separate visible task only when the user explicitly asks for a' \
     "goal-supervisor limits separate task creation to the explicit fallback"
 assert_contains \
     "$goal_supervisor" \
-    'thinking: "high"' \
-    "goal-supervisor retains the visible-task Terra reasoning fallback"
-assert_contains \
+    'fork_turns: "none"' \
+    "goal-supervisor uses the current bounded-history spawn schema"
+assert_not_contains \
     "$goal_supervisor" \
-    'agent_type: "worker"' \
-    "goal-supervisor retains the native worker role"
+    'fork_context' \
+    "goal-supervisor contains no stale fork_context examples"
 assert_contains \
     "$goal_supervisor" \
     'fresh task or Codex restart' \
     "goal-supervisor reports stale worker-role discovery before fallback"
+assert_contains \
+    "$goal_supervisor" \
+    'One blocked lane must not stall unrelated lanes.' \
+    "goal-supervisor isolates lane blockers"
+assert_contains \
+    "$goal_supervisor" \
+    'required or optional status' \
+    "goal-supervisor records lane criticality"
+assert_contains \
+    "$goal_supervisor" \
+    'Keep one mutating owner per checkout, branch, or external' \
+    "goal-supervisor preserves one writer per authority boundary"
+assert_contains \
+    "$goal_supervisor" \
+    'Accept lanes and integrate independently' \
+    "goal-supervisor requires lane and integrated acceptance"
 assert_contains \
     "$ROOT/config/codex/agents/luna-worker.toml" \
     'name = "luna_worker"' \
@@ -196,18 +282,30 @@ assert_contains \
     "$ROOT/config/codex/agents/luna-worker.toml" \
     'model_reasoning_effort = "max"' \
     "tracked Luna worker uses maximum reasoning"
+assert_contains \
+    "$ROOT/config/codex/agents/luna-lane.toml" \
+    'name = "luna_lane"' \
+    "tracked Luna lane exposes the expected custom-agent name"
+assert_contains \
+    "$ROOT/config/codex/agents/luna-lane.toml" \
+    'model_reasoning_effort = "medium"' \
+    "tracked Luna lane uses economical medium reasoning"
 assert_not_contains \
     "$goal_supervisor" \
     "gpt-5.6-luna" \
     "goal-supervisor contains no legacy Luna worker model reference"
-assert_not_contains \
-    "$ROOT/config/codex/AGENTS.md" \
-    "gpt-5.6-luna" \
-    "Codex piloting guidance contains no legacy Luna worker model reference"
 assert_contains \
     "$goal_supervisor" \
     "../loop-protocol/SKILL.md" \
     "goal-supervisor composes loop-protocol"
+assert_contains \
+    "$global_agents" \
+    'use one or more native Codex subagents according to the work topology' \
+    "global piloting guidance permits multi-worker supervision"
+assert_contains \
+    "$global_agents" \
+    'Monitor workers as a set.' \
+    "global piloting guidance avoids serial worker monitoring"
 
 loop_protocol="$SKILLS_ROOT/loop-protocol/SKILL.md"
 monitor_until="$SKILLS_ROOT/monitor-until/SKILL.md"

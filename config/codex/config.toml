@@ -9,3 +9,8 @@ enabled = true
 
 [features]
 goals = true
+multi_agent_v2 = true
+
+[agents]
+# Spawned-agent cap; the primary task is additional.
+max_concurrent_threads_per_session = 12

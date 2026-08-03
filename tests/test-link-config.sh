@@ -74,6 +74,7 @@ assert_symlink "$HOME/.config/deno" "$ROOT/config/deno"
 assert_symlink "$HOME/.claude" "$ROOT/config/claude"
 assert_file_copy "$CODEX_HOME/config.toml" "$ROOT/config/codex/config.toml"
 assert_symlink "$CODEX_HOME/AGENTS.md" "$ROOT/config/codex/AGENTS.md"
+assert_symlink "$CODEX_HOME/agents/luna-lane.toml" "$ROOT/config/codex/agents/luna-lane.toml"
 assert_symlink "$CODEX_HOME/agents/luna-worker.toml" "$ROOT/config/codex/agents/luna-worker.toml"
 assert_symlink "$CODEX_HOME/skills" "$ROOT/config/codex/skills"
 
@@ -201,6 +202,12 @@ if [[ -f "$ROOT/config/codex/agents/luna-worker.toml" ]]; then
     pass "luna-worker exists as a tracked Codex custom agent"
 else
     fail "luna-worker Codex custom agent is missing"
+fi
+
+if [[ -f "$ROOT/config/codex/agents/luna-lane.toml" ]]; then
+    pass "luna-lane exists as a tracked Codex custom agent"
+else
+    fail "luna-lane Codex custom agent is missing"
 fi
 
 if grep -q '^link_codex_agents()' "$ROOT/scripts/link-config.sh"; then

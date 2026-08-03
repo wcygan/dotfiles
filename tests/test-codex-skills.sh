@@ -134,12 +134,20 @@ assert_contains \
     "goal-supervisor pins the Sol supervisor profile"
 assert_contains \
     "$goal_supervisor" \
-    '**Preferred worker:** native `agent_type: "luna_worker"`' \
-    "goal-supervisor prefers the Luna max worker profile"
+    '**Preferred worker:** native `agent_type: "worker"`' \
+    "goal-supervisor prefers the Terra high worker profile"
 assert_contains \
     "$goal_supervisor" \
-    'spawn `agent_type: "luna_worker"`' \
-    "goal-supervisor spawns the custom Luna agent explicitly"
+    'spawn `agent_type: "worker"`' \
+    "goal-supervisor spawns the generic worker role explicitly"
+assert_contains \
+    "$goal_supervisor" \
+    'model: "gpt-5.6-terra"' \
+    "goal-supervisor pins the Terra worker model"
+assert_contains \
+    "$goal_supervisor" \
+    'reasoning_effort: "high"' \
+    "goal-supervisor pins high worker reasoning"
 assert_contains \
     "$goal_supervisor" \
     'wait sparingly and only when their result blocks the next' \
@@ -162,7 +170,7 @@ assert_contains \
     "goal-supervisor normalizes every recognized role prefix"
 assert_contains \
     "$goal_supervisor" \
-    "Preserve a worker's selected profile on follow-ups" \
+    "Preserve a worker's selected profile on" \
     "goal-supervisor preserves the selected worker profile for follow-ups"
 assert_contains \
     "$goal_supervisor" \
@@ -170,16 +178,16 @@ assert_contains \
     "goal-supervisor limits separate task creation to the explicit fallback"
 assert_contains \
     "$goal_supervisor" \
-    'model: "gpt-5.6-luna"' \
-    "goal-supervisor retains the visible-task Luna model fallback"
+    'thinking: "high"' \
+    "goal-supervisor retains the visible-task Terra reasoning fallback"
 assert_contains \
     "$goal_supervisor" \
-    'thinking: "max"' \
-    "goal-supervisor retains the visible-task Luna reasoning fallback"
+    'agent_type: "worker"' \
+    "goal-supervisor retains the native worker role"
 assert_contains \
     "$goal_supervisor" \
     'fresh task or Codex restart' \
-    "goal-supervisor reports stale custom-agent discovery before fallback"
+    "goal-supervisor reports stale worker-role discovery before fallback"
 assert_contains \
     "$ROOT/config/codex/agents/luna-worker.toml" \
     'name = "luna_worker"' \
@@ -190,12 +198,12 @@ assert_contains \
     "tracked Luna worker uses maximum reasoning"
 assert_not_contains \
     "$goal_supervisor" \
-    "gpt-5.6-terra" \
-    "goal-supervisor contains no legacy worker model reference"
+    "gpt-5.6-luna" \
+    "goal-supervisor contains no legacy Luna worker model reference"
 assert_not_contains \
     "$ROOT/config/codex/AGENTS.md" \
-    "gpt-5.6-terra" \
-    "Codex piloting guidance contains no legacy worker model reference"
+    "gpt-5.6-luna" \
+    "Codex piloting guidance contains no legacy Luna worker model reference"
 assert_contains \
     "$goal_supervisor" \
     "../loop-protocol/SKILL.md" \

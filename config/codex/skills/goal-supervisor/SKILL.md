@@ -6,7 +6,7 @@ description: "Supervise a difficult Codex task through a bounded native subagent
 # Goal Supervisor
 
 Supervise a difficult implementation from the current task while a bounded
-worker performs the delegated work. Prefer a native custom subagent; create a
+worker performs the delegated work. Prefer a native role-based subagent; create a
 separate visible task only when its distinct product behavior is required.
 
 ## Shared loop contract
@@ -25,11 +25,12 @@ or terminal-evidence boundaries.
 
 - Keep the current task as supervisor. It owns scope, steering, independent
   verification, and the final completion decision.
-- Prefer the native subagent tools: spawn `agent_type: "luna_worker"`, steer
-  with the available agent-input tool, wait only when blocked on its result,
-  and close completed agents when they are no longer needed.
-- A native subagent is the default because it loads the reusable custom-agent
-  configuration and remains part of the supervisor's orchestration context.
+- Prefer the native subagent tools: spawn `agent_type: "worker"` with the
+  explicit Terra/high profile, steer with the available agent-input tool, wait
+  only when blocked on its result, and close completed agents when they are no
+  longer needed.
+- A native subagent is the default because it remains part of the supervisor's
+  orchestration context and can use the bounded worker role directly.
 - Use a separate visible task through the task-creation tools only when the user
   explicitly asks for a standalone task, needs a saved project or selectable
   worktree environment, or intends to continue the worker independently.
@@ -49,7 +50,7 @@ For a separate visible-task fallback, record its task ID, host, checkout, model,
 reasoning, and title. When task-title management is available:
 
 - Rename the current supervisor task to `[Supervisor] <base title>`.
-- Number Luna workers from 1 and name them `[Worker N] <base title>`.
+- Number Terra workers from 1 and name them `[Worker N] <base title>`.
 - Name an exceptional Sol worker `[smart-worker] <base title>`.
 - Before applying a role, remove all consecutive leading recognized prefixes
   matching `[Supervisor] `, `[Worker N] `, or `[smart-worker] `, then apply
@@ -68,24 +69,25 @@ settings:
 - **Supervisor:** `gpt-5.6-sol` with `high` reasoning by default; use `xhigh`
   only for especially difficult oversight. The current task must already have
   that profile because worker tools cannot retune it.
-- **Preferred worker:** native `agent_type: "luna_worker"`. Its custom agent
-  file owns `gpt-5.6-luna`, `max` reasoning, and the bounded delegated-work
-  instructions. Do not duplicate model or reasoning overrides when spawning it.
+- **Preferred worker:** native `agent_type: "worker"` with
+  `model: "gpt-5.6-terra"` and `reasoning_effort: "high"`. Pass this explicit
+  profile when spawning it and retain the bounded delegated-work instructions
+  in the prompt.
 - **Visible-task fallback:** when a separate task is required and its launcher
-  has no custom-agent selector, pass `model: "gpt-5.6-luna"` and
-  `thinking: "max"`, and include the bounded delegated-work contract in the
+  has no subagent-role selector, pass `model: "gpt-5.6-terra"` and
+  `thinking: "high"`, and include the bounded delegated-work contract in the
   prompt.
 - **Exceptional fallback:** use a `gpt-5.6-sol` Smart Worker with `high`
   reasoning only when the user explicitly requests it or concrete task evidence
-  shows the preferred Luna profile is unsuitable. Explain the deviation before
+  shows the preferred Terra profile is unsuitable. Explain the deviation before
   creation and never switch profiles silently.
 
 When the supervisor profile is exposed, verify it before delegation; otherwise
-state that it is assumed. If `luna_worker` is not recognized, report the
-discovery mismatch and try a fresh task or Codex restart before using an
-equivalent profile. Preserve a worker's selected profile on follow-ups by
-omitting model and reasoning overrides. Do not promote an existing Luna worker
-to Smart Worker after a recoverable error.
+state that it is assumed. If the `worker` role or Terra/high profile is not
+available, report the discovery mismatch and try a fresh task or Codex restart
+before using an equivalent profile. Preserve a worker's selected profile on
+follow-ups by omitting model and reasoning overrides. Do not promote an
+existing Terra worker to Smart Worker after a recoverable error.
 
 ## 1. Define acceptance before delegation
 
@@ -121,8 +123,10 @@ Explicit invocation of this skill counts as that request.
 For the default native path, spawn exactly one worker with:
 
 ```text
-agent_type: "luna_worker"
+agent_type: "worker"
 fork_context: false
+model: "gpt-5.6-terra"
+reasoning_effort: "high"
 message: <bounded worker prompt>
 ```
 
@@ -217,7 +221,7 @@ Complete the supervisor goal only when:
 Example invocation:
 
 ```text
-$goal-supervisor Use a Luna worker to implement the parser in this project.
+$goal-supervisor Use a Terra high worker to implement the parser in this project.
 Keep it bounded, steer it with evidence, independently rerun the tests, and do
 not commit or push.
 ```

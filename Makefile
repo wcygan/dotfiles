@@ -158,7 +158,7 @@ latest:
 update:
 	@echo "📦 Updating flake and packages..."
 	@nix flake update --refresh
-	@nix profile upgrade '.*'
+	@nix profile upgrade --all
 	@echo "✅ Packages updated!"
 
 # Install/upgrade packages from flake

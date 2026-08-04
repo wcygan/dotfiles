@@ -27,7 +27,7 @@ Reproducible tools with Nix; portable, editable configs via symlinks; fast onboa
   * Only symlink to `~/.config/` for XDG-compliant programs (fish, starship, zed). Legacy programs like tmux expect `~/.tmux.conf` — check before symlinking.
 * **Need per-project dev environment?** Use the nix-direnv pattern — see README.md.
 * **Need a vendor agent skill?** Add it to the `SKILLS` array in `scripts/install-skills.sh` → `make install-skills`.
-* **Need a global pi-coding-agent skill?** Drop a `SKILL.md`-rooted dir under `config/pi/skills/`. `link_pi_skills` symlinks the whole dir to `~/.pi/agent/skills`. Link only that leaf — never all of `~/.pi/agent`, which holds `auth.json`/`sessions/`.
+* **Need a global shared agent skill?** Install a vetted vendor skill with `scripts/install-skills.sh`; it is stored once in `~/.agents/skills`, which Pi discovers directly. Keep Pi credentials, sessions, models, and other runtime state machine-local.
 * **Unsure?** Prefer plain files + symlinks over bespoke derivations.
 
 ## Workflow
@@ -67,3 +67,4 @@ Rollback: re-link configs (script backs up physical dirs), or `nix profile rollb
 ## Migrations
 
 * **2026-07-13 — Reset global Codex skills**: active global skills now live only under `config/codex/skills`; the previous catalog was removed and remains recoverable from Git history. Existing `~/.codex/skills` symlinks require no manual migration because they immediately reflect the emptied active directory.
+* **2026-08-02 — Deduplicate Pi skills**: global vendor skills now live only in `~/.agents/skills`; remove the legacy `~/.pi/agent/skills` symlink once. Repository-authored `config/pi/skills/pi-docs` was retired rather than copied into a second catalog.

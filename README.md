@@ -69,7 +69,7 @@ is exposed.
 
 Claude Code config is linked from `config/claude` to `~/.claude`. Codex is managed narrowly: `config/codex/config.toml` is a portable template copied to `${CODEX_HOME:-~/.codex}/config.toml` only when missing, `config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`, tracked files under `config/codex/agents/` are linked individually into `${CODEX_HOME:-~/.codex}/agents/`, and `config/codex/skills` points to `${CODEX_HOME:-~/.codex}/skills`, while the rest of `CODEX_HOME` remains machine-local runtime state. Per-file agent links preserve unrelated machine-local agents. Codex may write machine-specific `[projects]` trust entries into the local config; keep those out of the tracked template.
 
-The pi coding agent is managed the same narrow way: `config/pi/skills` links to `~/.pi/agent/skills`, so global pi skills are version-controlled while sibling runtime state in `~/.pi/agent` (`auth.json`, `sessions/`, `models.json`) stays machine-local. Drop a `SKILL.md`-rooted directory under `config/pi/skills/` and re-run `scripts/link-config.sh`; pi discovers it as `/skill:<name>`.
+Pi discovers the shared global catalog at `~/.agents/skills` directly. `scripts/install-skills.sh` installs curated vendor skills there and deliberately does not create `~/.pi/agent/skills`, avoiding duplicate skill names while leaving Pi runtime state (`auth.json`, `sessions/`, `models.json`) machine-local.
 
 ### npm Global Tools
 

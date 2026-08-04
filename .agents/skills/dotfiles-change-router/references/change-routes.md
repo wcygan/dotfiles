@@ -13,7 +13,7 @@ responsibilities.
 | Add one project's development environment | Use the repository's documented nix-direnv pattern rather than adding project-only dependencies globally. |
 | Add an external agent skill | Add `<owner>/<repo>@<skill>` to `SKILLS` in `scripts/install-skills.sh`, accept only an official publisher, then run `make install-skills`. |
 | Add a project-local Pi skill | Put it under `.agents/skills/<name>/`; noninteractive Pi must trust project resources, normally with the one-run `--approve` flag. |
-| Add a repository-authored global Pi skill | Put a `SKILL.md`-rooted directory under `config/pi/skills/<name>/`; link only that skills leaf to `~/.pi/agent/skills`. |
+| Add a curated global shared-agent skill | Add `<owner>/<repo>@<skill>` to `SKILLS` in `scripts/install-skills.sh`; it is installed once in `~/.agents/skills`. |
 | Add a reusable global Codex workflow skill | Put it under `config/codex/skills/<name>/` and validate the catalog with `./tests/test-codex-skills.sh`. |
 | Update the Nix package set | Run `make update`; do not edit or recreate `flake.lock` by hand. |
 | Preview config links | Run `make link-dry`; it invokes `scripts/link-config.sh --dry-run`. |

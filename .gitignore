@@ -62,11 +62,3 @@ config/codex/skills/.system/
 .autoresearch-*
 # Fish runtime state (universal vars, init flags) — machine-local
 config/fish/fish_variables
-
-# BEGIN vendor-skill-symlinks (managed by scripts/install-skills.sh)
-# Symlinks created by 'bunx skills add'. Real content lives in ~/.agents/skills/;
-# the CLI links them into the repo-backed Pi skill directory.
-config/pi/skills/uv
-config/pi/skills/mysql
-config/pi/skills/portless
-# END vendor-skill-symlinks

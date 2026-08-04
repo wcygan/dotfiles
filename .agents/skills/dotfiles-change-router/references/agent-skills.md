@@ -28,10 +28,12 @@ The three deterministic layers have different jobs:
 In JSON-mode certification, verify that the user message contains
 `<skill name="<name>" ...>` and that the expected focused references were read.
 
-## Repository-authored global Pi skill
+## Shared global agent skill
 
-- Place it under `config/pi/skills/<name>/`.
-- The linker exposes only that directory as `~/.pi/agent/skills`.
+- Install curated vendor skills once into `~/.agents/skills` through
+  `scripts/install-skills.sh`.
+- Pi discovers that shared catalog directly; do not create
+  `~/.pi/agent/skills` or a second repository-backed catalog.
 - Keep `auth.json`, models, sessions, logs, caches, and other runtime state
   machine-local.
 
@@ -46,9 +48,8 @@ In JSON-mode certification, verify that the user message contains
 - Accept only an official publisher.
 - Add `<owner>/<repo>@<skill>` to `SKILLS` in
   `scripts/install-skills.sh`.
-- The installer uses `bunx skills add "$skill" -g -a pi -y`; do not remove the
-  explicit Pi target.
-- The installer synchronizes the managed vendor-symlink block in `.gitignore`.
+- The installer uses `bunx skills add "$skill" -g -y`; do not select a Pi
+  target, because that recreates duplicate links.
 - Install with `make install-skills`.
 - Refresh with `scripts/install-skills.sh --update` or `make update-skills`.
 - Do not recreate removed Claude skill surfaces as a side effect.

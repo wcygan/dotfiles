@@ -30,7 +30,7 @@ A breaking behavior change requires:
 
 ## Pi state boundary
 
-Repository-managed Pi skills may live under `config/pi/skills`, but only the
-skills leaf is linked into `~/.pi/agent/skills`. Keep `auth.json`, sessions,
+Pi discovers shared global skills directly from `~/.agents/skills`; do not
+create a duplicate `~/.pi/agent/skills` link. Keep `auth.json`, sessions,
 models, logs, caches, and other machine-local runtime state outside the
 repository.

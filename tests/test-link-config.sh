@@ -96,6 +96,12 @@ else
     pass "global Claude skills remain absent"
 fi
 
+if [[ -e "$HOME/.pi/agent/skills" || -L "$HOME/.pi/agent/skills" ]]; then
+    fail "$HOME/.pi/agent/skills should not be created"
+else
+    pass "Pi uses the shared ~/.agents/skills catalog without a duplicate link"
+fi
+
 if [[ -d "$HOME/.local/bin" ]]; then
     pass "npm global bin directory exists"
 else
@@ -216,16 +222,16 @@ else
     fail "link-config.sh does not link Codex custom agents"
 fi
 
-if [[ -d "$ROOT/config/pi/skills" ]]; then
-    pass "config/pi/skills exists as the pi skills source"
+if [[ -e "$ROOT/config/pi/skills" || -L "$ROOT/config/pi/skills" ]]; then
+    fail "config/pi/skills should not exist; Pi uses ~/.agents/skills"
 else
-    fail "config/pi/skills is missing"
+    pass "config/pi/skills is absent"
 fi
 
 if grep -q "link_pi_skills" "$ROOT/scripts/link-config.sh"; then
-    pass "link-config.sh wires pi skills into ~/.pi/agent/skills"
+    fail "link-config.sh should not create ~/.pi/agent/skills"
 else
-    fail "link-config.sh does not call link_pi_skills"
+    pass "link-config.sh leaves Pi's duplicate skills path alone"
 fi
 
 for claude_skills_path in "$ROOT/.claude/skills" "$ROOT/config/claude/skills"; do
@@ -244,10 +250,11 @@ else
     fail "vendor installer is missing Uv, MySQL, or Portless"
 fi
 
-if grep -Fq 'bunx skills add "$skill" -g -a pi -y' "$ROOT/scripts/install-skills.sh"; then
-    pass "vendor installer targets pi explicitly"
+if grep -Fq 'bunx skills add "$skill" -g -y' "$ROOT/scripts/install-skills.sh" && \
+   ! grep -Fq 'bunx skills add "$skill" -g -a pi -y' "$ROOT/scripts/install-skills.sh"; then
+    pass "vendor installer uses the shared skills catalog"
 else
-    fail "vendor installer does not target pi explicitly"
+    fail "vendor installer can recreate Pi skill links"
 fi
 
 if grep -Eq "printf .*config/claude/skills|skills add .*(-a|--agent) claude-code" \

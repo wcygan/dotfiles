@@ -55,8 +55,7 @@ hide an installation requirement inside application configuration.
 
 ### Pi
 
-- The specialized Pi linker operates only on `~/.pi/agent/skills`.
-- Existing non-conflicting skills may be migrated into `config/pi/skills`;
-  conflicts are backed up before linking.
-- It never migrates or links the whole `~/.pi/agent` directory. Credentials,
-  models, sessions, logs, and caches remain machine-local.
+- Pi discovers shared global skills directly from `~/.agents/skills`.
+- Do not create or link `~/.pi/agent/skills`; that duplicate surface causes
+  skill-name collisions.
+- Credentials, models, sessions, logs, and caches remain machine-local.

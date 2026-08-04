@@ -2,8 +2,8 @@
 # install-skills.sh
 #
 # Installs vendor-published agent skills from the open skills ecosystem
-# (https://skills.sh/) for pi. The CLI keeps canonical content in
-# ~/.agents/skills/ and links only the selected agent target.
+# (https://skills.sh/). The CLI keeps the canonical content in
+# ~/.agents/skills, which Pi discovers directly.
 #
 # Uses bunx (bun is provisioned by flake.nix) so this works on a fresh
 # install without requiring Node.js. Idempotent: re-running upgrades any
@@ -34,48 +34,6 @@ fi
 
 echo -e "${BLUE}=== Vendor skills $MODE ===${NC}"
 
-# Keep .gitignore in sync with the SKILLS array. The skills CLI installs real
-# files into ~/.agents/skills/ and symlinks them into the repo-backed Pi skill
-# directory. Without these ignores, every vendor symlink shows up as untracked
-# and points outside the work tree.
-sync_gitignore() {
-    local repo_root gitignore tmp begin end
-    repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-    gitignore="$repo_root/.gitignore"
-    [[ -f "$gitignore" ]] || return 0
-
-    begin="# BEGIN vendor-skill-symlinks (managed by scripts/install-skills.sh)"
-    end="# END vendor-skill-symlinks"
-
-    tmp="$(mktemp)"
-    # Strip any prior managed block; preserve everything else verbatim.
-    awk -v B="$begin" -v E="$end" '
-        $0 == B { skip = 1; next }
-        skip && $0 == E { skip = 0; next }
-        !skip { print }
-    ' "$gitignore" > "$tmp"
-
-    # Trim trailing blank lines so we re-emit exactly one separator before the block.
-    while [[ -s "$tmp" ]] && [[ -z "$(tail -n 1 "$tmp")" ]]; do
-        sed -i.bak -e '$d' "$tmp" && rm -f "$tmp.bak"
-    done
-
-    {
-        cat "$tmp"
-        printf '\n%s\n' "$begin"
-        printf '%s\n' "# Symlinks created by 'bunx skills add'. Real content lives in ~/.agents/skills/;"
-        printf '%s\n' "# the CLI links them into the repo-backed Pi skill directory."
-        for skill in "${SKILLS[@]}"; do
-            printf 'config/pi/skills/%s\n' "${skill##*@}"
-        done
-        printf '%s\n' "$end"
-    } > "$gitignore"
-
-    rm -f "$tmp"
-}
-
-sync_gitignore
-
 # Skip gracefully if bun isn't available yet (e.g. install order, or fresh
 # system before Nix profile is on PATH). install.sh treats this as non-fatal.
 if ! command -v bunx >/dev/null 2>&1; then
@@ -88,11 +46,12 @@ fi
 
 # Install/update path: iterate the curated list. The skills CLI handles
 # already-installed skills cleanly with -y (skips prompts, upgrades if newer).
-# Pinning the agent prevents the CLI from recreating ~/.claude/skills.
+# Do not select an agent target: Pi discovers the canonical shared catalog,
+# avoiding duplicate ~/.pi/agent/skills links.
 FAILED=()
 for skill in "${SKILLS[@]}"; do
     echo -e "\n${BLUE}→${NC} $skill"
-    if bunx skills add "$skill" -g -a pi -y; then
+    if bunx skills add "$skill" -g -y; then
         echo -e "${GREEN}✓${NC} $skill"
     else
         echo -e "${RED}✗${NC} $skill failed"

@@ -72,6 +72,14 @@ When proposing fixes, prefer earlier moves over later ones:
 8. **Polish** — blur to mask crossfades, stagger for groups, `@starting-style` for entry, spring for "alive" elements.
 9. **Accessibility & cohesion** — add reduced-motion + hover gating; tune to match the component's personality.
 
+## Motion Workflow Loop
+
+For a new animation, start with `find-animation-opportunities` when the right
+candidate is not yet known, then give the accepted recipe to `animate` for
+implementation. Review the resulting diff here. When this review blocks the
+change, send the concrete finding back to `animate`, then review the revised
+diff again. This skill reviews; it does not implement the fix itself.
+
 ## Required Output Format
 
 Two parts, in this order.

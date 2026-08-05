@@ -23,9 +23,30 @@ NC='\033[0m'
 # new vendor skills become useful. Format: <owner>/<repo>@<skill>
 SKILLS=(
     "astral-sh/claude-code-plugins@uv"
+    "emilkowalski/skills@animate"
     "planetscale/database-skills@mysql"
     "vercel-labs/portless@portless"
 )
+
+apply_animate_workflow_handoff() {
+    local skill_file="${HOME}/.agents/skills/animate/SKILL.md"
+
+    if [[ ! -f "$skill_file" ]] || grep -Fq '## Motion Workflow Loop' "$skill_file"; then
+        return
+    fi
+
+    printf '%s\n' \
+        '' \
+        '## Motion Workflow Loop' \
+        '' \
+        'When the right motion candidate is not yet known, use' \
+        '`find-animation-opportunities` first and bring its accepted recipe' \
+        'here. After implementing the change, use `review-animations` on the' \
+        'diff. If review blocks the change, apply its concrete findings here,' \
+        'then review the revised diff again. This skill implements; it does not' \
+        'replace opportunity discovery or motion review.' \
+        >> "$skill_file"
+}
 
 MODE="install"
 if [[ "${1:-}" == "--update" ]]; then
@@ -58,6 +79,8 @@ for skill in "${SKILLS[@]}"; do
         FAILED+=("$skill")
     fi
 done
+
+apply_animate_workflow_handoff
 
 echo ""
 if [ ${#FAILED[@]} -eq 0 ]; then

@@ -101,6 +101,11 @@ Useful sweeps: grep for conditional renders with no transition (`{isOpen &&`, `d
 3. **Gate** every candidate through all four questions. Be ruthless.
 4. **Report** in the format below. If nothing survives, say so plainly; that's a good result, not a failure.
 
+## Motion Workflow Loop
+
+When an opportunity survives the gate, hand its exact recipe to `animate` to
+implement it. Once the implementation is ready, use `review-animations` on the resulting diff before accepting it. This skill remains read-only: it identifies the candidate and its constraints, then hands off rather than writing the motion.
+
 ## Required Output Format
 
 ### Part 1 — Opportunities table
@@ -125,7 +130,7 @@ This section is what separates this skill from an animation wishlist.
 
 ### Part 3 — Verdict
 
-One short paragraph: how much motion this interface actually needs, whether it's already close to right, and which single suggestion has the highest leverage. Close by pointing at the handoff: `improve-animations plan <suggestion>` to turn any row into a self-contained implementation plan.
+One short paragraph: how much motion this interface actually needs, whether it's already close to right, and which single suggestion has the highest leverage. Close by pointing at the handoff: pass the chosen row to `animate`, then run `review-animations` on the resulting diff. Use `improve-animations plan <suggestion>` when the user wants a self-contained implementation plan instead.
 
 ## Tone
 

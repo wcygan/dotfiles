@@ -243,11 +243,12 @@ for claude_skills_path in "$ROOT/.claude/skills" "$ROOT/config/claude/skills"; d
 done
 
 if grep -Fq 'astral-sh/claude-code-plugins@uv' "$ROOT/scripts/install-skills.sh" &&
+   grep -Fq 'emilkowalski/skills@animate' "$ROOT/scripts/install-skills.sh" &&
    grep -Fq 'planetscale/database-skills@mysql' "$ROOT/scripts/install-skills.sh" &&
    grep -Fq 'vercel-labs/portless@portless' "$ROOT/scripts/install-skills.sh"; then
-    pass "vendor installer retains Uv, MySQL, and Portless"
+    pass "vendor installer retains Uv, Animate, MySQL, and Portless"
 else
-    fail "vendor installer is missing Uv, MySQL, or Portless"
+    fail "vendor installer is missing Uv, Animate, MySQL, or Portless"
 fi
 
 if grep -Fq 'bunx skills add "$skill" -g -y' "$ROOT/scripts/install-skills.sh" && \
@@ -255,6 +256,15 @@ if grep -Fq 'bunx skills add "$skill" -g -y' "$ROOT/scripts/install-skills.sh" &
     pass "vendor installer uses the shared skills catalog"
 else
     fail "vendor installer can recreate Pi skill links"
+fi
+
+if grep -Fq 'apply_animate_workflow_handoff' "$ROOT/scripts/install-skills.sh" && \
+   grep -Fq '## Motion Workflow Loop' "$ROOT/scripts/install-skills.sh" && \
+   grep -Fq 'find-animation-opportunities' "$ROOT/scripts/install-skills.sh" && \
+   grep -Fq 'review-animations' "$ROOT/scripts/install-skills.sh"; then
+    pass "vendor Animate skill receives the durable motion workflow handoff"
+else
+    fail "vendor Animate skill is missing the motion workflow handoff"
 fi
 
 if grep -Eq "printf .*config/claude/skills|skills add .*(-a|--agent) claude-code" \

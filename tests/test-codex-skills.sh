@@ -254,6 +254,33 @@ assert_not_contains \
     "$goal_supervisor" \
     'fork_context' \
     "goal-supervisor contains no stale fork_context examples"
+
+animation_finder="$SKILLS_ROOT/find-animation-opportunities/SKILL.md"
+animation_reviewer="$SKILLS_ROOT/review-animations/SKILL.md"
+assert_contains \
+    "$animation_finder" \
+    '## Motion Workflow Loop' \
+    "animation finder defines the motion workflow loop"
+assert_contains \
+    "$animation_finder" \
+    'hand its exact recipe to `animate`' \
+    "animation finder hands accepted recipes to animate"
+assert_contains \
+    "$animation_finder" \
+    'use `review-animations` on the resulting diff' \
+    "animation finder closes the loop with review"
+assert_contains \
+    "$animation_reviewer" \
+    '## Motion Workflow Loop' \
+    "animation reviewer defines the motion workflow loop"
+assert_contains \
+    "$animation_reviewer" \
+    '`find-animation-opportunities`' \
+    "animation reviewer routes unknown candidates to discovery"
+assert_contains \
+    "$animation_reviewer" \
+    'send the concrete finding back to `animate`' \
+    "animation reviewer routes blocked changes back to implementation"
 assert_contains \
     "$goal_supervisor" \
     'fresh task or Codex restart' \

@@ -1,5 +1,8 @@
 # Personal Codex defaults tracked by dotfiles.
 # Keep auth, generated state, and machine-specific [projects] trust entries out of git.
+approval_policy = "never"
+approvals_reviewer = "user"
+sandbox_mode = "danger-full-access"
 model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
 model_verbosity = "low"

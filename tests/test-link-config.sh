@@ -245,10 +245,11 @@ done
 if grep -Fq 'astral-sh/claude-code-plugins@uv' "$ROOT/scripts/install-skills.sh" &&
    grep -Fq 'emilkowalski/skills@animate' "$ROOT/scripts/install-skills.sh" &&
    grep -Fq 'planetscale/database-skills@mysql' "$ROOT/scripts/install-skills.sh" &&
+   grep -Fq 'planetscale/database-skills@postgres' "$ROOT/scripts/install-skills.sh" &&
    grep -Fq 'vercel-labs/portless@portless' "$ROOT/scripts/install-skills.sh"; then
-    pass "vendor installer retains Uv, Animate, MySQL, and Portless"
+    pass "vendor installer retains Uv, Animate, MySQL, PostgreSQL, and Portless"
 else
-    fail "vendor installer is missing Uv, Animate, MySQL, or Portless"
+    fail "vendor installer is missing Uv, Animate, MySQL, PostgreSQL, or Portless"
 fi
 
 if grep -Fq 'bunx skills add "$skill" -g -y' "$ROOT/scripts/install-skills.sh" && \

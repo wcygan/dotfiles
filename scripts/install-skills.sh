@@ -25,6 +25,7 @@ SKILLS=(
     "astral-sh/claude-code-plugins@uv"
     "emilkowalski/skills@animate"
     "planetscale/database-skills@mysql"
+    "planetscale/database-skills@postgres"
     "vercel-labs/portless@portless"
 )
 

@@ -92,5 +92,5 @@ cd "$REPO_ROOT"
 unset VIRTUAL_ENV
 exec nix \
   --extra-experimental-features "nix-command flakes" \
-  develop .#default \
+  develop --no-write-lock-file .#default \
   --command uv run --locked python -m dotfiles_setup "${forwarded_args[@]}"

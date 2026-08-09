@@ -2,7 +2,7 @@
 # Run `make help` for available commands.
 
 BOOTSTRAP := ./bootstrap.sh
-NIX_DEV := nix --extra-experimental-features "nix-command flakes" develop .\#default --command
+NIX_DEV := nix --extra-experimental-features "nix-command flakes" develop --no-write-lock-file .\#default --command
 UV_RUN := $(NIX_DEV) uv run --locked
 
 .PHONY: \

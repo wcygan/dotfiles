@@ -21,7 +21,7 @@ The bootstrapper loads Nix, enters the default development shell, and invokes
 the locked Python CLI:
 
 ```bash
-nix develop .#default --command uv run --locked python -m dotfiles_setup install
+nix develop --no-write-lock-file .#default --command uv run --locked python -m dotfiles_setup install
 ```
 
 By default, installation upgrades or adds the repository Nix profile, links

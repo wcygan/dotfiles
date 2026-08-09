@@ -51,7 +51,7 @@
                 # Programming languages
                 rustup
                 go
-                python3
+                python313
                 uv
                 nodejs
                 deno

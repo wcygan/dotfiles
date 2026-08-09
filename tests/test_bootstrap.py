@@ -58,6 +58,7 @@ def test_existing_nix_executes_locked_install(command_bin: Path, tmp_path: Path)
         "--extra-experimental-features",
         "nix-command flakes",
         "develop",
+        "--no-write-lock-file",
         ".#default",
         "--command",
         "uv",
@@ -68,6 +69,21 @@ def test_existing_nix_executes_locked_install(command_bin: Path, tmp_path: Path)
         "dotfiles_setup",
         "install",
     ]
+
+
+def test_locked_flake_failure_stops_before_python(command_bin: Path, tmp_path: Path) -> None:
+    write_executable(
+        command_bin / "nix",
+        'printf "%s\\n" "$@" > "$BOOTSTRAP_CAPTURE"; '
+        'printf "committed lock cannot satisfy flake\\n" >&2; exit 1',
+    )
+
+    result = run_bootstrap(command_bin, tmp_path)
+
+    assert result.returncode == 1
+    assert "committed lock cannot satisfy flake" in result.stderr
+    captured = (tmp_path / "capture").read_text().splitlines()
+    assert "--no-write-lock-file" in captured
 
 
 def test_macos_missing_nix_opens_package_installer(command_bin: Path, tmp_path: Path) -> None:

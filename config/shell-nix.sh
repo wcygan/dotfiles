@@ -90,12 +90,12 @@ deno() {
 }
 
 # Useful Nix aliases
-alias nix-update='nix flake update && nix profile upgrade'
+alias nix-update='nix flake update && nix profile upgrade --no-write-lock-file'
 alias nix-search='nix search nixpkgs'
 alias nix-list='nix profile list'
 alias nix-clean='nix-collect-garbage -d'
 alias nix-shell-pure='nix-shell --pure'
-alias nix-build-dry='nix build --dry-run'
+alias nix-build-dry='nix build --dry-run --no-write-lock-file'
 
 # Function to quickly test a package without installing
 nix-try() {

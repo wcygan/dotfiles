@@ -76,7 +76,7 @@ type -a nix-install
 nix-
 
 # Should show completions like:
-# nix-update → nix flake update && nix profile upgrade
+# nix-update → nix flake update && nix profile upgrade --no-write-lock-file
 # nix-search → nix search nixpkgs
 # nix-list → nix profile list
 # nix-clean → nix-collect-garbage -d

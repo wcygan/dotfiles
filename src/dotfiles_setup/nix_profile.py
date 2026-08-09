@@ -122,12 +122,22 @@ def ensure_profile(
     element_name = find_profile_element(elements, repo_root)
 
     if element_name is not None:
-        _run(runner, _nix_command("profile", "upgrade", element_name))
+        _run(
+            runner,
+            _nix_command("profile", "upgrade", element_name, "--no-write-lock-file"),
+        )
         return f"Upgraded Nix profile element: {element_name}"
 
     flake_reference = f"{repo_root.resolve()}#default"
     _run(
         runner,
-        _nix_command("profile", "add", flake_reference, "--priority", "5"),
+        _nix_command(
+            "profile",
+            "add",
+            flake_reference,
+            "--priority",
+            "5",
+            "--no-write-lock-file",
+        ),
     )
     return f"Added Nix profile from: {flake_reference}"

@@ -58,7 +58,12 @@ def test_existing_profile_is_upgraded(tmp_path: Path) -> None:
     message = ensure_profile(tmp_path, runner=runner)
 
     assert message == "Upgraded Nix profile element: dotfiles"
-    assert runner.calls[-1][-3:] == ["profile", "upgrade", "dotfiles"]
+    assert runner.calls[-1][-4:] == [
+        "profile",
+        "upgrade",
+        "dotfiles",
+        "--no-write-lock-file",
+    ]
 
 
 def test_repository_profile_with_different_name_is_upgraded(tmp_path: Path) -> None:
@@ -71,7 +76,12 @@ def test_repository_profile_with_different_name_is_upgraded(tmp_path: Path) -> N
 
     ensure_profile(tmp_path, runner=runner)
 
-    assert runner.calls[-1][-3:] == ["profile", "upgrade", "checkout"]
+    assert runner.calls[-1][-4:] == [
+        "profile",
+        "upgrade",
+        "checkout",
+        "--no-write-lock-file",
+    ]
 
 
 def test_missing_profile_is_added_with_priority_five(tmp_path: Path) -> None:
@@ -80,12 +90,13 @@ def test_missing_profile_is_added_with_priority_five(tmp_path: Path) -> None:
     message = ensure_profile(tmp_path, runner=runner)
 
     assert message == f"Added Nix profile from: {tmp_path.resolve()}#default"
-    assert runner.calls[-1][-5:] == [
+    assert runner.calls[-1][-6:] == [
         "profile",
         "add",
         f"{tmp_path.resolve()}#default",
         "--priority",
         "5",
+        "--no-write-lock-file",
     ]
 
 

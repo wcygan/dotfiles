@@ -14,7 +14,7 @@ cd dotfiles
 repository development shell and runs the locked Python CLI:
 
 ```bash
-nix develop .#default --command uv run --locked python -m dotfiles_setup install
+nix develop --no-write-lock-file .#default --command uv run --locked python -m dotfiles_setup install
 ```
 
 The default install upgrades or adds this repository's Nix profile, links the

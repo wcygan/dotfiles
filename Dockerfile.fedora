@@ -33,7 +33,7 @@ COPY --chown=${USER}:${USER} . .
 # rebuild the entire Nix profile.
 RUN ./bootstrap.sh install
 
-RUN nix --extra-experimental-features "nix-command flakes" develop .#default --command \
+RUN nix --extra-experimental-features "nix-command flakes" develop --no-write-lock-file .#default --command \
       uv run --locked pytest && \
     fish -lc './tests/docker-test-commands.fish'
 

@@ -65,13 +65,17 @@ def test_uninstall_requires_confirmation(monkeypatch: pytest.MonkeyPatch) -> Non
     assert called is False
 
 
-def test_uninstall_yes_skips_confirmation(monkeypatch: pytest.MonkeyPatch) -> None:
-    calls: list[tuple[Path, bool]] = []
+def test_uninstall_yes_skips_confirmation(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    calls: list[tuple[Path, bool, object]] = []
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+    monkeypatch.delenv("XDG_STATE_HOME", raising=False)
     monkeypatch.setattr(
         cli,
         "cleanup_links",
-        lambda repo_root, *, dry_run: calls.append((repo_root, dry_run)),
+        lambda repo_root, *, dry_run, journal: calls.append((repo_root, dry_run, journal)),
     )
 
     assert cli.main(["uninstall", "--yes"]) == 0
-    assert calls == [(cli.REPO_ROOT, False)]
+    assert len(calls) == 1
+    assert calls[0][:2] == (cli.REPO_ROOT, False)

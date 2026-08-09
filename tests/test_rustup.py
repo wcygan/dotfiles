@@ -175,8 +175,13 @@ def test_production_rustup_code_never_invokes_global_default() -> None:
 
 
 def test_rustup_cli_reports_toolchain_and_path(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+    monkeypatch.delenv("XDG_STATE_HOME", raising=False)
     monkeypatch.setattr(
         cli,
         "setup_rustup",
@@ -190,8 +195,14 @@ def test_rustup_cli_reports_toolchain_and_path(
 
 
 def test_rustup_cli_reports_failure(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+    monkeypatch.delenv("XDG_STATE_HOME", raising=False)
+
     def fail(_: Path) -> RustupResult:
         raise RustupError("component unavailable")
 

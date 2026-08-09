@@ -173,9 +173,14 @@ def test_git_write_failure_includes_diagnostic(tmp_path: Path) -> None:
 
 
 def test_git_user_cli_forwards_noninteractive_identity(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
     captured: dict[str, object] = {}
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+    monkeypatch.delenv("XDG_STATE_HOME", raising=False)
 
     def configure(**kwargs: object) -> GitUserConfig:
         captured.update(kwargs)

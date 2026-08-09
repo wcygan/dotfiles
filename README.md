@@ -197,6 +197,7 @@ make verify                  # ./bootstrap.sh verify
 make doctor                  # ./bootstrap.sh doctor
 make uninstall               # ./bootstrap.sh uninstall
 make uninstall-dry           # ./bootstrap.sh uninstall --dry-run
+./bootstrap.sh recover       # inspect interrupted-operation recovery
 ```
 
 `doctor` is advisory: it reports the host and development-shell environment as
@@ -207,6 +208,28 @@ store output, Python 3.13, every managed link at its platform-specific
 destination, and a regular machine-local Codex `config.toml`. A full `install`
 always ends with strict verification and fails when a required operation was
 failed or skipped.
+
+Mutating commands share a fail-fast per-user lock under the XDG cache home, so
+two setup processes cannot race. Link setup preflights its complete inventory,
+uses atomic replacements, restores physical destinations if replacement fails,
+and journals recovery metadata under
+`${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/`. `doctor`, `verify`, dry runs,
+and the default `recover` inspection remain read-only and do not take the
+mutation lock. If an interrupted operation is recorded, inspect it first:
+
+```bash
+./bootstrap.sh recover
+./bootstrap.sh recover --apply --yes  # explicit, guarded mutation
+```
+
+Recovery restores only recorded backups or links whose current state still
+matches the interrupted operation. It refuses to overwrite later user changes
+and leaves the recovery manifest in place when manual intervention is needed.
+The manifest records paths, link targets, statuses, timestamps, and one-way
+content hashes only; it never records Git identity values, Codex trust
+contents, or file contents. Shell startup-file and `.npmrc` symlink referents
+must remain inside `HOME`; setup refuses external referents with manual
+guidance instead of modifying an unexpected file.
 
 Rust is pinned in `rust-toolchain.toml` to the exact
 [1.97.1 corrective release](https://blog.rust-lang.org/2026/07/16/Rust-1.97.1/),
@@ -234,9 +257,11 @@ dotfiles_setup <command>`; normally, prefer `bootstrap.sh` so the Nix boundary
 is applied consistently.
 
 To roll back a package change, use `nix profile rollback`. Configuration links
-are safe to rerun and pre-existing files are kept as timestamped backups. Keep
-a known-good Git tag before a larger configuration migration so the repository
-state itself is also easy to restore.
+are safe to rerun and pre-existing files are kept as timestamped backups. The
+annotated `pre-transactional-setup-recovery` tag is the rollback point before
+the transactional setup boundary. Keep a known-good Git tag before any later
+configuration migration so the repository state itself is also easy to
+restore.
 
 ## Quick Reference
 

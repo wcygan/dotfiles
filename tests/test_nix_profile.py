@@ -150,8 +150,13 @@ def test_command_failures_are_reported(tmp_path: Path) -> None:
 
 
 def test_profile_cli_reports_success(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+    monkeypatch.delenv("XDG_STATE_HOME", raising=False)
     monkeypatch.setattr(cli, "ensure_profile", lambda _: "profile ready")
 
     assert cli.main(["profile"]) == 0
@@ -159,8 +164,14 @@ def test_profile_cli_reports_success(
 
 
 def test_profile_cli_reports_failure(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+    monkeypatch.delenv("XDG_STATE_HOME", raising=False)
+
     def fail(_: Path) -> str:
         raise NixProfileError("profile is locked")
 

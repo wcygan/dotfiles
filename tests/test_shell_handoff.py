@@ -5,7 +5,13 @@ from pathlib import Path
 import pytest
 
 from dotfiles_setup import cli
-from dotfiles_setup.shell_handoff import ShellHandoffResult, configure_shell_handoff
+from dotfiles_setup.manifest import OperationJournal
+from dotfiles_setup.recovery import run_recovery
+from dotfiles_setup.shell_handoff import (
+    ShellHandoffError,
+    ShellHandoffResult,
+    configure_shell_handoff,
+)
 
 
 def test_configures_temp_home_with_legacy_markers_and_bash_login_blocks(tmp_path: Path) -> None:
@@ -56,24 +62,81 @@ def test_existing_regular_files_are_backed_up_once_before_multiple_blocks(tmp_pa
     assert "DOTFILES:EXEC_FISH" in bashrc.read_text()
 
 
-def test_existing_symlink_is_updated_without_a_backup(tmp_path: Path) -> None:
+def test_existing_backup_name_is_never_overwritten(tmp_path: Path) -> None:
+    bashrc = tmp_path / ".bashrc"
+    bashrc.write_text("original\n")
+    collision = tmp_path / ".bashrc.backup.42"
+    collision.write_text("preserve collision\n")
+
+    result = configure_shell_handoff(home=tmp_path, shell="/bin/zsh", backup_timestamp=42)
+
+    backup = tmp_path / ".bashrc.backup.42.1"
+    assert collision.read_text() == "preserve collision\n"
+    assert backup in result.backups
+    assert backup.read_text() == "original\n"
+
+
+def test_existing_symlink_is_preserved_and_referent_is_backed_up(tmp_path: Path) -> None:
     target = tmp_path / "bashrc-target"
     target.write_text("export PROJECT_VALUE=original\n")
     (tmp_path / ".bashrc").symlink_to(target)
 
     result = configure_shell_handoff(home=tmp_path, shell="/bin/zsh", backup_timestamp=42)
 
-    assert result.backups == ()
+    assert result.backups == (tmp_path / "bashrc-target.backup.42",)
+    assert result.backups[0].read_text() == "export PROJECT_VALUE=original\n"
+    assert (tmp_path / ".bashrc").is_symlink()
     assert "DOTFILES:EXEC_FISH" in target.read_text()
 
 
+def test_shell_handoff_refuses_symlink_referent_outside_home(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    external = tmp_path / "external-bashrc"
+    external.write_text("preserve\n")
+    (home / ".bashrc").symlink_to(external)
+
+    with pytest.raises(ShellHandoffError, match="outside HOME"):
+        configure_shell_handoff(home=home, shell="/bin/zsh")
+
+    assert external.read_text() == "preserve\n"
+
+
+def test_interrupted_shell_handoff_can_restore_all_changed_files(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    bashrc = home / ".bashrc"
+    bashrc.write_text("original\n")
+    values = {"HOME": str(home)}
+    journal = OperationJournal("shell-handoff", Path.cwd(), environ=values)
+    journal.transition("applying")
+
+    configure_shell_handoff(
+        home=home,
+        shell="/bin/zsh",
+        backup_timestamp=42,
+        journal=journal,
+    )
+    assert "DOTFILES:EXEC_FISH" in bashrc.read_text()
+
+    assert run_recovery(environ=values, apply=True, yes=True, output=lambda _: None) == 0
+    assert bashrc.read_text() == "original\n"
+    assert not (home / ".zshrc").exists()
+    assert not (home / ".zshenv").exists()
+
+
 def test_shell_handoff_cli_reports_updated_files(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+    monkeypatch.delenv("XDG_STATE_HOME", raising=False)
     monkeypatch.setattr(
         cli,
         "configure_shell_handoff",
-        lambda: ShellHandoffResult((Path(".bashrc"), Path(".zshrc")), ()),
+        lambda **_kwargs: ShellHandoffResult((Path(".bashrc"), Path(".zshrc")), ()),
     )
 
     assert cli.main(["shell-handoff"]) == 0

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import threading
 from pathlib import Path
 
 import pytest
@@ -9,9 +8,8 @@ from dotfiles_setup import cli
 from dotfiles_setup.installer import run_install
 
 
-def test_profile_completes_before_parallel_setup() -> None:
+def test_profile_completes_before_serial_setup() -> None:
     events: list[str] = []
-    setup_barrier = threading.Barrier(2)
 
     def profile() -> str:
         events.append("profile")
@@ -19,10 +17,7 @@ def test_profile_completes_before_parallel_setup() -> None:
 
     def operation(name: str) -> None:
         assert events[0] == "profile"
-        assert not any(event.endswith("-finished") for event in events)
-        events.append(f"{name}-started")
-        setup_barrier.wait(timeout=2)
-        events.append(f"{name}-finished")
+        events.append(name)
 
     exit_code = run_install(
         profile=profile,
@@ -33,11 +28,10 @@ def test_profile_completes_before_parallel_setup() -> None:
     )
 
     assert exit_code == 0
-    assert events[0] == "profile"
-    assert set(events[1:3]) == {"links-started", "rustup-started"}
+    assert events == ["profile", "links", "rustup"]
 
 
-def test_parallel_failures_are_collected_and_handoff_is_skipped() -> None:
+def test_link_failure_stops_later_mutations_and_handoff_is_skipped() -> None:
     events: list[str] = []
     output: list[str] = []
 
@@ -59,11 +53,11 @@ def test_parallel_failures_are_collected_and_handoff_is_skipped() -> None:
     )
 
     assert exit_code == 1
-    assert "rustup" in events
+    assert "rustup" not in events
     assert "handoff" not in events
     assert events[-1] == "verify"
     assert any(line == "[FAIL] links: link failure" for line in output)
-    assert any("[PASS] rustup" in line for line in output)
+    assert "[SKIP] rustup: links failed" in output
 
 
 def test_profile_failure_skips_setup_but_still_verifies() -> None:
@@ -105,8 +99,13 @@ def test_successful_setup_runs_opt_in_handoff_before_verify() -> None:
     assert events == ["handoff", "verify"]
 
 
-def test_install_cli_wires_optional_shell_handoff(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_install_cli_wires_optional_shell_handoff(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     captured: dict[str, object] = {}
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+    monkeypatch.delenv("XDG_STATE_HOME", raising=False)
 
     def install(**kwargs: object) -> int:
         captured.update(kwargs)

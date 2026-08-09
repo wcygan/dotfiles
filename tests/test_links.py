@@ -48,6 +48,19 @@ def test_darwin_uses_application_support_for_vscode(tmp_path: Path) -> None:
     assert not (home / ".config" / "Code" / "User" / "settings.json").exists()
 
 
+def test_relative_config_overrides_fall_back_inside_home(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    values = environment(home)
+    values.update({"XDG_CONFIG_HOME": "relative-config", "CODEX_HOME": "relative-codex"})
+
+    link_config(Path.cwd(), environ=values, system="Linux")
+
+    assert (home / ".config" / "git").is_symlink()
+    assert (home / ".codex" / "AGENTS.md").is_symlink()
+    assert not (Path.cwd() / "relative-config").exists()
+    assert not (Path.cwd() / "relative-codex").exists()
+
+
 def test_existing_files_are_backed_up_and_symlinks_are_replaced(tmp_path: Path) -> None:
     home = tmp_path / "home"
     xdg = tmp_path / "xdg"
@@ -59,7 +72,9 @@ def test_existing_files_are_backed_up_and_symlinks_are_replaced(tmp_path: Path) 
 
     link_config(Path.cwd(), environ=environment(home, xdg=xdg), system="Linux", now=lambda: 123)
 
-    assert (xdg / "git.backup.123").read_text() == "local git config"
+    backups = list(xdg.glob("git.backup.123.*"))
+    assert len(backups) == 1
+    assert backups[0].read_text() == "local git config"
     assert git_destination.is_symlink()
     assert starship_destination.readlink() == (Path.cwd() / "config" / "starship.toml").resolve()
 
@@ -115,9 +130,23 @@ def test_npmrc_is_normalized_with_backup(tmp_path: Path) -> None:
     assert not (home / ".npmrc.backup.456.1").exists()
 
 
-def test_dry_run_does_not_mutate_filesystem_or_run_fish(tmp_path: Path) -> None:
+def test_npmrc_symlink_is_preserved_and_target_is_updated_atomically(tmp_path: Path) -> None:
     home = tmp_path / "home"
-    runs: list[object] = []
+    home.mkdir()
+    target = home / "machine-npmrc"
+    target.write_text("prefix=/wrong\n")
+    npmrc = home / ".npmrc"
+    npmrc.symlink_to(target)
+
+    link_config(Path.cwd(), environ=environment(home), system="Linux", now=lambda: 456)
+
+    assert npmrc.is_symlink()
+    assert target.read_text() == "prefix=${HOME}/.local\nmin-release-age=1\n"
+    assert (home / "machine-npmrc.backup.456").read_text() == "prefix=/wrong\n"
+
+
+def test_dry_run_does_not_mutate_filesystem(tmp_path: Path) -> None:
+    home = tmp_path / "home"
     values = {"HOME": str(home)}
 
     link_config(
@@ -125,12 +154,9 @@ def test_dry_run_does_not_mutate_filesystem_or_run_fish(tmp_path: Path) -> None:
         environ=values,
         system="Linux",
         dry_run=True,
-        find_command=lambda _: "/usr/bin/fish",
-        run_command=lambda *args, **kwargs: runs.append((args, kwargs)),  # type: ignore[arg-type]
     )
 
     assert not home.exists()
-    assert runs == []
 
 
 def test_link_cli_forwards_dry_run(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -143,3 +169,9 @@ def test_link_cli_forwards_dry_run(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert cli.main(["link", "--dry-run"]) == 0
     assert calls == [(cli.REPO_ROOT, True)]
+
+
+def test_link_setup_does_not_mutate_fish_universal_variables() -> None:
+    source = (Path.cwd() / "src" / "dotfiles_setup" / "links.py").read_text()
+
+    assert "set -U fish_greeting" not in source

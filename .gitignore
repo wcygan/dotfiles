@@ -25,3 +25,10 @@ config/zed/prompts
 .autoresearch-*
 # Fish runtime state (universal vars, init flags) — machine-local
 config/fish/fish_variables
+
+# Python project state
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc

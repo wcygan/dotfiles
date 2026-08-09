@@ -1,0 +1,37 @@
+from dotfiles_setup.doctor import CheckResult, evaluate_checks, run_doctor
+
+
+def passing_check() -> CheckResult:
+    return CheckResult("passing", True, "required check passed", required=True)
+
+
+def warning_check() -> CheckResult:
+    return CheckResult("warning", False, "optional check failed")
+
+
+def failing_check() -> CheckResult:
+    return CheckResult("failing", False, "required check failed", required=True)
+
+
+def test_evaluate_checks_preserves_declared_order() -> None:
+    results = evaluate_checks([warning_check, passing_check])
+
+    assert [result.name for result in results] == ["warning", "passing"]
+
+
+def test_doctor_allows_advisory_warnings() -> None:
+    output: list[str] = []
+
+    exit_code = run_doctor(checks=[passing_check, warning_check], output=output.append)
+
+    assert exit_code == 0
+    assert any(line == "[WARN] optional check failed" for line in output)
+
+
+def test_doctor_fails_when_required_check_fails() -> None:
+    output: list[str] = []
+
+    exit_code = run_doctor(checks=[failing_check], output=output.append)
+
+    assert exit_code == 1
+    assert any(line == "[FAIL] required check failed" for line in output)

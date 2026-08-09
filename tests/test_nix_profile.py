@@ -7,7 +7,12 @@ from pathlib import Path
 import pytest
 
 from dotfiles_setup import cli
-from dotfiles_setup.nix_profile import NixProfileError, ensure_profile, find_profile_element
+from dotfiles_setup.nix_profile import (
+    NixProfileError,
+    ensure_profile,
+    find_profile_element,
+    list_profile_elements,
+)
 
 
 class RecordingRunner:
@@ -90,6 +95,39 @@ def test_invalid_profile_json_is_reported(tmp_path: Path) -> None:
 
     with pytest.raises(NixProfileError, match="invalid JSON"):
         ensure_profile(tmp_path, runner=invalid_runner)
+
+
+def test_invalid_profile_element_is_reported() -> None:
+    def invalid_runner(args: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            args, 0, stdout=json.dumps({"elements": {"dotfiles": "invalid"}}), stderr=""
+        )
+
+    with pytest.raises(NixProfileError, match="invalid element"):
+        list_profile_elements(runner=invalid_runner)
+
+
+@pytest.mark.parametrize(
+    "details,error",
+    [
+        ({"storePaths": ["/nix/store/profile"]}, "active state"),
+        ({"active": "true", "storePaths": ["/nix/store/profile"]}, "active state"),
+        ({"active": True}, "store paths"),
+        ({"active": True, "storePaths": None}, "store paths"),
+        ({"active": True, "storePaths": ["relative-store"]}, "store paths"),
+        ({"active": True, "storePaths": ["/nix/store/profile", 7]}, "store paths"),
+    ],
+)
+def test_profile_inventory_rejects_malformed_contract(
+    details: dict[str, object], error: str
+) -> None:
+    def invalid_runner(args: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            args, 0, stdout=json.dumps({"elements": {"dotfiles": details}}), stderr=""
+        )
+
+    with pytest.raises(NixProfileError, match=error):
+        list_profile_elements(runner=invalid_runner)
 
 
 def test_command_failures_are_reported(tmp_path: Path) -> None:

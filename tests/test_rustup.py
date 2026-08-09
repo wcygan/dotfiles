@@ -2,11 +2,19 @@ from __future__ import annotations
 
 import subprocess
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 
 import pytest
 
 from dotfiles_setup import cli
-from dotfiles_setup.rustup import RustupError, setup_rustup
+from dotfiles_setup.rustup import (
+    RustToolchain,
+    RustupError,
+    RustupResult,
+    load_rust_toolchain,
+    resolve_rust_analyzer,
+    setup_rustup,
+)
 
 
 class FakeRunner:
@@ -38,194 +46,153 @@ def completed(
     return subprocess.CompletedProcess(command, returncode, stdout, stderr)
 
 
-def test_existing_default_adds_component_and_returns_resolved_path() -> None:
+def write_toolchain(
+    repo: Path,
+    *,
+    channel: str = "1.97.1",
+    components: str = '["rust-analyzer"]',
+) -> None:
+    (repo / "rust-toolchain.toml").write_text(
+        f'[toolchain]\nchannel = "{channel}"\nprofile = "default"\ncomponents = {components}\n'
+    )
+
+
+def executable(path: Path) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("#!/bin/sh\nexit 0\n")
+    path.chmod(0o755)
+    return path
+
+
+def test_repository_toolchain_is_exact_and_includes_rust_analyzer() -> None:
+    selected = load_rust_toolchain(Path.cwd())
+
+    assert selected == RustToolchain("1.97.1", "default", ("rust-analyzer",))
+
+
+@pytest.mark.parametrize("channel", ["stable", "1.97", "nightly-2026-08-01"])
+def test_toolchain_rejects_moving_or_partial_channels(tmp_path: Path, channel: str) -> None:
+    write_toolchain(tmp_path, channel=channel)
+
+    with pytest.raises(RustupError, match="exact numeric"):
+        load_rust_toolchain(tmp_path)
+
+
+def test_toolchain_requires_rust_analyzer_component(tmp_path: Path) -> None:
+    write_toolchain(tmp_path, components='["rustfmt"]')
+
+    with pytest.raises(RustupError, match="rust-analyzer"):
+        load_rust_toolchain(tmp_path)
+
+
+def test_setup_installs_and_resolves_only_the_pinned_toolchain(tmp_path: Path) -> None:
+    write_toolchain(tmp_path)
+    analyzer = executable(tmp_path / "toolchains" / "1.97.1" / "bin" / "rust-analyzer")
+    rustup = "/nix/store/profile/bin/rustup"
+    install = (
+        rustup,
+        "toolchain",
+        "install",
+        "1.97.1",
+        "--profile",
+        "default",
+        "--component",
+        "rust-analyzer",
+        "--no-self-update",
+    )
+    lookup = (rustup, "which", "--toolchain", "1.97.1", "rust-analyzer")
     runner = FakeRunner(
         {
-            ("rustup", "default"): completed(
-                ("rustup", "default"), stdout="nightly-2026-08-01-aarch64-apple-darwin (default)\n"
-            ),
-            (
-                "rustup",
-                "component",
-                "add",
-                "rust-analyzer",
-                "--toolchain",
-                "nightly-2026-08-01-aarch64-apple-darwin",
-            ): completed(("rustup", "component", "add")),
-            ("rustup", "which", "rust-analyzer"): completed(
-                ("rustup", "which", "rust-analyzer"),
-                stdout="/toolchains/nightly/bin/rust-analyzer\n",
-            ),
+            install: completed(install),
+            lookup: completed(lookup, stdout=f"{analyzer}\n"),
         }
     )
 
     result = setup_rustup(
+        tmp_path,
         run=runner,
-        which=lambda _: "/nix/store/rustup",
-        environment={"PATH": "/bin"},
+        which=lambda _: rustup,
+        environment={"PATH": "/bin", "RUSTUP_TOOLCHAIN": "nightly"},
     )
 
-    assert result.as_posix() == "/toolchains/nightly/bin/rust-analyzer"
-    assert [command for command, _ in runner.calls] == [
-        ["rustup", "default"],
-        [
-            "rustup",
-            "component",
-            "add",
-            "rust-analyzer",
-            "--toolchain",
-            "nightly-2026-08-01-aarch64-apple-darwin",
-        ],
-        ["rustup", "which", "rust-analyzer"],
-    ]
-    assert runner.calls[0][1] == {"PATH": "/bin"}
-    assert runner.calls[2][1] == {
-        "PATH": "/bin",
-        "RUSTUP_TOOLCHAIN": "nightly-2026-08-01-aarch64-apple-darwin",
-    }
+    assert result == RustupResult("1.97.1", analyzer)
+    assert [command for command, _ in runner.calls] == [list(install), list(lookup)]
+    assert all("default" not in command[:3] for command, _ in runner.calls)
+    assert all("RUSTUP_TOOLCHAIN" not in environment for _, environment in runner.calls)
 
 
-def test_missing_default_bootstraps_stable_before_resolving() -> None:
-    runner = FakeRunner(
-        {
-            ("rustup", "default"): completed(
-                ("rustup", "default"), returncode=1, stderr="no default"
-            ),
-            (
-                "rustup",
-                "toolchain",
-                "install",
-                "stable",
-                "--profile",
-                "default",
-                "--component",
-                "rust-analyzer",
-            ): completed(("rustup", "toolchain", "install")),
-            ("rustup", "default", "stable"): completed(("rustup", "default", "stable")),
-            ("rustup", "which", "rust-analyzer"): completed(
-                ("rustup", "which", "rust-analyzer"),
-                stdout="/toolchains/stable/bin/rust-analyzer\n",
-            ),
-        }
-    )
-
-    result = setup_rustup(run=runner, which=lambda _: "/usr/bin/rustup", environment={})
-
-    assert result.as_posix() == "/toolchains/stable/bin/rust-analyzer"
-    assert [command for command, _ in runner.calls] == [
-        ["rustup", "default"],
-        [
-            "rustup",
-            "toolchain",
-            "install",
-            "stable",
-            "--profile",
-            "default",
-            "--component",
-            "rust-analyzer",
-        ],
-        ["rustup", "default", "stable"],
-        ["rustup", "which", "rust-analyzer"],
-    ]
-    assert runner.calls[-1][1] == {"RUSTUP_TOOLCHAIN": "stable"}
-
-
-def test_empty_default_output_bootstraps_stable() -> None:
-    runner = FakeRunner(
-        {
-            ("rustup", "default"): completed(("rustup", "default"), stdout="  \n"),
-            (
-                "rustup",
-                "toolchain",
-                "install",
-                "stable",
-                "--profile",
-                "default",
-                "--component",
-                "rust-analyzer",
-            ): completed(("rustup", "toolchain", "install")),
-            ("rustup", "default", "stable"): completed(("rustup", "default", "stable")),
-            ("rustup", "which", "rust-analyzer"): completed(
-                ("rustup", "which", "rust-analyzer"), stdout="/stable/rust-analyzer"
-            ),
-        }
-    )
-
-    setup_rustup(run=runner, which=lambda _: "/usr/bin/rustup", environment={})
-
-    assert runner.calls[1][0][:4] == ["rustup", "toolchain", "install", "stable"]
-
-
-def test_missing_rustup_fails_before_running_a_command() -> None:
+def test_missing_rustup_fails_before_running_a_command(tmp_path: Path) -> None:
+    write_toolchain(tmp_path)
     runner = FakeRunner({})
 
-    with pytest.raises(RustupError, match="rustup is not available in PATH"):
-        setup_rustup(run=runner, which=lambda _: None, environment={})
+    with pytest.raises(RustupError, match="rustup is not available"):
+        setup_rustup(tmp_path, run=runner, which=lambda _: None, environment={})
 
     assert runner.calls == []
 
 
-def test_component_failure_includes_rustup_diagnostic() -> None:
+def test_install_failure_has_actionable_offline_guidance(tmp_path: Path) -> None:
+    write_toolchain(tmp_path)
+    rustup = "/usr/bin/rustup"
+    install = (
+        rustup,
+        "toolchain",
+        "install",
+        "1.97.1",
+        "--profile",
+        "default",
+        "--component",
+        "rust-analyzer",
+        "--no-self-update",
+    )
+    runner = FakeRunner({install: completed(install, returncode=1, stderr="download unavailable")})
+
+    with pytest.raises(RustupError, match="cache or network"):
+        setup_rustup(tmp_path, run=runner, which=lambda _: rustup, environment={})
+
+
+def test_explicit_lookup_rejects_an_unusable_path(tmp_path: Path) -> None:
+    rustup = tmp_path / "rustup"
+    lookup = (str(rustup), "which", "--toolchain", "1.97.1", "rust-analyzer")
     runner = FakeRunner(
-        {
-            ("rustup", "default"): completed(("rustup", "default"), stdout="stable (default)"),
-            ("rustup", "component", "add", "rust-analyzer", "--toolchain", "stable"): completed(
-                ("rustup", "component", "add"), returncode=1, stderr="component unavailable"
-            ),
-        }
+        {lookup: completed(lookup, stdout=f"{tmp_path / 'missing-rust-analyzer'}\n")}
     )
 
-    with pytest.raises(RustupError, match="component unavailable"):
-        setup_rustup(run=runner, which=lambda _: "/usr/bin/rustup", environment={})
+    with pytest.raises(RustupError, match="unusable path"):
+        resolve_rust_analyzer(
+            rustup,
+            RustToolchain("1.97.1", "default", ("rust-analyzer",)),
+            run=runner,
+            environment={},
+        )
 
 
-def test_empty_rust_analyzer_path_fails_clearly() -> None:
-    runner = FakeRunner(
-        {
-            ("rustup", "default"): completed(("rustup", "default"), stdout="stable"),
-            ("rustup", "component", "add", "rust-analyzer", "--toolchain", "stable"): completed(
-                ("rustup", "component", "add")
-            ),
-            ("rustup", "which", "rust-analyzer"): completed(("rustup", "which", "rust-analyzer")),
-        }
-    )
+def test_production_rustup_code_never_invokes_global_default() -> None:
+    source = (Path.cwd() / "src/dotfiles_setup/rustup.py").read_text()
 
-    with pytest.raises(RustupError, match="did not return a path"):
-        setup_rustup(run=runner, which=lambda _: "/usr/bin/rustup", environment={})
+    assert '"rustup", "default"' not in source
+    assert '"default", toolchain' not in source
 
 
-def test_rust_analyzer_lookup_failure_includes_rustup_diagnostic() -> None:
-    runner = FakeRunner(
-        {
-            ("rustup", "default"): completed(("rustup", "default"), stdout="stable"),
-            ("rustup", "component", "add", "rust-analyzer", "--toolchain", "stable"): completed(
-                ("rustup", "component", "add")
-            ),
-            ("rustup", "which", "rust-analyzer"): completed(
-                ("rustup", "which", "rust-analyzer"),
-                returncode=1,
-                stderr="rust-analyzer is unavailable",
-            ),
-        }
-    )
-
-    with pytest.raises(RustupError, match="rust-analyzer is unavailable"):
-        setup_rustup(run=runner, which=lambda _: "/usr/bin/rustup", environment={})
-
-
-def test_rustup_cli_reports_resolved_path(
+def test_rustup_cli_reports_toolchain_and_path(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(cli, "setup_rustup", lambda: "/toolchains/stable/rust-analyzer")
+    monkeypatch.setattr(
+        cli,
+        "setup_rustup",
+        lambda _: RustupResult("1.97.1", Path("/toolchains/1.97.1/rust-analyzer")),
+    )
 
     assert cli.main(["rustup"]) == 0
-    assert "/toolchains/stable/rust-analyzer" in capsys.readouterr().out
+    output = capsys.readouterr().out
+    assert "1.97.1" in output
+    assert "/toolchains/1.97.1/rust-analyzer" in output
 
 
 def test_rustup_cli_reports_failure(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    def fail() -> None:
+    def fail(_: Path) -> RustupResult:
         raise RustupError("component unavailable")
 
     monkeypatch.setattr(cli, "setup_rustup", fail)

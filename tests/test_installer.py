@@ -68,6 +68,7 @@ def test_parallel_failures_are_collected_and_handoff_is_skipped() -> None:
 
 def test_profile_failure_skips_setup_but_still_verifies() -> None:
     events: list[str] = []
+    output: list[str] = []
 
     def fail_profile() -> None:
         raise RuntimeError("profile locked")
@@ -77,11 +78,15 @@ def test_profile_failure_skips_setup_but_still_verifies() -> None:
         links=lambda: events.append("links"),
         rustup=lambda: events.append("rustup"),
         verify=lambda: events.append("verify") or 0,
-        output=lambda _: None,
+        shell_handoff=lambda: events.append("handoff"),
+        output=output.append,
     )
 
     assert exit_code == 1
     assert events == ["verify"]
+    assert "[SKIP] links: profile failed" in output
+    assert "[SKIP] rustup: profile failed" in output
+    assert "[SKIP] shell-handoff: profile failed" in output
 
 
 def test_successful_setup_runs_opt_in_handoff_before_verify() -> None:

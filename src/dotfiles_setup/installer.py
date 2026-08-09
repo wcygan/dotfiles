@@ -14,6 +14,7 @@ class OperationResult:
     name: str
     succeeded: bool
     detail: str
+    skipped: bool = False
 
 
 def _run_operation(name: str, operation: Operation) -> OperationResult:
@@ -39,6 +40,10 @@ def run_install(
     profile_result = _run_operation("profile", profile)
     _report(profile_result, output)
     if not profile_result.succeeded:
+        _report(OperationResult("links", False, "profile failed", skipped=True), output)
+        _report(OperationResult("rustup", False, "profile failed", skipped=True), output)
+        if shell_handoff is not None:
+            _report(OperationResult("shell-handoff", False, "profile failed", skipped=True), output)
         verification_exit = verify()
         return 1 if verification_exit == 0 else verification_exit
 
@@ -57,6 +62,11 @@ def run_install(
     if setup_succeeded and shell_handoff is not None:
         handoff_result = _run_operation("shell-handoff", shell_handoff)
         _report(handoff_result, output)
+    elif not setup_succeeded and shell_handoff is not None:
+        handoff_result = OperationResult(
+            "shell-handoff", False, "required setup operation failed", skipped=True
+        )
+        _report(handoff_result, output)
 
     verification_exit = verify()
     mutation_failed = not setup_succeeded or (
@@ -66,5 +76,5 @@ def run_install(
 
 
 def _report(result: OperationResult, output: Output) -> None:
-    marker = "PASS" if result.succeeded else "FAIL"
+    marker = "SKIP" if result.skipped else "PASS" if result.succeeded else "FAIL"
     output(f"[{marker}] {result.name}: {result.detail}")

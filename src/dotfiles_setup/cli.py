@@ -12,6 +12,7 @@ from dotfiles_setup.links import link_config
 from dotfiles_setup.nix_profile import NixProfileError, ensure_profile
 from dotfiles_setup.rustup import RustupError, setup_rustup
 from dotfiles_setup.shell_handoff import configure_shell_handoff
+from dotfiles_setup.verify import run_verify
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -62,8 +63,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
-    if args.command in {"doctor", "verify"}:
+    if args.command == "doctor":
         return run_doctor()
+    if args.command == "verify":
+        return run_verify(REPO_ROOT)
     if args.command == "profile":
         try:
             print(ensure_profile(REPO_ROOT))
@@ -73,11 +76,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "rustup":
         try:
-            resolved_path = setup_rustup()
+            result = setup_rustup(REPO_ROOT)
         except RustupError as error:
             print(f"Rustup setup failed: {error}")
             return 1
-        print(f"rust-analyzer resolved to {resolved_path}")
+        print(result)
         return 0
     if args.command == "link":
         link_config(REPO_ROOT, dry_run=args.dry_run)
@@ -123,9 +126,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return run_install(
             profile=lambda: ensure_profile(REPO_ROOT),
             links=lambda: link_config(REPO_ROOT, output=link_output),
-            rustup=setup_rustup,
+            rustup=lambda: setup_rustup(REPO_ROOT),
             shell_handoff=configure_shell_handoff if args.shell_handoff else None,
-            verify=run_doctor,
+            verify=lambda: run_verify(REPO_ROOT),
         )
 
     raise AssertionError(f"Unhandled command: {args.command}")

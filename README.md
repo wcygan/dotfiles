@@ -199,9 +199,25 @@ make uninstall               # ./bootstrap.sh uninstall
 make uninstall-dry           # ./bootstrap.sh uninstall --dry-run
 ```
 
+`doctor` is advisory: it reports the host and development-shell environment as
+`PASS` or `WARN` without treating not-yet-installed state as an acceptance
+failure. `verify` is strict and read-only. It requires an active Nix profile
+element sourced from this exact checkout, required binaries in that element's
+store output, Python 3.13, every managed link at its platform-specific
+destination, and a regular machine-local Codex `config.toml`. A full `install`
+always ends with strict verification and fails when a required operation was
+failed or skipped.
+
+Rust is pinned in `rust-toolchain.toml` to the exact 1.97.1 corrective release,
+including rust-analyzer. `./bootstrap.sh rustup` installs and resolves that
+toolchain explicitly and never changes the global rustup default. Update the
+pin intentionally after reviewing an official Rust release, then rerun the
+Rust and strict-verification tests.
+
 The Python package lives in `src/dotfiles_setup/`: `cli.py` owns command
 parsing, while focused modules own profile management, linking and cleanup,
-doctor checks, Rust setup, shell handoff, and Git identity. Run a command
+advisory diagnostics, strict verification, Rust setup, shell handoff, and Git
+identity. Run a command
 inside the Nix development environment with `uv run --locked python -m
 dotfiles_setup <command>`; normally, prefer `bootstrap.sh` so the Nix boundary
 is applied consistently.

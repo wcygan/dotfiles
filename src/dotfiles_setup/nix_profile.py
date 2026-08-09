@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import subprocess
 from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlparse
@@ -12,6 +13,20 @@ Runner = Callable[..., subprocess.CompletedProcess[str]]
 
 class NixProfileError(RuntimeError):
     """Raised when the user Nix profile cannot be inspected or updated."""
+
+
+@dataclass(frozen=True)
+class ProfileElement:
+    """Identity and outputs reported for one user-profile element."""
+
+    name: str
+    original_url: str | None
+    store_paths: tuple[Path, ...]
+    active: bool
+
+    @property
+    def original_path(self) -> Path | None:
+        return _original_path(self.original_url)
 
 
 def _nix_command(*args: str) -> list[str]:
@@ -62,6 +77,39 @@ def find_profile_element(
         if _original_path(details.get("originalUrl")) == resolved_root:
             return name
     return None
+
+
+def list_profile_elements(
+    *,
+    runner: Runner = subprocess.run,
+) -> tuple[ProfileElement, ...]:
+    """Return the user profile inventory with source and output identity intact."""
+
+    result = _run(runner, _nix_command("profile", "list", "--json"))
+    elements = _profile_elements(result.stdout)
+    inventory: list[ProfileElement] = []
+    for name, details in elements.items():
+        if not isinstance(name, str) or not isinstance(details, Mapping):
+            raise NixProfileError("nix profile list returned an invalid element")
+        active = details.get("active")
+        if not isinstance(active, bool):
+            raise NixProfileError(f"nix profile element {name!r} has invalid active state")
+        original_url = details.get("originalUrl")
+        raw_store_paths = details.get("storePaths")
+        if not isinstance(raw_store_paths, list) or not all(
+            isinstance(path, str) and Path(path).is_absolute() for path in raw_store_paths
+        ):
+            raise NixProfileError(f"nix profile element {name!r} has invalid store paths")
+        store_paths = tuple(Path(path) for path in raw_store_paths)
+        inventory.append(
+            ProfileElement(
+                name=name,
+                original_url=original_url if isinstance(original_url, str) else None,
+                store_paths=store_paths,
+                active=active,
+            )
+        )
+    return tuple(inventory)
 
 
 def ensure_profile(

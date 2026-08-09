@@ -127,6 +127,21 @@ make profile
 ```
 
 ### Setup Commands
+
+`doctor` is an advisory, read-only view of the current host and development
+environment. Missing optional or not-yet-installed state is shown as a warning
+and does not make the command fail. `verify` is strict post-installation
+acceptance: it checks that the user profile comes from this exact checkout,
+required commands and Python 3.13 come from that profile rather than only the
+development shell, managed links resolve to the repository sources for the
+current platform, and Codex configuration remains a regular machine-local
+file. The `install` workflow always runs strict verification last.
+
+The repository pins Rust and rust-analyzer in `rust-toolchain.toml`.
+`./bootstrap.sh rustup` installs that exact toolchain without changing the
+user's global rustup default; strict verification resolves rust-analyzer with
+the pinned toolchain explicitly.
+
 ```bash
 make install                 # Full setup; same as ./bootstrap.sh
 make link                    # Link managed config only
@@ -134,8 +149,8 @@ make link-dry                # Preview managed link changes
 make git-user                # Configure Git identity
 make setup-rustup-components # Prepare rust-analyzer
 make setup-shell-handoff     # Opt in to Bash/zsh -> Fish handoff
-make verify                  # Verify configured environment
-make doctor                  # Read-only diagnostics
+make verify                  # Strict post-installation acceptance
+make doctor                  # Advisory read-only diagnostics
 make uninstall               # Remove managed links after confirmation
 make uninstall-dry           # Preview managed-link removal
 ```
@@ -165,7 +180,8 @@ revision before a broader migration to retain a straightforward source rollback.
 
 The locked Python project is under `src/dotfiles_setup/`. `cli.py` dispatches
 commands to focused modules for Nix profile updates, configuration links and
-cleanup, doctor checks, Rust setup, shell handoff, and Git identity. Tests live
+cleanup, advisory diagnostics, strict verification, Rust setup, shell handoff,
+and Git identity. Tests live
 under `tests/`; `pyproject.toml` and `uv.lock` define the reproducible Python
 environment.
 

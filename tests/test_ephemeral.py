@@ -5,8 +5,6 @@ import shutil
 import subprocess
 from pathlib import Path
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -32,8 +30,7 @@ def test_ephemeral_home_can_access_linked_configuration(tmp_path: Path) -> None:
 
 def test_fish_loads_the_linked_configuration_in_an_ephemeral_home(tmp_path: Path) -> None:
     fish = shutil.which("fish")
-    if fish is None:
-        pytest.skip("fish is not installed")
+    assert fish is not None, "fish is required by the canonical Nix test suite"
 
     home = tmp_path / "home"
     config_home = home / ".config"

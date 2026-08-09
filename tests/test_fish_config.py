@@ -5,8 +5,6 @@ import shutil
 import subprocess
 from pathlib import Path
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FISH_ROOT = REPO_ROOT / "config" / "fish"
 
@@ -45,8 +43,7 @@ def test_required_fish_config_files_exist() -> None:
 
 def test_all_tracked_fish_files_parse_when_fish_is_available() -> None:
     fish = shutil.which("fish")
-    if fish is None:
-        pytest.skip("fish is not installed")
+    assert fish is not None, "fish is required by the canonical Nix test suite"
 
     fish_files = sorted(
         path for path in FISH_ROOT.rglob("*.fish") if not path.is_symlink() or path.exists()

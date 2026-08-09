@@ -85,7 +85,7 @@ if ((${#forwarded_args[@]} == 0)); then
 fi
 
 case "${forwarded_args[0]}" in
-  doctor | profile | rustup | link | uninstall) ;;
+  doctor | profile | rustup | link | uninstall | shell-handoff | git-user) ;;
   *)
     echo "Unknown setup command: ${forwarded_args[0]}" >&2
     exit 2

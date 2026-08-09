@@ -6,9 +6,11 @@ from pathlib import Path
 
 from dotfiles_setup.cleanup import cleanup_links
 from dotfiles_setup.doctor import run_doctor
+from dotfiles_setup.git_user import GitUserError, configure_git_user
 from dotfiles_setup.links import link_config
 from dotfiles_setup.nix_profile import NixProfileError, ensure_profile
 from dotfiles_setup.rustup import RustupError, setup_rustup
+from dotfiles_setup.shell_handoff import configure_shell_handoff
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -29,6 +31,22 @@ def build_parser() -> argparse.ArgumentParser:
     uninstall_parser = subcommands.add_parser("uninstall", help="Remove managed symlinks")
     uninstall_parser.add_argument("--dry-run", action="store_true", help="Preview removals")
     uninstall_parser.add_argument("--yes", action="store_true", help="Skip confirmation")
+
+    subcommands.add_parser(
+        "shell-handoff",
+        help="Configure interactive Bash and zsh sessions to launch Fish",
+    )
+
+    git_user_parser = subcommands.add_parser("git-user", help="Configure local Git identity")
+    git_user_parser.add_argument("--name", help="Git user name for non-interactive setup")
+    git_user_parser.add_argument("--email", help="Git email for non-interactive setup")
+    git_user_parser.add_argument(
+        "--remove-global",
+        action="store_const",
+        const=True,
+        default=None,
+        help="Remove redundant global Git identity after writing the local file",
+    )
     return parser
 
 
@@ -66,6 +84,27 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print("No changes made.")
                 return 0
         cleanup_links(REPO_ROOT, dry_run=args.dry_run)
+        return 0
+    if args.command == "shell-handoff":
+        try:
+            result = configure_shell_handoff()
+        except OSError as error:
+            print(f"Shell handoff setup failed: {error}")
+            return 1
+        print(f"Updated {len(result.updated_files)} shell configuration file(s).")
+        return 0
+    if args.command == "git-user":
+        try:
+            result = configure_git_user(
+                name=args.name,
+                email=args.email,
+                remove_global=args.remove_global,
+            )
+        except GitUserError as error:
+            print(f"Git identity setup failed: {error}")
+            return 1
+        action = "Updated" if result.updated else "Preserved"
+        print(f"{action} Git identity at {result.path}")
         return 0
 
     raise AssertionError(f"Unhandled command: {args.command}")

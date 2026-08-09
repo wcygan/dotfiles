@@ -1,0 +1,38 @@
+name: Upstream Freshness
+
+on:
+  schedule:
+    - cron: '23 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docker-freshness:
+    name: Current ${{ matrix.distro }} inputs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: ubuntu
+            dockerfile: Dockerfile.ubuntu
+          - distro: fedora
+            dockerfile: Dockerfile.fedora
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Build against current upstream tags
+        env:
+          SOURCE_DOCKERFILE: ${{ matrix.dockerfile }}
+          IMAGE_TAG: nixdotfiles:freshness-${{ matrix.distro }}
+        run: |
+          temporary="$RUNNER_TEMP/${SOURCE_DOCKERFILE}"
+          sed -E 's/@sha256:[0-9a-f]{64}//g' "$SOURCE_DOCKERFILE" > "$temporary"
+          docker build --pull --file "$temporary" --tag "$IMAGE_TAG" .
+          docker run --rm "$IMAGE_TAG" /bin/bash -lc './bootstrap.sh verify'
+
+      - name: Verify tracked inputs are unchanged
+        run: git diff --exit-code

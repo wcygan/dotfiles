@@ -17,9 +17,10 @@ def test_matrix_covers_ubuntu_and_fedora() -> None:
 
 
 def test_build_commands_use_the_expected_images_and_context() -> None:
-    command = build_command(CASES[0], pull=True)
+    command = build_command(CASES[0])
 
-    assert command[:3] == ["docker", "build", "--pull"]
+    assert command[:2] == ["docker", "build"]
+    assert "--pull" not in command
     assert command[-3:] == ["-t", "nixdotfiles:test-ubuntu", str(command[-1])]
 
 

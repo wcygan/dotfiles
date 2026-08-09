@@ -208,11 +208,22 @@ destination, and a regular machine-local Codex `config.toml`. A full `install`
 always ends with strict verification and fails when a required operation was
 failed or skipped.
 
-Rust is pinned in `rust-toolchain.toml` to the exact 1.97.1 corrective release,
+Rust is pinned in `rust-toolchain.toml` to the exact
+[1.97.1 corrective release](https://blog.rust-lang.org/2026/07/16/Rust-1.97.1/),
 including rust-analyzer. `./bootstrap.sh rustup` installs and resolves that
 toolchain explicitly and never changes the global rustup default. Update the
 pin intentionally after reviewing an official Rust release, then rerun the
 Rust and strict-verification tests.
+
+Committed CI and local Docker acceptance use full GitHub Action SHAs and
+multi-platform image manifest digests, so pull requests test exactly the
+reviewed inputs. A separate scheduled/manual upstream-freshness workflow strips
+the committed image digests in a temporary runner file and builds the current
+Ubuntu 24.04, Fedora 43, and Nix 2.30.3 tags. It reports compatibility drift but
+never edits the repository. Dependabot proposes weekly Action and Docker digest
+updates for human review; no automatic merge is configured. Platform refreshes
+are evaluated against the official [Ubuntu release lifecycle](https://wiki.ubuntu.com/Releases)
+and [Fedora release lifecycle](https://fedoraproject.org/wiki/User%3AJkurik/Fedora_Release_Life_Cycle).
 
 The Python package lives in `src/dotfiles_setup/`: `cli.py` owns command
 parsing, while focused modules own profile management, linking and cleanup,

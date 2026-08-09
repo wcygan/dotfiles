@@ -142,6 +142,10 @@ The repository pins Rust and rust-analyzer in `rust-toolchain.toml`.
 user's global rustup default; strict verification resolves rust-analyzer with
 the pinned toolchain explicitly.
 
+Pull-request validation consumes pinned GitHub Action commits and Docker image
+manifest digests. Scheduled/manual freshness checks use current upstream tags
+only in temporary runner files and never update the repository automatically.
+
 ```bash
 make install                 # Full setup; same as ./bootstrap.sh
 make link                    # Link managed config only

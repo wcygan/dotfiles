@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -50,3 +51,58 @@ def test_nix_consumers_do_not_write_the_committed_lock() -> None:
     assert "flake update --refresh" in makefile
     update_recipe = makefile.split("update:", 1)[1].split("\n\n", 1)[0]
     assert "--no-write-lock-file" not in update_recipe
+
+    for path in REPO_ROOT.joinpath(".github/workflows").glob("*.yml"):
+        for line in path.read_text().splitlines():
+            if "nix develop" in line:
+                assert "--no-write-lock-file" in line, f"mutable Nix consumer in {path}"
+
+
+def test_github_actions_are_pinned_to_full_release_shas() -> None:
+    action = re.compile(r"uses:\s+[^@\s]+@([0-9a-f]{40})\s+#\s+v\S+$")
+
+    for path in REPO_ROOT.joinpath(".github/workflows").glob("*.yml"):
+        uses = [line.strip() for line in path.read_text().splitlines() if "uses:" in line]
+        assert uses, f"workflow has no actions: {path}"
+        assert all(action.search(line) for line in uses), (
+            f"mutable or undocumented action in {path}"
+        )
+
+
+def test_reproducible_dockerfiles_pin_manifest_digests() -> None:
+    pinned = re.compile(r"^FROM\s+\S+:\S+@sha256:[0-9a-f]{64}(?:\s+AS\s+\S+)?$")
+
+    for path in sorted(REPO_ROOT.glob("Dockerfile.*")):
+        from_lines = [line for line in path.read_text().splitlines() if line.startswith("FROM ")]
+        assert from_lines
+        assert all(pinned.fullmatch(line) for line in from_lines), f"unpinned image in {path}"
+
+
+def test_floating_images_are_confined_to_freshness_workflow() -> None:
+    ci = REPO_ROOT.joinpath(".github/workflows/ci.yml").read_text()
+    makefile = REPO_ROOT.joinpath("Makefile").read_text()
+    driver = REPO_ROOT.joinpath("tests/docker_matrix.py").read_text()
+    freshness = REPO_ROOT.joinpath(".github/workflows/freshness.yml").read_text()
+
+    assert "--pull" not in ci
+    assert "docker build --pull" not in makefile
+    assert "--pull" not in driver
+    assert "schedule:" in freshness
+    assert "workflow_dispatch:" in freshness
+    assert "docker build --pull" in freshness
+    assert "s/@sha256:[0-9a-f]{64}//g" in freshness
+    assert "docker run --rm" in freshness
+    assert "git diff --exit-code" in freshness
+
+
+def test_dependency_automation_requires_human_review() -> None:
+    dependabot = REPO_ROOT.joinpath(".github/dependabot.yml").read_text()
+
+    assert "package-ecosystem: github-actions" in dependabot
+    assert "package-ecosystem: docker" in dependabot
+    assert "interval: weekly" in dependabot
+    workflows = "\n".join(
+        path.read_text() for path in REPO_ROOT.joinpath(".github/workflows").glob("*.yml")
+    )
+    assert "auto-merge" not in workflows.lower()
+    assert "automerge" not in workflows.lower()

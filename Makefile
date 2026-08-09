@@ -86,11 +86,11 @@ test-docker:
 docker-test: test-docker
 
 docker-ubuntu:
-	@docker build --pull -f Dockerfile.ubuntu -t nixdotfiles:test-ubuntu .
+	@docker build -f Dockerfile.ubuntu -t nixdotfiles:test-ubuntu .
 	@docker run --rm -it nixdotfiles:test-ubuntu /bin/bash
 
 docker-fedora:
-	@docker build --pull -f Dockerfile.fedora -t nixdotfiles:test-fedora .
+	@docker build -f Dockerfile.fedora -t nixdotfiles:test-fedora .
 	@docker run --rm -it nixdotfiles:test-fedora /bin/bash
 
 latest:

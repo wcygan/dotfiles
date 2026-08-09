@@ -28,12 +28,16 @@ CASES = (
 )
 
 
-def build_command(case: DockerCase, *, pull: bool) -> list[str]:
-    command = ["docker", "build"]
-    if pull:
-        command.append("--pull")
-    command.extend(["-f", str(REPO_ROOT / case.dockerfile), "-t", case.image_tag, str(REPO_ROOT)])
-    return command
+def build_command(case: DockerCase) -> list[str]:
+    return [
+        "docker",
+        "build",
+        "-f",
+        str(REPO_ROOT / case.dockerfile),
+        "-t",
+        case.image_tag,
+        str(REPO_ROOT),
+    ]
 
 
 def smoke_command(case: DockerCase) -> list[str]:
@@ -88,9 +92,6 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--dry-run", action="store_true", help="print commands without invoking Docker"
     )
-    parser.add_argument(
-        "--no-pull", action="store_true", help="do not refresh base images before building"
-    )
     return parser.parse_args(argv)
 
 
@@ -104,7 +105,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     for case in CASES:
-        commands = (build_command(case, pull=not args.no_pull), smoke_command(case))
+        commands = (build_command(case), smoke_command(case))
         for command in commands:
             print("+", " ".join(command))
             if not args.dry_run:

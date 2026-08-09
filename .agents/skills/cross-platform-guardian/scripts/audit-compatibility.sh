@@ -21,7 +21,7 @@ echo ""
 
 # Check 1: Hardcoded user paths
 echo "📁 Checking for hardcoded paths..."
-HARDCODED_PATHS=$(grep -r "/Users/wcygan" scripts/ config/ 2>/dev/null || true)
+HARDCODED_PATHS=$(grep -r "/Users/wcygan" bootstrap.sh src/dotfiles_setup config/ 2>/dev/null || true)
 if [[ -n "$HARDCODED_PATHS" ]]; then
   echo -e "${RED}❌ Found hardcoded user paths:${NC}"
   echo "$HARDCODED_PATHS" | while read -r line; do
@@ -35,7 +35,7 @@ echo ""
 
 # Check 2: Platform-specific commands without conditionals
 echo "🖥️  Checking for platform-specific commands..."
-MACOS_OPEN=$(grep -rn "open " scripts/ | grep -v "xdg-open" | grep -v "#" | grep -v "opener" || true)
+MACOS_OPEN=$(grep -rn "open " src/dotfiles_setup config/ | grep -v "xdg-open" | grep -v "#" | grep -v "opener" || true)
 if [[ -n "$MACOS_OPEN" ]]; then
   echo -e "${YELLOW}⚠️  Found 'open' command (macOS-specific):${NC}"
   echo "$MACOS_OPEN" | while read -r line; do
@@ -50,7 +50,7 @@ echo ""
 
 # Check 3: Shebang correctness
 echo "🔧 Checking shebang lines..."
-WRONG_SHEBANG=$(find scripts/ -type f -name "*.sh" -exec sh -c '
+WRONG_SHEBANG=$(find .agents/skills -type f -name "*.sh" -exec sh -c '
   for file; do
     if head -n1 "$file" | grep -q "^#!/bin/sh"; then
       if grep -q "declare -a\|local -a\|\[\[" "$file"; then
@@ -127,12 +127,17 @@ echo ""
 # Check 6: CI matrix coverage
 echo "🔄 Checking CI test matrix..."
 if [[ -f .github/workflows/ci.yml ]]; then
-  CI_PLATFORMS=$(grep -A5 "matrix:" .github/workflows/ci.yml | grep "os:" || true)
-
-  if echo "$CI_PLATFORMS" | grep -q "ubuntu" && echo "$CI_PLATFORMS" | grep -q "macos"; then
-    echo -e "${GREEN}✅ CI tests both Ubuntu and macOS${NC}"
+  if grep -q "Dockerfile.ubuntu" .github/workflows/ci.yml && grep -q "Dockerfile.fedora" .github/workflows/ci.yml; then
+    echo -e "${GREEN}✅ CI tests Ubuntu and Fedora containers${NC}"
   else
-    echo -e "${YELLOW}⚠️  CI may be missing platform coverage${NC}"
+    echo -e "${YELLOW}⚠️  CI may be missing Linux platform coverage${NC}"
+    ISSUES_FOUND=1
+  fi
+
+  if grep -q "macOS compatibility is verified ad-hoc" AGENTS.md; then
+    echo -e "${GREEN}✅ macOS local acceptance policy documented${NC}"
+  else
+    echo -e "${YELLOW}⚠️  macOS local acceptance policy is not documented${NC}"
     ISSUES_FOUND=1
   fi
 

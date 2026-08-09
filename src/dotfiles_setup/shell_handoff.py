@@ -8,7 +8,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-_SETUP_SCRIPT = "setup-shell-handoff.sh"
+_SETUP_SOURCE = "Python shell-handoff setup"
 
 _BASH_EXEC_FISH = """
 if case $- in *i*) true;; *) false;; esac && [ -t 1 ]; then
@@ -139,7 +139,7 @@ def _ensure_block(
 
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a") as file:
-        file.write(f"\n# Added by dotfiles {_SETUP_SCRIPT} ({marker})\n{content}\n")
+        file.write(f"\n# Added by dotfiles {_SETUP_SOURCE} ({marker})\n{content}\n")
     return True
 
 

@@ -459,7 +459,7 @@ Since this is a dotfiles repo following XDG spec:
    ```bash
    ln -sf ~/Development/dotfiles/config/zellij ~/.config/zellij
    ```
-5. **Update link-config.sh** to include Zellij
+5. **Update `src/dotfiles_setup/links.py`** to include Zellij
 6. **Add to flake.nix** package list
 7. **Add to README** in tools section
 

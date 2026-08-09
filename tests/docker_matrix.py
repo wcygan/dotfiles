@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import platform
 import shutil
 import subprocess
 from collections.abc import Sequence
@@ -63,8 +64,21 @@ def smoke_command(case: DockerCase) -> list[str]:
     ]
 
 
+def docker_environment(
+    *,
+    environ: dict[str, str] | None = None,
+    system: str | None = None,
+) -> dict[str, str]:
+    environment = dict(os.environ if environ is None else environ)
+    if (system or platform.system()) == "Darwin":
+        host_helper_paths = ("/usr/local/bin", "/opt/homebrew/bin")
+        existing_paths = [path for path in host_helper_paths if Path(path).is_dir()]
+        environment["PATH"] = os.pathsep.join([*existing_paths, environment.get("PATH", "")])
+    return environment
+
+
 def run(command: Sequence[str]) -> None:
-    subprocess.run(command, cwd=REPO_ROOT, check=True)
+    subprocess.run(command, cwd=REPO_ROOT, env=docker_environment(), check=True)
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:

@@ -57,9 +57,6 @@ def find_profile_element(
     elements: Mapping[str, Mapping[str, Any]],
     repo_root: Path,
 ) -> str | None:
-    if "dotfiles" in elements:
-        return "dotfiles"
-
     resolved_root = repo_root.resolve()
     for name, details in elements.items():
         if _original_path(details.get("originalUrl")) == resolved_root:

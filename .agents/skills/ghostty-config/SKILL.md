@@ -271,7 +271,7 @@ Since this is a dotfiles repo following XDG spec:
    ```bash
    ln -sf ~/Development/dotfiles/config/ghostty ~/.config/ghostty
    ```
-3. **Update link-config.sh** to include Ghostty
+3. **Update `src/dotfiles_setup/links.py`** to include Ghostty
 4. **Add to README** in tools section
 
 ## Output Format

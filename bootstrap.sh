@@ -40,7 +40,9 @@ source_nix_profile() {
   done
 }
 
-source_nix_profile
+if [[ "${DOTFILES_BOOTSTRAP_SKIP_PROFILE:-0}" != 1 ]]; then
+  source_nix_profile
+fi
 
 if ! command -v nix >/dev/null 2>&1; then
   case "$(uname -s)" in
@@ -65,7 +67,9 @@ if ! command -v nix >/dev/null 2>&1; then
         exit 1
       }
       curl --proto '=https' --tlsv1.2 -sSf -L "$DETERMINATE_INSTALL_URL" | sh -s -- install
-      source_nix_profile
+      if [[ "${DOTFILES_BOOTSTRAP_SKIP_PROFILE:-0}" != 1 ]]; then
+        source_nix_profile
+      fi
       ;;
     *)
       echo "Unsupported operating system: $(uname -s)" >&2

@@ -57,7 +57,6 @@ dotfiles/
 │   ├── ghostty/        # Ghostty config
 │   ├── starship.toml   # Starship prompt
 │   └── shell-nix.sh    # Bash/zsh compatibility
-├── scripts/            # Installation scripts
 ├── src/dotfiles_setup/  # Locked Python setup CLI
 ├── tests/               # Python and platform test suites
 ├── flake.nix           # Nix package definitions

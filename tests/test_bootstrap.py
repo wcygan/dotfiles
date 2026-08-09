@@ -28,6 +28,7 @@ def bootstrap_environment(command_bin: Path, tmp_path: Path) -> dict[str, str]:
         "HOME": str(tmp_path / "home"),
         "PATH": f"{command_bin}:/usr/bin:/bin",
         "BOOTSTRAP_CAPTURE": str(tmp_path / "capture"),
+        "DOTFILES_BOOTSTRAP_SKIP_PROFILE": "1",
     }
 
 

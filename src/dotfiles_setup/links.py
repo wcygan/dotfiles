@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import tempfile
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -132,12 +133,17 @@ def _copy_codex_template(
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     if destination.is_symlink():
-        temporary = destination.with_name(f".{destination.name}.migration")
-        if temporary.exists() or temporary.is_symlink():
-            temporary.unlink()
-        shutil.copy2(destination if destination.exists() else source, temporary)
-        destination.unlink()
-        temporary.replace(destination)
+        descriptor, temporary_name = tempfile.mkstemp(
+            prefix=f".{destination.name}.migration.",
+            dir=destination.parent,
+        )
+        os.close(descriptor)
+        temporary = Path(temporary_name)
+        try:
+            shutil.copy2(destination if destination.exists() else source, temporary)
+            os.replace(temporary, destination)
+        finally:
+            temporary.unlink(missing_ok=True)
         output(f"-> Migrated Codex config symlink to local file: {destination}")
     elif destination.exists():
         output(f"-> Preserved existing local Codex config: {destination}")

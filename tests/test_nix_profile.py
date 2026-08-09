@@ -21,13 +21,19 @@ class RecordingRunner:
         return subprocess.CompletedProcess(args, 0, stdout=stdout, stderr="")
 
 
-def test_find_profile_prefers_canonical_dotfiles_name(tmp_path: Path) -> None:
+def test_find_profile_prefers_current_checkout_over_element_name(tmp_path: Path) -> None:
     elements = {
         "another-name": {"originalUrl": f"git+{tmp_path.as_uri()}"},
         "dotfiles": {"originalUrl": "github:someone/else"},
     }
 
-    assert find_profile_element(elements, tmp_path) == "dotfiles"
+    assert find_profile_element(elements, tmp_path) == "another-name"
+
+
+def test_find_profile_ignores_unrelated_dotfiles_element(tmp_path: Path) -> None:
+    elements = {"dotfiles": {"originalUrl": "github:someone/else"}}
+
+    assert find_profile_element(elements, tmp_path) is None
 
 
 def test_find_profile_matches_repository_file_url(tmp_path: Path) -> None:
@@ -38,7 +44,10 @@ def test_find_profile_matches_repository_file_url(tmp_path: Path) -> None:
 
 def test_existing_profile_is_upgraded(tmp_path: Path) -> None:
     runner = RecordingRunner(
-        {"version": 3, "elements": {"dotfiles": {"originalUrl": "github:wcygan/dotfiles"}}}
+        {
+            "version": 3,
+            "elements": {"dotfiles": {"originalUrl": f"git+{tmp_path.as_uri()}"}},
+        }
     )
 
     message = ensure_profile(tmp_path, runner=runner)

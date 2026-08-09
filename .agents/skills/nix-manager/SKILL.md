@@ -16,7 +16,7 @@ Check current Nix setup:
 - **Installation entrypoint**: `bootstrap.sh` with the Python `profile` command
 - **Package management**: `nix profile` (user-scoped, modern approach)
 - **Installer**: Determinate Systems installer (macOS/Linux)
-- **Update mechanism**: `make update` or `nix flake update && nix profile upgrade`
+- **Update mechanism**: `make update` or `nix flake update && ./bootstrap.sh profile`
 
 Read current `flake.nix` to understand:
 - Input sources (currently: `nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"`)
@@ -31,7 +31,7 @@ Read current `flake.nix` to understand:
 **Process:**
 1. Add package to `flake.nix` in appropriate category
 2. Run `nix flake check` to validate
-3. Run `nix profile upgrade dotfiles` to apply changes
+3. Run `./bootstrap.sh profile` to apply changes
 4. Test package availability
 
 **Example:**
@@ -48,7 +48,7 @@ paths = [
 ```bash
 # Validate and install
 nix flake check
-nix profile upgrade dotfiles
+./bootstrap.sh profile
 which cowsay  # Verify installation
 ```
 
@@ -60,7 +60,7 @@ which cowsay  # Verify installation
 nix flake update
 
 # Apply updates to installed profile
-nix profile upgrade dotfiles
+./bootstrap.sh profile
 
 # Verify no breakage
 nix profile list
@@ -76,7 +76,7 @@ make update  # Runs both commands above
 **Process:**
 1. Remove from `flake.nix`
 2. Run `nix flake check`
-3. Run `nix profile upgrade dotfiles`
+3. Run `./bootstrap.sh profile`
 4. Old package remains in store but not in PATH
 
 **Note**: Garbage collection removes unreferenced packages:
@@ -302,8 +302,7 @@ inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
 **Correct:**
 ```bash
-nix profile add .              # Pure evaluation
-nix profile upgrade dotfiles   # Pure evaluation
+./bootstrap.sh profile         # Pure evaluation through the locked setup boundary
 ```
 
 **Incorrect:**
@@ -410,7 +409,7 @@ nixpkgs-fmt flake.nix
 **Migration strategy:**
 ```bash
 # 1. Install package via Nix
-# (add to flake.nix and run nix profile upgrade)
+# (add to flake.nix and run ./bootstrap.sh profile)
 
 # 2. Test package works
 which package-name  # Should show Homebrew path (higher priority)
@@ -446,7 +445,7 @@ When modifying flake.nix:
 **After changes, always:**
 1. Validate: `nix flake check`
 2. Test build: `nix build --dry-run`
-3. Apply: `nix profile upgrade dotfiles`
+3. Apply: `./bootstrap.sh profile`
 4. Verify: `nix profile list`
 
 **Include testing commands:**
@@ -458,7 +457,7 @@ nix flake check
 nix flake show
 
 # Apply updates
-nix profile upgrade dotfiles
+./bootstrap.sh profile
 ```
 
 ## Repository Patterns
@@ -517,7 +516,7 @@ paths = [
 # Package management
 nix search nixpkgs <package>     # Search for package
 nix profile list                 # List installed packages
-nix profile upgrade dotfiles     # Apply flake changes
+./bootstrap.sh profile            # Apply flake changes
 nix-collect-garbage -d           # Clean old generations
 
 # Flake management

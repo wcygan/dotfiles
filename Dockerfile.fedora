@@ -2,7 +2,7 @@
 # A pinned Nix fixture keeps this image from invoking a remote installer.
 FROM nixos/nix:2.30.3 AS nix-fixture
 
-FROM fedora:40
+FROM fedora:43
 
 ARG USER=tester
 ARG UID=1000
@@ -29,9 +29,11 @@ ENV PATH="/home/${USER}/.nix-profile/bin:/nix/var/nix/profiles/default/bin:${PAT
 
 COPY --chown=${USER}:${USER} . .
 
-# Cold path: Nix is present, then bootstrap owns installation and linking.
-RUN ./bootstrap.sh install && \
-    nix --extra-experimental-features "nix-command flakes" develop .#default --command \
+# Keep the cold install in its own cacheable layer so test-only changes do not
+# rebuild the entire Nix profile.
+RUN ./bootstrap.sh install
+
+RUN nix --extra-experimental-features "nix-command flakes" develop .#default --command \
       uv run --locked pytest && \
     fish -lc './tests/docker-test-commands.fish'
 

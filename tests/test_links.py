@@ -81,6 +81,22 @@ def test_migrates_symlinked_codex_config_but_preserves_local_state(tmp_path: Pat
     assert (codex / "config.toml").read_text() == "machine local state"
 
 
+def test_codex_migration_preserves_preexisting_temporary_name(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    codex = tmp_path / "codex"
+    old_config = tmp_path / "old-config.toml"
+    old_config.write_text("machine local state")
+    codex.mkdir(parents=True)
+    (codex / "config.toml").symlink_to(old_config)
+    preexisting_temporary = codex / ".config.toml.migration"
+    preexisting_temporary.write_text("do not overwrite")
+
+    link_config(Path.cwd(), environ=environment(home, codex=codex), system="Linux")
+
+    assert (codex / "config.toml").read_text() == "machine local state"
+    assert preexisting_temporary.read_text() == "do not overwrite"
+
+
 def test_npmrc_is_normalized_with_backup(tmp_path: Path) -> None:
     home = tmp_path / "home"
     home.mkdir()

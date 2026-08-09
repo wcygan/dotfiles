@@ -11,10 +11,11 @@ Reproducible tools with Nix; portable, editable configs via symlinks; fast onboa
 * **Minimal surface area**: configs live under `config/**`; packages live in `flake.nix`.
 * **Test-first ops**: `make test-pre` (locked Ruff + pytest) → `make test-local` (ephemeral HOME) → `make test-shell` → `make test-docker` (Ubuntu/Fedora driver). macOS-specific changes: run the relevant non-Docker checks on a Mac before merging.
 * **Rollbackable**: links backed up, package generations garbage-collectable.
+* **Minimal shell bridge**: `bootstrap.sh` is the only root setup shell entry point. Shell helpers under `.agents/skills/**/scripts` are project-local skill implementation details, not installation entry points.
 
 ## Authority & Guardrails
 
-**You may** edit: `flake.nix`, `scripts/*.sh`, `config/**`, `Makefile`, `README.md`, `AGENTS.md`, `tests/**`, CI workflows.
+**You may** edit: `bootstrap.sh`, `flake.nix`, `pyproject.toml`, `uv.lock`, `src/dotfiles_setup/**`, `config/**`, `Makefile`, `README.md`, `AGENTS.md`, `tests/**`, CI workflows.
 
 **You must not**: commit secrets, hard-code machine paths, or regress OS coverage.
 

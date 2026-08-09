@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from tests.docker_matrix import CASES, build_command, main, smoke_command
+from tests.docker_matrix import (
+    CASES,
+    build_command,
+    docker_environment,
+    main,
+    smoke_command,
+)
 
 
 def test_matrix_covers_ubuntu_and_fedora() -> None:
@@ -34,3 +40,10 @@ def test_dry_run_does_not_require_docker(capsys) -> None:
     output = capsys.readouterr().out
     assert "nixdotfiles:test-ubuntu" in output
     assert "nixdotfiles:test-fedora" in output
+
+
+def test_darwin_docker_environment_restores_host_helper_paths() -> None:
+    environment = docker_environment(environ={"PATH": "/nix/bin"}, system="Darwin")
+
+    assert environment["PATH"].endswith("/nix/bin")
+    assert "/usr/local/bin" in environment["PATH"]

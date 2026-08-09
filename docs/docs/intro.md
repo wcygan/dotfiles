@@ -96,7 +96,6 @@ dotfiles/
 │   ├── fish/           # Fish shell config
 │   ├── starship.toml   # Starship prompt
 │   └── shell-nix.sh    # Bash/zsh compatibility
-├── scripts/            # Installation scripts
 ├── src/dotfiles_setup/  # Python setup CLI modules
 ├── tests/               # Pytest and platform test suites
 ├── flake.nix           # Nix package definitions

@@ -46,7 +46,7 @@ def run_bootstrap(
     )
 
 
-def test_existing_nix_executes_locked_doctor(command_bin: Path, tmp_path: Path) -> None:
+def test_existing_nix_executes_locked_install(command_bin: Path, tmp_path: Path) -> None:
     write_executable(command_bin / "nix", 'printf "%s\\n" "$@" > "$BOOTSTRAP_CAPTURE"')
 
     result = run_bootstrap(command_bin, tmp_path)
@@ -65,7 +65,7 @@ def test_existing_nix_executes_locked_doctor(command_bin: Path, tmp_path: Path) 
         "python",
         "-m",
         "dotfiles_setup",
-        "doctor",
+        "install",
     ]
 
 
@@ -106,7 +106,7 @@ def test_linux_installer_requires_nix_to_become_available(
 def test_unknown_commands_are_rejected(command_bin: Path, tmp_path: Path) -> None:
     write_executable(command_bin / "nix", "exit 0")
 
-    result = run_bootstrap(command_bin, tmp_path, "install")
+    result = run_bootstrap(command_bin, tmp_path, "unknown-command")
 
     assert result.returncode == 2
     assert "Unknown setup command" in result.stderr

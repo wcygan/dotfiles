@@ -81,11 +81,11 @@ if ! command -v nix >/dev/null 2>&1; then
 fi
 
 if ((${#forwarded_args[@]} == 0)); then
-  forwarded_args=(doctor)
+  forwarded_args=(install)
 fi
 
 case "${forwarded_args[0]}" in
-  doctor | profile | rustup | link | uninstall | shell-handoff | git-user) ;;
+  install | doctor | verify | profile | rustup | link | uninstall | shell-handoff | git-user) ;;
   *)
     echo "Unknown setup command: ${forwarded_args[0]}" >&2
     exit 2

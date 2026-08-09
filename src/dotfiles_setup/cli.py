@@ -7,6 +7,7 @@ from pathlib import Path
 from dotfiles_setup.cleanup import cleanup_links
 from dotfiles_setup.doctor import run_doctor
 from dotfiles_setup.git_user import GitUserError, configure_git_user
+from dotfiles_setup.installer import run_install
 from dotfiles_setup.links import link_config
 from dotfiles_setup.nix_profile import NixProfileError, ensure_profile
 from dotfiles_setup.rustup import RustupError, setup_rustup
@@ -22,6 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subcommands = parser.add_subparsers(dest="command", required=True)
     subcommands.add_parser("doctor", help="Run read-only environment diagnostics")
+    subcommands.add_parser("verify", help="Verify the configured environment")
     subcommands.add_parser("profile", help="Install or upgrade the Nix package profile")
     subcommands.add_parser("rustup", help="Install rust-analyzer for the default toolchain")
 
@@ -47,13 +49,20 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Remove redundant global Git identity after writing the local file",
     )
+
+    install_parser = subcommands.add_parser("install", help="Run the complete setup workflow")
+    install_parser.add_argument(
+        "--shell-handoff",
+        action="store_true",
+        help="Opt in to editing Bash and zsh startup files",
+    )
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
-    if args.command == "doctor":
+    if args.command in {"doctor", "verify"}:
         return run_doctor()
     if args.command == "profile":
         try:
@@ -106,5 +115,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         action = "Updated" if result.updated else "Preserved"
         print(f"{action} Git identity at {result.path}")
         return 0
+    if args.command == "install":
+
+        def link_output(line: str) -> None:
+            print(f"[links] {line}")
+
+        return run_install(
+            profile=lambda: ensure_profile(REPO_ROOT),
+            links=lambda: link_config(REPO_ROOT, output=link_output),
+            rustup=setup_rustup,
+            shell_handoff=configure_shell_handoff if args.shell_handoff else None,
+            verify=run_doctor,
+        )
 
     raise AssertionError(f"Unhandled command: {args.command}")

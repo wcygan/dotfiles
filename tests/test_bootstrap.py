@@ -103,10 +103,10 @@ def test_linux_installer_requires_nix_to_become_available(
     assert "nix is not available" in result.stderr
 
 
-def test_migration_phase_rejects_mutating_commands(command_bin: Path, tmp_path: Path) -> None:
+def test_unknown_commands_are_rejected(command_bin: Path, tmp_path: Path) -> None:
     write_executable(command_bin / "nix", "exit 0")
 
     result = run_bootstrap(command_bin, tmp_path, "install")
 
     assert result.returncode == 2
-    assert "Only the doctor command" in result.stderr
+    assert "Unknown setup command" in result.stderr

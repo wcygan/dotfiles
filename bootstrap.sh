@@ -81,10 +81,13 @@ if ((${#forwarded_args[@]} == 0)); then
   forwarded_args=(doctor)
 fi
 
-if [[ "${forwarded_args[0]}" != doctor ]]; then
-  echo "Only the doctor command is available during this migration phase." >&2
-  exit 2
-fi
+case "${forwarded_args[0]}" in
+  doctor | profile | rustup) ;;
+  *)
+    echo "Unknown setup command: ${forwarded_args[0]}" >&2
+    exit 2
+    ;;
+esac
 
 cd "$REPO_ROOT"
 exec nix \

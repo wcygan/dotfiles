@@ -24,10 +24,10 @@ Full documentation available at: https://wcygan.github.io/dotfiles/
 
 ```
 dotfiles/
+├── .agents/             # Project-local operating skills
 ├── config/             # Configuration files
 │   ├── fish/           # Fish shell config
-│   ├── claude/         # Claude Code config
-│   ├── codex/          # Codex config, global instructions, agents, and skills
+│   ├── codex/          # Codex config template and global instructions
 │   ├── zed/            # Zed config
 │   ├── ghostty/        # Ghostty config
 │   ├── starship.toml   # Starship prompt
@@ -48,28 +48,22 @@ dotfiles/
 brew install PeonPing/tap/peon-ping && peon-ping-setup
 ```
 
-This adds hooks to your local `~/.claude/` config. The setup may also create
-Claude skills; remove `~/.claude/skills` afterward to preserve this dotfiles
-repository's intentionally empty Claude skill catalog.
+This adds hooks to your local `~/.claude/` config. It is not managed by this
+repository.
 
 ### Agent Skills
 
-The active global Codex catalog is deliberately small:
+Dotfiles-specific operating skills live in `.agents/skills/`; reusable skills
+belong in the dedicated `agent-skills` repository. Codex is managed narrowly:
+`config/codex/config.toml` is a portable template copied to
+`${CODEX_HOME:-~/.codex}/config.toml` only when missing, and
+`config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`. Skills,
+custom agents, and the rest of `CODEX_HOME` remain machine-local state. Codex
+may write machine-specific `[projects]` trust entries into the local config;
+keep those out of the tracked template.
 
-- `goal-supervisor` — bounded supervisor/worker implementation with independent acceptance.
-- `loop-protocol` — baseline contract and safety invariants shared by loop workflows.
-- `monitor-until` — explicitly invoked, read-only watching with terminal states and a deadline.
-- `hill-climbing-loop` — explicitly invoked, metric-driven keep-or-discard experiments.
-- `autoresearch` — deprecated Codex compatibility name that routes to `hill-climbing-loop`.
-
-Claude skills are intentionally absent from both the project-local
-`.claude/skills` path and the tracked global `config/claude/skills` source.
-Because `~/.claude` links to `config/claude`, no global Claude skill directory
-is exposed.
-
-Claude Code config is linked from `config/claude` to `~/.claude`. Codex is managed narrowly: `config/codex/config.toml` is a portable template copied to `${CODEX_HOME:-~/.codex}/config.toml` only when missing, `config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`, tracked files under `config/codex/agents/` are linked individually into `${CODEX_HOME:-~/.codex}/agents/`, and `config/codex/skills` points to `${CODEX_HOME:-~/.codex}/skills`, while the rest of `CODEX_HOME` remains machine-local runtime state. Per-file agent links preserve unrelated machine-local agents. Codex may write machine-specific `[projects]` trust entries into the local config; keep those out of the tracked template.
-
-Pi discovers the shared global catalog at `~/.agents/skills` directly. `scripts/install-skills.sh` installs curated vendor skills there and deliberately does not create `~/.pi/agent/skills`, avoiding duplicate skill names while leaving Pi runtime state (`auth.json`, `sessions/`, `models.json`) machine-local.
+This repository does not install or link global agent skills. Pi credentials,
+sessions, models, and any global catalog remain machine-local state.
 
 ### npm Global Tools
 

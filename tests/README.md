@@ -10,9 +10,6 @@ cd tests/
 # Pre-flight check (no changes)
 ./test-fish-setup.sh
 
-# Global Codex skill catalog
-./test-codex-skills.sh
-
 # Local isolated test (temp HOME)
 ./test-ephemeral.sh
 
@@ -30,16 +27,15 @@ cd tests/
 - Checks flake.nix, config files, and dependencies
 - Shows what will be installed
 
-### `test-codex-skills.sh`
-- Validates the exact active global Codex skill inventory
-- Checks Codex-compatible frontmatter and directory names
-- Verifies loop composition, explicit invocation policy, and deprecation routing
-- Rejects destructive Git recipes and machine-specific home paths
-
 ### `test-ephemeral.sh` 
 - Creates temporary HOME directory
 - Tests fish config loading in isolation
 - No system changes, automatic cleanup
+
+### `test-cleanup-symlinks.sh`
+- Creates an isolated HOME directory
+- Verifies cleanup removes only active installer-managed links
+- Confirms legacy Claude and machine-local Codex paths are preserved
 
 ### `test-shell-handoff.sh`
 - Tests bash/zsh → fish handoff for interactive sessions

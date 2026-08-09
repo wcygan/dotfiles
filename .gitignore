@@ -14,49 +14,12 @@ result-*
 *.swp
 *.log
 tmp/
-config/claude/session-env/*
-config/claude/teams/*
-config/claude/telemetry/*
-config/claude/backups/*
-config/claude/tasks/
-config/claude/agent-memory/
-config/claude/cache/
-config/claude/paste-cache/
-config/claude/plugins/
-config/claude/plans/
-config/claude/projects/
-config/claude/shell-snapshots/
-config/claude/statsig/
-config/claude/todos/
-config/claude/.credentials.json
 # User-specific local configs
 **/config.local
 **/*.local
-config/claude/security_warnings_state*
-
-config/claude/debug
-config/claude/stats-cache.json
 config/zed/conversations
 config/zed/themes
 config/zed/prompts
-config/claude/ide/
-config/claude/sessions/
-config/claude/file-history/
-config/claude/history.jsonl
-config/claude/.last-cleanup
-
-# peon-ping (installed via brew, recreated by peon-ping-setup)
-config/claude/hooks/peon-ping/
-config/claude/mcp-needs-auth-cache.json
-config/claude/image-cache/
-
-# Claude daemon and job runtime state
-config/claude/daemon.*
-config/claude/daemon/
-config/claude/jobs/
-
-# Codex system-managed skills are recreated by Codex inside ~/.codex/skills.
-config/codex/skills/.system/
 
 # Autoresearch working files
 .autoresearch-*

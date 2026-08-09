@@ -60,9 +60,9 @@ echo "Link config integration test"
 echo "============================"
 echo ""
 
-mkdir -p "$HOME" "$CODEX_HOME/agents"
-printf '%s\n' 'machine-local agent placeholder' >"$CODEX_HOME/agents/luna-worker.toml"
-printf '%s\n' 'unrelated machine-local agent' >"$CODEX_HOME/agents/local-agent.toml"
+mkdir -p "$HOME" "$CODEX_HOME/agents" "$CODEX_HOME/skills"
+printf '%s\n' 'machine-local agent placeholder' >"$CODEX_HOME/agents/local-agent.toml"
+printf '%s\n' 'external skill catalog placeholder' >"$CODEX_HOME/skills/README.md"
 
 DOTFILES_SKIP_FISH_GREETING=1 "$ROOT/scripts/link-config.sh" >/dev/null
 
@@ -71,18 +71,8 @@ assert_symlink "$HOME/.config/fish" "$ROOT/config/fish"
 assert_symlink "$HOME/.bunfig.toml" "$ROOT/config/bunfig.toml"
 assert_symlink "$HOME/.config/.bunfig.toml" "$ROOT/config/bunfig.toml"
 assert_symlink "$HOME/.config/deno" "$ROOT/config/deno"
-assert_symlink "$HOME/.claude" "$ROOT/config/claude"
 assert_file_copy "$CODEX_HOME/config.toml" "$ROOT/config/codex/config.toml"
 assert_symlink "$CODEX_HOME/AGENTS.md" "$ROOT/config/codex/AGENTS.md"
-assert_symlink "$CODEX_HOME/agents/luna-lane.toml" "$ROOT/config/codex/agents/luna-lane.toml"
-assert_symlink "$CODEX_HOME/agents/luna-worker.toml" "$ROOT/config/codex/agents/luna-worker.toml"
-assert_symlink "$CODEX_HOME/skills" "$ROOT/config/codex/skills"
-
-if compgen -G "$CODEX_HOME/agents/luna-worker.toml.backup.*" >/dev/null; then
-    pass "existing luna-worker agent config is backed up"
-else
-    fail "existing luna-worker agent config was not backed up"
-fi
 
 if [[ -f "$CODEX_HOME/agents/local-agent.toml" && ! -L "$CODEX_HOME/agents/local-agent.toml" ]]; then
     pass "unrelated machine-local Codex agents are preserved"
@@ -90,16 +80,22 @@ else
     fail "unrelated machine-local Codex agent was changed"
 fi
 
-if [[ -e "$HOME/.claude/skills" || -L "$HOME/.claude/skills" ]]; then
-    fail "$HOME/.claude/skills should not exist"
+if [[ -f "$CODEX_HOME/skills/README.md" && ! -L "$CODEX_HOME/skills" ]]; then
+    pass "external Codex skills catalog is preserved"
 else
-    pass "global Claude skills remain absent"
+    fail "external Codex skills catalog was changed"
+fi
+
+if [[ -e "$HOME/.claude" || -L "$HOME/.claude" ]]; then
+    fail "$HOME/.claude should not be created"
+else
+    pass "Claude configuration remains machine-local"
 fi
 
 if [[ -e "$HOME/.pi/agent/skills" || -L "$HOME/.pi/agent/skills" ]]; then
     fail "$HOME/.pi/agent/skills should not be created"
 else
-    pass "Pi uses the shared ~/.agents/skills catalog without a duplicate link"
+    pass "Pi configuration remains machine-local without a duplicate link"
 fi
 
 if [[ -d "$HOME/.local/bin" ]]; then
@@ -198,32 +194,8 @@ else
     fail "config/codex/AGENTS.md is missing"
 fi
 
-if [[ -d "$ROOT/config/codex/skills" ]]; then
-    pass "config/codex/skills exists as the Codex skills source"
-else
-    fail "config/codex/skills is missing"
-fi
-
-if [[ -f "$ROOT/config/codex/agents/luna-worker.toml" ]]; then
-    pass "luna-worker exists as a tracked Codex custom agent"
-else
-    fail "luna-worker Codex custom agent is missing"
-fi
-
-if [[ -f "$ROOT/config/codex/agents/luna-lane.toml" ]]; then
-    pass "luna-lane exists as a tracked Codex custom agent"
-else
-    fail "luna-lane Codex custom agent is missing"
-fi
-
-if grep -q '^link_codex_agents()' "$ROOT/scripts/link-config.sh"; then
-    pass "link-config.sh wires tracked Codex custom agents"
-else
-    fail "link-config.sh does not link Codex custom agents"
-fi
-
 if [[ -e "$ROOT/config/pi/skills" || -L "$ROOT/config/pi/skills" ]]; then
-    fail "config/pi/skills should not exist; Pi uses ~/.agents/skills"
+    fail "config/pi/skills should not exist"
 else
     pass "config/pi/skills is absent"
 fi
@@ -234,55 +206,17 @@ else
     pass "link-config.sh leaves Pi's duplicate skills path alone"
 fi
 
-for claude_skills_path in "$ROOT/.claude/skills" "$ROOT/config/claude/skills"; do
-    if [[ -e "$claude_skills_path" || -L "$claude_skills_path" ]]; then
-        fail "$claude_skills_path should not exist"
-    else
-        pass "$claude_skills_path is absent"
-    fi
-done
-
-if grep -Fq 'astral-sh/claude-code-plugins@uv' "$ROOT/scripts/install-skills.sh" &&
-   grep -Fq 'emilkowalski/skills@animate' "$ROOT/scripts/install-skills.sh" &&
-   grep -Fq 'planetscale/database-skills@mysql' "$ROOT/scripts/install-skills.sh" &&
-   grep -Fq 'planetscale/database-skills@postgres' "$ROOT/scripts/install-skills.sh" &&
-   grep -Fq 'vercel-labs/portless@portless' "$ROOT/scripts/install-skills.sh"; then
-    pass "vendor installer retains Uv, Animate, MySQL, PostgreSQL, and Portless"
+if [[ -e "$ROOT/scripts/install-skills.sh" ]]; then
+    fail "dotfiles should not include a global agent-skill installer"
 else
-    fail "vendor installer is missing Uv, Animate, MySQL, PostgreSQL, or Portless"
+    pass "dotfiles does not install global agent skills"
 fi
 
-if grep -Fq 'bunx skills add "$skill" -g -y' "$ROOT/scripts/install-skills.sh" && \
-   ! grep -Fq 'bunx skills add "$skill" -g -a pi -y' "$ROOT/scripts/install-skills.sh"; then
-    pass "vendor installer uses the shared skills catalog"
+if [[ -f "$ROOT/.agents/skills/config-change/SKILL.md" ]]; then
+    pass "project-local operating skills are retained"
 else
-    fail "vendor installer can recreate Pi skill links"
+    fail "project-local operating skills are missing"
 fi
-
-if grep -Fq 'apply_animate_workflow_handoff' "$ROOT/scripts/install-skills.sh" && \
-   grep -Fq '## Motion Workflow Loop' "$ROOT/scripts/install-skills.sh" && \
-   grep -Fq 'find-animation-opportunities' "$ROOT/scripts/install-skills.sh" && \
-   grep -Fq 'review-animations' "$ROOT/scripts/install-skills.sh"; then
-    pass "vendor Animate skill receives the durable motion workflow handoff"
-else
-    fail "vendor Animate skill is missing the motion workflow handoff"
-fi
-
-if grep -Eq "printf .*config/claude/skills|skills add .*(-a|--agent) claude-code" \
-    "$ROOT/scripts/install-skills.sh"; then
-    fail "vendor installer can recreate Claude skills"
-else
-    pass "vendor installer does not target Claude skills"
-fi
-
-for removed_skill in \
-    stripe-best-practices resend resend-cli react-email email-best-practices oauth; do
-    if grep -Eq "^[[:space:]]+\"[^\"]+@${removed_skill}\"$" "$ROOT/scripts/install-skills.sh"; then
-        fail "vendor installer still includes $removed_skill"
-    else
-        pass "vendor installer excludes $removed_skill"
-    fi
-done
 
 echo ""
 echo "All link-config checks passed."

@@ -131,7 +131,7 @@ else
     exit 1
 fi
 
-echo -e "\n${BLUE}Step 4: Linking configuration files and agent skill roots${NC}"
+echo -e "\n${BLUE}Step 4: Linking configuration files${NC}"
 if "$ROOT/scripts/link-config.sh"; then
     echo -e "${GREEN}✓${NC} Configurations linked successfully"
 else
@@ -144,20 +144,6 @@ if "$ROOT/scripts/setup-shell-handoff.sh"; then
     echo -e "${GREEN}✓${NC} Shell handoff configured"
 else
     echo -e "${YELLOW}⚠${NC} Unable to configure shell handoff automatically"
-fi
-
-echo -e "\n${BLUE}Step 6: Registering Hermes skills directory (if Hermes installed)${NC}"
-if "$ROOT/scripts/setup-hermes-skills.sh"; then
-    echo -e "${GREEN}✓${NC} Hermes skills setup complete"
-else
-    echo -e "${YELLOW}⚠${NC} Hermes skills setup reported an error (non-fatal)"
-fi
-
-echo -e "\n${BLUE}Step 7: Installing vendor agent skills${NC}"
-if "$ROOT/scripts/install-skills.sh"; then
-    echo -e "${GREEN}✓${NC} Vendor skills install complete"
-else
-    echo -e "${YELLOW}⚠${NC} Vendor skills install reported an error (non-fatal)"
 fi
 
 echo ""
@@ -198,7 +184,6 @@ CONFIG_FILES=(
     "$HOME/.config/starship.toml"
     "$CODEX_HOME_DIR/config.toml"
     "$CODEX_HOME_DIR/AGENTS.md"
-    "$CODEX_HOME_DIR/skills"
 )
 
 for file in "${CONFIG_FILES[@]}"; do

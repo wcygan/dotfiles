@@ -1,6 +1,0 @@
-interface:
-  display_name: "Ephemeral Chooser"
-  short_description: "Compare component variants, then keep one"
-  default_prompt: "Use $ephemeral-chooser to create temporary component variants, present a shareable local chooser, and promote only my explicit selection."
-policy:
-  allow_implicit_invocation: false

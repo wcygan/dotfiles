@@ -36,82 +36,8 @@ link() {
   fi
 }
 
-link_codex_skills() {
-  local src="$CFG_SRC/codex/skills"
-  local dst="$CODEX_HOME_DIR/skills"
-
-  if $DRY_RUN; then
-    echo "[DRY] Would link: $dst → $src"
-    if [ -e "$dst" ] && [ ! -L "$dst" ]; then
-      echo "      (would migrate existing $dst contents into $src first)"
-    elif [ -L "$dst" ]; then
-      echo "      (would replace existing symlink)"
-    fi
-    return 0
-  fi
-
-  mkdir -p "$src" "$(dirname "$dst")"
-
-  if [ -e "$dst" ] && [ ! -L "$dst" ]; then
-    local backup="$dst.backup.$(date +%s)"
-    local backup_created=false
-
-    if [ -d "$dst" ]; then
-      shopt -s dotglob nullglob
-      local entries=("$dst"/*)
-      shopt -u dotglob nullglob
-
-      for entry in "${entries[@]}"; do
-        local name
-        name="$(basename "$entry")"
-
-        if [ -e "$src/$name" ] || [ -L "$src/$name" ]; then
-          if ! $backup_created; then
-            mkdir -p "$backup"
-            backup_created=true
-          fi
-          mv "$entry" "$backup/$name"
-        else
-          mv "$entry" "$src/"
-        fi
-      done
-
-      if rmdir "$dst" 2>/dev/null; then
-        if $backup_created; then
-          echo "→ Backed up Codex skills conflicts to $backup"
-        fi
-      else
-        if ! $backup_created; then
-          mkdir -p "$backup"
-          backup_created=true
-        fi
-        mv "$dst" "$backup/skills"
-        echo "→ Backed up existing Codex skills directory to $backup"
-      fi
-    else
-      mv "$dst" "$backup"
-      echo "→ Backed up existing Codex skills path to $backup"
-    fi
-  fi
-
-  ln -snf "$src" "$dst"
-  echo "→ $dst ↦ $src"
-}
-
 link_codex_agents_md() {
   link "$CFG_SRC/codex/AGENTS.md" "$CODEX_HOME_DIR/AGENTS.md"
-}
-
-link_codex_agents() {
-  local src="$CFG_SRC/codex/agents"
-  local dst="$CODEX_HOME_DIR/agents"
-  local agent_file
-
-  shopt -s nullglob
-  for agent_file in "$src"/*.toml; do
-    link "$agent_file" "$dst/$(basename "$agent_file")"
-  done
-  shopt -u nullglob
 }
 
 install_codex_config_toml() {
@@ -252,14 +178,9 @@ link "$CFG_SRC/deno" "$CFG_DST/deno"
 # ghostty config
 link "$CFG_SRC/ghostty" "$HOME/.config/ghostty"
 
-# Claude configuration (for Claude Code CLI)
-link "$CFG_SRC/claude" "$HOME/.claude"
-
 # Codex config.toml is mutable user state; copy the template once, then preserve it.
 install_codex_config_toml
 link_codex_agents_md
-link_codex_agents
-link_codex_skills
 
 # Zellij config
 link "$CFG_SRC/zellij" "$HOME/.config/zellij"

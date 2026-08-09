@@ -26,8 +26,8 @@ Reproducible tools with Nix; portable, editable configs via symlinks; fast onboa
 * **Need a config?** Add under `config/**` → wire in `scripts/link-config.sh`.
   * Only symlink to `~/.config/` for XDG-compliant programs (fish, starship, zed). Legacy programs like tmux expect `~/.tmux.conf` — check before symlinking.
 * **Need per-project dev environment?** Use the nix-direnv pattern — see README.md.
-* **Need a vendor agent skill?** Add it to the `SKILLS` array in `scripts/install-skills.sh` → `make install-skills`.
-* **Need a global shared agent skill?** Install a vetted vendor skill with `scripts/install-skills.sh`; it is stored once in `~/.agents/skills`, which Pi discovers directly. Keep Pi credentials, sessions, models, and other runtime state machine-local.
+* **Need a dotfiles operating skill?** Add it under `.agents/skills/` so it is project-local and versioned with this repository.
+* **Need a reusable agent skill?** Own it in the dedicated `agent-skills` repository. Keep Pi credentials, sessions, models, and other runtime state machine-local.
 * **Unsure?** Prefer plain files + symlinks over bespoke derivations.
 
 ## Workflow
@@ -56,8 +56,6 @@ Rollback: re-link configs (script backs up physical dirs), or `nix profile rollb
 
 **Add a fish function**: create `config/fish/functions/<name>.fish`; reference in docs; add a small test if relevant.
 
-**Add a vendor agent skill**: append `<owner>/<repo>@<skill>` to the `SKILLS` array in `scripts/install-skills.sh`; run `make install-skills`. Only vendor official-publisher skills (verify the GitHub org owns the repo). Refresh all global skills with `make update-skills`.
-
 ## Pointers
 
 * **Nix install / dev environments tutorial** → `README.md`
@@ -66,5 +64,4 @@ Rollback: re-link configs (script backs up physical dirs), or `nix profile rollb
 
 ## Migrations
 
-* **2026-07-13 — Reset global Codex skills**: active global skills now live only under `config/codex/skills`; the previous catalog was removed and remains recoverable from Git history. Existing `~/.codex/skills` symlinks require no manual migration because they immediately reflect the emptied active directory.
-* **2026-08-02 — Deduplicate Pi skills**: global vendor skills now live only in `~/.agents/skills`; remove the legacy `~/.pi/agent/skills` symlink once. Repository-authored `config/pi/skills/pi-docs` was retired rather than copied into a second catalog.
+* **2026-08-08 — Retire global agent-skill installation**: this repository no longer links or validates Codex skills, custom agents, or Claude configuration, and it does not install global agent skills. Dotfiles-specific operating skills live under `.agents/skills/`; reusable skills belong in the dedicated `agent-skills` repository.

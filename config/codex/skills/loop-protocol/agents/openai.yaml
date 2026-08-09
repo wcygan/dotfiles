@@ -1,6 +1,0 @@
-interface:
-  display_name: "Loop Protocol"
-  short_description: "Define safe, observable, bounded loops"
-  default_prompt: "Use $loop-protocol to define or audit a bounded loop contract before execution."
-policy:
-  allow_implicit_invocation: true

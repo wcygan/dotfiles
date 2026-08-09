@@ -110,3 +110,13 @@ def test_unknown_commands_are_rejected(command_bin: Path, tmp_path: Path) -> Non
 
     assert result.returncode == 2
     assert "Unknown setup command" in result.stderr
+
+
+def test_command_options_are_forwarded_to_python(command_bin: Path, tmp_path: Path) -> None:
+    write_executable(command_bin / "nix", 'printf "%s\\n" "$@" > "$BOOTSTRAP_CAPTURE"')
+
+    result = run_bootstrap(command_bin, tmp_path, "uninstall", "--yes")
+
+    assert result.returncode == 0
+    captured = (tmp_path / "capture").read_text().splitlines()
+    assert captured[-2:] == ["uninstall", "--yes"]

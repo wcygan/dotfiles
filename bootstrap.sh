@@ -18,7 +18,10 @@ while (($#)); do
       forwarded_args+=("$@")
       break
       ;;
-    *) forwarded_args+=("$1") ;;
+    *)
+      forwarded_args+=("$@")
+      break
+      ;;
   esac
   shift
 done
@@ -82,7 +85,7 @@ if ((${#forwarded_args[@]} == 0)); then
 fi
 
 case "${forwarded_args[0]}" in
-  doctor | profile | rustup) ;;
+  doctor | profile | rustup | link | uninstall) ;;
   *)
     echo "Unknown setup command: ${forwarded_args[0]}" >&2
     exit 2

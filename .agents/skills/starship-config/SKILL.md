@@ -205,7 +205,7 @@ env STARSHIP_CONFIG=./test-config.toml fish
 
 **When creating new:**
 1. Write to `config/starship/starship.toml`
-2. Ensure `scripts/link-config.sh` handles starship symlink
+2. Ensure `src/dotfiles_setup/links.py` manages the Starship symlink
 3. Verify link in `~/.config/starship.toml`
 4. Add to README if new setup step required
 
@@ -269,6 +269,6 @@ starship timings
 This is a Nix-based dotfiles repository:
 - Starship installed via `flake.nix`
 - Config lives in `config/starship/starship.toml`
-- Symlinked to `~/.config/starship.toml` by `scripts/link-config.sh`
+- Symlinked to `~/.config/starship.toml` by `src/dotfiles_setup/links.py`
 - Fish shell integration in `config/fish/conf.d/30-starship.fish`
 - Cross-platform support: macOS, Ubuntu, Fedora

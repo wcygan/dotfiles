@@ -13,7 +13,7 @@ Comprehensive Nix management following Determinate Systems best practices and th
 
 Check current Nix setup:
 - **Flake location**: `/Users/wcygan/Development/dotfiles/flake.nix`
-- **Installation script**: `scripts/install-packages.sh`
+- **Installation entrypoint**: `bootstrap.sh` with the Python `profile` command
 - **Package management**: `nix profile` (user-scoped, modern approach)
 - **Installer**: Determinate Systems installer (macOS/Linux)
 - **Update mechanism**: `make update` or `nix flake update && nix profile upgrade`
@@ -265,8 +265,8 @@ This repository uses **Determinate Systems GitHub Actions** for CI.
     extra-conf: |
       experimental-features = nix-command flakes
 
-- name: Run install script
-  run: ./install.sh
+- name: Run bootstrap setup
+  run: ./bootstrap.sh
 ```
 
 **Benefits:**
@@ -280,7 +280,7 @@ This repository uses **Determinate Systems GitHub Actions** for CI.
 make test-docker
 
 # Test idempotency
-./install.sh && ./install.sh  # Should succeed twice
+./bootstrap.sh && ./bootstrap.sh  # Should succeed twice
 ```
 
 ### 6. Best Practices (Determinate Nix Patterns)
@@ -349,7 +349,7 @@ packages.default = pkgs.buildEnv {
 experimental-features = nix-command flakes
 ```
 
-**This is automatically set by `scripts/install-packages.sh`**
+**The Nix development command enables this explicitly when needed.**
 
 ### 7. Development Workflows
 
@@ -367,7 +367,7 @@ $EDITOR flake.nix
 
 **Or use templates directory:**
 ```bash
-# Use template (if available in .codex/skills/nix-manager/templates/)
+# Use a repository template when one is available
 nix flake init -t .#template-name
 ```
 
@@ -468,8 +468,9 @@ This dotfiles repository follows these conventions:
 **File Structure:**
 - `flake.nix` - Package definitions and outputs
 - `flake.lock` - Pinned dependency versions
-- `scripts/install-packages.sh` - Installation wrapper
-- `scripts/link-config.sh` - Dotfile symlinking
+- `bootstrap.sh` - Nix bootstrap and locked Python CLI bridge
+- `src/dotfiles_setup/nix_profile.py` - Nix profile management
+- `src/dotfiles_setup/links.py` - Dotfile symlinking
 - `config/` - Dotfile configurations (fish, starship, etc.)
 
 **Package Organization:**
@@ -490,12 +491,13 @@ paths = [
 ```
 
 **Testing:**
-- `make test-pre` - Pre-flight validation
-- `make test-local` - Ephemeral HOME test
-- `make test-docker` - Multi-distro Docker matrix
+- `make test-pre` - Locked Ruff and pytest
+- `make test-local` - Ephemeral-HOME-focused pytest
+- `make test-shell` - Shell-handoff pytest
+- `make test-docker` - Python Ubuntu/Fedora driver
 
 **Common Commands:**
-- `make install` - Run full installation
+- `make install` or `./bootstrap.sh` - Run full installation
 - `make update` - Update flake + upgrade packages
 - `make clean` - Garbage collect
 - `make verify` - Check Nix installation health

@@ -28,7 +28,7 @@ Stop when the requested config change is applied or the user has clarified which
 
 1. Read the user's requested config change from the prompt.
 2. Identify the affected config area from the route map.
-3. Open the matching `.codex/skills/<skill-name>/SKILL.md` before editing.
+3. Open the matching `.agents/skills/<skill-name>/SKILL.md` before editing.
 4. Use multiple specialized skills when the change spans multiple config areas.
 5. Include `cross-platform-guardian` when paths, shell startup, installed tools, file linking, or platform conditionals are involved.
 6. Ask one concise clarifying question only when the owning tool cannot be inferred.
@@ -55,5 +55,5 @@ When finished, summarize:
 
 - Files changed.
 - Verification command and result.
-- Rollback path, such as reverting a single config file or re-running the link script.
+- Rollback path, such as reverting a single config file or re-running `./bootstrap.sh link`.
 - Any follow-up config changes that are clearly implied by the request.

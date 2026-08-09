@@ -9,33 +9,44 @@ Modern developer configuration with safe installation and Nix package management
 
 ## Installation
 
-Just three commands:
+Clone the repository and run the supported bootstrap entry point:
 
 ```bash
 git clone https://github.com/wcygan/dotfiles.git
 cd dotfiles
-./install.sh
+./bootstrap.sh
 ```
 
-## What Happens During Installation
+The bootstrapper loads Nix, enters the default development shell, and invokes
+the locked Python CLI:
 
-The `install.sh` script performs:
+```bash
+nix develop .#default --command uv run --locked python -m dotfiles_setup install
+```
 
-### Pre-flight Checks
-- Detects your OS (macOS, Ubuntu, or Fedora)
-- Verifies required tools (curl, git)
-- Confirms sudo access if needed
+By default, installation upgrades or adds the repository Nix profile, links
+managed configuration, prepares Rust tooling, and runs verification. Existing
+configuration files are backed up before they are replaced by managed links.
+Interactive Bash and zsh handoff to Fish is deliberately opt-in:
 
-### Installation Steps
-1. **Nix Setup**: Installs Nix package manager via Determinate Systems
-2. **Package Installation**: Installs all tools from `flake.nix`
-3. **Rust Component Setup**: Ensures rustup can resolve `rust-analyzer`
-4. **Configuration Linking**: Symlinks configs to appropriate locations
+```bash
+./bootstrap.sh install --shell-handoff
+```
 
-### Post-flight Verification
-- Confirms all tools are installed
-- Validates configuration files
-- Provides shell-specific next steps
+### Installing Nix
+
+On macOS, if Nix is unavailable, `./bootstrap.sh` opens the Determinate macOS
+installer package. Complete the package installation, start a fresh shell, and
+rerun `./bootstrap.sh`.
+
+On Linux and WSL, installation is explicit:
+
+```bash
+./bootstrap.sh --install-nix --yes
+```
+
+That confirmation is required before the bootstrapper invokes the official
+Determinate installer.
 
 ## What You Get
 
@@ -86,8 +97,12 @@ dotfiles/
 │   ├── starship.toml   # Starship prompt
 │   └── shell-nix.sh    # Bash/zsh compatibility
 ├── scripts/            # Installation scripts
+├── src/dotfiles_setup/  # Python setup CLI modules
+├── tests/               # Pytest and platform test suites
 ├── flake.nix           # Nix package definitions
-├── install.sh          # One-command installer
+├── bootstrap.sh         # Nix bootstrap and CLI bridge
+├── pyproject.toml       # Python project metadata
+├── uv.lock              # Locked Python dependencies
 └── docs/               # This documentation
 ```
 
@@ -103,31 +118,58 @@ dotfiles/
 
 ### Update Packages
 ```bash
-nix flake update
-nix profile upgrade '.*'
+make update
 ```
 
 ### Add New Tools
 Edit `flake.nix`, then:
 ```bash
-nix profile install .
+make profile
 ```
 
-### Repair Rust Editor Components
+### Setup Commands
 ```bash
-make setup-rustup-components
+make install                 # Full setup; same as ./bootstrap.sh
+make link                    # Link managed config only
+make link-dry                # Preview managed link changes
+make git-user                # Configure Git identity
+make setup-rustup-components # Prepare rust-analyzer
+make setup-shell-handoff     # Opt in to Bash/zsh -> Fish handoff
+make verify                  # Verify configured environment
+make doctor                  # Read-only diagnostics
+make uninstall               # Remove managed links after confirmation
+make uninstall-dry           # Preview managed-link removal
 ```
 
-### Uninstall Configs
-```bash
-make uninstall
-```
+Each setup target has a direct `./bootstrap.sh <command>` equivalent. The
+bridge consistently executes `nix develop` and `uv run --locked`; use it rather
+than calling project modules from an arbitrary host Python.
 
 ### Run Tests
+
 ```bash
-make test-pre    # Pre-flight checks
-make test-local  # Full test suite
+make test-pre    # Locked Ruff and pytest checks
+make test-local  # Ephemeral-HOME-focused pytest
+make test-shell  # Shell-handoff pytest
+make test-docker # Python Ubuntu/Fedora driver
+make test         # All non-Docker tests
 ```
+
+### Roll Back
+
+`nix profile rollback` restores a previous Nix profile generation. Managed
+links save pre-existing paths with timestamped backup names, and rerunning
+`make link` or `./bootstrap.sh link` is safe. Tag a known-good repository
+revision before a broader migration to retain a straightforward source rollback.
+
+### Python Project Structure
+
+The locked Python project is under `src/dotfiles_setup/`. `cli.py` dispatches
+commands to focused modules for Nix profile updates, configuration links and
+cleanup, doctor checks, Rust setup, shell handoff, and Git identity. Tests live
+under `tests/`; `pyproject.toml` and `uv.lock` define the reproducible Python
+environment.
+
 
 ## Troubleshooting
 

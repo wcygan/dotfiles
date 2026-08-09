@@ -1,58 +1,51 @@
 # Test Suite
 
-Preflight and integration tests for the tracked dotfiles configuration.
+Locked Python and platform tests for the tracked dotfiles configuration.
 
 ## Quick Start
 
 ```bash
-cd tests/
+# Locked Ruff and complete pytest suite
+make test-pre
 
-# Pre-flight check (no changes)
-./test-fish-setup.sh
+# Ephemeral-HOME-focused pytest suite
+make test-local
 
-# Local isolated test (temp HOME)
-./test-ephemeral.sh
+# Shell handoff pytest suite (Bash/zsh -> Fish)
+make test-shell
 
-# Shell handoff test (bash/zsh → fish)
-./test-shell-handoff.sh
+# All non-Docker tests
+make test
 
-# Docker test (full isolation)
-./test-docker.sh
+# Python driver across Ubuntu and Fedora
+make test-docker
 ```
 
 ## Test Descriptions
 
-### `test-fish-setup.sh`
-- Validates configuration without making changes
-- Checks flake.nix, config files, and dependencies
-- Shows what will be installed
+### `make test-pre`
+- Runs Ruff and the complete locked pytest suite
+- Exercises the Python CLI and its modules without changing a real home
+- Is the first required check for code and documentation changes
 
-### `test-ephemeral.sh` 
-- Creates temporary HOME directory
-- Tests fish config loading in isolation
-- No system changes, automatic cleanup
+### `make test-local`
+- Runs the pytest checks that focus on an ephemeral `HOME`
+- Covers managed-link behavior without changing your real configuration
 
-### `test-cleanup-symlinks.sh`
-- Creates an isolated HOME directory
-- Verifies cleanup removes only active installer-managed links
-- Confirms legacy Claude and machine-local Codex paths are preserved
+### `make test-shell`
+- Runs the Python shell-handoff test suite
+- Covers interactive Bash/zsh -> Fish behavior without modifying startup files
 
-### `test-shell-handoff.sh`
-- Tests bash/zsh → fish handoff for interactive sessions
-- Verifies non-interactive commands stay in bash/zsh
-- Validates VAR=value syntax compatibility
-- Helps verify setup before running `chsh`
-
-### `test-docker.sh`
-- Complete isolation in Docker container
-- Full Nix + Fish environment
-- Run `./run-tests.fish` inside container for automated tests
+### `make test-docker`
+- Runs the Python driver against Ubuntu and Fedora containers
+- Provides the cross-platform acceptance check; it is separate from `make test`
 
 ## After Testing
 
 Once tests pass, install:
 ```bash
-cd ..
-./scripts/link-config.sh  # Create symlinks
+./bootstrap.sh            # Full default setup
+# or, for links only:
+./bootstrap.sh link
 exec fish -l              # Start fish
 ```

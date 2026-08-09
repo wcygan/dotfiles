@@ -85,7 +85,7 @@ Report:
 ## Next Steps
 
 - Review and commit `flake.lock`.
-- Install the updated packages with `make install-packages` or `nix profile install . --priority 5`.
+- Install the updated packages with `make profile` (or `./bootstrap.sh profile`).
 ```
 
 ## Constraints

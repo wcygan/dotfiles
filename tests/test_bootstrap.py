@@ -103,13 +103,14 @@ def test_linux_installer_requires_nix_to_become_available(
     assert "nix is not available" in result.stderr
 
 
-def test_unknown_commands_are_rejected(command_bin: Path, tmp_path: Path) -> None:
-    write_executable(command_bin / "nix", "exit 0")
+def test_commands_are_forwarded_without_shell_dispatch(command_bin: Path, tmp_path: Path) -> None:
+    write_executable(command_bin / "nix", 'printf "%s\\n" "$@" > "$BOOTSTRAP_CAPTURE"')
 
     result = run_bootstrap(command_bin, tmp_path, "unknown-command")
 
-    assert result.returncode == 2
-    assert "Unknown setup command" in result.stderr
+    assert result.returncode == 0
+    captured = (tmp_path / "capture").read_text().splitlines()
+    assert captured[-1] == "unknown-command"
 
 
 def test_command_options_are_forwarded_to_python(command_bin: Path, tmp_path: Path) -> None:

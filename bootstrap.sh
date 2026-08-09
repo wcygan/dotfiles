@@ -84,15 +84,8 @@ if ((${#forwarded_args[@]} == 0)); then
   forwarded_args=(install)
 fi
 
-case "${forwarded_args[0]}" in
-  install | doctor | verify | profile | rustup | link | uninstall | shell-handoff | git-user) ;;
-  *)
-    echo "Unknown setup command: ${forwarded_args[0]}" >&2
-    exit 2
-    ;;
-esac
-
 cd "$REPO_ROOT"
+unset VIRTUAL_ENV
 exec nix \
   --extra-experimental-features "nix-command flakes" \
   develop .#default \

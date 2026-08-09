@@ -3,24 +3,35 @@
 ## Quick Start
 
 ```bash
-# Build and run the test container
-./test-docker.sh
-
-# Once inside the container, run:
-./run-tests.fish
+# Run the Python Ubuntu/Fedora test driver from the repository root
+make test-docker
 ```
+
+The Docker target is an acceptance check for the locked Python setup CLI. It
+does not open an interactive container and it is intentionally separate from
+the local `make test` suite.
 
 ## What Gets Tested Automatically
 
-The `run-tests.fish` script checks:
-- ✅ Fish configuration loads properly
-- ✅ Nix environment variables are set
-- ✅ Custom functions (nix-try, nix-install) are available
-- ✅ Abbreviations are created
-- ✅ Direnv hook is configured (if available)
-- ✅ Starship prompt is initialized (if available)
+The Python driver checks the supported bootstrap and setup behavior on Ubuntu
+and Fedora. Use `make test-pre` for locked Ruff and pytest checks, `make
+test-local` for ephemeral-HOME-focused pytest, and `make test-shell` for the
+shell-handoff pytest suite.
 
-## Manual Testing Checklist
+## Manual Container Debugging
+
+When the driver fails, inspect the platform Dockerfile selected by the driver
+and reproduce the failing command with `./bootstrap.sh`. On Linux, a missing
+Nix installation requires the explicit bootstrap authorization:
+
+```bash
+./bootstrap.sh --install-nix --yes
+```
+
+Then run the direct CLI-equivalent command, for example `./bootstrap.sh
+verify` or `./bootstrap.sh install`.
+
+## Configuration Inspection Checklist
 
 ### 1. Basic Functionality
 ```fish
@@ -102,18 +113,6 @@ find ~/.config/fish -type f -name "*.fish" | sort
 
 ## Expected Output Summary
 
-When you run `./run-tests.fish`, you should see:
-- Multiple "✅" marks for passed tests
-- Details about loaded configurations
-- A summary showing most/all tests passed
-
-Some tests might show "ℹ️" (info) instead of pass/fail - this is normal in the Docker environment where certain tools might not be installed.
-
-## Exit the Container
-
-```fish
-exit
-# or press Ctrl+D
-```
-
-The container is automatically removed after exit (--rm flag), leaving no traces on your system.
+`make test-docker` returns the Python driver's pass/fail result for both
+platforms. It may download Nix and container images, so run it after the faster
+local suites have passed.

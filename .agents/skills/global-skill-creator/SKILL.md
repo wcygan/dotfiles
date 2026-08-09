@@ -1,36 +1,30 @@
 ---
 name: global-skill-creator
-description: "Create global Codex skills distributed through this dotfiles repository. Use when adding reusable Codex workflows under config/codex/skills or adapting a project-local skill for global use."
+description: "Route reusable Codex skill requests from dotfiles to the authoritative agent-skills repository. Use when a request mentions a global skill, reusable workflow, or legacy global command."
 ---
 
-# Global Skill Creator
+# Global Skill Creator Compatibility Skill
 
-## Goal
+## Outcome
 
-Create a portable global Codex skill under `config/codex/skills/`.
-
-Success means the skill has valid Codex frontmatter, useful trigger language, focused instructions, optional resources only when they add value, and a passing local validator run.
-
-Stop when the skill is created or updated, validation passes, and the user has a concrete invocation example.
+Keep this repository free of global-skill packaging, installation, validation,
+and vendoring. Reusable skills belong in the dedicated `agent-skills`
+repository; dotfiles-specific operating skills belong in `.agents/skills/`.
 
 ## Workflow
 
-1. Read the current Codex skill-authoring instructions exposed in the session, then inspect an active tracked skill and `tests/test-codex-skills.sh`. Do not depend on the system-managed, gitignored `config/codex/skills/.system` directory.
-2. Ask for the skill's reusable purpose, trigger scenarios, and whether it needs references, scripts, templates, or assets.
-3. Create `config/codex/skills/<skill-name>/` with a matching `SKILL.md` frontmatter `name`.
-4. Use concise `description` text that front-loads the key task and trigger words.
-5. Keep detailed docs in `references/`, deterministic helpers in `scripts/`, and output resources in `assets/`.
-6. Add `agents/openai.yaml` when UI metadata or explicit-invocation policy is useful. Keep it to the supported `interface` and `policy` fields used by active skills.
-7. Add the skill to the expected inventory in `tests/test-codex-skills.sh` and run:
+1. Classify the workflow. Use `.agents/skills/<name>/` only when it is specific
+   to this dotfiles repository.
+2. For a portable workflow, direct the work to the authoritative
+   `agent-skills` repository. Do not create a global catalog, modify an
+   installer, or add vendor metadata in this repository.
+3. Follow the selected repository's current skill-authoring and validation
+   instructions. Machine-local Codex and Pi state is outside this repository.
+4. Validate a dotfiles-local skill with the narrowest relevant repository
+   checks, normally `make test-pre`.
 
-```bash
-./tests/test-codex-skills.sh
-```
+## Migration Note
 
-8. Run `make test-pre` for every global skill change.
-
-## Dotfiles Context
-
-This repository tracks global Codex skills in `config/codex/skills`. `scripts/link-config.sh` links that directory into `${CODEX_HOME:-~/.codex}/skills`.
-
-Keep global skills project-agnostic. Use `.codex/skills` for workflows that only make sense inside this dotfiles repository.
+The historical global-skill installer and linked catalog were retired. This
+compatibility skill preserves the old name while preventing new work from being
+placed in dotfiles.

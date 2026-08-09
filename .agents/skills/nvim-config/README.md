@@ -21,7 +21,7 @@ The skill activates automatically when you mention:
 ## File Structure
 
 ```
-.codex/skills/nvim-config/
+.agents/skills/nvim-config/
 ├── SKILL.md              # Main skill instructions
 ├── REFERENCE.md          # Advanced configuration patterns
 ├── README.md             # This file
@@ -60,7 +60,7 @@ config/nvim/
 Run the bootstrap script to create a complete configuration:
 
 ```bash
-.codex/skills/nvim-config/scripts/setup-nvim.sh
+.agents/skills/nvim-config/scripts/setup-nvim.sh
 ```
 
 This creates:
@@ -295,7 +295,7 @@ Should point to `dotfiles/config/nvim`
 
 1. **Bootstrap configuration:**
    ```bash
-   .codex/skills/nvim-config/scripts/setup-nvim.sh
+   .agents/skills/nvim-config/scripts/setup-nvim.sh
    ```
 
 2. **Open Neovim:**

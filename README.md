@@ -7,7 +7,32 @@ Modern developer configuration with safe installation and Nix package management
 ```bash
 git clone https://github.com/wcygan/dotfiles.git
 cd dotfiles
-./install.sh
+./bootstrap.sh
+```
+
+`bootstrap.sh` is the supported entry point. With Nix available, it enters the
+repository development shell and runs the locked Python CLI:
+
+```bash
+nix develop .#default --command uv run --locked python -m dotfiles_setup install
+```
+
+The default install upgrades or adds this repository's Nix profile, links the
+managed configuration (backing up existing files), prepares Rust tooling, and
+verifies the result. It does **not** edit Bash or zsh startup files. Opt in to
+that behavior only when wanted:
+
+```bash
+./bootstrap.sh install --shell-handoff
+```
+
+On macOS, if Nix is missing, `./bootstrap.sh` opens the Determinate macOS
+installer package and exits; finish that installer, start a fresh shell, then
+rerun the command. On Linux or WSL, explicitly authorize the Determinate Nix
+install instead:
+
+```bash
+./bootstrap.sh --install-nix --yes
 ```
 
 Full documentation available at: https://wcygan.github.io/dotfiles/
@@ -33,8 +58,12 @@ dotfiles/
 │   ├── starship.toml   # Starship prompt
 │   └── shell-nix.sh    # Bash/zsh compatibility
 ├── scripts/            # Installation scripts
+├── src/dotfiles_setup/  # Locked Python setup CLI
+├── tests/               # Python and platform test suites
 ├── flake.nix           # Nix package definitions
-├── install.sh          # One-command installer
+├── bootstrap.sh         # Nix bootstrap and Python CLI bridge
+├── pyproject.toml       # Python project metadata and tool configuration
+├── uv.lock              # Locked Python dependencies
 └── docs/               # Documentation site
 ```
 
@@ -54,7 +83,9 @@ repository.
 ### Agent Skills
 
 Dotfiles-specific operating skills live in `.agents/skills/`; reusable skills
-belong in the dedicated `agent-skills` repository. Codex is managed narrowly:
+are authored and published from the dedicated `agent-skills` repository, which
+is authoritative. This repository neither vendors nor installs a global skill
+catalog. Codex is managed narrowly:
 `config/codex/config.toml` is a portable template copied to
 `${CODEX_HOME:-~/.codex}/config.toml` only when missing, and
 `config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`. Skills,
@@ -62,8 +93,8 @@ custom agents, and the rest of `CODEX_HOME` remain machine-local state. Codex
 may write machine-specific `[projects]` trust entries into the local config;
 keep those out of the tracked template.
 
-This repository does not install or link global agent skills. Pi credentials,
-sessions, models, and any global catalog remain machine-local state.
+Pi credentials, sessions, models, and global catalogs remain machine-local
+state.
 
 ### npm Global Tools
 
@@ -143,28 +174,60 @@ For troubleshooting concurrent direnv rebuilds and Nix daemon issues, the agent 
 
 ## Nix Installation (macOS)
 
-Use the **Determinate Systems macOS Installer** rather than the shell script. Download it from [docs.determinate.systems](https://docs.determinate.systems/), run the installer, then `./install.sh` to set up dotfiles. The installer handles macOS integration, automatic updates, and Apple Silicon optimization.
+Use the **Determinate Systems macOS Installer**. When Nix is absent,
+`./bootstrap.sh` opens its package URL and tells you to rerun after the package
+installation completes. The package handles macOS integration, automatic
+updates, and Apple Silicon optimization.
+
+For Linux and WSL, the bootstrapper only invokes the official Determinate
+installer after the explicit `--install-nix --yes` confirmation shown above.
+
+## Setup and Verification
+
+Use the Make targets for the common workflow, or pass the matching command to
+`./bootstrap.sh` directly:
+
+```bash
+make install                 # ./bootstrap.sh
+make link                    # ./bootstrap.sh link
+make link-dry                # ./bootstrap.sh link --dry-run
+make git-user                # ./bootstrap.sh git-user
+make setup-shell-handoff     # ./bootstrap.sh shell-handoff
+make setup-rustup-components # ./bootstrap.sh rustup
+make verify                  # ./bootstrap.sh verify
+make doctor                  # ./bootstrap.sh doctor
+make uninstall               # ./bootstrap.sh uninstall
+make uninstall-dry           # ./bootstrap.sh uninstall --dry-run
+```
+
+The Python package lives in `src/dotfiles_setup/`: `cli.py` owns command
+parsing, while focused modules own profile management, linking and cleanup,
+doctor checks, Rust setup, shell handoff, and Git identity. Run a command
+inside the Nix development environment with `uv run --locked python -m
+dotfiles_setup <command>`; normally, prefer `bootstrap.sh` so the Nix boundary
+is applied consistently.
+
+To roll back a package change, use `nix profile rollback`. Configuration links
+are safe to rerun and pre-existing files are kept as timestamped backups. Keep
+a known-good Git tag before a larger configuration migration so the repository
+state itself is also easy to restore.
 
 ## Quick Reference
 
 ```bash
-# Update packages
-nix flake update
-nix profile upgrade '.*'
+# Update the flake and managed profile
+make update
 
 # Add new packages
-# Edit flake.nix, then:
-nix profile install .
+# Edit flake.nix, then update the managed profile:
+make profile
 
-# Repair Rust editor components
-make setup-rustup-components
-
-# Uninstall (configs only, keeps Nix)
-make uninstall
-
-# Run tests
-make test-pre
-make test-local
+# Run the locked Python checks
+make test-pre      # Ruff plus the complete pytest suite
+make test-local    # ephemeral-HOME-focused pytest suite
+make test-shell    # shell-handoff pytest suite
+make test-docker   # Python Ubuntu/Fedora driver
+make test           # every non-Docker test
 
 # Start documentation dev server
 make docs

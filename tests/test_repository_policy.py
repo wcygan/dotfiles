@@ -6,6 +6,27 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_root_agent_instructions_use_live_progressive_disclosure() -> None:
+    agents = REPO_ROOT.joinpath("AGENTS.md").read_text()
+    operations = REPO_ROOT.joinpath(
+        ".agents/skills/dotfiles-operations/SKILL.md"
+    ).read_text()
+    migrations = REPO_ROOT.joinpath(
+        ".agents/skills/dotfiles-operations/references/migrations.md"
+    )
+
+    assert "$dotfiles-operations" in agents
+    assert "$agent-skills-integration" in agents
+    assert "$config-change" in agents
+    assert "$fish-shell-config" in agents
+    assert "$nix-manager" in agents
+    assert "fish-aliases-policy" not in agents
+    assert "nix-direnv-perf" not in agents
+    assert migrations.is_file()
+    assert "references/migrations.md" in operations
+    assert "## Migrations" not in agents
+
+
 def test_bootstrap_is_the_only_root_setup_shell_entrypoint() -> None:
     automation_scripts = sorted(
         [

@@ -6,6 +6,7 @@ from collections.abc import Callable, Sequence
 from contextlib import suppress
 from pathlib import Path
 
+from dotfiles_setup.agent_skills import install_agent_skills, verify_agent_skills
 from dotfiles_setup.cleanup import cleanup_links
 from dotfiles_setup.doctor import run_doctor
 from dotfiles_setup.errors import SetupError
@@ -34,6 +35,16 @@ def build_parser() -> argparse.ArgumentParser:
     subcommands.add_parser("profile", help="Install or upgrade the Nix package profile")
     subcommands.add_parser(
         "rustup", help="Install rust-analyzer for the repository-pinned toolchain"
+    )
+
+    agent_skills_parser = subcommands.add_parser(
+        "agent-skills",
+        help="Install the repository-pinned Codex user skill catalog",
+    )
+    agent_skills_parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Verify the pinned user skill catalog without changing it",
     )
 
     link_parser = subcommands.add_parser("link", help="Link repository configuration")
@@ -83,6 +94,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _run_mutation("profile", lambda _journal: print(ensure_profile(REPO_ROOT)))
     if args.command == "rustup":
         return _run_mutation("rustup", lambda _journal: print(setup_rustup(REPO_ROOT)))
+    if args.command == "agent-skills":
+        if args.check:
+            try:
+                print(verify_agent_skills(REPO_ROOT))
+                return 0
+            except SetupError as error:
+                print(f"agent-skills check failed: {error}")
+                return 1
+        return _run_mutation(
+            "agent-skills", lambda _journal: print(install_agent_skills(REPO_ROOT))
+        )
     if args.command == "link":
         if args.dry_run:
             try:

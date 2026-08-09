@@ -298,6 +298,11 @@ def run_recovery(
         output(
             "Package changes are not reversed automatically; use `nix profile rollback` if needed."
         )
+    if manifest.get("command") == "agent-skills":
+        output(
+            "Agent skill changes are not reversed automatically; inspect them with "
+            "`./bootstrap.sh agent-skills --check` before acknowledging recovery."
+        )
     if not apply:
         output("Dry run only. Apply with: ./bootstrap.sh recover --apply --yes")
         return 0

@@ -6,7 +6,7 @@ NIX_DEV := nix --extra-experimental-features "nix-command flakes" develop --no-w
 UV_RUN := $(NIX_DEV) uv run --locked
 
 .PHONY: \
-	help install profile install-packages link link-dry git-user rustup setup-rustup-components \
+	help install profile install-packages agent-skills agent-skills-check link link-dry git-user rustup setup-rustup-components \
 	setup-shell-handoff shell-handoff uninstall uninstall-dry verify doctor \
 	test test-pre test-local test-shell test-docker docker-test docker-fedora docker-ubuntu \
 	test-syntax test-eval docs-build latest update clean docs quickstart
@@ -17,6 +17,8 @@ help:
 	@echo "Setup:"
 	@echo "  make install                 - Install profile, links, Rust tools, and verify"
 	@echo "  make profile                 - Install or upgrade the Nix package profile"
+	@echo "  make agent-skills            - Install the pinned Codex user skill catalog"
+	@echo "  make agent-skills-check      - Verify the pinned Codex user skill catalog"
 	@echo "  make link                    - Link managed configuration"
 	@echo "  make link-dry                - Preview managed configuration links"
 	@echo "  make git-user                - Configure the local Git identity"
@@ -40,6 +42,12 @@ profile:
 	@$(BOOTSTRAP) profile
 
 install-packages: profile
+
+agent-skills:
+	@$(BOOTSTRAP) agent-skills
+
+agent-skills-check:
+	@$(BOOTSTRAP) agent-skills --check
 
 link:
 	@$(BOOTSTRAP) link

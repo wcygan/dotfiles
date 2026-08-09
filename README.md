@@ -83,14 +83,32 @@ repository.
 
 Dotfiles-specific operating skills live in `.agents/skills/`; reusable skills
 are authored and published from the dedicated `agent-skills` repository, which
-is authoritative. This repository neither vendors nor installs a global skill
-catalog. Codex is managed narrowly:
+is authoritative. This repository pins that external collection by commit and
+installs it as a Codex user-scope catalog without vendoring its source:
+
+```bash
+./bootstrap.sh agent-skills
+./bootstrap.sh agent-skills --check
+```
+
+`agent-skills.lock.toml` records the repository, full commit SHA, agent, and
+scope. Installation uses `gh skill install --agent codex --scope user --all
+--pin <commit> --force`, then verifies every skill through `gh skill list`
+source, version, pin, scope, and destination metadata. Existing same-name skills
+from another source or location stop the operation instead of being overwritten.
+The current GitHub CLI maps Codex user scope to `~/.codex/skills`; author changes in the
+`agent-skills` repository, advance the tracked pin intentionally, and rerun the
+command. GitHub CLI does not prune files or skill directories removed upstream,
+so inspect retired skills separately when advancing the pin.
+
+Other Codex state is managed narrowly:
 `config/codex/config.toml` is a portable template copied to
 `${CODEX_HOME:-~/.codex}/config.toml` only when missing, and
 `config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`. Skills,
-custom agents, and the rest of `CODEX_HOME` remain machine-local state. Codex
-may write machine-specific `[projects]` trust entries into the local config;
-keep those out of the tracked template.
+the GitHub CLI skill lock, custom agents, and the rest of `CODEX_HOME` remain
+machine-local outputs rather than repository content. Codex may write
+machine-specific `[projects]` trust entries into the local config; keep those
+out of the tracked template.
 
 Pi credentials, sessions, models, and global catalogs remain machine-local
 state.

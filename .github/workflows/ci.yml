@@ -29,7 +29,7 @@ jobs:
             experimental-features = nix-command flakes
 
       - name: Configure Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@8a218f9e264e9c3803c9a1ee1c30d8e4ab55be63 # v2
+        uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d # v14
 
       - name: Run canonical syntax and quality checks
         env:
@@ -79,7 +79,7 @@ jobs:
             experimental-features = nix-command flakes
 
       - name: Configure Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@8a218f9e264e9c3803c9a1ee1c30d8e4ab55be63 # v2
+        uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d # v14
 
       - name: Evaluate every declared system
         run: make test-eval

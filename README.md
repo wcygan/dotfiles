@@ -248,6 +248,16 @@ updates for human review; no automatic merge is configured. Platform refreshes
 are evaluated against the official [Ubuntu release lifecycle](https://wiki.ubuntu.com/Releases)
 and [Fedora release lifecycle](https://fedoraproject.org/wiki/User%3AJkurik/Fedora_Release_Life_Cycle).
 
+Pull-request CI calls the same repository targets used locally: locked quality
+and syntax checks, four-system flake evaluation, and the canonical Ubuntu/Fedora
+Docker driver. Docker builds use separate GitHub Actions cache scopes, load the
+resulting image, and run strict installation plus Fish/direnv runtime smoke.
+Pytest JUnit reports are retained on both success and failure. Documentation
+changes build on pull requests, but Pages deployment is restricted to a push to
+`main`. Native macOS 15 arm64 acceptance runs weekly or manually in an isolated
+temporary home; Intel macOS 15 acceptance is manual so routine pull requests
+remain Linux-only and economical.
+
 The Python package lives in `src/dotfiles_setup/`: `cli.py` owns command
 parsing, while focused modules own profile management, linking and cleanup,
 advisory diagnostics, strict verification, Rust setup, shell handoff, and Git
@@ -277,9 +287,12 @@ make profile
 make test-pre      # Ruff plus the complete pytest suite
 make test-local    # ephemeral-HOME-focused pytest suite
 make test-shell    # shell-handoff pytest suite
+make test-syntax   # Bash and Fish parsing
+make test-eval     # all four flake systems, evaluation only
 make test-docker   # Python Ubuntu/Fedora driver
 make test           # every non-Docker test
 
-# Start documentation dev server
+# Documentation
+make docs-build    # clean install and production build
 make docs
 ```

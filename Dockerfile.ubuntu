@@ -10,7 +10,7 @@ ARG GID=1001
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      bash ca-certificates coreutils findutils git make procps sudo && \
+      bash ca-certificates coreutils findutils git hostname make procps sudo && \
     rm -rf /var/lib/apt/lists/* && \
     groupadd --gid "${GID}" "${USER}" && \
     useradd --create-home --uid "${UID}" --gid "${GID}" --shell /bin/bash "${USER}" && \
@@ -28,17 +28,15 @@ WORKDIR /home/${USER}/app
 ENV NIX_REMOTE=local
 ENV PATH="/home/${USER}/.nix-profile/bin:/nix/var/nix/profiles/default/bin:${PATH}"
 
-COPY --chown=${USER}:${USER} . .
+COPY --chown=${USER}:${USER} bootstrap.sh flake.nix flake.lock pyproject.toml uv.lock rust-toolchain.toml README.md ./
+COPY --chown=${USER}:${USER} src ./src
+COPY --chown=${USER}:${USER} config ./config
 
 # Keep the cold install in its own cacheable layer so test-only changes do not
 # rebuild the entire Nix profile.
 RUN ./bootstrap.sh install
 
-RUN nix --extra-experimental-features "nix-command flakes" develop --no-write-lock-file .#default --command \
-      uv run --locked pytest && \
-    fish -lc './tests/docker-test-commands.fish'
-
 # Warm path: the same setup operation must be idempotent.
-RUN ./bootstrap.sh install && ./bootstrap.sh doctor
+RUN ./bootstrap.sh install && ./bootstrap.sh doctor && ./bootstrap.sh verify
 
 CMD ["/bin/bash"]

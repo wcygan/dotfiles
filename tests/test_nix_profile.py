@@ -47,6 +47,12 @@ def test_find_profile_matches_repository_file_url(tmp_path: Path) -> None:
     assert find_profile_element(elements, tmp_path) == "local-checkout"
 
 
+def test_find_profile_matches_nix_path_url(tmp_path: Path) -> None:
+    elements = {"local-checkout": {"originalUrl": f"path:{tmp_path.resolve()}"}}
+
+    assert find_profile_element(elements, tmp_path) == "local-checkout"
+
+
 def test_existing_profile_is_upgraded(tmp_path: Path) -> None:
     runner = RecordingRunner(
         {

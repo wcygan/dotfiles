@@ -63,7 +63,7 @@ def _original_path(original_url: object) -> Path | None:
         return None
     normalized = original_url.removeprefix("git+")
     parsed = urlparse(normalized)
-    if parsed.scheme != "file":
+    if parsed.scheme not in {"file", "path"}:
         return None
     return Path(unquote(parsed.path)).resolve()
 

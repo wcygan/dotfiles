@@ -1,0 +1,12 @@
+**
+!bootstrap.sh
+!flake.nix
+!flake.lock
+!pyproject.toml
+!uv.lock
+!rust-toolchain.toml
+!README.md
+!src
+!src/**
+!config
+!config/**

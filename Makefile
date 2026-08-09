@@ -9,7 +9,7 @@ UV_RUN := $(NIX_DEV) uv run --locked
 	help install profile install-packages link link-dry git-user rustup setup-rustup-components \
 	setup-shell-handoff shell-handoff uninstall uninstall-dry verify doctor \
 	test test-pre test-local test-shell test-docker docker-test docker-fedora docker-ubuntu \
-	latest update clean docs quickstart
+	test-syntax test-eval docs-build latest update clean docs quickstart
 
 help:
 	@echo "Nix Dotfiles Management"
@@ -28,7 +28,10 @@ help:
 	@echo ""
 	@echo "Validation:"
 	@echo "  make test                    - Run the locked Python test suite in the Nix dev shell"
+	@echo "  make test-syntax             - Parse shell and workflow-owned source files"
+	@echo "  make test-eval               - Evaluate all four flake systems without building"
 	@echo "  make test-docker             - Build Ubuntu and Fedora validation images"
+	@echo "  make docs-build              - Install and build documentation reproducibly"
 
 install:
 	@$(BOOTSTRAP) install
@@ -80,8 +83,16 @@ test-local:
 test-shell:
 	@$(UV_RUN) pytest tests/test_shell_handoff.py tests/test_fish_config.py
 
+test-syntax:
+	@bash -n bootstrap.sh config/shell-nix.sh
+	@$(NIX_DEV) bash -c 'for file in config/fish/config.fish config/fish/conf.d/*.fish config/fish/functions/*.fish; do fish --no-execute "$$file" || exit; done'
+	@make --dry-run help >/dev/null
+
+test-eval:
+	@nix --extra-experimental-features "nix-command flakes" flake check --all-systems --no-build --no-write-lock-file
+
 test-docker:
-	@$(UV_RUN) python tests/docker_matrix.py
+	@python3 tests/docker_matrix.py $(if $(DOCKER_CASE),--case $(DOCKER_CASE),)
 
 docker-test: test-docker
 
@@ -106,5 +117,9 @@ clean:
 
 docs:
 	@npm --prefix docs start
+
+docs-build:
+	@npm --prefix docs ci
+	@npm --prefix docs run build
 
 quickstart: install test-pre

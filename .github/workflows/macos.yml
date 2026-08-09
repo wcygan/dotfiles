@@ -1,0 +1,119 @@
+name: macOS Acceptance
+
+on:
+  schedule:
+    - cron: '41 10 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  arm64:
+    name: macOS 15 arm64
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
+        with:
+          extra-conf: |
+            experimental-features = nix-command flakes
+
+      - name: Configure Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@8a218f9e264e9c3803c9a1ee1c30d8e4ab55be63 # v2
+
+      - name: Run locked tests and isolated setup acceptance
+        env:
+          PYTEST_ADDOPTS: --junitxml=reports/pytest-macos-arm64.xml
+        run: |
+          mkdir -p reports
+          make test-syntax
+          make test-pre
+          isolated_home="$RUNNER_TEMP/dotfiles-home-arm64"
+          mkdir -p "$isolated_home"
+          export HOME="$isolated_home"
+          export XDG_CONFIG_HOME="$isolated_home/.config"
+          export XDG_CACHE_HOME="$isolated_home/.cache"
+          export XDG_STATE_HOME="$isolated_home/.local/state"
+          export CODEX_HOME="$isolated_home/.codex"
+          export RUSTUP_HOME="$isolated_home/.rustup"
+          export CARGO_HOME="$isolated_home/.cargo"
+          ./bootstrap.sh install
+          ./bootstrap.sh doctor
+          ./bootstrap.sh verify
+
+      - name: Upload pytest report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pytest-macos-arm64
+          path: reports/pytest-macos-arm64.xml
+          if-no-files-found: warn
+
+      - name: Safe failure diagnostics
+        if: failure()
+        run: |
+          df -h / /nix || true
+          nix store info || true
+
+      - name: Verify tracked inputs are unchanged
+        if: always()
+        run: git diff --exit-code
+
+  intel:
+    name: macOS 15 Intel (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
+        with:
+          extra-conf: |
+            experimental-features = nix-command flakes
+
+      - name: Configure Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@8a218f9e264e9c3803c9a1ee1c30d8e4ab55be63 # v2
+
+      - name: Run locked tests and isolated setup acceptance
+        env:
+          PYTEST_ADDOPTS: --junitxml=reports/pytest-macos-intel.xml
+        run: |
+          mkdir -p reports
+          make test-syntax
+          make test-pre
+          isolated_home="$RUNNER_TEMP/dotfiles-home-intel"
+          mkdir -p "$isolated_home"
+          export HOME="$isolated_home"
+          export XDG_CONFIG_HOME="$isolated_home/.config"
+          export XDG_CACHE_HOME="$isolated_home/.cache"
+          export XDG_STATE_HOME="$isolated_home/.local/state"
+          export CODEX_HOME="$isolated_home/.codex"
+          export RUSTUP_HOME="$isolated_home/.rustup"
+          export CARGO_HOME="$isolated_home/.cargo"
+          ./bootstrap.sh install
+          ./bootstrap.sh doctor
+          ./bootstrap.sh verify
+
+      - name: Upload pytest report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pytest-macos-intel
+          path: reports/pytest-macos-intel.xml
+          if-no-files-found: warn
+
+      - name: Safe failure diagnostics
+        if: failure()
+        run: |
+          df -h / /nix || true
+          nix store info || true
+
+      - name: Verify tracked inputs are unchanged
+        if: always()
+        run: git diff --exit-code

@@ -28,16 +28,29 @@ CASES = (
 )
 
 
-def build_command(case: DockerCase) -> list[str]:
-    return [
+def build_command(case: DockerCase, *, environ: dict[str, str] | None = None) -> list[str]:
+    values = os.environ if environ is None else environ
+    command = [
         "docker",
+        "buildx",
         "build",
+        "--load",
+        "--progress=plain",
         "-f",
         str(REPO_ROOT / case.dockerfile),
         "-t",
         case.image_tag,
         str(REPO_ROOT),
     ]
+    if values.get("GITHUB_ACTIONS") == "true":
+        scope = f"dotfiles-{case.name}"
+        command[4:4] = [
+            "--cache-from",
+            f"type=gha,scope={scope}",
+            "--cache-to",
+            f"type=gha,mode=max,scope={scope}",
+        ]
+    return command
 
 
 def smoke_command(case: DockerCase) -> list[str]:
@@ -50,9 +63,13 @@ def smoke_command(case: DockerCase) -> list[str]:
             "test -f config/fish/conf.d/10-nix.fish",
             "test -x bootstrap.sh",
             "bash -n bootstrap.sh",
-            "command -v curl",
-            "command -v git",
-            "command -v make",
+            "./bootstrap.sh verify",
+            "command -v fish",
+            "command -v rg",
+            "command -v nvim",
+            "fish --private --interactive --command "
+            "'functions -q nix-try; and functions -q __direnv_export_eval; "
+            "and set -q NIX_CONFIG'",
         )
     )
     return [
@@ -92,6 +109,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--dry-run", action="store_true", help="print commands without invoking Docker"
     )
+    parser.add_argument(
+        "--case",
+        choices=[case.name for case in CASES],
+        help="run only one distro case (used by the CI matrix)",
+    )
     return parser.parse_args(argv)
 
 
@@ -104,7 +126,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return 2
 
-    for case in CASES:
+    selected = tuple(case for case in CASES if args.case in {None, case.name})
+    for case in selected:
         commands = (build_command(case), smoke_command(case))
         for command in commands:
             print("+", " ".join(command))

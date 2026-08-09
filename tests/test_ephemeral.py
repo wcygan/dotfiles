@@ -46,6 +46,13 @@ def test_fish_loads_the_linked_configuration_in_an_ephemeral_home(tmp_path: Path
         string match -q '*nix-command flakes*' -- $NIX_CONFIG; or exit 14
         abbr --show | string match -q '*nix-update*'; or exit 15
         contains $HOME/.nix-profile/bin $PATH; or exit 16
+        functions -q __direnv_export_eval; or exit 17
+        set -l try_output (nix-try 2>&1)
+        test $status -eq 1; or exit 18
+        string match -q 'Usage: nix-try <package>' -- $try_output; or exit 19
+        set -l install_output (nix-install 2>&1)
+        test $status -eq 1; or exit 20
+        string match -q 'Usage: nix-install <package>' -- $install_output; or exit 21
     """
     environment = {
         **os.environ,

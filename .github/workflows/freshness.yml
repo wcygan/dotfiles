@@ -35,4 +35,5 @@ jobs:
           docker run --rm "$IMAGE_TAG" /bin/bash -lc './bootstrap.sh verify'
 
       - name: Verify tracked inputs are unchanged
+        if: always()
         run: git diff --exit-code

@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from dotfiles_setup import cli
-from dotfiles_setup.links import link_config
+from dotfiles_setup.links import link_config, managed_links
 
 
 def environment(
@@ -21,6 +21,8 @@ def environment(
 
 def test_links_use_absolute_sources_and_are_idempotent(tmp_path: Path) -> None:
     repo = Path.cwd()
+    authoritative_agents = repo / "config" / "agents" / "AGENTS.md"
+    compatibility_agents = repo / "config" / "codex" / "AGENTS.md"
     home = tmp_path / "home"
     xdg = tmp_path / "xdg"
     codex = tmp_path / "codex"
@@ -31,7 +33,10 @@ def test_links_use_absolute_sources_and_are_idempotent(tmp_path: Path) -> None:
 
     assert (xdg / "git").readlink() == (repo / "config" / "git").resolve()
     assert (home / ".tmux.conf").readlink() == (repo / "config" / "tmux" / "tmux.conf").resolve()
-    assert (codex / "AGENTS.md").readlink() == (repo / "config" / "codex" / "AGENTS.md").resolve()
+    assert compatibility_agents.readlink() == Path("../agents/AGENTS.md")
+    assert compatibility_agents.resolve() == authoritative_agents.resolve()
+    assert (home / ".agents" / "AGENTS.md").readlink() == authoritative_agents.resolve()
+    assert (codex / "AGENTS.md").readlink() == authoritative_agents.resolve()
     assert not (codex / "config.toml").is_symlink()
     template = repo / "config" / "codex" / "config.toml"
     assert (codex / "config.toml").read_text() == template.read_text()
@@ -56,6 +61,7 @@ def test_relative_config_overrides_fall_back_inside_home(tmp_path: Path) -> None
     link_config(Path.cwd(), environ=values, system="Linux")
 
     assert (home / ".config" / "git").is_symlink()
+    assert (home / ".agents" / "AGENTS.md").is_symlink()
     assert (home / ".codex" / "AGENTS.md").is_symlink()
     assert not (Path.cwd() / "relative-config").exists()
     assert not (Path.cwd() / "relative-codex").exists()
@@ -77,6 +83,42 @@ def test_existing_files_are_backed_up_and_symlinks_are_replaced(tmp_path: Path) 
     assert backups[0].read_text() == "local git config"
     assert git_destination.is_symlink()
     assert starship_destination.readlink() == (Path.cwd() / "config" / "starship.toml").resolve()
+
+
+def test_existing_shared_agents_file_is_backed_up(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    shared_agents = home / ".agents" / "AGENTS.md"
+    shared_agents.parent.mkdir(parents=True)
+    shared_agents.write_text("local agent instructions")
+
+    link_config(Path.cwd(), environ=environment(home), system="Linux", now=lambda: 123)
+
+    backups = list(shared_agents.parent.glob("AGENTS.md.backup.123.*"))
+    assert len(backups) == 1
+    assert backups[0].read_text() == "local agent instructions"
+    assert shared_agents.readlink() == (Path.cwd() / "config" / "agents" / "AGENTS.md").resolve()
+
+
+def test_codex_home_at_shared_agents_root_has_one_agents_link(tmp_path: Path) -> None:
+    repo = Path.cwd()
+    home = tmp_path / "home"
+    agents_home = home / ".agents"
+    values = environment(home, codex=agents_home)
+    links = managed_links(
+        repo,
+        home=home,
+        config_home=home / ".config",
+        codex_home=agents_home,
+        system="Linux",
+    )
+
+    agents_destination = agents_home / "AGENTS.md"
+    assert [link.destination for link in links].count(agents_destination) == 1
+
+    link_config(repo, environ=values, system="Linux")
+    link_config(repo, environ=values, system="Linux")
+
+    assert agents_destination.readlink() == (repo / "config" / "agents" / "AGENTS.md").resolve()
 
 
 def test_migrates_symlinked_codex_config_but_preserves_local_state(tmp_path: Path) -> None:

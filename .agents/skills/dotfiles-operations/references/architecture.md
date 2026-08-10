@@ -108,7 +108,7 @@ install workflow; its `--check` form is read-only.
 - npm prefix and release-age settings in `~/.npmrc`;
 - the optional Bash/zsh Fish handoff blocks;
 - the local Git identity file when explicitly configured;
-- the Codex `AGENTS.md` link.
+- the shared and Codex `AGENTS.md` links sourced from `config/agents/AGENTS.md`;
 - the pinned Codex shared user-scope skill copies installed by the current
   GitHub CLI under `~/.agents/skills`.
 

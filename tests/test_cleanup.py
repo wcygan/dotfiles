@@ -21,6 +21,9 @@ def test_cleanup_removes_only_managed_links_and_preserves_local_state(tmp_path: 
     link_config(repo, environ=values, system="Linux")
     backup = home / ".tmux.conf.backup.1"
     backup.write_text("keep me")
+    shared_skill = home / ".agents" / "skills" / "keep" / "SKILL.md"
+    shared_skill.parent.mkdir(parents=True)
+    shared_skill.write_text("keep shared skill")
     (codex / "config.toml").write_text("local Codex state")
     (home / ".npmrc").write_text("local npm state")
     unmanaged = home / ".config" / "zed"
@@ -32,7 +35,9 @@ def test_cleanup_removes_only_managed_links_and_preserves_local_state(tmp_path: 
     cleanup_links(repo, environ=values, system="Linux")
 
     assert not (home / ".config" / "git").exists()
+    assert not (home / ".agents" / "AGENTS.md").exists()
     assert not (codex / "AGENTS.md").exists()
+    assert shared_skill.read_text() == "keep shared skill"
     assert unmanaged.is_symlink()
     assert backup.read_text() == "keep me"
     assert (codex / "config.toml").read_text() == "local Codex state"

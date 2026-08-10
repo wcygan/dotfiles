@@ -67,9 +67,14 @@ def test_linker_and_codex_templates_are_wired() -> None:
     assert 'Link(config / "fish", config_home / "fish")' in linker
     assert "_copy_codex_template" in linker
     assert "Preserved existing local Codex config" in linker
-    assert 'Link(config / "codex" / "AGENTS.md", codex_home / "AGENTS.md")' in linker
+    assert 'agents_source = config / "agents" / "AGENTS.md"' in linker
+    assert "Link(agents_source, shared_agents)" in linker
+    assert "Link(agents_source, codex_agents)" in linker
     assert (REPO_ROOT / "config/codex/config.toml").is_file()
-    assert (REPO_ROOT / "config/codex/AGENTS.md").is_file()
+    assert (REPO_ROOT / "config/agents/AGENTS.md").is_file()
+    compatibility_agents = REPO_ROOT / "config/codex/AGENTS.md"
+    assert compatibility_agents.is_symlink()
+    assert compatibility_agents.readlink() == Path("../agents/AGENTS.md")
     assert "GGML_METAL_NO_RESIDENCY=1" in qmd
     assert "GGML_METAL_TENSOR_DISABLE=1" in qmd
     assert "command qmd" in qmd

@@ -101,6 +101,12 @@ def managed_links(
 
     config = repo_root.resolve() / "config"
     vscode_home = vscode_config_home(home, config_home, system)
+    agents_source = config / "agents" / "AGENTS.md"
+    shared_agents = home / ".agents" / "AGENTS.md"
+    codex_agents = codex_home / "AGENTS.md"
+    agents_links = [Link(agents_source, shared_agents)]
+    if codex_agents != shared_agents:
+        agents_links.append(Link(agents_source, codex_agents))
     return (
         Link(config / "git", config_home / "git"),
         Link(config / "tmux" / "tmux.conf", home / ".tmux.conf"),
@@ -112,7 +118,7 @@ def managed_links(
         Link(config / "bunfig.toml", config_home / ".bunfig.toml"),
         Link(config / "deno", config_home / "deno"),
         Link(config / "ghostty", config_home / "ghostty"),
-        Link(config / "codex" / "AGENTS.md", codex_home / "AGENTS.md"),
+        *agents_links,
         Link(config / "zellij", config_home / "zellij"),
         Link(config / "vscode" / "settings.json", vscode_home / "settings.json"),
         Link(config / "vscode" / "keybindings.json", vscode_home / "keybindings.json"),

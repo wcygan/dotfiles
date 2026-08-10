@@ -297,6 +297,41 @@ def test_correct_platform_inventory_and_local_codex_config_pass(
     assert any(vscode_fragment in result.message for result in results)
 
 
+def test_shared_and_codex_agents_links_are_verified(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    link_inventory(home, "Linux")
+    element = profile_element(tmp_path, REPO_ROOT)
+
+    results = verify_installation(
+        REPO_ROOT,
+        environ={"HOME": str(home)},
+        system="Linux",
+        profile_loader=lambda: (element,),
+        required_binaries=("python3",),
+    )
+
+    agents_destinations = (
+        home / ".agents" / "AGENTS.md",
+        home / ".codex" / "AGENTS.md",
+    )
+    for destination in agents_destinations:
+        result = next(item for item in results if item.name == f"link:{destination}")
+        assert result.passed
+
+    agents_destinations[0].unlink()
+    results = verify_installation(
+        REPO_ROOT,
+        environ={"HOME": str(home)},
+        system="Linux",
+        profile_loader=lambda: (element,),
+        required_binaries=("python3",),
+    )
+    shared_result = next(
+        item for item in results if item.name == f"link:{agents_destinations[0]}"
+    )
+    assert not shared_result.passed
+
+
 def test_codex_config_must_be_a_regular_local_file(tmp_path: Path) -> None:
     codex_home = tmp_path / "codex"
     codex_home.mkdir()

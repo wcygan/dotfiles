@@ -104,9 +104,11 @@ so inspect retired skills separately when advancing the pin.
 Other Codex state is managed narrowly:
 `config/codex/config.toml` is a portable template copied to
 `${CODEX_HOME:-~/.codex}/config.toml` only when missing, and
-`config/codex/AGENTS.md` points to `${CODEX_HOME:-~/.codex}/AGENTS.md`. Skills,
-the GitHub CLI skill lock, custom agents, and the rest of `CODEX_HOME` remain
-machine-local outputs rather than repository content. Codex may write
+`config/agents/AGENTS.md` is the authoritative global instruction file linked to
+both `~/.agents/AGENTS.md` and `${CODEX_HOME:-~/.codex}/AGENTS.md`.
+`config/codex/AGENTS.md` remains a repository compatibility link to that source.
+Skills, the GitHub CLI skill lock, custom agents, and the rest of `CODEX_HOME`
+remain machine-local outputs rather than repository content. Codex may write
 machine-specific `[projects]` trust entries into the local config; keep those
 out of the tracked template.
 

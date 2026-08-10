@@ -4,6 +4,16 @@ Read this reference before changing compatibility guarantees, restoring retired
 behavior, or replacing a setup boundary. Add an entry when a breaking change is
 intentional, alongside focused migration tests.
 
+## 2026-08-10 — Move global instructions to shared agent configuration
+
+`config/agents/AGENTS.md` is now the authoritative global instruction source.
+The managed inventory links it to both `~/.agents/AGENTS.md` and
+`${CODEX_HOME:-~/.codex}/AGENTS.md`, deduplicating the destination when
+`CODEX_HOME` is `~/.agents`. `config/codex/AGENTS.md` remains a compatibility
+link, while `config/codex/config.toml` retains its machine-local template
+behavior. Existing physical destinations continue to use the standard backup
+before replacement.
+
 ## 2026-08-08 — Retire the dotfiles-owned global skill catalog
 
 The repository stopped linking or validating its former Codex skill catalog,

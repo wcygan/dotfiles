@@ -6,7 +6,11 @@ from collections.abc import Callable, Sequence
 from contextlib import suppress
 from pathlib import Path
 
-from dotfiles_setup.agent_skills import install_agent_skills, verify_agent_skills
+from dotfiles_setup.agent_skills import (
+    cleanup_legacy_agent_skills,
+    install_agent_skills,
+    verify_agent_skills,
+)
 from dotfiles_setup.cleanup import cleanup_links
 from dotfiles_setup.doctor import run_doctor
 from dotfiles_setup.errors import SetupError
@@ -39,12 +43,22 @@ def build_parser() -> argparse.ArgumentParser:
 
     agent_skills_parser = subcommands.add_parser(
         "agent-skills",
-        help="Install the repository-pinned Codex user skill catalog",
+        help="Install the repository-pinned shared Codex user skill catalog",
     )
     agent_skills_parser.add_argument(
         "--check",
         action="store_true",
-        help="Verify the pinned user skill catalog without changing it",
+        help="Verify the pinned shared user skill catalog without changing it",
+    )
+    agent_skills_parser.add_argument(
+        "--cleanup-legacy",
+        action="store_true",
+        help="Remove the verified legacy Codex user-scope catalog after migration",
+    )
+    agent_skills_parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Authorize legacy user-scope skill removal",
     )
 
     link_parser = subcommands.add_parser("link", help="Link repository configuration")
@@ -95,6 +109,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "rustup":
         return _run_mutation("rustup", lambda _journal: print(setup_rustup(REPO_ROOT)))
     if args.command == "agent-skills":
+        if args.check and args.cleanup_legacy:
+            print("agent-skills --check cannot be combined with --cleanup-legacy.")
+            return 2
+        if args.yes and not args.cleanup_legacy:
+            print("agent-skills --yes is only valid with --cleanup-legacy.")
+            return 2
         if args.check:
             try:
                 print(verify_agent_skills(REPO_ROOT))
@@ -102,6 +122,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             except SetupError as error:
                 print(f"agent-skills check failed: {error}")
                 return 1
+        if args.cleanup_legacy:
+            if not args.yes:
+                print("Legacy cleanup requires --yes.")
+                return 2
+            return _run_mutation(
+                "agent-skills",
+                lambda _journal: print(cleanup_legacy_agent_skills(REPO_ROOT)),
+            )
         return _run_mutation(
             "agent-skills", lambda _journal: print(install_agent_skills(REPO_ROOT))
         )

@@ -77,17 +77,19 @@ skills. The architecture has three deliberately separate owners:
 
 ```text
 wcygan/agent-skills       dotfiles                     GitHub CLI / Codex
-reusable skill source -> repository + commit lock  -> user-scope installed copies
+reusable skill source -> repository + commit lock  -> shared user-scope installed copies
 provider validation      command + verification      machine-local tracking state
 ```
 
 Dotfiles never mirrors the provider catalog. `agent-skills.lock.toml` records a
-full immutable commit; `src/dotfiles_setup/agent_skills.py` delegates discovery
-and installation to `gh skill install`, rejects conflicting installed names,
-and verifies GitHub CLI metadata. The runtime destination is derived from `gh
-skill list` instead of being hard-coded. Installation is an explicit journaled
-command and remains outside the default install workflow; its `--check` form is
-read-only.
+full immutable commit and a relative shared user directory;
+`src/dotfiles_setup/agent_skills.py` delegates discovery and installation to
+`gh skill install --dir`, rejects conflicting installed names, and verifies
+GitHub CLI metadata. The runtime destination is derived from the lock's current
+`HOME` plus its portable relative directory and then confirmed by `gh skill
+list --dir`; it is not inferred from GitHub CLI's stale Codex host mapping.
+Installation is an explicit journaled command and remains outside the default
+install workflow; its `--check` form is read-only.
 
 ## State Ownership
 
@@ -107,8 +109,8 @@ read-only.
 - the optional Bash/zsh Fish handoff blocks;
 - the local Git identity file when explicitly configured;
 - the Codex `AGENTS.md` link.
-- the pinned Codex user-scope skill copies installed by the current GitHub CLI
-  under `~/.codex/skills`.
+- the pinned Codex shared user-scope skill copies installed by the current
+  GitHub CLI under `~/.agents/skills`.
 
 Existing physical destinations are backed up before replacement. The managed
 inventory, platform path resolvers, and HOME/XDG/CODEX overrides are part of the

@@ -18,12 +18,12 @@ the dotfiles bootstrap command as the only consumer-side installer.
 The task is complete only when all of these are true:
 
 - agent-skills.lock.toml contains the reviewed full 40-character lowercase
-  commit for wcygan/agent-skills.
+  commit and portable shared-user directory for wcygan/agent-skills.
 - ./bootstrap.sh agent-skills succeeds and reports the installed count and
   destination.
 - ./bootstrap.sh agent-skills --check and make agent-skills-check pass.
-- gh skill list --agent codex --scope user reports one source, scope=user,
-  pinned=true, the exact locked version, and one user-scope destination for
+- gh skill list --dir "$HOME/.agents/skills" reports one source, scope=custom,
+  pinned=true, the exact locked version, and one shared user destination for
   every provider skill.
 - No provider skill disappeared without a stale-local review.
 - make test-pre, git diff --check, and the tracked-lockfile check pass.
@@ -35,8 +35,8 @@ The task is complete only when all of these are true:
   containing bootstrap.sh and agent-skills.lock.toml).
 - Read the nearest AGENTS.md, .agents/skills/dotfiles-operations, and
   .agents/skills/agent-skills-integration before changing state.
-- Change only the consumer pin, its focused expectation if the tests still
-  hard-code the pin, and this skill. Do not copy provider files into dotfiles.
+- Change only the consumer integration and its focused tests and documentation.
+  Do not copy provider files into dotfiles.
 - Preserve unrelated worktree changes. Stage named files only.
 - Keep installed skills and ~/.agents/.skill-lock.json machine-local.
 - Do not run the full dotfiles install, alter Nix inputs, change shell startup
@@ -53,7 +53,7 @@ review, but it is not a second source or installation implementation.
 git status --short
 git -C ../agent-skills status --short 2>/dev/null || true
 sed -n '1,40p' agent-skills.lock.toml
-gh skill list --agent codex --scope user \
+gh skill list --dir "$HOME/.agents/skills" \
   --json skillName,sourceURL,scope,version,pinned,path
 ~~~
 
@@ -101,7 +101,7 @@ using it, inspect the current inventory and, when possible, compare it with
 the provider tree:
 
 ~~~bash
-gh skill list --agent codex --scope user \
+gh skill list --dir "$HOME/.agents/skills" \
   --json skillName,sourceURL,scope,version,pinned,path
 
 find ../agent-skills/skills -mindepth 2 -maxdepth 2 -name SKILL.md \
@@ -122,8 +122,9 @@ Run the focused, journaled mutation only:
 ~~~
 
 Record the reported catalog count and the actual destination. The expected
-command uses --agent codex --scope user --all --pin <full-sha> internally;
-do not replace it with a clone, copy, symlink, or direct write to ~/.codex.
+command uses --dir "$HOME/.agents/skills" --all --pin <full-sha> internally;
+do not replace it with a clone, copy, symlink, or direct write to the shared
+directory.
 
 ### 5. Verify the installation
 
@@ -147,8 +148,8 @@ import tomllib
 with open("agent-skills.lock.toml", "rb") as f:
     lock = tomllib.load(f)
 inventory = json.loads(subprocess.check_output([
-    "gh", "skill", "list", "--agent", lock["agent"],
-    "--scope", lock["scope"],
+    "gh", "skill", "list", "--dir",
+    str(Path.home() / lock["directory"]),
     "--json", "skillName,sourceURL,scope,version,pinned,path",
 ], text=True))
 
@@ -157,7 +158,7 @@ assert len(names) == len(set(names)), "duplicate installed skill names"
 assert {item["sourceURL"] for item in inventory} == {
     f"https://github.com/{lock['repository']}"
 }
-assert {item["scope"] for item in inventory} == {lock["scope"]}
+assert {item["scope"] for item in inventory} == {"custom"}
 assert {item["version"] for item in inventory} == {lock["commit"]}
 assert all(item["pinned"] is True for item in inventory)
 parents = {str(Path(item["path"]).resolve().parent) for item in inventory}
@@ -201,7 +202,10 @@ only the lock/test expectation and this skill. Stage paths explicitly:
 
 ~~~bash
 git diff --name-only
-git add agent-skills.lock.toml tests/test_agent_skills.py \
+git add agent-skills.lock.toml src/dotfiles_setup/agent_skills.py \
+  src/dotfiles_setup/cli.py tests/test_agent_skills.py Makefile \
+  .agents/skills/agent-skills-integration/SKILL.md \
+  .agents/skills/dotfiles-operations/references/{architecture.md,operations.md,migrations.md} \
   .agents/skills/refresh-agent-skills/SKILL.md
 git diff --cached --check
 git diff --cached --stat
@@ -235,7 +239,10 @@ git diff --check
 git diff --exit-code -- flake.lock uv.lock
 
 # Publish only when explicitly requested
-git add agent-skills.lock.toml tests/test_agent_skills.py \
+git add agent-skills.lock.toml src/dotfiles_setup/agent_skills.py \
+  src/dotfiles_setup/cli.py tests/test_agent_skills.py Makefile \
+  .agents/skills/agent-skills-integration/SKILL.md \
+  .agents/skills/dotfiles-operations/references/{architecture.md,operations.md,migrations.md} \
   .agents/skills/refresh-agent-skills/SKILL.md
 git commit -m "chore(skills): refresh pinned agent skills"
 git push origin "$(git branch --show-current)"

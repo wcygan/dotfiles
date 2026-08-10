@@ -11,13 +11,13 @@ Preserve one explicit boundary for reusable skills:
 
 ```text
 wcygan/agent-skills       dotfiles                     GitHub CLI / Codex
-source and validation -> exact consumer lock       -> machine-local user copies
+source and validation -> exact consumer lock       -> shared machine-local user copies
                            supported orchestration     and tracking state
 ```
 
 Success means reusable skill source remains in `wcygan/agent-skills`, this
 repository consumes one reviewed commit through `agent-skills.lock.toml`, and
-GitHub CLI installs and reports the complete Codex user-scope catalog at that
+GitHub CLI installs and reports the complete Codex shared user catalog at that
 exact commit.
 
 ## Ownership Contract
@@ -28,8 +28,8 @@ exact commit.
   commit pin, supported command, collision policy, recovery boundary, and
   consumer-side verification.
 - GitHub CLI owns fetching, installing, and tracking machine-local copies.
-  Derive their destination from `gh skill list`; do not encode a CLI-specific
-  installation path in implementation logic.
+  The lock owns a portable relative shared directory; resolve it under the
+  current home and verify its actual contents with `gh skill list --dir`.
 - Project-specific operating skills remain under `.agents/skills/` here and
   are not part of the global catalog.
 
@@ -37,17 +37,17 @@ exact commit.
 
 - Pin a full lowercase 40-character commit SHA. Mutable branches, tags, and
   abbreviated SHAs are not an installation contract.
-- Invoke `gh skill install` with `--agent codex --scope user --all --pin`.
-  Keep catalog discovery and installation in GitHub CLI instead of adding a
-  second clone, copy, vendoring, or synchronization implementation.
+- Invoke `gh skill install` with `--dir <resolved shared user directory> --all
+  --pin`. Keep catalog discovery and installation in GitHub CLI instead of
+  adding a second clone, copy, vendoring, or synchronization implementation.
 - Keep installation explicit through `./bootstrap.sh agent-skills`; the default
   dotfiles install does not mutate the global skill catalog.
 - Serialize and journal installation as a dotfiles mutation. Keep
   `./bootstrap.sh agent-skills --check` read-only and lock-free.
 - Refuse same-name user skills from another source or duplicate user-scope
   locations before using `--force`.
-- Verify every expected skill's source, scope, pinned flag, exact version, and
-  installed path after installation.
+- Verify every expected skill's source, custom-directory scope, pinned flag,
+  exact version, and installed path after installation.
 - Keep installed copies and GitHub CLI tracking state untracked and
   machine-local. Never write credentials or remote contents to the operation
   journal.
@@ -64,9 +64,9 @@ exact commit.
 1. Read `agent-skills.lock.toml`, `src/dotfiles_setup/agent_skills.py`, the
    `agent-skills` CLI branch in `src/dotfiles_setup/cli.py`, recovery handling,
    focused tests, and the pinned-skills section of the operations runbook.
-2. Inspect `git status --short` in both repositories and inspect the live user
-   inventory with `gh skill list --agent codex --scope user --json
-   skillName,sourceURL,scope,version,pinned,path`.
+2. Inspect `git status --short` in both repositories and inspect the live
+   shared user inventory with `gh skill list --dir "$HOME/.agents/skills"
+   --json skillName,sourceURL,scope,version,pinned,path`.
 3. Classify the change:
    - author or modify a reusable skill in `wcygan/agent-skills`;
    - advance the dotfiles consumer pin after reviewing the provider change;
@@ -98,9 +98,9 @@ git diff --exit-code -- flake.lock uv.lock
 git status --short
 ```
 
-For a live installation or pin advance, also confirm that `gh skill list`
-reports one source, one exact version, `scope=user`, and `pinned=true` for the
-complete expected catalog. For an unchanged rerun, compare the normalized
+For a live installation or pin advance, also confirm that `gh skill list --dir`
+reports one source, one exact version, `scope=custom`, and `pinned=true` for
+the complete expected catalog. For an unchanged rerun, compare the normalized
 inventory and installed file contents; do not use the raw tracking-lock digest
 as the idempotency oracle. For Python setup or recovery changes, follow the
 broader setup validation matrix in `$dotfiles-operations`.

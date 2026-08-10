@@ -45,8 +45,8 @@ installation, verification, collision, stale-skill, or recovery decision. It
 defines the authoritative provider/consumer/runtime boundary and pin-advance
 workflow.
 
-Install or reconcile the external `agent-skills` collection for Codex user
-scope through the supported root entry point:
+Install or reconcile the external `agent-skills` collection for Codex's shared
+user scope through the supported root entry point:
 
 ```bash
 ./bootstrap.sh agent-skills
@@ -54,23 +54,36 @@ scope through the supported root entry point:
 ```
 
 The first command is mutating, serialized, and journaled. It reads the exact
-commit from `agent-skills.lock.toml`, refuses same-name skills from another
-source or location, invokes `gh skill install`, and verifies all pinned catalog
-entries afterward. The check command is read-only. Installed skill copies and
-GitHub CLI tracking state are machine-local outputs; the current CLI maps Codex
-user scope to `~/.codex/skills`, while implementation logic derives the actual
-destination from CLI metadata. GitHub CLI does not prune files or skill
-directories removed upstream, so review cleanup separately when advancing the
-pin.
+commit and portable relative directory from `agent-skills.lock.toml`, refuses
+same-name skills from another source or location, invokes `gh skill install
+--dir "$HOME/.agents/skills"`, and verifies all pinned catalog entries afterward
+through `gh skill list --dir`. The check command is read-only. Installed skill
+copies and GitHub CLI tracking state are machine-local outputs. GitHub CLI's
+current Codex host mapping still uses `~/.codex/skills`; this integration uses
+the shared user directory documented by Codex instead. GitHub CLI does not
+prune files or skill directories removed upstream, so review cleanup separately
+when advancing the pin.
 
 An unchanged rerun is catalog-state idempotent, not a byte-for-byte no-op.
-Because the command uses `--force`, GitHub CLI refreshes `updatedAt` for the 42
+Because the command uses `--force`, GitHub CLI refreshes `updatedAt` for the
 managed entries in the machine-local `~/.agents/.skill-lock.json`. Treat a
 timestamp-only tracking diff as expected bookkeeping. Acceptance requires the
-normalized inventory, source, scope, exact pin, installed paths, duplicate-name
-count, and installed file contents to remain unchanged; any other difference is
-a failed idempotency check. `$agent-skills-integration` is authoritative for
-this boundary.
+normalized inventory, source, custom-directory scope, exact pin, installed
+paths, duplicate-name count, and installed file contents to remain unchanged;
+any other difference is a failed idempotency check. `$agent-skills-integration`
+is authoritative for this boundary.
+
+After a successful shared-directory install and verification, an explicitly
+authorized migration may remove the prior Codex-host copies with:
+
+```bash
+./bootstrap.sh agent-skills --cleanup-legacy --yes
+```
+
+That cleanup refuses to remove any legacy entry unless every expected skill has
+one matching Codex user-scope path, source, pin, and version. It is idempotent
+once no matching legacy catalog remains, but it is not a general skill-pruning
+command.
 
 ## Inspect and Diagnose
 

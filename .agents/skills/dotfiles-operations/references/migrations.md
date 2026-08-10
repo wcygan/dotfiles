@@ -20,6 +20,16 @@ GitHub CLI tracking state are machine-local. The command remains outside the
 default install, and skills removed upstream require separate review because
 GitHub CLI does not prune them.
 
+## 2026-08-09 — Move the shared catalog to the Agent Skills user directory
+
+GitHub CLI's Codex host profile still maps user installs to `~/.codex/skills`,
+but Codex now documents `~/.agents/skills` as the shared user discovery root.
+The consumer lock moved to schema version 2 with a portable relative directory,
+and the installer now supplies that directory with `gh skill install --dir` and
+verifies it with `gh skill list --dir`. A guarded, explicit legacy cleanup is
+available only after the shared catalog verifies; it deletes exact matching
+legacy copies and does not prune foreign or stale skills.
+
 ## 2026-08-09 — Replace setup orchestration with Python
 
 `bootstrap.sh` became the supported setup entry point. It obtains Nix only when

@@ -78,21 +78,22 @@ exec fish -l
 ```
 
 ### Bash/Zsh
-Add to your `~/.bashrc` or `~/.zshrc`:
+Run the supported shell handoff:
+
 ```bash
-source ~/.config/shell-nix.sh
+./bootstrap.sh shell-handoff
 ```
 
-Then reload:
-```bash
-source ~/.bashrc  # or ~/.zshrc
-```
+Then start a new shell. The command adds the managed handoff block and
+preserves unrelated startup content.
 
 ## Repository Structure
 
 ```
 dotfiles/
 ├── config/             # Configuration files
+│   ├── agents/         # Authoritative global agent instructions
+│   ├── codex/          # Codex template and instruction compatibility link
 │   ├── fish/           # Fish shell config
 │   ├── starship.toml   # Starship prompt
 │   └── shell-nix.sh    # Bash/zsh compatibility

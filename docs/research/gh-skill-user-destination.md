@@ -4,6 +4,10 @@
 **Question:** How can `gh skill install` place the reusable catalog in
 `~/.agents/skills` instead of `~/.codex/skills`?
 
+**Status:** Implemented on 2026-08-09. The current integration uses the custom
+directory for installation and verification. The analysis below preserves the
+evidence and migration plan from before implementation.
+
 ## Answer
 
 With the installed GitHub CLI (`gh` 2.96.0), pass an explicit custom
@@ -41,17 +45,17 @@ That is **not** the Codex host mapping. It makes GitHub CLI track the skills
 as installed for `universal`, so existing dotfiles verification that queries
 `gh skill list --agent codex --scope user` will not see them.
 
-## Why the current command uses `~/.codex/skills`
+## Why the previous command used `~/.codex/skills`
 
-The installed command is `gh` 2.96.0. In that release's registry, the Codex
-host maps project scope to `.agents/skills` but user scope to
+At the research date, the installed command was `gh` 2.96.0. In that release's
+registry, the Codex host maps project scope to `.agents/skills` but user scope to
 `.codex/skills` [direct source](https://github.com/cli/cli/blob/v2.96.0/internal/skills/registry/registry.go#L69-L73).
 The registry joins the selected host's `UserDir` to the home directory; the
 only special environment override in that code is for Claude Code, not Codex
 [direct source](https://github.com/cli/cli/blob/v2.96.0/internal/skills/registry/registry.go#L399-L424).
 
-This explains the live inventory: `gh skill list --agent codex --scope user`
-reports the pinned catalog under `~/.codex/skills`.
+This explained the live inventory at the research date. `gh skill list --agent
+codex --scope user` reported the pinned catalog under `~/.codex/skills`.
 
 ## Codex's current documented discovery location
 
@@ -66,15 +70,13 @@ This repository's project-specific skills therefore remain correctly located
 under its tracked `.agents/skills/`; this research only concerns the separate
 user-wide catalog.
 
-## Operational implications for this repository
+## Migration plan recorded at the research date
 
-Do not run either command above against the current catalog until a migration
-is authorized. A second install would create another copy; it does not remove
-the existing `~/.codex/skills` catalog. Depending on the running Codex version,
-leaving both locations populated can expose duplicate skill names.
+These commands were intentionally not run before migration authorization. A
+second install would have created another copy without removing the existing
+`~/.codex/skills` catalog. Both locations could have exposed duplicate names.
 
-If the repository adopts `~/.agents/skills` before GitHub CLI changes its
-Codex mapping, the consumer integration must change as one coherent unit:
+The adopted migration changed the consumer integration as one coherent unit:
 
 1. Install with `--dir "$HOME/.agents/skills"` (the explicit, truthful
    destination), rather than pretending the Codex host default has changed.
@@ -86,10 +88,9 @@ Codex mapping, the consumer integration must change as one coherent unit:
    `gh skill update --dir "$HOME/.agents/skills" ...`. The update command
    explicitly exposes `--dir` to scan a custom directory
    [official update manual](https://cli.github.com/manual/gh_skill_update).
-4. Validate actual Codex discovery on the installed desktop/CLI version before
-   retiring `~/.codex/skills`; the live session currently exposes skills from
-   that legacy location, while the current product documentation names the
-   new shared location.
+4. Validate actual Codex discovery on the installed desktop or CLI before
+   retiring `~/.codex/skills`. At the research date, the live session exposed
+   skills from that legacy location.
 5. Treat removal of the old catalog as a separately authorized, recoverable
    user-file migration after the new catalog and discovery result have been
    independently verified.

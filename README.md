@@ -51,8 +51,9 @@ Full documentation available at: https://wcygan.github.io/dotfiles/
 dotfiles/
 ├── .agents/             # Project-local operating skills
 ├── config/             # Configuration files
+│   ├── agents/          # Authoritative global agent instructions
 │   ├── fish/           # Fish shell config
-│   ├── codex/          # Codex config template and global instructions
+│   ├── codex/          # Codex config template and compatibility link
 │   ├── zed/            # Zed config
 │   ├── ghostty/        # Ghostty config
 │   ├── starship.toml   # Starship prompt
@@ -92,14 +93,15 @@ installs it as a Codex user-scope catalog without vendoring its source:
 ```
 
 `agent-skills.lock.toml` records the repository, full commit SHA, agent, and
-scope. Installation uses `gh skill install --agent codex --scope user --all
---pin <commit> --force`, then verifies every skill through `gh skill list`
-source, version, pin, scope, and destination metadata. Existing same-name skills
-from another source or location stop the operation instead of being overwritten.
-The current GitHub CLI maps Codex user scope to `~/.codex/skills`; author changes in the
-`agent-skills` repository, advance the tracked pin intentionally, and rerun the
-command. GitHub CLI does not prune files or skill directories removed upstream,
-so inspect retired skills separately when advancing the pin.
+shared relative directory. Installation uses `gh skill install --all --pin
+<commit> --force --dir "$HOME/.agents/skills"`. It then uses `gh skill list
+--dir "$HOME/.agents/skills"` to verify source, version, pin, scope, and path
+metadata. Existing same-name skills from another source or location stop the
+operation. The explicit directory keeps the destination independent of GitHub
+CLI host defaults. Author changes in the `agent-skills` repository, advance the
+tracked pin intentionally, and rerun the command. GitHub CLI does not prune
+files or skill directories removed upstream, so inspect retired skills when
+the pin advances.
 
 Other Codex state is managed narrowly:
 `config/codex/config.toml` is a portable template copied to

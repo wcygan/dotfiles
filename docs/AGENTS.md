@@ -24,10 +24,10 @@ Provide clear, accessible documentation for the dotfiles repository using Docusa
 
 ## Principles
 
-- **Minimal surface area**: Single introduction page, no complex navigation
+- **Minimal surface area**: One introduction and a small set of focused FAQs
 - **Docs-first**: No separate landing page, docs ARE the site
 - **Auto-generation**: Sidebar automatically reflects docs structure
-- **Fast deployment**: Simple `npm run deploy` to GitHub Pages
+- **Automated deployment**: GitHub Actions deploys verified `main` builds
 
 ## Workflow
 
@@ -46,10 +46,8 @@ npm run serve
 
 ### Deployment
 
-```bash
-# Deploy to GitHub Pages
-npm run deploy
-```
+Use the normal Git review workflow. A push to `main` makes
+`.github/workflows/deploy-docs.yml` build and deploy GitHub Pages.
 
 ### Adding Documentation
 
@@ -72,7 +70,9 @@ docs/
 ├── sidebars.ts
 ├── package.json
 ├── docs/
-│   └── intro.md       # Root page (slug: /)
+│   ├── intro.md       # Root page (slug: /)
+│   └── FAQ/           # Focused troubleshooting pages
+├── research/          # Dated evidence outside the published docs tree
 ├── src/
 │   ├── css/          # Custom styles
 │   └── components/   # React components
@@ -84,7 +84,7 @@ docs/
 - **No homepage**: Docs serve at root, no separate landing page
 - **No blog**: Focus on documentation only
 - **Auto sidebars**: Less maintenance, automatic organization
-- **GitHub Pages**: Free, reliable hosting with custom domain support
+- **GitHub Pages**: Deployment runs through the repository workflow
 
 ## Common Tasks
 

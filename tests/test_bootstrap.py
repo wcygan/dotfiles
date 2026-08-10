@@ -29,6 +29,7 @@ def bootstrap_environment(command_bin: Path, tmp_path: Path) -> dict[str, str]:
         "PATH": f"{command_bin}:/usr/bin:/bin",
         "BOOTSTRAP_CAPTURE": str(tmp_path / "capture"),
         "DOTFILES_BOOTSTRAP_SKIP_PROFILE": "1",
+        "VIRTUAL_ENV": str(tmp_path / "active-virtual-environment"),
     }
 
 
@@ -39,7 +40,7 @@ def run_bootstrap(
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [str(BOOTSTRAP), *args],
-        cwd=REPO_ROOT,
+        cwd=tmp_path,
         env=bootstrap_environment(command_bin, tmp_path),
         text=True,
         capture_output=True,
@@ -120,6 +121,15 @@ def test_linux_installer_requires_nix_to_become_available(
     assert "nix is not available" in result.stderr
 
 
+def test_unsupported_operating_system_is_rejected(command_bin: Path, tmp_path: Path) -> None:
+    write_executable(command_bin / "uname", 'printf "FreeBSD\\n"')
+
+    result = run_bootstrap(command_bin, tmp_path)
+
+    assert result.returncode == 2
+    assert "Unsupported operating system: FreeBSD" in result.stderr
+
+
 def test_commands_are_forwarded_without_shell_dispatch(command_bin: Path, tmp_path: Path) -> None:
     write_executable(command_bin / "nix", 'printf "%s\\n" "$@" > "$BOOTSTRAP_CAPTURE"')
 
@@ -138,3 +148,43 @@ def test_command_options_are_forwarded_to_python(command_bin: Path, tmp_path: Pa
     assert result.returncode == 0
     captured = (tmp_path / "capture").read_text().splitlines()
     assert captured[-2:] == ["uninstall", "--yes"]
+
+
+def test_leading_bootstrap_options_are_not_forwarded(command_bin: Path, tmp_path: Path) -> None:
+    write_executable(command_bin / "nix", 'printf "%s\\n" "$@" > "$BOOTSTRAP_CAPTURE"')
+
+    result = run_bootstrap(command_bin, tmp_path, "--install-nix", "--yes", "verify")
+
+    assert result.returncode == 0
+    captured = (tmp_path / "capture").read_text().splitlines()
+    assert captured[-1] == "verify"
+    assert "--install-nix" not in captured
+    assert "--yes" not in captured
+
+
+def test_double_dash_forwards_remaining_arguments(command_bin: Path, tmp_path: Path) -> None:
+    write_executable(command_bin / "nix", 'printf "%s\\n" "$@" > "$BOOTSTRAP_CAPTURE"')
+
+    result = run_bootstrap(command_bin, tmp_path, "--", "--install-nix", "--yes")
+
+    assert result.returncode == 0
+    captured = (tmp_path / "capture").read_text().splitlines()
+    assert captured[-2:] == ["--install-nix", "--yes"]
+
+
+def test_python_cli_runs_from_repo_without_virtual_environment(
+    command_bin: Path, tmp_path: Path
+) -> None:
+    write_executable(
+        command_bin / "nix",
+        'printf "cwd=%s\\nvirtual_env=%s\\n" "$PWD" "${VIRTUAL_ENV-unset}" '
+        '> "$BOOTSTRAP_CAPTURE"',
+    )
+
+    result = run_bootstrap(command_bin, tmp_path, "verify")
+
+    assert result.returncode == 0
+    assert (tmp_path / "capture").read_text().splitlines() == [
+        f"cwd={REPO_ROOT}",
+        "virtual_env=unset",
+    ]

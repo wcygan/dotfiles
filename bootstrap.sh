@@ -5,26 +5,29 @@ REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 DETERMINATE_PKG_URL="https://install.determinate.systems/determinate-pkg/stable/Universal"
 DETERMINATE_INSTALL_URL="https://install.determinate.systems/nix"
 
+# This script establishes the Nix boundary. Python owns the setup workflow.
 install_nix=false
 assume_yes=false
 forwarded_args=()
 
-while (($#)); do
-  case "$1" in
-    --install-nix) install_nix=true ;;
-    --yes) assume_yes=true ;;
-    --)
-      shift
-      forwarded_args+=("$@")
-      break
-      ;;
-    *)
-      forwarded_args+=("$@")
-      break
-      ;;
-  esac
-  shift
-done
+parse_bootstrap_arguments() {
+  while (($#)); do
+    case "$1" in
+      --install-nix) install_nix=true ;;
+      --yes) assume_yes=true ;;
+      --)
+        shift
+        forwarded_args+=("$@")
+        break
+        ;;
+      *)
+        forwarded_args+=("$@")
+        break
+        ;;
+    esac
+    shift
+  done
+}
 
 source_nix_profile() {
   local profile
@@ -40,11 +43,13 @@ source_nix_profile() {
   done
 }
 
-if [[ "${DOTFILES_BOOTSTRAP_SKIP_PROFILE:-0}" != 1 ]]; then
-  source_nix_profile
-fi
+load_nix_profile() {
+  if [[ "${DOTFILES_BOOTSTRAP_SKIP_PROFILE:-0}" != 1 ]]; then
+    source_nix_profile
+  fi
+}
 
-if ! command -v nix >/dev/null 2>&1; then
+install_nix_for_current_platform() {
   case "$(uname -s)" in
     Darwin)
       echo "Nix is required. Opening the recommended Determinate macOS installer."
@@ -67,30 +72,45 @@ if ! command -v nix >/dev/null 2>&1; then
         exit 1
       }
       curl --proto '=https' --tlsv1.2 -sSf -L "$DETERMINATE_INSTALL_URL" | sh -s -- install
-      if [[ "${DOTFILES_BOOTSTRAP_SKIP_PROFILE:-0}" != 1 ]]; then
-        source_nix_profile
-      fi
+      load_nix_profile
       ;;
     *)
       echo "Unsupported operating system: $(uname -s)" >&2
       exit 2
       ;;
   esac
-fi
+}
 
-if ! command -v nix >/dev/null 2>&1; then
-  echo "Nix installation completed, but nix is not available in this shell." >&2
-  echo "Restart the shell and rerun ./bootstrap.sh." >&2
-  exit 1
-fi
+ensure_nix_available() {
+  if ! command -v nix >/dev/null 2>&1; then
+    install_nix_for_current_platform
+  fi
 
-if ((${#forwarded_args[@]} == 0)); then
-  forwarded_args=(install)
-fi
+  if ! command -v nix >/dev/null 2>&1; then
+    echo "Nix installation completed, but nix is not available in this shell." >&2
+    echo "Restart the shell and rerun ./bootstrap.sh." >&2
+    exit 1
+  fi
+}
 
-cd "$REPO_ROOT"
-unset VIRTUAL_ENV
-exec nix \
-  --extra-experimental-features "nix-command flakes" \
-  develop --no-write-lock-file .#default \
-  --command uv run --locked python -m dotfiles_setup "${forwarded_args[@]}"
+run_dotfiles_setup() {
+  if ((${#forwarded_args[@]} == 0)); then
+    forwarded_args=(install)
+  fi
+
+  cd "$REPO_ROOT"
+  unset VIRTUAL_ENV
+  exec nix \
+    --extra-experimental-features "nix-command flakes" \
+    develop --no-write-lock-file .#default \
+    --command uv run --locked python -m dotfiles_setup "${forwarded_args[@]}"
+}
+
+main() {
+  parse_bootstrap_arguments "$@"
+  load_nix_profile
+  ensure_nix_available
+  run_dotfiles_setup
+}
+
+main "$@"

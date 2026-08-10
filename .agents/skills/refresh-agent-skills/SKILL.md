@@ -57,19 +57,31 @@ gh skill list --dir "$HOME/.agents/skills" \
   --json skillName,sourceURL,scope,version,pinned,path
 ~~~
 
-Resolve main to an immutable SHA without changing either checkout:
+Resolve `origin/main` from the live GitHub remote on every run. Do not use the
+local `../agent-skills` checkout, its current branch, or the existing lock as
+the latest-version oracle:
 
 ~~~bash
-latest_sha="$({ git ls-remote \
-  https://github.com/wcygan/agent-skills.git refs/heads/main || exit; } \
-  | awk 'NR == 1 { print $1 }')"
+remote_refs="$(git ls-remote \
+  https://github.com/wcygan/agent-skills.git refs/heads/main)" || exit
+if [ "$(printf '%s\n' "$remote_refs" | awk 'NF == 2 { count++ } END { print count + 0 }')" -ne 1 ]; then
+  printf '%s\n' "expected exactly one origin/main ref" >&2
+  exit 1
+fi
+latest_sha="$(printf '%s\n' "$remote_refs" | awk 'NR == 1 { print $1 }')"
+if ! printf '%s\n' "$latest_sha" | grep -Eq '^[0-9a-f]{40}$'; then
+  printf '%s\n' "origin/main did not return a full lowercase SHA" >&2
+  exit 1
+fi
 printf '%s\n' "$latest_sha"
 ~~~
 
-Require exactly 40 lowercase hexadecimal characters. If the remote cannot be
-resolved, stop and report the network/authentication failure; do not guess a
-tag, branch, or abbreviated SHA. If the locked commit is already equal to
-latest_sha, keep the lock unchanged and continue with install/reconcile.
+Require exactly one 40-character lowercase hexadecimal SHA from that command.
+If the remote cannot be resolved, or returns no or multiple refs, stop and
+report the network/authentication failure. Do not guess a tag, branch, or
+abbreviated SHA. If the locked commit equals `latest_sha`, keep the lock
+unchanged and continue with install/reconcile. Otherwise replace the lock with
+`latest_sha` before discovering or installing the catalog.
 
 Review the provider delta before pinning when a provider checkout is present:
 
@@ -220,9 +232,12 @@ destination, checks, stale-name review, and any provider warnings.
 ## Quick cheatsheet
 
 ~~~bash
-# Resolve latest provider main
-latest_sha="$(git ls-remote https://github.com/wcygan/agent-skills.git \
-  refs/heads/main | awk 'NR == 1 { print $1 }')"
+# Resolve the live provider origin/main on every refresh
+remote_refs="$(git ls-remote https://github.com/wcygan/agent-skills.git \
+  refs/heads/main)" || exit
+test "$(printf '%s\n' "$remote_refs" | awk 'NF == 2 { count++ } END { print count + 0 }')" -eq 1
+latest_sha="$(printf '%s\n' "$remote_refs" | awk 'NR == 1 { print $1 }')"
+printf '%s\n' "$latest_sha" | grep -Eq '^[0-9a-f]{40}$' || exit 1
 
 # Update only agent-skills.lock.toml's commit line with apply_patch
 

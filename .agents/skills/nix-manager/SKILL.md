@@ -1,538 +1,114 @@
 ---
 name: nix-manager
-description: "Manage Nix packages, flakes, and configurations using Determinate Nix installer patterns. Use when installing/updating packages, creating flakes, troubleshooting Nix issues, or optimizing Nix workflows. Keywords: nix, flake, package, nixpkgs, nix profile, flake.nix, flake.lock, determinate, nix-installer"
+description: "Manage Nix package, profile, flake, and diagnostic work in this dotfiles repository. Use when changing flake.nix, troubleshooting Nix, applying profile changes, or explaining the locked Nix setup."
 ---
 
-# Nix Package & Configuration Manager
+# Nix Manager
 
-Comprehensive Nix management following Determinate Systems best practices and this repository's patterns.
+## Outcome
 
-## Instructions
+Keep this repository's Nix package profile reproducible across macOS, Ubuntu,
+Fedora, and Linux/WSL. The repository defines the package closure; Nix profile
+state is a user-owned result of the supported setup flow.
 
-### 1. Understand Repository Context
+## Route First
 
-Check current Nix setup:
-- **Flake location**: `/Users/wcygan/Development/dotfiles/flake.nix`
-- **Installation entrypoint**: `bootstrap.sh` with the Python `profile` command
-- **Package management**: `nix profile` (user-scoped, modern approach)
-- **Installer**: Determinate Systems installer (macOS/Linux)
-- **Update mechanism**: `make update` or `nix flake update && ./bootstrap.sh profile`
+Use `$dotfiles-operations` for every repository Nix task. Add the matching
+specialist when the task crosses one of these boundaries:
 
-Read current `flake.nix` to understand:
-- Input sources (currently: `nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"`)
-- Package definitions (buildEnv with ~60+ packages)
-- Outputs: `packages`, `devShells`, `formatter`
-- Supported systems: x86_64-linux, aarch64-linux, x86_64-darwin, aarch64-darwin
+- `$nix-update` for any `flake.lock` update or package-version comparison.
+- `$cross-platform-guardian` for bootstrap, package, platform, or profile
+  behavior that can differ across supported systems.
+- `$config-change` for a configuration change that also needs a package.
 
-### 2. Package Management Operations
+Do not treat this skill's examples as a substitute for the current
+`flake.nix`, `Makefile`, or operations validation matrix.
 
-#### Install New Package
+## Inspect
 
-**Process:**
-1. Add package to `flake.nix` in appropriate category
-2. Run `nix flake check` to validate
-3. Run `./bootstrap.sh profile` to apply changes
-4. Test package availability
-
-**Example:**
-```nix
-# flake.nix packages section
-paths = [
-  # ... existing packages ...
-
-  # New package
-  cowsay  # Fun terminal tool
-];
-```
+Before changing Nix-owned files, read the current `flake.nix`, `Makefile`, and
+the relevant module under `src/dotfiles_setup/`. Inspect the worktree first:
 
 ```bash
-# Validate and install
-nix flake check
-./bootstrap.sh profile
-which cowsay  # Verify installation
+git status --short
+git diff -- flake.nix flake.lock
 ```
 
-#### Update All Packages
+For a live profile, installation, or verification request, also inspect the
+supported state rather than ambient `PATH`:
 
-**Process:**
 ```bash
-# Update flake inputs (updates nixpkgs revision)
-nix flake update
-
-# Apply updates to installed profile
-./bootstrap.sh profile
-
-# Verify no breakage
-nix profile list
+./bootstrap.sh doctor
+./bootstrap.sh verify
+nix profile list --json
 ```
 
-Or use Makefile shortcut:
+## Boundaries
+
+- `flake.nix` is the source of package selection and declared systems;
+  `flake.lock` pins its inputs.
+- `bootstrap.sh` is the only root setup entry point. Profile installation and
+  upgrade use `./bootstrap.sh profile`; normal consumers keep committed locks
+  unchanged.
+- `make update` is the explicit all-input update path. It is the only normal
+  workflow here that changes `flake.lock`; use `$nix-update` before running it.
+- `nix profile rollback` is the recovery path for an already-applied profile
+  generation. It is a user-state mutation and requires explicit authority.
+- Read the actual flake input when its branch, package version, or supported
+  output matters. Do not encode a copied branch name or package inventory in
+  agent guidance.
+
+## Workflows
+
+### Package change
+
+1. Edit only `flake.nix`, retaining its existing package grouping and supported
+   systems. Do not update `flake.lock` for a package-list change.
+2. Run `make test-pre`, then `make test-eval` for the four-system contract.
+3. After authority to mutate the user profile, run:
+
+   ```bash
+   ./bootstrap.sh profile
+   ./bootstrap.sh verify
+   ```
+
+4. Report evaluation evidence separately from installed-profile and platform
+   evidence.
+
+### Input update
+
+Use `$nix-update`. It owns the lock diff, package-version comparison, and
+validation sequence. Run `make update` only for an explicit update request;
+then verify the profile and confirm no unrelated lockfile changed.
+
+### Diagnosis
+
+Start at the first failed boundary: pending recovery or mutation lock, Nix
+availability, exact profile origin, profile store outputs, then managed links.
+Use `./bootstrap.sh recover` only to inspect; applying recovery needs explicit
+authority. Do not repair an exact-profile failure by changing the global Nix
+configuration or trusting a binary found on ambient `PATH`.
+
+## Validation and Handoff
+
+Use the validation matrix in `$dotfiles-operations`; Nix package or system
+changes require `make test-pre` and `make test-eval`. Cross-platform bootstrap
+work also requires Docker and affected-platform evidence. Before finishing:
+
 ```bash
-make update  # Runs both commands above
+git diff --check
+git diff --exit-code -- flake.lock uv.lock
+git status --short
 ```
 
-#### Remove Package
-
-**Process:**
-1. Remove from `flake.nix`
-2. Run `nix flake check`
-3. Run `./bootstrap.sh profile`
-4. Old package remains in store but not in PATH
-
-**Note**: Garbage collection removes unreferenced packages:
-```bash
-make clean  # or: nix-collect-garbage -d
-```
-
-### 3. Flake Configuration
-
-#### Modify flake.nix
-
-**Common operations:**
-
-**Add new input:**
-```nix
-inputs = {
-  nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
-  # Add new input
-  home-manager.url = "github:nix-community/home-manager";
-  home-manager.inputs.nixpkgs.follows = "nixpkgs";  # Prevent duplicate nixpkgs
-};
-```
-
-**Add platform-specific packages:**
-```nix
-paths = [
-  # Universal packages
-  git gh lazygit
-] ++ lib.optionals stdenv.isDarwin [
-  # macOS-only
-  darwin.apple_sdk.frameworks.Security
-] ++ lib.optionals stdenv.isLinux [
-  # Linux-only
-  libnotify
-];
-```
-
-**Modify devShell:**
-```nix
-devShells = forAllSystems ({ pkgs }: {
-  default = pkgs.mkShell {
-    packages = with pkgs; [
-      fish
-      nixpkgs-fmt
-      shellcheck
-      # Add development tools here
-    ];
-    inputsFrom = [ self.packages.${pkgs.system}.default ];
-    shellHook = ''
-      echo "🐠 Dotfiles development environment"
-      echo "Run: make test-pre"
-    '';
-  };
-});
-```
-
-#### Validate Flake
-
-**Always validate before applying:**
-```bash
-nix flake check        # Full validation (slow, builds everything)
-nix flake metadata     # Quick metadata check
-nix flake show         # Show outputs without building
-```
-
-**Common issues:**
-- Package renamed in nixpkgs (e.g., `du-dust` → `dust`)
-- Missing comma in package list
-- Invalid attribute path
-- Syntax errors in Nix expressions
-
-#### Update Lock File
-
-**When to update:**
-- Regular maintenance (weekly/monthly)
-- Security updates needed
-- Specific package version required
-
-**How:**
-```bash
-# Update all inputs
-nix flake update
-
-# Update specific input only
-nix flake lock --update-input nixpkgs
-
-# Verify changes
-git diff flake.lock
-```
-
-### 4. Troubleshooting
-
-#### Slow Nix Operations
-
-**Diagnosis:**
-```bash
-nix store info             # Check store size
-nix store gc --dry-run     # See what can be cleaned
-```
-
-**Solutions:**
-- Run `nix-collect-garbage -d` to remove old generations
-- Run `nix store optimise` to deduplicate files
-- Check network connectivity (binary cache downloads)
-
-#### Package Not Found
-
-**Error**: `error: attribute 'package-name' missing`
-
-**Solutions:**
-1. Check nixpkgs version: some packages only in unstable
-2. Search for package: `nix search nixpkgs package-name`
-3. Check if package was renamed
-4. Try alternative package names
-
-#### Evaluation Errors
-
-**Error**: `error: ... while evaluating ...`
-
-**Common causes:**
-- Syntax error in `flake.nix`
-- Recursive attribute access
-- Type mismatch (string vs list)
-
-**Debug:**
-```bash
-nix eval .#packages.aarch64-darwin.default.name  # Test specific attribute
-nix repl                                          # Interactive REPL
-:lf .                                             # Load flake in REPL
-packages.aarch64-darwin.default.name              # Evaluate in REPL
-```
-
-#### Lock File Conflicts
-
-**Error**: `error: flake.lock is dirty`
-
-**Solutions:**
-```bash
-# Regenerate lock file
-rm flake.lock
-nix flake update
-
-# Or accept uncommitted changes
-nix flake check --impure  # NOT recommended for reproducibility
-```
-
-#### Profile Issues
-
-**List installed profiles:**
-```bash
-nix profile list
-```
-
-**Output format:**
-```
-Index:              0
-Flake attribute:    legacyPackages.aarch64-darwin.dotfiles
-Original flake URL: git+file:///Users/wcygan/Development/dotfiles
-Locked flake URL:   git+file:///Users/wcygan/Development/dotfiles?rev=...
-Store paths:        /nix/store/...-system-packages
-```
-
-**Rollback to previous generation:**
-```bash
-nix profile rollback
-```
-
-**Remove specific profile:**
-```bash
-nix profile remove <index-number>
-```
-
-### 5. CI/CD Integration
-
-This repository uses **Determinate Systems GitHub Actions** for CI.
-
-**GitHub Actions setup** (`.github/workflows/ci.yml`):
-```yaml
-- name: Setup Nix cache
-  uses: DeterminateSystems/magic-nix-cache-action@v2
-
-- name: Install Nix
-  uses: DeterminateSystems/nix-installer-action@v14
-  with:
-    extra-conf: |
-      experimental-features = nix-command flakes
-
-- name: Run bootstrap setup
-  run: ./bootstrap.sh
-```
-
-**Benefits:**
-- Magic Nix Cache: ~90% faster CI (uses GitHub Actions cache)
-- Automatic cache population
-- No configuration required
-
-**Local equivalent:**
-```bash
-# Test installation in Docker
-make test-docker
-
-# Test idempotency
-./bootstrap.sh && ./bootstrap.sh  # Should succeed twice
-```
-
-### 6. Best Practices (Determinate Nix Patterns)
-
-#### Use nixos-unstable Instead of master
-
-**Reasoning:**
-- `nixos-unstable`: Tested, passes Hydra CI
-- `master`: Untested, may have broken packages
-
-**Current setup:**
-```nix
-inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-```
-
-#### Never Use --impure
-
-**Problem:** Breaks reproducibility by allowing environment variable access
-
-**Correct:**
-```bash
-./bootstrap.sh profile         # Pure evaluation through the locked setup boundary
-```
-
-**Incorrect:**
-```bash
-nix profile add . --impure     # BAD: non-reproducible
-```
-
-**Exception:** Only use `--impure` if flake explicitly uses `getEnv` or similar
-
-#### Pin Dependencies in Lock File
-
-**Why:**
-- Ensures reproducible builds across machines
-- Prevents "works on my machine" issues
-- Required for CI/CD reliability
-
-**How:**
-```bash
-# Always commit flake.lock
-git add flake.lock
-git commit -m "chore: update flake lock"
-```
-
-#### Use buildEnv for Package Groups
-
-**Pattern in this repo:**
-```nix
-packages.default = pkgs.buildEnv {
-  name = "system-packages";
-  paths = [ git gh lazygit ... ];
-};
-```
-
-**Benefits:**
-- Single derivation for all packages
-- Atomic updates (all packages succeed or fail together)
-- Easier to manage than individual `nix profile install` calls
-
-#### Enable Flakes in Config
-
-**User-level config** (`~/.config/nix/nix.conf`):
-```
-experimental-features = nix-command flakes
-```
-
-**The Nix development command enables this explicitly when needed.**
-
-### 7. Development Workflows
-
-#### Create New Project Flake
-
-**Use repository root as template:**
-```bash
-# Copy flake structure
-cp flake.nix /path/to/new-project/
-
-# Customize for project needs
-cd /path/to/new-project
-$EDITOR flake.nix
-```
-
-**Or use templates directory:**
-```bash
-# Use a repository template when one is available
-nix flake init -t .#template-name
-```
-
-#### Test Flake Locally
-
-**Without installing:**
-```bash
-# Enter dev shell
-nix develop
-
-# Build without installing
-nix build
-
-# Run specific package
-nix run .#package-name
-```
-
-#### Format Nix Code
-
-**Using formatter output:**
-```bash
-nix fmt  # Uses nixpkgs-fmt (defined in flake.nix)
-```
-
-**Manual formatting:**
-```bash
-nixpkgs-fmt flake.nix
-```
-
-### 8. Migration Guidance
-
-#### From Homebrew
-
-**Don't uninstall Homebrew**—it coexists peacefully. Fish PATH priority:
-1. Homebrew (`/opt/homebrew/bin`) - highest priority
-2. User bins (`~/.local/bin`, `~/bin`)
-3. Language toolchains (`~/.cargo/bin`, `~/go/bin`)
-4. **Nix** (`~/.nix-profile/bin`) - lowest priority
-
-**Migration strategy:**
-```bash
-# 1. Install package via Nix
-# (add to flake.nix and run ./bootstrap.sh profile)
-
-# 2. Test package works
-which package-name  # Should show Homebrew path (higher priority)
-
-# 3. Uninstall from Homebrew
-brew uninstall package-name
-
-# 4. Verify Nix version now active
-which package-name  # Should show /nix/store/... path
-```
-
-#### From apt/dnf
-
-**Linux distros:**
-- Nix coexists with system package managers
-- System packages have priority over Nix (via PATH ordering)
-- Use Nix for tools not in distro repos or needing newer versions
-
-### 9. Output Format
-
-When modifying flake.nix:
-
-**Use Edit tool** for existing files:
-- Modify specific sections
-- Preserve comments and formatting
-- Minimize diff size
-
-**Use Write tool** for new files:
-- Complete flake.nix from scratch
-- Include comments explaining choices
-- Follow repository formatting style
-
-**After changes, always:**
-1. Validate: `nix flake check`
-2. Test build: `nix build --dry-run`
-3. Apply: `./bootstrap.sh profile`
-4. Verify: `nix profile list`
-
-**Include testing commands:**
-```bash
-# Validate changes
-nix flake check
-
-# Show what changed
-nix flake show
-
-# Apply updates
-./bootstrap.sh profile
-```
-
-## Repository Patterns
-
-This dotfiles repository follows these conventions:
-
-**File Structure:**
-- `flake.nix` - Package definitions and outputs
-- `flake.lock` - Pinned dependency versions
-- `bootstrap.sh` - Nix bootstrap and locked Python CLI bridge
-- `src/dotfiles_setup/nix_profile.py` - Nix profile management
-- `src/dotfiles_setup/links.py` - Dotfile symlinking
-- `config/` - Dotfile configurations (fish, starship, etc.)
-
-**Package Organization:**
-Packages grouped by purpose with comments:
-```nix
-paths = [
-  # Version control
-  git gh lazygit
-
-  # Build tools
-  gnumake cmake pkg-config
-
-  # Programming languages
-  rustup go python3 deno
-
-  # ... etc
-];
-```
-
-**Testing:**
-- `make test-pre` - Locked Ruff and pytest
-- `make test-local` - Ephemeral-HOME-focused pytest
-- `make test-shell` - Shell-handoff pytest
-- `make test-docker` - Python Ubuntu/Fedora driver
-
-**Common Commands:**
-- `make install` or `./bootstrap.sh` - Run full installation
-- `make update` - Update flake + upgrade packages
-- `make clean` - Garbage collect
-- `make verify` - Check Nix installation health
-
-## Reference Documentation
-
-- Determinate Installer: https://determinate.systems/blog/determinate-nix-installer/
-- Zero to Nix (Flakes): https://zero-to-nix.com/concepts/flakes/
-- Nix.dev (Flakes): https://nix.dev/concepts/flakes.html
-- NixOS Wiki: https://nixos.wiki/wiki/Flakes
-- Repository: /Users/wcygan/Development/dotfiles/
-
-## Quick Reference
-
-**Essential Commands:**
-```bash
-# Package management
-nix search nixpkgs <package>     # Search for package
-nix profile list                 # List installed packages
-./bootstrap.sh profile            # Apply flake changes
-nix-collect-garbage -d           # Clean old generations
-
-# Flake management
-nix flake update                 # Update all inputs
-nix flake check                  # Validate flake
-nix flake show                   # Display outputs
-nix flake metadata               # Show metadata
-
-# Development
-nix develop                      # Enter dev shell
-nix build                        # Build package
-nix fmt                          # Format Nix code
-nix run .#package                # Run package
-
-# Troubleshooting
-nix store info                   # Store statistics
-nix store gc --dry-run           # Preview cleanup
-nix profile rollback             # Revert to previous
-```
+Report the files changed, lockfile intent, commands and results, platform
+evidence, profile/recovery state, rollback path, and commit/push status.
+
+## References
+
+- Repository architecture and the validation matrix:
+  `$dotfiles-operations`.
+- Advanced Nix language patterns and standalone-project examples:
+  [REFERENCE.md](REFERENCE.md). They are not the dotfiles repository contract;
+  load them only when the current flake and operations guidance do not answer
+  the Nix-language question.

@@ -27,6 +27,13 @@ def test_root_agent_instructions_use_live_progressive_disclosure() -> None:
     assert "## Migrations" not in agents
 
 
+def test_claude_guidance_is_a_single_source_pointer_to_agent_instructions() -> None:
+    claude = REPO_ROOT / "CLAUDE.md"
+
+    assert claude.is_symlink()
+    assert claude.readlink() == Path("AGENTS.md")
+
+
 def test_bootstrap_is_the_only_root_setup_shell_entrypoint() -> None:
     automation_scripts = sorted(
         [

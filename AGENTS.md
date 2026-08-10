@@ -6,25 +6,32 @@ Provide reproducible tools with Nix and portable, editable configuration through
 repository-owned links. Keep Home Manager out of scope and preserve fast
 onboarding, deterministic CI, and straightforward rollback.
 
-## Required Routing
+## Route Before Acting
 
 - **Repository operations:** You **must** use `$dotfiles-operations` for setup,
   installation, verification, recovery, Nix/profile maintenance, managed links,
   CI, Docker, macOS acceptance, or repository-wide changes. Read its relevant
-  references before acting.
+  references before acting; keep it active alongside every more specific route.
 - **Agent skills:** For reusable-skill source, catalog pins, user-scope
   installation, verification, collisions, stale copies, or recovery, you
   **must** also use `$agent-skills-integration`.
 - **Application configuration:** Route Fish, Ghostty, lazygit, Neovim,
   Starship, Zed, and Zellij changes through `$config-change` and its selected
-  focused skill.
+  focused skill. Edit the repository source in `config/**`; change a host
+  destination only through the managed-link workflow.
+- **Nix input updates:** Use `$nix-update` for any `flake.lock` update; use
+  `$nix-manager` for Nix mechanics. A package-list change is not an input update.
+
+When more than one route applies, use every matching skill. Do not replace the
+repository-operation contract with a focused configuration or provider skill.
 
 ## Invariants
 
 - `bootstrap.sh` is the only root setup shell entry point; operational behavior
   lives in focused modules under `src/dotfiles_setup/**`.
 - Packages live in `flake.nix`, portable configuration in `config/**`, and
-  project-only skills in `.agents/skills/**`. Reusable skill source belongs in
+  managed-destination inventory in `src/dotfiles_setup/links.py`. Project-only
+  skills live in `.agents/skills/**`; reusable skill source belongs in
   `wcygan/agent-skills` and is consumed here only through its exact lock.
 - Setup is idempotent and preserves macOS, Ubuntu, Fedora, and Linux/WSL.
   Platform-sensitive work requires evidence from the affected platform; Linux
@@ -41,8 +48,9 @@ onboarding, deterministic CI, and straightforward rollback.
 
 1. Inspect the nearest instructions, `git status --short`, authoritative source,
    and live state relevant to the request before changing anything.
-2. Preserve unrelated work and change only the owning layer. Prefer plain files,
-   managed links, and existing modules over new setup surfaces.
+2. Preserve unrelated work and change only the owning layer. Use a repository
+   source plus its supported operation instead of repairing a machine-local
+   destination directly.
 3. Run the narrowest focused check first, then every applicable gate in the
    `$dotfiles-operations` validation matrix.
 4. Finish only when every changed invariant has evidence, unexpected lockfile

@@ -16,6 +16,30 @@
         "aarch64-darwin"
       ];
 
+      # nixpkgs' `bun` package lags upstream releases. Pin it to a newer
+      # upstream build until nixpkgs catches up, then drop this overlay.
+      # See: .agents/skills/nix-update/SKILL.md
+      bunOverlay = final: prev: {
+        bun = prev.bun.overrideAttrs (old: {
+          version = "1.3.14";
+          src =
+            {
+              aarch64-darwin = final.fetchurl {
+                url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-darwin-aarch64.zip";
+                hash = "sha256-2LliIYKK1vl6x6wKt+lYcjQa92MAHogD6CZ2UsJlJiA=";
+              };
+              aarch64-linux = final.fetchurl {
+                url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-aarch64.zip";
+                hash = "sha256-on/7Y6gxA3WDbg1vZorhf6jY0YuIw3yCHGUzGXOhmjs=";
+              };
+              x86_64-linux = final.fetchurl {
+                url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-x64.zip";
+                hash = "sha256-lR7iruhV8IWVruxiJSJqKY0/6oOj3NZGXAnLzN9+hI8=";
+              };
+            }.${final.stdenv.hostPlatform.system} or old.src;
+        });
+      };
+
       forAllSystems =
         f:
         nixpkgs.lib.genAttrs allSystems (
@@ -24,6 +48,7 @@
             pkgs = import nixpkgs {
               inherit system;
               config.allowUnfree = true;
+              overlays = [ bunOverlay ];
             };
           }
         );

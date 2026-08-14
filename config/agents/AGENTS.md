@@ -35,3 +35,4 @@ Follow ASD-STE100 Simplified Technical English for all technical writing. Use ap
 * Push back on designs that introduce unnecessary complexity or technical debt.
 * When multiple approaches are viable, choose one and explain significant tradeoffs concisely.
 * Leave the codebase simpler or better understood than you found it.
+* Use `request_user_input` by default with `$grilling` and `$grill-with-docs`.

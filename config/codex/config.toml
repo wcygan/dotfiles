@@ -13,6 +13,8 @@ enabled = true
 [features]
 goals = true
 multi_agent_v2 = true
+# Allow structured questions during Default-mode tasks.
+default_mode_request_user_input = true
 
 [agents]
 # Spawned-agent cap; the primary task is additional.

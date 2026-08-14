@@ -21,6 +21,7 @@ onboarding, deterministic CI, and straightforward rollback.
   destination only through the managed-link workflow.
 - **Nix input updates:** Use `$nix-update` for any `flake.lock` update; use
   `$nix-manager` for Nix mechanics. A package-list change is not an input update.
+- **User questions:** Use `request_user_input` for structured questions when the tool is available.
 
 When more than one route applies, use every matching skill. Do not replace the
 repository-operation contract with a focused configuration or provider skill.

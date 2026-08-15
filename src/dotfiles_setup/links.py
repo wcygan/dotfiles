@@ -224,6 +224,52 @@ def _temporary_symlink(
     raise LinkError(f"cannot allocate a temporary link for {destination}")
 
 
+def _replace_link_destination(
+    plan: PlannedLink,
+    temporary: Path,
+    *,
+    replace: Replace,
+    output: Output,
+) -> None:
+    destination = plan.link.destination
+    if plan.backup is not None:
+        if plan.backup.exists() or plan.backup.is_symlink():
+            raise LinkError(
+                f"planned backup path appeared before apply: {plan.backup}; "
+                "no destination was overwritten"
+            )
+        replace(destination, plan.backup)
+        output(f"-> Backed up {destination} to {plan.backup}")
+    replace(temporary, destination)
+
+
+def _raise_link_failure(
+    plan: PlannedLink,
+    error: OSError | ManifestError | LinkError,
+    *,
+    replace: Replace,
+    symlink: Symlink,
+    journal: OperationJournal | None,
+    journal_index: int | None,
+) -> None:
+    restored = _restore_plan(plan, replace=replace, symlink=symlink)
+    if restored and journal is not None and journal_index is not None:
+        try:
+            journal.update_link_entry(
+                journal_index,
+                mutation_started=False,
+                restored=True,
+                recovered=True,
+            )
+        except ManifestError:
+            restored = False
+    preserved = "prior destination restored" if restored else "recovery manifest preserved"
+    raise LinkError(
+        f"cannot replace {plan.link.destination}: {error}; {preserved}. "
+        "Run ./bootstrap.sh recover before retrying."
+    ) from error
+
+
 def _link_one(
     plan: PlannedLink,
     *,
@@ -252,37 +298,20 @@ def _link_one(
     try:
         if journal is not None and journal_index is not None:
             journal.update_link_entry(journal_index, mutation_started=True)
-        if plan.backup is not None:
-            if plan.backup.exists() or plan.backup.is_symlink():
-                raise LinkError(
-                    f"planned backup path appeared before apply: {plan.backup}; "
-                    "no destination was overwritten"
-                )
-            replace(destination, plan.backup)
-            mutation_started = True
-            output(f"-> Backed up {destination} to {plan.backup}")
-        replace(temporary, destination)
+        _replace_link_destination(plan, temporary, replace=replace, output=output)
         temporary_owned = False
         mutation_started = True
         if journal is not None and journal_index is not None:
             journal.update_link_entry(journal_index, mutation_started=True, applied=True)
     except (OSError, ManifestError, LinkError) as error:
-        restored = _restore_plan(plan, replace=replace, symlink=symlink)
-        if restored and journal is not None and journal_index is not None:
-            try:
-                journal.update_link_entry(
-                    journal_index,
-                    mutation_started=False,
-                    restored=True,
-                    recovered=True,
-                )
-            except ManifestError:
-                restored = False
-        preserved = "prior destination restored" if restored else "recovery manifest preserved"
-        raise LinkError(
-            f"cannot replace {destination}: {error}; {preserved}. "
-            "Run ./bootstrap.sh recover before retrying."
-        ) from error
+        _raise_link_failure(
+            plan,
+            error,
+            replace=replace,
+            symlink=symlink,
+            journal=journal,
+            journal_index=journal_index,
+        )
     finally:
         if temporary_owned:
             _unlink_owned_temporary(
@@ -311,6 +340,41 @@ def _prior_state_matches(plan: PlannedLink) -> bool:
     return metadata.st_dev == plan.prior_device and metadata.st_ino == plan.prior_inode
 
 
+def _current_link_matches(plan: PlannedLink) -> bool:
+    try:
+        return plan.link.destination.is_symlink() and os.readlink(plan.link.destination) == str(
+            plan.link.source
+        )
+    except OSError:
+        return False
+
+
+def _restore_prior_symlink(
+    plan: PlannedLink,
+    *,
+    replace: Replace,
+    symlink: Symlink,
+) -> bool:
+    if not _current_link_matches(plan):
+        return False
+    temporary = _temporary_symlink(
+        plan.link.destination,
+        Path(str(plan.prior_target)),
+        symlink=symlink,
+    )
+    temporary_identity = temporary.lstat()
+    try:
+        replace(temporary, plan.link.destination)
+    except OSError:
+        _unlink_owned_temporary(
+            temporary,
+            device=temporary_identity.st_dev,
+            inode=temporary_identity.st_ino,
+        )
+        raise
+    return True
+
+
 def _restore_plan(
     plan: PlannedLink,
     *,
@@ -323,32 +387,15 @@ def _restore_plan(
     try:
         if plan.backup is not None and plan.backup.exists():
             if destination.exists() or destination.is_symlink():
-                if not destination.is_symlink() or os.readlink(destination) != str(
-                    plan.link.source
-                ):
+                if not _current_link_matches(plan):
                     return False
                 destination.unlink()
             replace(plan.backup, destination)
         elif plan.prior_kind == "symlink" and plan.prior_target is not None:
-            if not destination.is_symlink() or os.readlink(destination) != str(plan.link.source):
+            if not _restore_prior_symlink(plan, replace=replace, symlink=symlink):
                 return False
-            temporary = _temporary_symlink(
-                destination,
-                Path(plan.prior_target),
-                symlink=symlink,
-            )
-            temporary_identity = temporary.lstat()
-            try:
-                replace(temporary, destination)
-            except OSError:
-                _unlink_owned_temporary(
-                    temporary,
-                    device=temporary_identity.st_dev,
-                    inode=temporary_identity.st_ino,
-                )
-                raise
         elif plan.prior_kind == "absent":
-            if not destination.is_symlink() or os.readlink(destination) != str(plan.link.source):
+            if not _current_link_matches(plan):
                 return False
             destination.unlink()
         else:
@@ -458,48 +505,55 @@ def _apply_file_mutation(
             )
 
 
-def _rollback_file_mutation(mutation: FileMutation, *, journal: OperationJournal | None) -> bool:
-    current_hash = _file_hash(mutation.destination)
-    if mutation.prior_kind == "file" and current_hash == mutation.prior_hash:
-        restored = True
-    elif mutation.prior_kind == "symlink" and mutation.destination.is_symlink():
+def _file_prior_state(mutation: FileMutation, current_hash: str | None) -> bool | None:
+    if mutation.prior_kind == "file":
+        return True if current_hash == mutation.prior_hash else None
+    if mutation.prior_kind == "symlink" and mutation.destination.is_symlink():
         try:
-            restored = os.readlink(mutation.destination) == mutation.prior_target
+            return True if os.readlink(mutation.destination) == mutation.prior_target else None
         except OSError:
-            restored = False
-    elif mutation.prior_kind == "absent" and not (
+            return None
+    if mutation.prior_kind == "absent" and not (
         mutation.destination.exists() or mutation.destination.is_symlink()
     ):
-        restored = True
-    elif current_hash != mutation.result_hash:
-        restored = False
-    else:
-        try:
-            if mutation.backup is not None and mutation.backup.exists():
-                os.replace(mutation.backup, mutation.destination)
-            elif mutation.prior_kind == "symlink" and mutation.prior_target is not None:
-                temporary = _temporary_symlink(
-                    mutation.destination,
-                    Path(mutation.prior_target),
-                    symlink=os.symlink,
+        return True
+    return None
+
+
+def _restore_file_prior(mutation: FileMutation) -> bool:
+    try:
+        if mutation.backup is not None and mutation.backup.exists():
+            os.replace(mutation.backup, mutation.destination)
+        elif mutation.prior_kind == "symlink" and mutation.prior_target is not None:
+            temporary = _temporary_symlink(
+                mutation.destination,
+                Path(mutation.prior_target),
+                symlink=os.symlink,
+            )
+            temporary_identity = temporary.lstat()
+            try:
+                os.replace(temporary, mutation.destination)
+            except OSError:
+                _unlink_owned_temporary(
+                    temporary,
+                    device=temporary_identity.st_dev,
+                    inode=temporary_identity.st_ino,
                 )
-                temporary_identity = temporary.lstat()
-                try:
-                    os.replace(temporary, mutation.destination)
-                except OSError:
-                    _unlink_owned_temporary(
-                        temporary,
-                        device=temporary_identity.st_dev,
-                        inode=temporary_identity.st_ino,
-                    )
-                    raise
-            elif mutation.prior_kind == "absent":
-                mutation.destination.unlink()
-            else:
-                return False
-            restored = True
-        except OSError:
-            restored = False
+                raise
+        elif mutation.prior_kind == "absent":
+            mutation.destination.unlink()
+        else:
+            return False
+    except OSError:
+        return False
+    return True
+
+
+def _rollback_file_mutation(mutation: FileMutation, *, journal: OperationJournal | None) -> bool:
+    current_hash = _file_hash(mutation.destination)
+    restored = _file_prior_state(mutation, current_hash)
+    if restored is None:
+        restored = current_hash == mutation.result_hash and _restore_file_prior(mutation)
     if restored and journal is not None and mutation.journal_index is not None:
         try:
             journal.update_link_entry(mutation.journal_index, recovered=True)
@@ -642,6 +696,36 @@ def _configure_npm(
     return mutation
 
 
+def _rollback_link_operations(
+    applied: list[tuple[PlannedLink, int]],
+    file_mutations: list[FileMutation],
+    *,
+    journal: OperationJournal,
+    replace: Replace,
+    symlink: Symlink,
+) -> bool:
+    files_rolled_back = True
+    for mutation in reversed(file_mutations):
+        if not _rollback_file_mutation(mutation, journal=journal):
+            files_rolled_back = False
+    rolled_back = _rollback_links(
+        applied,
+        replace=replace,
+        symlink=symlink,
+        journal=journal,
+    )
+    entries = journal.data["entries"]
+    assert isinstance(entries, list)
+    pending = any(
+        isinstance(entry, dict)
+        and entry.get("mutation_started")
+        and not entry.get("recovered")
+        and not entry.get("restored")
+        for entry in entries
+    )
+    return files_rolled_back and rolled_back and not pending
+
+
 def link_config(
     repo_root: Path,
     *,
@@ -740,27 +824,15 @@ def link_config(
             file_mutations.append(codex_mutation)
     except (LinkError, OSError, ManifestError) as error:
         if journal is not None:
-            files_rolled_back = True
-            for mutation in reversed(file_mutations):
-                if not _rollback_file_mutation(mutation, journal=journal):
-                    files_rolled_back = False
-            rolled_back = _rollback_links(
+            restored = _rollback_link_operations(
                 applied,
+                file_mutations,
+                journal=journal,
                 replace=replace,
                 symlink=symlink,
-                journal=journal,
-            )
-            entries = journal.data["entries"]
-            assert isinstance(entries, list)
-            pending = any(
-                isinstance(entry, dict)
-                and entry.get("mutation_started")
-                and not entry.get("recovered")
-                and not entry.get("restored")
-                for entry in entries
             )
             journal.transition(
-                "failed" if files_rolled_back and rolled_back and not pending else "recovery-needed"
+                "failed" if restored else "recovery-needed"
             )
         if isinstance(error, LinkError):
             raise

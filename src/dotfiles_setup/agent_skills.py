@@ -294,6 +294,39 @@ def _reject_collisions(
             )
 
 
+def _inventory_by_name(
+    installed: list[dict[str, Any]],
+    names: tuple[str, ...],
+) -> dict[str, list[dict[str, Any]]]:
+    return {name: [item for item in installed if item.get("skillName") == name] for name in names}
+
+
+def _append_source_pin_version_problems(
+    problems: list[str],
+    name: str,
+    item: dict[str, Any],
+    lock: AgentSkillsLock,
+    *,
+    source_label: str,
+    version_label: str,
+) -> None:
+    if not _source_matches(item.get("sourceURL"), lock.repository):
+        problems.append(f"{name}: {source_label} does not match {lock.repository}")
+    if item.get("pinned") is not True:
+        problems.append(f"{name}: installation is not pinned")
+    if item.get("version") != lock.commit:
+        problems.append(f"{name}: {version_label} does not match {lock.commit}")
+
+
+def _raise_inventory_problems(problems: list[str], prefix: str) -> None:
+    if not problems:
+        return
+    detail = "; ".join(problems[:5])
+    if len(problems) > 5:
+        detail += f"; and {len(problems) - 5} more"
+    raise AgentSkillsError(f"{prefix}: {detail}")
+
+
 def _verify(
     gh: str,
     lock: AgentSkillsLock,
@@ -306,8 +339,9 @@ def _verify(
     problems: list[str] = []
     parents: set[Path] = set()
     destination = _target_directory(lock, environment)
+    matches_by_name = _inventory_by_name(installed, expected)
     for name in expected:
-        matches = [item for item in installed if item.get("skillName") == name]
+        matches = matches_by_name[name]
         if not matches:
             problems.append(f"{name}: missing from Codex user scope")
             continue
@@ -325,19 +359,17 @@ def _verify(
                 f"{name}: installed path is outside the configured shared directory"
             )
         parents.add(path.parent)
-        if not _source_matches(item.get("sourceURL"), lock.repository):
-            problems.append(f"{name}: source does not match {lock.repository}")
+        _append_source_pin_version_problems(
+            problems,
+            name,
+            item,
+            lock,
+            source_label="source",
+            version_label="installed version",
+        )
         if item.get("scope") != "custom":
             problems.append(f"{name}: custom-directory inventory scope is missing")
-        if item.get("pinned") is not True:
-            problems.append(f"{name}: installation is not pinned")
-        if item.get("version") != lock.commit:
-            problems.append(f"{name}: installed version does not match {lock.commit}")
-    if problems:
-        detail = "; ".join(problems[:5])
-        if len(problems) > 5:
-            detail += f"; and {len(problems) - 5} more"
-        raise AgentSkillsError(f"agent skill verification failed: {detail}")
+    _raise_inventory_problems(problems, "agent skill verification failed")
     if len(parents) != 1:
         rendered = ", ".join(str(path) for path in sorted(parents)) or "none"
         raise AgentSkillsError(
@@ -370,8 +402,9 @@ def _legacy_cleanup_candidates(
     shared_directory = _target_directory(lock, environment)
     candidates: list[Path] = []
     problems: list[str] = []
+    matches_by_name = _inventory_by_name(matching, expected)
     for name in expected:
-        matches = [item for item in matching if item.get("skillName") == name]
+        matches = matches_by_name[name]
         if len(matches) != 1:
             problems.append(f"{name}: legacy catalog is incomplete or duplicated")
             continue
@@ -388,20 +421,18 @@ def _legacy_cleanup_candidates(
         if path.parent == shared_directory:
             problems.append(f"{name}: legacy path resolves to the shared directory")
             continue
-        if not _source_matches(item.get("sourceURL"), lock.repository):
-            problems.append(f"{name}: legacy source does not match {lock.repository}")
+        _append_source_pin_version_problems(
+            problems,
+            name,
+            item,
+            lock,
+            source_label="legacy source",
+            version_label="legacy version",
+        )
         if item.get("scope") != "user":
             problems.append(f"{name}: legacy scope is not user")
-        if item.get("pinned") is not True:
-            problems.append(f"{name}: legacy installation is not pinned")
-        if item.get("version") != lock.commit:
-            problems.append(f"{name}: legacy version does not match {lock.commit}")
         candidates.append(path)
-    if problems:
-        detail = "; ".join(problems[:5])
-        if len(problems) > 5:
-            detail += f"; and {len(problems) - 5} more"
-        raise AgentSkillsError(f"refusing legacy skill cleanup: {detail}")
+    _raise_inventory_problems(problems, "refusing legacy skill cleanup")
     return candidates
 
 

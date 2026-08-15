@@ -99,161 +99,179 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    handlers: dict[str, Callable[[argparse.Namespace], int]] = {
+        "doctor": lambda _args: run_doctor(),
+        "verify": lambda _args: run_verify(REPO_ROOT),
+        "profile": lambda _args: _run_mutation(
+            "profile", lambda _journal: print(ensure_profile(REPO_ROOT))
+        ),
+        "rustup": lambda _args: _run_mutation(
+            "rustup", lambda _journal: print(setup_rustup(REPO_ROOT))
+        ),
+        "agent-skills": _handle_agent_skills,
+        "link": _handle_link,
+        "recover": _handle_recover,
+        "uninstall": _handle_uninstall,
+        "shell-handoff": _handle_shell_handoff,
+        "git-user": _handle_git_user,
+        "install": _handle_install,
+    }
+    return handlers[args.command](args)
 
-    if args.command == "doctor":
-        return run_doctor()
-    if args.command == "verify":
-        return run_verify(REPO_ROOT)
-    if args.command == "profile":
-        return _run_mutation("profile", lambda _journal: print(ensure_profile(REPO_ROOT)))
-    if args.command == "rustup":
-        return _run_mutation("rustup", lambda _journal: print(setup_rustup(REPO_ROOT)))
-    if args.command == "agent-skills":
-        if args.check and args.cleanup_legacy:
-            print("agent-skills --check cannot be combined with --cleanup-legacy.")
-            return 2
-        if args.yes and not args.cleanup_legacy:
-            print("agent-skills --yes is only valid with --cleanup-legacy.")
-            return 2
-        if args.check:
-            try:
-                print(verify_agent_skills(REPO_ROOT))
-                return 0
-            except SetupError as error:
-                print(f"agent-skills check failed: {error}")
-                return 1
-        if args.cleanup_legacy:
-            if not args.yes:
-                print("Legacy cleanup requires --yes.")
-                return 2
-            return _run_mutation(
-                "agent-skills",
-                lambda _journal: print(cleanup_legacy_agent_skills(REPO_ROOT)),
-            )
-        return _run_mutation(
-            "agent-skills", lambda _journal: print(install_agent_skills(REPO_ROOT))
-        )
-    if args.command == "link":
-        if args.dry_run:
-            try:
-                link_config(REPO_ROOT, dry_run=True)
-            except SetupError as error:
-                print(f"Link setup failed: {error}")
-                return 1
-            return 0
-        return _run_mutation("link", lambda journal: link_config(REPO_ROOT, journal=journal))
-    if args.command == "recover":
-        if args.yes and not args.apply:
-            print("Recovery --yes is only valid with --apply.")
-            return 2
-        if not args.apply:
-            try:
-                return run_recovery()
-            except SetupError as error:
-                print(f"Recovery failed: {error}")
-                return 1
+
+def _handle_agent_skills(args: argparse.Namespace) -> int:
+    if args.check and args.cleanup_legacy:
+        print("agent-skills --check cannot be combined with --cleanup-legacy.")
+        return 2
+    if args.yes and not args.cleanup_legacy:
+        print("agent-skills --yes is only valid with --cleanup-legacy.")
+        return 2
+    if args.check:
         try:
-            with mutation_lock("recover"):
-                return run_recovery(apply=True, yes=args.yes)
-        except (SetupError, OSError) as error:
+            print(verify_agent_skills(REPO_ROOT))
+            return 0
+        except SetupError as error:
+            print(f"agent-skills check failed: {error}")
+            return 1
+    if args.cleanup_legacy:
+        if not args.yes:
+            print("Legacy cleanup requires --yes.")
+            return 2
+        return _run_mutation(
+            "agent-skills",
+            lambda _journal: print(cleanup_legacy_agent_skills(REPO_ROOT)),
+        )
+    return _run_mutation(
+        "agent-skills", lambda _journal: print(install_agent_skills(REPO_ROOT))
+    )
+
+
+def _handle_link(args: argparse.Namespace) -> int:
+    if args.dry_run:
+        try:
+            link_config(REPO_ROOT, dry_run=True)
+        except SetupError as error:
+            print(f"Link setup failed: {error}")
+            return 1
+        return 0
+    return _run_mutation("link", lambda journal: link_config(REPO_ROOT, journal=journal))
+
+
+def _handle_recover(args: argparse.Namespace) -> int:
+    if args.yes and not args.apply:
+        print("Recovery --yes is only valid with --apply.")
+        return 2
+    if not args.apply:
+        try:
+            return run_recovery()
+        except SetupError as error:
             print(f"Recovery failed: {error}")
             return 1
-    if args.command == "uninstall":
-        if not args.dry_run and not args.yes:
-            try:
-                confirmed = input("Remove symlinks managed by this repository? [y/N] ")
-            except EOFError:
-                print("Confirmation required; rerun with --yes for non-interactive use.")
-                return 2
-            if confirmed.lower() != "y":
-                print("No changes made.")
-                return 0
-        if args.dry_run:
-            try:
-                cleanup_links(REPO_ROOT, dry_run=True)
-                return 0
-            except SetupError as error:
-                print(f"Uninstall preview failed: {error}")
-                return 1
-        return _run_mutation(
-            "uninstall",
-            lambda journal: cleanup_links(REPO_ROOT, dry_run=False, journal=journal),
-        )
-    if args.command == "shell-handoff":
+    try:
+        with mutation_lock("recover"):
+            return run_recovery(apply=True, yes=args.yes)
+    except (SetupError, OSError) as error:
+        print(f"Recovery failed: {error}")
+        return 1
 
-        def shell_handoff(journal: OperationJournal) -> None:
-            result = configure_shell_handoff(journal=journal)
-            journal.record_operation("shell-handoff", "completed")
-            print(f"Updated {len(result.updated_files)} shell configuration file(s).")
 
-        return _run_mutation("shell-handoff", shell_handoff)
-    if args.command == "git-user":
-
-        def git_user(journal: OperationJournal) -> None:
-            result = configure_git_user(
-                name=args.name,
-                email=args.email,
-                remove_global=args.remove_global,
-            )
-            journal.record_operation("git-user", "completed")
-            action = "Updated" if result.updated else "Preserved"
-            print(f"{action} Git identity at {result.path}")
-
-        return _run_mutation("git-user", git_user)
-    if args.command == "install":
-
-        def link_output(line: str) -> None:
-            print(f"[links] {line}")
-
+def _handle_uninstall(args: argparse.Namespace) -> int:
+    if not args.dry_run and not args.yes:
         try:
-            with mutation_lock("install"):
-                journal = OperationJournal("install", REPO_ROOT, environ=os.environ)
-                journal.transition("applying")
-
-                def observe(result: OperationResult) -> None:
-                    status = (
-                        "skipped"
-                        if result.skipped
-                        else "completed"
-                        if result.succeeded
-                        else "failed"
-                    )
-                    journal.record_operation(result.name, status)
-
-                exit_code = run_install(
-                    profile=lambda: ensure_profile(REPO_ROOT),
-                    links=lambda: link_config(REPO_ROOT, output=link_output, journal=journal),
-                    rustup=lambda: setup_rustup(REPO_ROOT),
-                    shell_handoff=(
-                        (lambda: configure_shell_handoff(journal=journal))
-                        if args.shell_handoff
-                        else None
-                    ),
-                    verify=lambda: run_verify(REPO_ROOT),
-                    observer=observe,
-                )
-                if journal.data["state"] not in {"failed", "recovery-needed"}:
-                    if exit_code == 0:
-                        journal.transition("completed")
-                    else:
-                        operations = journal.data["operations"]
-                        assert isinstance(operations, list)
-                        mutation_may_be_partial = any(
-                            isinstance(operation, dict) and operation.get("status") == "failed"
-                            for operation in operations
-                        )
-                        journal.transition(
-                            "recovery-needed" if mutation_may_be_partial else "failed"
-                        )
-                return exit_code
-        except (SetupError, NixProfileError, RustupError, GitUserError, OSError) as error:
-            if "journal" in locals() and journal.data["state"] == "applying":
-                with suppress(SetupError):
-                    journal.transition("recovery-needed")
-            print(f"Install failed: {error}")
+            confirmed = input("Remove symlinks managed by this repository? [y/N] ")
+        except EOFError:
+            print("Confirmation required; rerun with --yes for non-interactive use.")
+            return 2
+        if confirmed.lower() != "y":
+            print("No changes made.")
+            return 0
+    if args.dry_run:
+        try:
+            cleanup_links(REPO_ROOT, dry_run=True)
+            return 0
+        except SetupError as error:
+            print(f"Uninstall preview failed: {error}")
             return 1
+    return _run_mutation(
+        "uninstall",
+        lambda journal: cleanup_links(REPO_ROOT, dry_run=False, journal=journal),
+    )
 
-    raise AssertionError(f"Unhandled command: {args.command}")
+
+def _handle_shell_handoff(_args: argparse.Namespace) -> int:
+    def shell_handoff(journal: OperationJournal) -> None:
+        result = configure_shell_handoff(journal=journal)
+        journal.record_operation("shell-handoff", "completed")
+        print(f"Updated {len(result.updated_files)} shell configuration file(s).")
+
+    return _run_mutation("shell-handoff", shell_handoff)
+
+
+def _handle_git_user(args: argparse.Namespace) -> int:
+    def git_user(journal: OperationJournal) -> None:
+        result = configure_git_user(
+            name=args.name,
+            email=args.email,
+            remove_global=args.remove_global,
+        )
+        journal.record_operation("git-user", "completed")
+        action = "Updated" if result.updated else "Preserved"
+        print(f"{action} Git identity at {result.path}")
+
+    return _run_mutation("git-user", git_user)
+
+
+def _handle_install(args: argparse.Namespace) -> int:
+    def link_output(line: str) -> None:
+        print(f"[links] {line}")
+
+    try:
+        with mutation_lock("install"):
+            journal = OperationJournal("install", REPO_ROOT, environ=os.environ)
+            journal.transition("applying")
+
+            def observe(result: OperationResult) -> None:
+                status = (
+                    "skipped"
+                    if result.skipped
+                    else "completed"
+                    if result.succeeded
+                    else "failed"
+                )
+                journal.record_operation(result.name, status)
+
+            exit_code = run_install(
+                profile=lambda: ensure_profile(REPO_ROOT),
+                links=lambda: link_config(REPO_ROOT, output=link_output, journal=journal),
+                rustup=lambda: setup_rustup(REPO_ROOT),
+                shell_handoff=(
+                    (lambda: configure_shell_handoff(journal=journal))
+                    if args.shell_handoff
+                    else None
+                ),
+                verify=lambda: run_verify(REPO_ROOT),
+                observer=observe,
+            )
+            if journal.data["state"] not in {"failed", "recovery-needed"}:
+                if exit_code == 0:
+                    journal.transition("completed")
+                else:
+                    operations = journal.data["operations"]
+                    assert isinstance(operations, list)
+                    mutation_may_be_partial = any(
+                        isinstance(operation, dict) and operation.get("status") == "failed"
+                        for operation in operations
+                    )
+                    journal.transition(
+                        "recovery-needed" if mutation_may_be_partial else "failed"
+                    )
+            return exit_code
+    except (SetupError, NixProfileError, RustupError, GitUserError, OSError) as error:
+        if "journal" in locals() and journal.data["state"] == "applying":
+            with suppress(SetupError):
+                journal.transition("recovery-needed")
+        print(f"Install failed: {error}")
+        return 1
 
 
 def _run_mutation(command: str, operation: Callable[[OperationJournal], object]) -> int:

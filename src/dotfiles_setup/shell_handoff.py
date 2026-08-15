@@ -81,45 +81,53 @@ def configure_shell_handoff(
     """
     home_directory = (Path.home() if home is None else home).expanduser()
     suffix = int(time.time()) if backup_timestamp is None else backup_timestamp
+    requested = _requested_shell_blocks(home_directory, shell)
+    plans = _plan_shell_files(requested, home_directory, suffix)
+    _journal_shell_plans(plans, journal)
+    staged = _stage_shell_plans(plans)
+    updated_files, backups = _apply_shell_plans(staged, journal=journal)
+    return ShellHandoffResult(tuple(updated_files), tuple(backups))
+
+
+def _requested_shell_blocks(
+    home: Path,
+    shell: str | None,
+) -> dict[Path, list[tuple[str, str]]]:
     requested: dict[Path, list[tuple[str, str]]] = {}
 
     def ensure(path: Path, marker: str, content: str) -> None:
         requested.setdefault(path, []).append((marker, content))
 
-    bashrc = home_directory / ".bashrc"
+    bashrc = home / ".bashrc"
     ensure(
         bashrc,
         "DOTFILES:NIX_SHELL_HELPERS",
         'source "$HOME/.config/shell-nix.sh" 2>/dev/null || true',
     )
     ensure(bashrc, "DOTFILES:EXEC_FISH", _BASH_EXEC_FISH)
-
     active_shell = os.environ.get("SHELL", "") if shell is None else shell
     if Path(active_shell).name == "bash":
-        bash_profile = home_directory / ".bash_profile"
-        ensure(
-            bash_profile,
-            "DOTFILES:BASH_PROFILE_SOURCE_BASHRC",
-            _BASH_PROFILE_SOURCE_BASHRC,
-        )
-        ensure(
-            bash_profile,
-            "DOTFILES:BASH_PROFILE_SOURCE_PROFILE",
-            _BASH_PROFILE_SOURCE_PROFILE,
-        )
-
-    zshrc = home_directory / ".zshrc"
+        bash_profile = home / ".bash_profile"
+        ensure(bash_profile, "DOTFILES:BASH_PROFILE_SOURCE_BASHRC", _BASH_PROFILE_SOURCE_BASHRC)
+        ensure(bash_profile, "DOTFILES:BASH_PROFILE_SOURCE_PROFILE", _BASH_PROFILE_SOURCE_PROFILE)
+    zshrc = home / ".zshrc"
     ensure(
         zshrc,
         "DOTFILES:NIX_SHELL_HELPERS",
         'source "$HOME/.config/shell-nix.sh" 2>/dev/null || true',
     )
     ensure(zshrc, "DOTFILES:EXEC_FISH", _ZSH_EXEC_FISH)
+    ensure(home / ".zshenv", "DOTFILES:NIX_PATH", _ZSHENV_PATH)
+    return requested
 
-    ensure(home_directory / ".zshenv", "DOTFILES:NIX_PATH", _ZSHENV_PATH)
 
+def _plan_shell_files(
+    requested: dict[Path, list[tuple[str, str]]],
+    home: Path,
+    suffix: int,
+) -> list[_ShellPlan]:
     plans: list[_ShellPlan] = []
-    home_scope = home_directory.resolve()
+    home_scope = home.resolve()
     for visible_path, blocks in requested.items():
         effective_path = (
             visible_path.resolve(strict=False) if visible_path.is_symlink() else visible_path
@@ -168,28 +176,37 @@ def configure_shell_handoff(
                 _content_hash(updated),
             )
         )
+    return plans
 
-    if journal is not None:
-        for plan in plans:
-            plan.journal_index = journal.add_link_entry(
-                {
-                    "entry_type": "file",
-                    "destination": str(plan.effective_path),
-                    "visible_destination": str(plan.visible_path),
-                    "source": "shell-handoff",
-                    "prior_kind": plan.prior_kind,
-                    "prior_target": None,
-                    "prior_hash": plan.prior_hash,
-                    "backup": str(plan.backup) if plan.backup is not None else None,
-                    "result_kind": "file",
-                    "result_target": None,
-                    "result_hash": plan.result_hash,
-                    "mutation_started": False,
-                    "applied": False,
-                    "recovered": False,
-                }
-            )
 
+def _journal_shell_plans(
+    plans: list[_ShellPlan],
+    journal: OperationJournal | None,
+) -> None:
+    if journal is None:
+        return
+    for plan in plans:
+        plan.journal_index = journal.add_link_entry(
+            {
+                "entry_type": "file",
+                "destination": str(plan.effective_path),
+                "visible_destination": str(plan.visible_path),
+                "source": "shell-handoff",
+                "prior_kind": plan.prior_kind,
+                "prior_target": None,
+                "prior_hash": plan.prior_hash,
+                "backup": str(plan.backup) if plan.backup is not None else None,
+                "result_kind": "file",
+                "result_target": None,
+                "result_hash": plan.result_hash,
+                "mutation_started": False,
+                "applied": False,
+                "recovered": False,
+            }
+        )
+
+
+def _stage_shell_plans(plans: list[_ShellPlan]) -> list[tuple[_ShellPlan, Path, int, int]]:
     staged: list[tuple[_ShellPlan, Path, int, int]] = []
     try:
         for plan in plans:
@@ -211,7 +228,14 @@ def configure_shell_handoff(
         for _plan, temporary, device, inode in staged:
             _unlink_owned_temporary(temporary, device=device, inode=inode)
         raise ShellHandoffError(f"cannot stage shell handoff update: {error}") from error
+    return staged
 
+
+def _apply_shell_plans(
+    staged: list[tuple[_ShellPlan, Path, int, int]],
+    *,
+    journal: OperationJournal | None,
+) -> tuple[list[Path], list[Path]]:
     updated_files: list[Path] = []
     backups: list[Path] = []
     applied: list[_ShellPlan] = []
@@ -245,7 +269,7 @@ def configure_shell_handoff(
         for _plan, temporary, device, inode in staged:
             if temporary not in moved_temporaries:
                 _unlink_owned_temporary(temporary, device=device, inode=inode)
-    return ShellHandoffResult(tuple(updated_files), tuple(backups))
+    return updated_files, backups
 
 
 def _content_hash(contents: str) -> str:

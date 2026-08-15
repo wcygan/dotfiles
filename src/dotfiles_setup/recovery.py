@@ -257,24 +257,12 @@ def _persist_progress(
     _atomic_json(state_directory(environ) / "recovery-needed.json", manifest)
 
 
-def run_recovery(
-    *,
-    environ: Mapping[str, str] | None = None,
-    apply: bool = False,
-    yes: bool = False,
-    output: Output = print,
-) -> int:
-    """Describe or explicitly apply recovery for the latest interrupted operation."""
-
-    pending = _pending_manifest(environ)
-    if pending is None:
-        output("No interrupted dotfiles operation needs recovery.")
-        return 0
-    path, manifest = pending
-    entries = manifest.get("entries", [])
-    if not isinstance(entries, list):
-        raise RecoveryError(f"invalid recovery entries in {path}")
-    _validate_entries(manifest, entries, environ)
+def _report_recovery(
+    path: Path,
+    manifest: dict[str, Any],
+    entries: list[Any],
+    output: Output,
+) -> None:
     output(f"Recovery is needed for {manifest.get('command', 'setup')} ({path}).")
     for raw in entries:
         if not isinstance(raw, dict) or not raw.get("mutation_started"):
@@ -303,6 +291,144 @@ def run_recovery(
             "Agent skill changes are not reversed automatically; inspect them with "
             "`./bootstrap.sh agent-skills --check` before acknowledging recovery."
         )
+
+
+def _mark_recovered(
+    path: Path,
+    manifest: dict[str, Any],
+    raw: dict[str, Any],
+    environ: Mapping[str, str] | None,
+    destination: Path,
+    output: Output,
+    *,
+    already: bool,
+) -> None:
+    raw["recovered"] = True
+    _persist_progress(path, manifest, environ)
+    output(f"{'Already recovered' if already else 'Recovered'} {destination}")
+
+
+def _recover_file_entry(
+    path: Path,
+    manifest: dict[str, Any],
+    raw: dict[str, Any],
+    environ: Mapping[str, str] | None,
+    output: Output,
+) -> str | None:
+    destination = Path(str(raw["destination"]))
+    if _matches_file_prior(destination, raw):
+        _mark_recovered(path, manifest, raw, environ, destination, output, already=True)
+        return None
+    if _file_hash(destination) != raw.get("result_hash"):
+        return f"{destination}: current file changed; manual intervention required"
+
+    backup_value = raw.get("backup")
+    backup = Path(str(backup_value)) if backup_value else None
+    try:
+        if backup is not None and backup.exists():
+            if _file_hash(backup) != raw.get("prior_hash"):
+                return f"{destination}: backup contents changed; manual intervention required"
+            os.replace(backup, destination)
+        elif raw.get("prior_kind") == "symlink" and isinstance(raw.get("prior_target"), str):
+            _restore_symlink(destination, str(raw["prior_target"]))
+        elif raw.get("prior_kind") == "absent":
+            destination.unlink()
+        else:
+            return f"{destination}: shell backup is missing; manual intervention required"
+    except OSError as error:
+        return f"{destination}: {error}; manual intervention required"
+
+    _mark_recovered(path, manifest, raw, environ, destination, output, already=False)
+    return None
+
+
+def _apply_link_recovery(
+    destination: Path,
+    backup: Path | None,
+    prior_kind: Any,
+    prior_target: Any,
+    result_kind: Any,
+    current_expected: bool,
+) -> str | None:
+    try:
+        if backup is not None and backup.exists():
+            if not current_expected and (destination.exists() or destination.is_symlink()):
+                return f"{destination}: current state changed; preserved {backup}"
+            if current_expected:
+                destination.unlink()
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(backup, destination)
+        elif prior_kind == "symlink" and isinstance(prior_target, str):
+            if not current_expected:
+                return f"{destination}: current state changed; prior link not restored"
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            if result_kind == "absent":
+                os.symlink(prior_target, destination)
+            else:
+                _restore_symlink(destination, prior_target)
+        elif prior_kind == "absent":
+            if not current_expected:
+                return f"{destination}: current state changed; link not removed"
+            destination.unlink()
+        else:
+            return f"{destination}: backup is missing; manual intervention required"
+    except OSError as error:
+        return f"{destination}: {error}; manual intervention required"
+    return None
+
+
+def _recover_link_entry(
+    path: Path,
+    manifest: dict[str, Any],
+    raw: dict[str, Any],
+    environ: Mapping[str, str] | None,
+    output: Output,
+) -> str | None:
+    destination = Path(str(raw["destination"]))
+    result_target = str(raw.get("result_target", ""))
+    backup_value = raw.get("backup")
+    backup = Path(str(backup_value)) if backup_value else None
+    prior_kind = raw.get("prior_kind")
+    prior_target = raw.get("prior_target")
+    result_kind = raw.get("result_kind")
+    if _matches_prior(destination, raw):
+        _mark_recovered(path, manifest, raw, environ, destination, output, already=True)
+        return None
+
+    current_expected = (
+        not (destination.exists() or destination.is_symlink())
+        if result_kind == "absent"
+        else _matches_link(destination, result_target)
+    )
+    message = _apply_link_recovery(
+        destination, backup, prior_kind, prior_target, result_kind, current_expected
+    )
+    if message is not None:
+        return message
+
+    _mark_recovered(path, manifest, raw, environ, destination, output, already=False)
+    return None
+
+
+def run_recovery(
+    *,
+    environ: Mapping[str, str] | None = None,
+    apply: bool = False,
+    yes: bool = False,
+    output: Output = print,
+) -> int:
+    """Describe or explicitly apply recovery for the latest interrupted operation."""
+
+    pending = _pending_manifest(environ)
+    if pending is None:
+        output("No interrupted dotfiles operation needs recovery.")
+        return 0
+    path, manifest = pending
+    entries = manifest.get("entries", [])
+    if not isinstance(entries, list):
+        raise RecoveryError(f"invalid recovery entries in {path}")
+    _validate_entries(manifest, entries, environ)
+    _report_recovery(path, manifest, entries, output)
     if not apply:
         output("Dry run only. Apply with: ./bootstrap.sh recover --apply --yes")
         return 0
@@ -315,96 +441,10 @@ def run_recovery(
     for raw in reversed(entries):
         if not isinstance(raw, dict) or not raw.get("mutation_started") or raw.get("recovered"):
             continue
-        destination = Path(str(raw["destination"]))
-        if raw.get("entry_type") == "file":
-            if _matches_file_prior(destination, raw):
-                raw["recovered"] = True
-                _persist_progress(path, manifest, environ)
-                output(f"Already recovered {destination}")
-                continue
-            current_hash = _file_hash(destination)
-            if current_hash != raw.get("result_hash"):
-                unresolved.append(
-                    f"{destination}: current file changed; manual intervention required"
-                )
-                continue
-            backup_value = raw.get("backup")
-            backup = Path(str(backup_value)) if backup_value else None
-            try:
-                if backup is not None and backup.exists():
-                    if _file_hash(backup) != raw.get("prior_hash"):
-                        unresolved.append(
-                            f"{destination}: backup contents changed; manual intervention required"
-                        )
-                        continue
-                    os.replace(backup, destination)
-                elif raw.get("prior_kind") == "symlink" and isinstance(
-                    raw.get("prior_target"), str
-                ):
-                    _restore_symlink(destination, str(raw["prior_target"]))
-                elif raw.get("prior_kind") == "absent":
-                    destination.unlink()
-                else:
-                    unresolved.append(
-                        f"{destination}: shell backup is missing; manual intervention required"
-                    )
-                    continue
-                raw["recovered"] = True
-                _persist_progress(path, manifest, environ)
-                output(f"Recovered {destination}")
-            except OSError as error:
-                unresolved.append(f"{destination}: {error}; manual intervention required")
-            continue
-        result_target = str(raw.get("result_target", ""))
-        backup_value = raw.get("backup")
-        backup = Path(str(backup_value)) if backup_value else None
-        prior_kind = raw.get("prior_kind")
-        prior_target = raw.get("prior_target")
-        result_kind = raw.get("result_kind")
-        if _matches_prior(destination, raw):
-            raw["recovered"] = True
-            _persist_progress(path, manifest, environ)
-            output(f"Already recovered {destination}")
-            continue
-        current_expected = (
-            not (destination.exists() or destination.is_symlink())
-            if result_kind == "absent"
-            else _matches_link(destination, result_target)
-        )
-
-        try:
-            if backup is not None and backup.exists():
-                if not current_expected and (destination.exists() or destination.is_symlink()):
-                    unresolved.append(f"{destination}: current state changed; preserved {backup}")
-                    continue
-                if current_expected:
-                    destination.unlink()
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                os.replace(backup, destination)
-            elif prior_kind == "symlink" and isinstance(prior_target, str):
-                if not current_expected:
-                    unresolved.append(
-                        f"{destination}: current state changed; prior link not restored"
-                    )
-                    continue
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                if result_kind == "absent":
-                    os.symlink(prior_target, destination)
-                else:
-                    _restore_symlink(destination, prior_target)
-            elif prior_kind == "absent":
-                if not current_expected:
-                    unresolved.append(f"{destination}: current state changed; link not removed")
-                    continue
-                destination.unlink()
-            else:
-                unresolved.append(f"{destination}: backup is missing; manual intervention required")
-                continue
-            raw["recovered"] = True
-            _persist_progress(path, manifest, environ)
-            output(f"Recovered {destination}")
-        except OSError as error:
-            unresolved.append(f"{destination}: {error}; manual intervention required")
+        recover = _recover_file_entry if raw.get("entry_type") == "file" else _recover_link_entry
+        message = recover(path, manifest, raw, environ, output)
+        if message is not None:
+            unresolved.append(message)
 
     if unresolved:
         for message in unresolved:

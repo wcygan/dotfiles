@@ -232,6 +232,11 @@ def _replace_link_destination(
     output: Output,
 ) -> None:
     destination = plan.link.destination
+    if not _prior_state_matches(plan):
+        raise LinkError(
+            f"managed destination changed before apply: {destination}; "
+            "no destination was overwritten"
+        )
     if plan.backup is not None:
         if plan.backup.exists() or plan.backup.is_symlink():
             raise LinkError(
@@ -240,6 +245,11 @@ def _replace_link_destination(
             )
         replace(destination, plan.backup)
         output(f"-> Backed up {destination} to {plan.backup}")
+        if destination.exists() or destination.is_symlink():
+            raise LinkError(
+                f"managed destination was not cleared before apply: {destination}; "
+                "no replacement was installed"
+            )
     replace(temporary, destination)
 
 
@@ -293,6 +303,16 @@ def _link_one(
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = _temporary_symlink(destination, link.source, symlink=symlink)
     temporary_identity = temporary.lstat()
+    if not _prior_state_matches(plan):
+        _unlink_owned_temporary(
+            temporary,
+            device=temporary_identity.st_dev,
+            inode=temporary_identity.st_ino,
+        )
+        raise LinkError(
+            f"managed destination changed before apply: {destination}; "
+            "no destination was overwritten"
+        )
     temporary_owned = True
     mutation_started = False
     try:
@@ -726,6 +746,82 @@ def _rollback_link_operations(
     return files_rolled_back and rolled_back and not pending
 
 
+def _record_link_entries(
+    plans: tuple[PlannedLink, ...],
+    journal: OperationJournal | None,
+) -> list[int | None]:
+    if journal is None:
+        return [None] * len(plans)
+    return [
+        journal.add_link_entry(
+            {
+                "destination": str(plan.link.destination),
+                "source": str(plan.link.source),
+                "prior_kind": plan.prior_kind,
+                "prior_target": plan.prior_target,
+                "prior_device": plan.prior_device,
+                "prior_inode": plan.prior_inode,
+                "backup": str(plan.backup) if plan.backup is not None else None,
+                "result_kind": "symlink",
+                "result_target": str(plan.link.source),
+                "mutation_started": False,
+                "applied": False,
+                "recovered": False,
+            }
+        )
+        for plan in plans
+    ]
+
+
+def _apply_link_operations(
+    plans: tuple[PlannedLink, ...],
+    journal_indices: list[int | None],
+    *,
+    applied: list[tuple[PlannedLink, int]],
+    file_mutations: list[FileMutation],
+    home: Path,
+    repo_root: Path,
+    codex_home: Path,
+    dry_run: bool,
+    output: Output,
+    now: Timestamp,
+    replace: Replace,
+    symlink: Symlink,
+    journal: OperationJournal | None,
+) -> None:
+    for plan, journal_index in zip(plans, journal_indices, strict=True):
+        _link_one(
+            plan,
+            dry_run=dry_run,
+            output=output,
+            replace=replace,
+            symlink=symlink,
+            journal=journal,
+            journal_index=journal_index,
+        )
+        if journal_index is not None:
+            applied.append((plan, journal_index))
+
+    npm_mutation = _configure_npm(
+        home,
+        dry_run=dry_run,
+        output=output,
+        now=now,
+        journal=journal,
+    )
+    if npm_mutation is not None:
+        file_mutations.append(npm_mutation)
+    codex_mutation = _copy_codex_template(
+        repo_root,
+        codex_home,
+        dry_run=dry_run,
+        output=output,
+        journal=journal,
+    )
+    if codex_mutation is not None:
+        file_mutations.append(codex_mutation)
+
+
 def link_config(
     repo_root: Path,
     *,
@@ -762,66 +858,28 @@ def link_config(
     owns_journal = journal is None and not dry_run
     if owns_journal:
         journal = OperationJournal("link", repo_root, environ=values)
-    journal_indices: list[int | None] = []
-    for plan in plans:
-        if journal is None:
-            journal_indices.append(None)
-            continue
-        journal_indices.append(
-            journal.add_link_entry(
-                {
-                    "destination": str(plan.link.destination),
-                    "source": str(plan.link.source),
-                    "prior_kind": plan.prior_kind,
-                    "prior_target": plan.prior_target,
-                    "prior_device": plan.prior_device,
-                    "prior_inode": plan.prior_inode,
-                    "backup": str(plan.backup) if plan.backup is not None else None,
-                    "result_kind": "symlink",
-                    "result_target": str(plan.link.source),
-                    "mutation_started": False,
-                    "applied": False,
-                    "recovered": False,
-                }
-            )
-        )
+    journal_indices = _record_link_entries(plans, journal)
     if owns_journal and journal is not None:
         journal.transition("applying")
 
     applied: list[tuple[PlannedLink, int]] = []
     file_mutations: list[FileMutation] = []
     try:
-        for plan, journal_index in zip(plans, journal_indices, strict=True):
-            _link_one(
-                plan,
-                dry_run=dry_run,
-                output=output,
-                replace=replace,
-                symlink=symlink,
-                journal=journal,
-                journal_index=journal_index,
-            )
-            if journal_index is not None:
-                applied.append((plan, journal_index))
-
-        npm_mutation = _configure_npm(
-            home,
+        _apply_link_operations(
+            plans,
+            journal_indices,
+            applied=applied,
+            file_mutations=file_mutations,
+            home=home,
+            repo_root=repo_root,
+            codex_home=codex_home,
             dry_run=dry_run,
             output=output,
             now=now,
+            replace=replace,
+            symlink=symlink,
             journal=journal,
         )
-        if npm_mutation is not None:
-            file_mutations.append(npm_mutation)
-        codex_mutation = _copy_codex_template(
-            repo_root,
-            codex_home,
-            dry_run=dry_run,
-            output=output,
-            journal=journal,
-        )
-        if codex_mutation is not None:
-            file_mutations.append(codex_mutation)
     except (LinkError, OSError, ManifestError) as error:
         if journal is not None:
             restored = _rollback_link_operations(

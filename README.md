@@ -233,8 +233,9 @@ failed or skipped.
 
 Mutating commands share a fail-fast per-user lock under the XDG cache home, so
 two setup processes cannot race. Link setup preflights its complete inventory,
-uses atomic replacements, restores physical destinations if replacement fails,
-and journals recovery metadata under
+records each destination's prior identity, rechecks it before replacement, and
+stops when it detects a change. It uses atomic replacements, restores physical
+destinations if replacement fails, and journals recovery metadata under
 `${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/`. `doctor`, `verify`, dry runs,
 and the default `recover` inspection remain read-only and do not take the
 mutation lock. If an interrupted operation is recorded, inspect it first:

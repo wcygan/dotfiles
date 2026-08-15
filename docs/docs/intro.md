@@ -111,7 +111,8 @@ dotfiles/
 - **Idempotent**: Every operation is safe to run multiple times
 - **Cross-platform**: Same experience on macOS, Ubuntu, and Fedora
 - **Minimal**: Clean configs under `config/`, packages in `flake.nix`
-- **Safe**: Pre-flight checks prevent problems, backups enable rollback
+- **Safe**: Pre-flight and destination checks stop unexpected replacements;
+  backups enable rollback
 - **Reproducible**: Nix ensures identical tool versions everywhere
 
 ## Common Tasks
@@ -180,6 +181,8 @@ make test         # All non-Docker tests
 links save pre-existing paths with timestamped backup names, and rerunning
 `make link` or `./bootstrap.sh link` is safe. Tag a known-good repository
 revision before a broader migration to retain a straightforward source rollback.
+Link setup records each destination's prior identity and stops when a recheck
+detects a change before replacement.
 
 ### Python Project Structure
 

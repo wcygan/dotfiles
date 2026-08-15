@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 
 from dotfiles_setup import cli
+from dotfiles_setup import links as links_module
+from dotfiles_setup.errors import LinkError
 from dotfiles_setup.links import link_config, managed_links
 
 
@@ -83,6 +85,34 @@ def test_existing_files_are_backed_up_and_symlinks_are_replaced(tmp_path: Path) 
     assert backups[0].read_text() == "local git config"
     assert git_destination.is_symlink()
     assert starship_destination.readlink() == (Path.cwd() / "config" / "starship.toml").resolve()
+
+
+def test_link_rejects_destination_created_after_planning(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    home = tmp_path / "home"
+    xdg = tmp_path / "xdg"
+    destination = xdg / "git"
+    original_temporary_symlink = links_module._temporary_symlink
+
+    def competing_temporary_symlink(
+        planned_destination: Path,
+        source: Path,
+        *,
+        symlink: links_module.Symlink,
+    ) -> Path:
+        temporary = original_temporary_symlink(planned_destination, source, symlink=symlink)
+        if planned_destination == destination:
+            destination.write_text("created by competing actor")
+        return temporary
+
+    monkeypatch.setattr(links_module, "_temporary_symlink", competing_temporary_symlink)
+
+    with pytest.raises(LinkError, match="changed before apply"):
+        link_config(Path.cwd(), environ=environment(home, xdg=xdg), system="Linux")
+
+    assert destination.read_text() == "created by competing actor"
+    assert not destination.is_symlink()
 
 
 def test_existing_shared_agents_file_is_backed_up(tmp_path: Path) -> None:

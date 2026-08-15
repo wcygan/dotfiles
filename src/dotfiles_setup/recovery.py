@@ -94,6 +94,97 @@ def _recorded_path(value: str, label: str) -> Path:
     return path
 
 
+def _validate_file_entry(
+    manifest: dict[str, Any],
+    raw: dict[str, Any],
+    destination: Path,
+    source: str,
+    *,
+    home: Path,
+    codex_home: Path,
+    shell_destinations: set[Path],
+) -> None:
+    visible_value = raw.get("visible_destination")
+    visible = (
+        _recorded_path(visible_value, "visible destination")
+        if isinstance(visible_value, str)
+        else None
+    )
+    valid_scope = False
+    if source == "shell-handoff":
+        valid_scope = (
+            manifest.get("command") in {"shell-handoff", "install"}
+            and visible in shell_destinations
+            and destination.resolve(strict=False).is_relative_to(home.resolve())
+        )
+    elif source == "npmrc":
+        valid_scope = (
+            manifest.get("command") in {"link", "install"}
+            and visible == home / ".npmrc"
+            and destination.resolve(strict=False).is_relative_to(home.resolve())
+        )
+    elif source == "codex-template":
+        valid_scope = (
+            manifest.get("command") in {"link", "install"}
+            and visible == codex_home / "config.toml"
+            and destination == visible
+        )
+    if (
+        not valid_scope
+        or raw.get("prior_kind") not in {"absent", "file", "symlink"}
+        or raw.get("result_kind") != "file"
+    ):
+        raise RecoveryError(
+            f"file recovery destination is outside the managed scope: {destination}"
+        )
+    assert visible is not None
+    if source == "codex-template" and visible.is_symlink():
+        if raw.get("prior_kind") != "symlink" or os.readlink(visible) != raw.get("prior_target"):
+            raise RecoveryError(f"Codex config symlink changed after interruption: {visible}")
+    elif visible.is_symlink():
+        if visible.resolve(strict=False) != destination:
+            raise RecoveryError(f"shell file symlink changed after interruption: {visible}")
+    elif visible != destination:
+        raise RecoveryError(f"shell file destination changed after interruption: {visible}")
+    _validate_file_backup(raw, destination)
+
+
+def _validate_link_entry(
+    raw: dict[str, Any],
+    destination: Path,
+    source_value: str,
+    allowed: dict[Path, Path],
+) -> None:
+    expected_source = allowed.get(destination)
+    source = _recorded_path(source_value, "source")
+    if expected_source is None or source != expected_source:
+        raise RecoveryError(
+            f"recovery destination is outside the managed inventory: {destination}"
+        )
+    if raw.get("prior_kind") not in {"absent", "symlink", "file", "directory"}:
+        raise RecoveryError(f"invalid prior state for recovery destination {destination}")
+    if raw.get("result_kind") not in {"symlink", "absent"}:
+        raise RecoveryError(f"invalid result state for recovery destination {destination}")
+    backup_value = raw.get("backup")
+    if backup_value is None:
+        return
+    if not isinstance(backup_value, str):
+        raise RecoveryError(f"invalid backup path for recovery destination {destination}")
+    backup = _recorded_path(backup_value, "backup")
+    if backup.parent != destination.parent or not backup.name.startswith(
+        f"{destination.name}.backup."
+    ):
+        raise RecoveryError(f"backup is outside the expected destination directory: {backup}")
+    if backup.exists() or backup.is_symlink():
+        metadata = backup.lstat()
+        if stat.S_ISLNK(metadata.st_mode):
+            raise RecoveryError(f"recovery backup must not be a symlink: {backup}")
+        if metadata.st_dev != raw.get("prior_device") or metadata.st_ino != raw.get(
+            "prior_inode"
+        ):
+            raise RecoveryError(f"recovery backup identity changed: {backup}")
+
+
 def _validate_entries(
     manifest: dict[str, Any],
     entries: list[Any],
@@ -118,82 +209,17 @@ def _validate_entries(
             raise RecoveryError("recovery manifest entry has invalid paths")
         destination = _recorded_path(destination_value, "destination")
         if raw.get("entry_type") == "file":
-            visible_value = raw.get("visible_destination")
-            visible = (
-                _recorded_path(visible_value, "visible destination")
-                if isinstance(visible_value, str)
-                else None
+            _validate_file_entry(
+                manifest,
+                raw,
+                destination,
+                source_value,
+                home=home,
+                codex_home=codex_home,
+                shell_destinations=shell_destinations,
             )
-            valid_scope = False
-            if source_value == "shell-handoff":
-                valid_scope = (
-                    manifest.get("command") in {"shell-handoff", "install"}
-                    and visible in shell_destinations
-                    and destination.resolve(strict=False).is_relative_to(home.resolve())
-                )
-            elif source_value == "npmrc":
-                valid_scope = (
-                    manifest.get("command") in {"link", "install"}
-                    and visible == home / ".npmrc"
-                    and destination.resolve(strict=False).is_relative_to(home.resolve())
-                )
-            elif source_value == "codex-template":
-                valid_scope = (
-                    manifest.get("command") in {"link", "install"}
-                    and visible == codex_home / "config.toml"
-                    and destination == visible
-                )
-            if (
-                not valid_scope
-                or raw.get("prior_kind") not in {"absent", "file", "symlink"}
-                or raw.get("result_kind") != "file"
-            ):
-                raise RecoveryError(
-                    f"file recovery destination is outside the managed scope: {destination}"
-                )
-            assert visible is not None
-            if source_value == "codex-template" and visible.is_symlink():
-                if raw.get("prior_kind") != "symlink" or os.readlink(visible) != raw.get(
-                    "prior_target"
-                ):
-                    raise RecoveryError(
-                        f"Codex config symlink changed after interruption: {visible}"
-                    )
-            elif visible.is_symlink():
-                if visible.resolve(strict=False) != destination:
-                    raise RecoveryError(f"shell file symlink changed after interruption: {visible}")
-            elif visible != destination:
-                raise RecoveryError(f"shell file destination changed after interruption: {visible}")
-            _validate_file_backup(raw, destination)
             continue
-        expected_source = allowed.get(destination)
-        source = _recorded_path(source_value, "source")
-        if expected_source is None or source != expected_source:
-            raise RecoveryError(
-                f"recovery destination is outside the managed inventory: {destination}"
-            )
-        if raw.get("prior_kind") not in {"absent", "symlink", "file", "directory"}:
-            raise RecoveryError(f"invalid prior state for recovery destination {destination}")
-        if raw.get("result_kind") not in {"symlink", "absent"}:
-            raise RecoveryError(f"invalid result state for recovery destination {destination}")
-        backup_value = raw.get("backup")
-        if backup_value is None:
-            continue
-        if not isinstance(backup_value, str):
-            raise RecoveryError(f"invalid backup path for recovery destination {destination}")
-        backup = _recorded_path(backup_value, "backup")
-        if backup.parent != destination.parent or not backup.name.startswith(
-            f"{destination.name}.backup."
-        ):
-            raise RecoveryError(f"backup is outside the expected destination directory: {backup}")
-        if backup.exists() or backup.is_symlink():
-            metadata = backup.lstat()
-            if stat.S_ISLNK(metadata.st_mode):
-                raise RecoveryError(f"recovery backup must not be a symlink: {backup}")
-            if metadata.st_dev != raw.get("prior_device") or metadata.st_ino != raw.get(
-                "prior_inode"
-            ):
-                raise RecoveryError(f"recovery backup identity changed: {backup}")
+        _validate_link_entry(raw, destination, source_value, allowed)
 
 
 def _file_hash(path: Path) -> str | None:

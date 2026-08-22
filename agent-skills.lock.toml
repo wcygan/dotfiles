@@ -1,5 +1,5 @@
 version = 2
 repository = "wcygan/agent-skills"
-commit = "fd30d3e26bb9aeea5fb85c84524358ee74e3541d"
+commit = "94107e1256ed1e5c1a0ca68beac2611c8a285b0b"
 agent = "codex"
 directory = ".agents/skills"

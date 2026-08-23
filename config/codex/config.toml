@@ -3,6 +3,9 @@
 approval_policy = "never"
 approvals_reviewer = "user"
 sandbox_mode = "danger-full-access"
+personality = "pragmatic"
+suppress_unstable_features_warning = true
+service_tier = "default"
 model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
 model_verbosity = "low"
@@ -15,8 +18,13 @@ enabled = true
 [features]
 goals = true
 multi_agent_v2 = true
+memories = false
 # Allow structured questions during Default-mode tasks.
 default_mode_request_user_input = true
+
+[memories]
+generate_memories = false
+use_memories = false
 
 [agents]
 # Spawned-agent cap; the primary task is additional.

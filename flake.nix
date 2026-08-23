@@ -15,26 +15,31 @@
         "x86_64-darwin"
         "aarch64-darwin"
       ];
+      bunVersion = "1.4.0";
 
       # nixpkgs' `bun` package lags upstream releases. Pin it to a newer
       # upstream build until nixpkgs catches up, then drop this overlay.
       # See: .agents/skills/nix-update/SKILL.md
       bunOverlay = final: prev: {
         bun = prev.bun.overrideAttrs (old: {
-          version = "1.3.14";
+          version = bunVersion;
           src =
             {
               aarch64-darwin = final.fetchurl {
-                url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-darwin-aarch64.zip";
-                hash = "sha256-2LliIYKK1vl6x6wKt+lYcjQa92MAHogD6CZ2UsJlJiA=";
+                url = "https://github.com/oven-sh/bun/releases/download/bun-v${bunVersion}/bun-darwin-aarch64.zip";
+                hash = "sha256-xmnpf2Fk4cluBwF0jbmN+ndJKQjL2DlMdVcTSnNd44E=";
+              };
+              x86_64-darwin = final.fetchurl {
+                url = "https://github.com/oven-sh/bun/releases/download/bun-v${bunVersion}/bun-darwin-x64.zip";
+                hash = "sha256-HQIRuPHcmRGCNEaHrRXnLuhvFUhFpff6R3mUzTQd2bA=";
               };
               aarch64-linux = final.fetchurl {
-                url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-aarch64.zip";
-                hash = "sha256-on/7Y6gxA3WDbg1vZorhf6jY0YuIw3yCHGUzGXOhmjs=";
+                url = "https://github.com/oven-sh/bun/releases/download/bun-v${bunVersion}/bun-linux-aarch64.zip";
+                hash = "sha256-SxozLuhhmD65O8/m93D/+U4+MbLDiL2uo8jtNeWO7Q4=";
               };
               x86_64-linux = final.fetchurl {
-                url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-x64.zip";
-                hash = "sha256-lR7iruhV8IWVruxiJSJqKY0/6oOj3NZGXAnLzN9+hI8=";
+                url = "https://github.com/oven-sh/bun/releases/download/bun-v${bunVersion}/bun-linux-x64.zip";
+                hash = "sha256-LQP7X7g6yLVnrKCigbLOGhoZ1Ij1bClo2Iw/Jekv5FI=";
               };
             }.${final.stdenv.hostPlatform.system} or old.src;
         });

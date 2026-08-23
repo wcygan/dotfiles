@@ -18,7 +18,7 @@ from dotfiles_setup.agent_skills import (
 )
 from dotfiles_setup.manifest import state_directory
 
-COMMIT = "94107e1256ed1e5c1a0ca68beac2611c8a285b0b"
+COMMIT = "f748327101bd68a20e2c9a014357d0c174f41b8f"
 
 
 def _write_lock(repo_root: Path, *, commit: str = COMMIT) -> None:

@@ -6,6 +6,8 @@ sandbox_mode = "danger-full-access"
 model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
 model_verbosity = "low"
+model_auto_compact_token_limit = 155000
+model_auto_compact_token_limit_scope = "total"
 
 [plugins."github@openai-curated"]
 enabled = true

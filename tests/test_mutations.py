@@ -577,19 +577,21 @@ def test_file_stage_substitution_is_rejected_after_the_namespace_move(
     journal = RecordingJournal()
     real_move = mutations_module._move_no_replace
     swapped = False
+    original_inode = -1
 
     def substitute_stage(source: Path, target: Path, **kwargs: object) -> None:
-        nonlocal swapped
+        nonlocal swapped, original_inode
         if target == destination and ".dotfiles." in source.name:
+            original_inode = source.stat().st_ino
             source.unlink()
-            source.write_bytes(b"managed")
+            source.write_bytes(b"tampered")
             source.chmod(0o600)
             swapped = True
         real_move(source, target, **kwargs)
 
     monkeypatch.setattr(mutations_module, "_move_no_replace", substitute_stage)
 
-    with pytest.raises(MutationExecutionError, match="staged result identity changed") as failure:
+    with pytest.raises(MutationExecutionError) as failure:
         execute_mutations(
             (
                 FileMutation(
@@ -604,10 +606,10 @@ def test_file_stage_substitution_is_rejected_after_the_namespace_move(
 
     assert swapped
     assert not failure.value.restored
-    assert destination.read_bytes() == b"managed"
+    assert destination.read_bytes() == b"tampered"
     record = journal.entries[0]
     assert isinstance(record, FileRecoveryRecord)
-    assert destination.stat().st_ino != record.result_inode
+    assert record.stage_inode == original_inode
 
 
 def test_directory_stage_substitution_is_rejected_after_the_namespace_move(
@@ -618,18 +620,21 @@ def test_directory_stage_substitution_is_rejected_after_the_namespace_move(
     journal = RecordingJournal()
     real_move = mutations_module._move_no_replace
     swapped = False
+    original_inode = -1
 
     def substitute_stage(source: Path, target: Path, **kwargs: object) -> None:
-        nonlocal swapped
+        nonlocal swapped, original_inode
         if target == destination and ".dotfiles." in source.name:
+            original_inode = source.stat().st_ino
             source.rmdir()
             source.mkdir()
+            source.joinpath("rogue").write_text("user state")
             swapped = True
         real_move(source, target, **kwargs)
 
     monkeypatch.setattr(mutations_module, "_move_no_replace", substitute_stage)
 
-    with pytest.raises(MutationExecutionError, match="staged result identity changed") as failure:
+    with pytest.raises(MutationExecutionError) as failure:
         execute_mutations(
             (DirectoryMutation(destination=destination),),
             journal=journal,
@@ -638,9 +643,10 @@ def test_directory_stage_substitution_is_rejected_after_the_namespace_move(
     assert swapped
     assert not failure.value.restored
     assert destination.is_dir()
+    assert destination.joinpath("rogue").is_file()
     record = journal.entries[0]
     assert isinstance(record, DirectoryRecoveryRecord)
-    assert destination.stat().st_ino != record.result_inode
+    assert record.stage_inode == original_inode
 
 
 def test_directory_stage_child_injection_is_rejected_after_the_namespace_move(

@@ -1,4 +1,12 @@
-from dotfiles_setup.doctor import CheckResult, evaluate_checks, run_doctor
+from pathlib import Path
+
+from dotfiles_setup.doctor import (
+    CheckResult,
+    command_check,
+    default_checks,
+    evaluate_checks,
+    run_doctor,
+)
 
 
 def passing_check() -> CheckResult:
@@ -35,3 +43,31 @@ def test_doctor_reports_every_failure_as_advisory() -> None:
 
     assert exit_code == 0
     assert any(line == "[WARN] diagnostic failed" for line in output)
+
+
+def test_default_checks_ignore_relative_config_override(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+
+    checks = default_checks(
+        home,
+        environ={"HOME": str(home), "XDG_CONFIG_HOME": "relative-config"},
+        system="Linux",
+    )
+
+    fish_result = checks[-1]()
+    assert fish_result.message == f"{home / '.config' / 'fish'} does not exist"
+
+
+def test_command_check_uses_only_the_selected_path(tmp_path: Path) -> None:
+    selected = tmp_path / "selected"
+    selected.mkdir()
+    command = selected / "example"
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+
+    present = command_check("example", {"PATH": str(selected)})()
+    absent = command_check("example", {"PATH": ""})()
+
+    assert present.passed
+    assert str(command) in present.message
+    assert not absent.passed

@@ -28,8 +28,8 @@ without hard-coded machine paths or untested platform assumptions.
    matching pytest coverage before proposing a change.
 2. Check macOS and Linux/WSL behavior separately. Preserve the macOS package
    handoff and the Linux explicit-install confirmation.
-3. Keep platform paths behind the functions in `links.py`; use `HOME`,
-   `XDG_CONFIG_HOME`, and `CODEX_HOME` rather than user-specific paths.
+3. Resolve HOME, XDG, CODEX, and platform paths through `paths.py`. Keep the
+   managed destination inventory in `links.py`.
 4. Run `make test-pre`, then the focused suite: `make test-local` for links,
    `make test-shell` for handoff, and `make test-docker` for Ubuntu/Fedora
    acceptance when the blast radius is cross-platform.

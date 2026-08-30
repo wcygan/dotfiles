@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
@@ -28,6 +29,24 @@ class ProfileElement:
     def original_path(self) -> Path | None:
         return _original_path(self.original_url)
 
+    def comes_from(self, repo_root: Path) -> bool:
+        """Return whether this element has the exact checkout source."""
+
+        return self.original_path == repo_root.resolve()
+
+    def executable(self, command: str) -> Path | None:
+        """Return an executable from this element's reported store outputs."""
+
+        return next(
+            (
+                candidate
+                for store_path in self.store_paths
+                if (candidate := store_path / "bin" / command).is_file()
+                and os.access(candidate, os.X_OK)
+            ),
+            None,
+        )
+
 
 def _nix_command(*args: str) -> list[str]:
     return [
@@ -38,9 +57,20 @@ def _nix_command(*args: str) -> list[str]:
     ]
 
 
-def _run(runner: Runner, args: Sequence[str]) -> subprocess.CompletedProcess[str]:
+def _run(
+    runner: Runner,
+    args: Sequence[str],
+    environment: Mapping[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     try:
-        return runner(args, check=True, text=True, capture_output=True)
+        kwargs: dict[str, object] = {
+            "check": True,
+            "text": True,
+            "capture_output": True,
+        }
+        if environment is not None:
+            kwargs["env"] = environment
+        return runner(args, **kwargs)
     except (OSError, subprocess.CalledProcessError) as error:
         detail = getattr(error, "stderr", None) or str(error)
         raise NixProfileError(f"Nix profile command failed: {detail.strip()}") from error
@@ -72,6 +102,8 @@ def find_profile_element(
     elements: Mapping[str, Mapping[str, Any]],
     repo_root: Path,
 ) -> str | None:
+    """Find a checkout in a raw inventory kept for compatibility callers."""
+
     resolved_root = repo_root.resolve()
     for name, details in elements.items():
         if _original_path(details.get("originalUrl")) == resolved_root:
@@ -79,13 +111,36 @@ def find_profile_element(
     return None
 
 
+def select_current_checkout_profile(
+    elements: Sequence[ProfileElement],
+    repo_root: Path,
+    *,
+    active_only: bool,
+) -> ProfileElement | None:
+    """Select the exact checkout profile under the stated active policy."""
+
+    return next(
+        (
+            element
+            for element in elements
+            if (not active_only or element.active) and element.comes_from(repo_root)
+        ),
+        None,
+    )
+
+
 def list_profile_elements(
     *,
     runner: Runner = subprocess.run,
+    environment: Mapping[str, str] | None = None,
 ) -> tuple[ProfileElement, ...]:
     """Return the user profile inventory with source and output identity intact."""
 
-    result = _run(runner, _nix_command("profile", "list", "--json"))
+    result = _run(
+        runner,
+        _nix_command("profile", "list", "--json"),
+        environment,
+    )
     elements = _profile_elements(result.stdout)
     inventory: list[ProfileElement] = []
     for name, details in elements.items():
@@ -116,17 +171,26 @@ def ensure_profile(
     repo_root: Path,
     *,
     runner: Runner = subprocess.run,
+    environment: Mapping[str, str] | None = None,
 ) -> str:
-    list_result = _run(runner, _nix_command("profile", "list", "--json"))
-    elements = _profile_elements(list_result.stdout)
-    element_name = find_profile_element(elements, repo_root)
+    inventory = list_profile_elements(runner=runner, environment=environment)
+    element = select_current_checkout_profile(inventory, repo_root, active_only=True)
 
-    if element_name is not None:
+    if element is not None:
         _run(
             runner,
-            _nix_command("profile", "upgrade", element_name, "--no-write-lock-file"),
+            _nix_command("profile", "upgrade", element.name, "--no-write-lock-file"),
+            environment,
         )
-        return f"Upgraded Nix profile element: {element_name}"
+        return f"Upgraded Nix profile element: {element.name}"
+
+    inactive = select_current_checkout_profile(inventory, repo_root, active_only=False)
+    if inactive is not None:
+        raise NixProfileError(
+            f"Nix profile element {inactive.name!r} for this checkout is inactive; "
+            f"remove it with `nix profile remove {inactive.name}` and rerun "
+            "./bootstrap.sh profile"
+        )
 
     flake_reference = f"{repo_root.resolve()}#default"
     _run(
@@ -139,5 +203,6 @@ def ensure_profile(
             "5",
             "--no-write-lock-file",
         ),
+        environment,
     )
     return f"Added Nix profile from: {flake_reference}"

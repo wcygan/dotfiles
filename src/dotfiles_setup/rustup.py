@@ -4,16 +4,23 @@ from __future__ import annotations
 
 import os
 import re
-import shutil
 import subprocess
 import tomllib
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from dotfiles_setup.nix_profile import (
+    NixProfileError,
+    ProfileElement,
+    list_profile_elements,
+    select_current_checkout_profile,
+)
+
 Command = Sequence[str]
 CommandRunner = Callable[..., subprocess.CompletedProcess[str]]
 CommandLocator = Callable[[str], str | None]
+ProfileLoader = Callable[[], tuple[ProfileElement, ...]]
 
 _EXACT_TOOLCHAIN = re.compile(r"^[1-9][0-9]*\.[0-9]+\.[0-9]+$")
 
@@ -73,14 +80,23 @@ def setup_rustup(
     repo_root: Path,
     *,
     run: CommandRunner = subprocess.run,
-    which: CommandLocator = shutil.which,
+    profile_loader: ProfileLoader | None = None,
+    which: CommandLocator | None = None,
     environment: Mapping[str, str] | None = None,
 ) -> RustupResult:
     """Install the exact pinned toolchain without changing the global default."""
 
-    rustup = which("rustup")
+    rustup = _rustup_path(
+        repo_root,
+        profile_loader=profile_loader,
+        which=which,
+        environment=environment,
+    )
     if rustup is None:
-        raise RustupError("rustup is not available in PATH; run ./bootstrap.sh profile first")
+        source = "PATH" if which is not None else "this checkout's active profile"
+        raise RustupError(
+            f"rustup is not available from {source}; run ./bootstrap.sh profile first"
+        )
     selected = load_rust_toolchain(repo_root)
     command_environment = _command_environment(environment)
     install = (
@@ -97,6 +113,30 @@ def setup_rustup(
     _require_success(_run(run, install, command_environment), install)
     binary = resolve_rust_analyzer(Path(rustup), selected, run=run, environment=command_environment)
     return RustupResult(selected.channel, binary)
+
+
+def _rustup_path(
+    repo_root: Path,
+    *,
+    profile_loader: ProfileLoader | None,
+    which: CommandLocator | None,
+    environment: Mapping[str, str] | None,
+) -> str | None:
+    if which is not None:
+        return which("rustup")
+    try:
+        inventory = (
+            list_profile_elements(environment=environment)
+            if profile_loader is None
+            else profile_loader()
+        )
+    except NixProfileError as error:
+        raise RustupError(f"cannot inspect the user profile: {error}") from error
+    element = select_current_checkout_profile(inventory, repo_root, active_only=True)
+    if element is None:
+        return None
+    executable = element.executable("rustup")
+    return str(executable) if executable is not None else None
 
 
 def resolve_rust_analyzer(

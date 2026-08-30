@@ -3,19 +3,19 @@
 from __future__ import annotations
 
 import os
-import platform
 import subprocess
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-from dotfiles_setup.links import (
-    managed_links,
-    resolve_codex_home,
-    resolve_config_home,
-    resolve_home,
+from dotfiles_setup.links import managed_links
+from dotfiles_setup.nix_profile import (
+    NixProfileError,
+    ProfileElement,
+    list_profile_elements,
+    select_current_checkout_profile,
 )
-from dotfiles_setup.nix_profile import NixProfileError, ProfileElement, list_profile_elements
+from dotfiles_setup.paths import UserPathContext
 from dotfiles_setup.rustup import RustupError, load_rust_toolchain, resolve_rust_analyzer
 
 ProfileLoader = Callable[[], tuple[ProfileElement, ...]]
@@ -52,28 +52,15 @@ def _observed_profiles(elements: tuple[ProfileElement, ...]) -> str:
     )
 
 
-def _matching_profile(
-    elements: tuple[ProfileElement, ...], repo_root: Path
-) -> ProfileElement | None:
-    resolved_root = repo_root.resolve()
-    return next(
-        (
-            element
-            for element in elements
-            if element.active and element.original_path == resolved_root
-        ),
-        None,
-    )
-
-
 def _profile_results(
     repo_root: Path,
     elements: tuple[ProfileElement, ...],
     required_binaries: Iterable[str],
     command_runner: CommandRunner,
+    environment: Mapping[str, str],
 ) -> list[VerificationResult]:
     required = tuple(required_binaries)
-    element = _matching_profile(elements, repo_root)
+    element = select_current_checkout_profile(elements, repo_root, active_only=True)
     if element is None:
         observed = _observed_profiles(elements)
         remediation = "run ./bootstrap.sh profile from this checkout"
@@ -101,18 +88,7 @@ def _profile_results(
         True,
         f"profile element {element.name!r} comes from {element.original_url or '(unknown source)'}",
     )
-    resolved_binaries = {
-        command: next(
-            (
-                candidate
-                for store_path in element.store_paths
-                if (candidate := store_path / "bin" / command).is_file()
-                and os.access(candidate, os.X_OK)
-            ),
-            None,
-        )
-        for command in required
-    }
+    resolved_binaries = {command: element.executable(command) for command in required}
     missing = [command for command, path in resolved_binaries.items() if path is None]
     if missing:
         binaries = VerificationResult(
@@ -144,7 +120,11 @@ def _profile_results(
     else:
         try:
             completed = command_runner(
-                [str(python), "--version"], check=False, text=True, capture_output=True
+                [str(python), "--version"],
+                check=False,
+                text=True,
+                capture_output=True,
+                env=environment,
             )
             version = (completed.stdout or completed.stderr).strip()
         except OSError as error:
@@ -233,23 +213,16 @@ def _rust_analyzer_result(
     repo_root: Path,
     elements: tuple[ProfileElement, ...],
     command_runner: CommandRunner,
+    environment: Mapping[str, str],
 ) -> VerificationResult:
-    element = _matching_profile(elements, repo_root)
+    element = select_current_checkout_profile(elements, repo_root, active_only=True)
     if element is None:
         return VerificationResult(
             "rust-analyzer",
             False,
             "cannot verify pinned rust-analyzer without this checkout's active profile",
         )
-    rustup = next(
-        (
-            candidate
-            for store_path in element.store_paths
-            if (candidate := store_path / "bin" / "rustup").is_file()
-            and os.access(candidate, os.X_OK)
-        ),
-        None,
-    )
+    rustup = element.executable("rustup")
     if rustup is None:
         return VerificationResult(
             "rust-analyzer",
@@ -258,7 +231,12 @@ def _rust_analyzer_result(
         )
     try:
         selected = load_rust_toolchain(repo_root)
-        binary = resolve_rust_analyzer(rustup, selected, run=command_runner)
+        binary = resolve_rust_analyzer(
+            rustup,
+            selected,
+            run=command_runner,
+            environment=environment,
+        )
     except RustupError as error:
         return VerificationResult("rust-analyzer", False, str(error))
     return VerificationResult(
@@ -273,22 +251,34 @@ def verify_installation(
     *,
     environ: Mapping[str, str] | None = None,
     system: str | None = None,
-    profile_loader: ProfileLoader = list_profile_elements,
+    profile_loader: ProfileLoader | None = None,
     required_binaries: Iterable[str] = REQUIRED_PROFILE_BINARIES,
     command_runner: CommandRunner = subprocess.run,
 ) -> list[VerificationResult]:
     """Evaluate every required postcondition without mutating user state."""
 
     values = os.environ if environ is None else environ
-    home = resolve_home(values)
-    config_home = resolve_config_home(home, values)
-    codex_home = resolve_codex_home(home, values)
-    platform_name = system or platform.system()
+    context = UserPathContext.from_environment(values, system=system)
 
     try:
-        elements = profile_loader()
-        profile_results = _profile_results(repo_root, elements, required_binaries, command_runner)
-        rust_result = _rust_analyzer_result(repo_root, elements, command_runner)
+        elements = (
+            list_profile_elements(environment=values)
+            if profile_loader is None
+            else profile_loader()
+        )
+        profile_results = _profile_results(
+            repo_root,
+            elements,
+            required_binaries,
+            command_runner,
+            values,
+        )
+        rust_result = _rust_analyzer_result(
+            repo_root,
+            elements,
+            command_runner,
+            values,
+        )
     except (NixProfileError, OSError) as error:
         profile_results = [
             VerificationResult(
@@ -317,24 +307,35 @@ def verify_installation(
         _link_result(link.source, link.destination)
         for link in managed_links(
             repo_root,
-            home=home,
-            config_home=config_home,
-            codex_home=codex_home,
-            system=platform_name,
+            home=context.home,
+            config_home=context.config_home,
+            codex_home=context.codex_home,
+            system=context.platform,
         )
     ]
-    return [*profile_results, rust_result, *link_results, _codex_config_result(codex_home)]
+    return [
+        *profile_results,
+        rust_result,
+        *link_results,
+        _codex_config_result(context.codex_home),
+    ]
 
 
 def run_verify(
     repo_root: Path,
     *,
+    environ: Mapping[str, str] | None = None,
+    system: str | None = None,
     results: Iterable[VerificationResult] | None = None,
     output: Output = print,
 ) -> int:
     """Print strict results and fail if any postcondition is missing."""
 
-    evaluated = list(results) if results is not None else verify_installation(repo_root)
+    evaluated = (
+        list(results)
+        if results is not None
+        else verify_installation(repo_root, environ=environ, system=system)
+    )
     for result in evaluated:
         marker = "PASS" if result.passed else "FAIL"
         output(f"[{marker}] {result.message}")

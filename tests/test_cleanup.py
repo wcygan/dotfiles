@@ -4,8 +4,10 @@ from pathlib import Path
 
 import pytest
 
+from dotfiles_setup import cleanup as cleanup_module
 from dotfiles_setup import cli
 from dotfiles_setup.cleanup import cleanup_links
+from dotfiles_setup.errors import CleanupError
 from dotfiles_setup.links import link_config
 
 
@@ -54,6 +56,33 @@ def test_cleanup_dry_run_preserves_managed_link(tmp_path: Path) -> None:
     cleanup_links(Path.cwd(), environ=values, system="Darwin", dry_run=True)
 
     assert settings.is_symlink()
+
+
+def test_cleanup_preserves_a_link_changed_after_inventory_selection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = Path.cwd()
+    home = tmp_path / "home"
+    codex = tmp_path / "codex"
+    values = environment(home, codex)
+    link_config(repo, environ=values, system="Linux")
+    destination = home / ".config" / "git"
+    unrelated = tmp_path / "unrelated"
+    unrelated.mkdir()
+    real_execute = cleanup_module.execute_mutations
+
+    def swap_then_execute(*args: object, **kwargs: object) -> object:
+        destination.unlink()
+        destination.symlink_to(unrelated)
+        return real_execute(*args, **kwargs)
+
+    monkeypatch.setattr(cleanup_module, "execute_mutations", swap_then_execute)
+
+    with pytest.raises(CleanupError, match="no longer managed"):
+        cleanup_links(repo, environ=values, system="Linux")
+
+    assert destination.is_symlink()
+    assert destination.resolve() == unrelated
 
 
 def test_uninstall_requires_confirmation(monkeypatch: pytest.MonkeyPatch) -> None:

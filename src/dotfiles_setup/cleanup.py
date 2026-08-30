@@ -7,14 +7,14 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 
 from dotfiles_setup.errors import CleanupError
-from dotfiles_setup.links import (
-    Link,
-    managed_links,
-    resolve_codex_home,
-    resolve_config_home,
-    resolve_home,
-)
+from dotfiles_setup.links import Link, managed_links
 from dotfiles_setup.manifest import OperationJournal
+from dotfiles_setup.mutations import (
+    MutationExecutionError,
+    SymlinkMutation,
+    execute_mutations,
+)
+from dotfiles_setup.paths import UserPathContext
 
 Output = Callable[[str], None]
 
@@ -44,69 +44,42 @@ def cleanup_links(
     """Remove installer-managed symlinks while preserving local files and backups."""
 
     values = os.environ if environ is None else environ
-    home = resolve_home(values)
-    config_home = resolve_config_home(home, values)
-    codex_home = resolve_codex_home(home, values)
-    platform_name = system or os.uname().sysname
+    context = UserPathContext.from_environment(values, system=system)
 
     inventory = managed_links(
         repo_root,
-        home=home,
-        config_home=config_home,
-        codex_home=codex_home,
-        system=platform_name,
+        home=context.home,
+        config_home=context.config_home,
+        codex_home=context.codex_home,
+        system=context.platform,
     )
-    actions: list[tuple[Link, str]] = []
+    actions: list[Link] = []
     for link in inventory:
         if _is_managed(link):
-            try:
-                actions.append((link, os.readlink(link.destination)))
-            except OSError as error:
-                raise CleanupError(
-                    f"cannot inspect managed link {link.destination}: {error}; no links removed"
-                ) from error
+            actions.append(link)
         elif link.destination.is_symlink():
             output(f"Skipping unmanaged symlink: {link.destination}")
         elif link.destination.exists():
             output(f"Skipping local file: {link.destination}")
 
-    journal_indices: list[int | None] = []
-    for link, prior_target in actions:
+    for link in actions:
         if dry_run:
             output(f"[DRY] Would remove symlink: {link.destination}")
-            journal_indices.append(None)
-        elif journal is not None:
-            journal_indices.append(
-                journal.add_link_entry(
-                    {
-                        "destination": str(link.destination),
-                        "source": str(link.source),
-                        "prior_kind": "symlink",
-                        "prior_target": prior_target,
-                        "backup": None,
-                        "result_kind": "absent",
-                        "result_target": None,
-                        "mutation_started": False,
-                        "applied": False,
-                        "recovered": False,
-                    }
-                )
-            )
-        else:
-            journal_indices.append(None)
 
     if dry_run:
         return
-    for (link, _prior_target), journal_index in zip(actions, journal_indices, strict=True):
-        try:
-            if journal is not None and journal_index is not None:
-                journal.update_link_entry(journal_index, mutation_started=True)
-            link.destination.unlink()
-            if journal is not None and journal_index is not None:
-                journal.update_link_entry(journal_index, applied=True)
-        except OSError as error:
-            raise CleanupError(
-                f"cannot remove managed link {link.destination}: {error}; "
-                "run ./bootstrap.sh recover before retrying"
-            ) from error
+    mutations = tuple(
+        SymlinkMutation(destination=link.destination, source=link.source, present=False)
+        for link in actions
+    )
+    try:
+        execute_mutations(
+            mutations,
+            journal=journal,
+            authority_roots=(context.home, context.config_home, context.codex_home),
+        )
+    except MutationExecutionError as error:
+        status = "prior links restored" if error.restored else "recovery manifest preserved"
+        raise CleanupError(f"cannot atomically remove managed links: {error}; {status}") from error
+    for link in actions:
         output(f"Removed symlink: {link.destination}")

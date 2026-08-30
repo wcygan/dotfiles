@@ -4,6 +4,20 @@ Read this reference before changing compatibility guarantees, restoring retired
 behavior, or replacing a setup boundary. Add an entry when a breaking change is
 intentional, alongside focused migration tests.
 
+## 2026-08-29 — Reject inactive checkout profile elements
+
+Profile setup now upgrades only an active element from the current checkout.
+If the matching element is inactive, remove it with `nix profile remove NAME`.
+Then run `./bootstrap.sh profile` to add a new active element. This prevents an
+inactive profile record from hiding the active installation state.
+
+## 2026-08-29 — Retain verified legacy skill quarantines
+
+Legacy skill cleanup now moves each accepted tree to a hidden quarantine in
+the same directory. It does not delete the accepted contents. Inspect the
+reported paths after cleanup. Move retained trees to the platform trash only
+after the shared catalog passes `./bootstrap.sh agent-skills --check`.
+
 ## 2026-08-10 — Move global instructions to shared agent configuration
 
 `config/agents/AGENTS.md` is now the authoritative global instruction source.
@@ -37,7 +51,7 @@ but Codex now documents `~/.agents/skills` as the shared user discovery root.
 The consumer lock moved to schema version 2 with a portable relative directory,
 and the installer now supplies that directory with `gh skill install --dir` and
 verifies it with `gh skill list --dir`. A guarded, explicit legacy cleanup is
-available only after the shared catalog verifies; it deletes exact matching
+available only after the shared catalog verifies. It quarantines exact matching
 legacy copies and does not prune foreign or stale skills.
 
 ## 2026-08-09 — Replace setup orchestration with Python

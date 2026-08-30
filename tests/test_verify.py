@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from dotfiles_setup import cli
+from dotfiles_setup import verify as verify_module
 from dotfiles_setup.nix_profile import ProfileElement
 from dotfiles_setup.verify import (
     VerificationResult,
@@ -144,6 +145,27 @@ def test_profile_binaries_must_come_from_reported_store_paths(tmp_path: Path) ->
     assert "fish" in binaries.message
 
 
+def test_non_executable_profile_binary_is_rejected(tmp_path: Path) -> None:
+    element = profile_element(tmp_path, REPO_ROOT)
+    rustup = element.store_paths[0] / "bin" / "rustup"
+    rustup.chmod(0o644)
+
+    results = verify_installation(
+        REPO_ROOT,
+        environ={"HOME": str(tmp_path / "home")},
+        system="Linux",
+        profile_loader=lambda: (element,),
+        required_binaries=("python3", "rustup"),
+    )
+
+    binaries = next(result for result in results if result.name == "profile-binaries")
+    rust = next(result for result in results if result.name == "rust-analyzer")
+    assert not binaries.passed
+    assert "rustup" in binaries.message
+    assert not rust.passed
+    assert "does not provide rustup" in rust.message
+
+
 def test_inactive_current_checkout_profile_is_rejected(tmp_path: Path) -> None:
     active = profile_element(tmp_path, REPO_ROOT)
     inactive = ProfileElement(
@@ -186,16 +208,19 @@ def test_rust_analyzer_uses_profile_rustup_and_exact_pinned_toolchain(tmp_path: 
     element = profile_element(tmp_path, REPO_ROOT)
     analyzer = element.store_paths[0] / "toolchains" / "1.97.1" / "bin" / "rust-analyzer"
     calls: list[list[str]] = []
+    environments: list[object] = []
 
-    def runner(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+    def runner(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         calls.append(command)
+        environments.append(kwargs.get("env"))
         if command[0].endswith("python3"):
             return subprocess.CompletedProcess(command, 0, stdout="Python 3.13.0\n", stderr="")
         return subprocess.CompletedProcess(command, 0, stdout=f"{analyzer}\n", stderr="")
 
+    environment = {"HOME": str(tmp_path / "home"), "PATH": "/selected/bin"}
     results = verify_installation(
         REPO_ROOT,
-        environ={"HOME": str(tmp_path / "home")},
+        environ=environment,
         system="Linux",
         profile_loader=lambda: (element,),
         required_binaries=("python3", "rustup"),
@@ -211,6 +236,7 @@ def test_rust_analyzer_uses_profile_rustup_and_exact_pinned_toolchain(tmp_path: 
         "1.97.1",
         "rust-analyzer",
     ]
+    assert environments == [environment, environment]
 
 
 def test_missing_pinned_rust_analyzer_fails_strict_verification(tmp_path: Path) -> None:
@@ -295,6 +321,23 @@ def test_correct_platform_inventory_and_local_codex_config_pass(
         "Library/Application Support/Code/User" if system == "Darwin" else ".config/Code/User"
     )
     assert any(vscode_fragment in result.message for result in results)
+
+
+def test_default_profile_loader_uses_the_selected_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    environment = {"HOME": str(tmp_path / "selected-home")}
+    captured: dict[str, object] = {}
+
+    def load(**kwargs: object) -> tuple[ProfileElement, ...]:
+        captured.update(kwargs)
+        return ()
+
+    monkeypatch.setattr(verify_module, "list_profile_elements", load)
+
+    verify_installation(REPO_ROOT, environ=environment, system="Linux")
+
+    assert captured == {"environment": environment}
 
 
 def test_shared_and_codex_agents_links_are_verified(tmp_path: Path) -> None:

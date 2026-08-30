@@ -57,8 +57,9 @@ The first command is mutating, serialized, and journaled. It reads the exact
 commit and portable relative directory from `agent-skills.lock.toml`, refuses
 same-name skills from another source or location, invokes `gh skill install
 --dir "$HOME/.agents/skills"`, and verifies all pinned catalog entries afterward
-through `gh skill list --dir`. The check command is read-only. Installed skill
-copies and GitHub CLI tracking state are machine-local outputs. GitHub CLI's
+through `gh skill list --dir` and the pinned Git tree. The check command is
+read-only and requires GitHub access. Installed skill copies and GitHub CLI
+tracking state are machine-local outputs. GitHub CLI's
 current Codex host mapping still uses `~/.codex/skills`; this integration uses
 the shared user directory documented by Codex instead. GitHub CLI does not
 prune files or skill directories removed upstream, so review cleanup separately
@@ -74,16 +75,16 @@ any other difference is a failed idempotency check. `$agent-skills-integration`
 is authoritative for this boundary.
 
 After a successful shared-directory install and verification, an explicitly
-authorized migration may remove the prior Codex-host copies with:
+authorized migration may quarantine the prior Codex-host copies with:
 
 ```bash
 ./bootstrap.sh agent-skills --cleanup-legacy --yes
 ```
 
-That cleanup refuses to remove any legacy entry unless every expected skill has
-one matching Codex user-scope path, source, pin, and version. It is idempotent
-once no matching legacy catalog remains, but it is not a general skill-pruning
-command.
+That cleanup refuses to move any legacy entry unless every expected skill has
+one matching Codex user-scope path, source, pin, and version. It reports each
+retained `.dotfiles-cleanup.*` path. Inspect those trees before you move them to
+the platform trash. The command does not purge foreign or stale skills.
 
 ## Inspect and Diagnose
 

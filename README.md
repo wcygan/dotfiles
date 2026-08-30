@@ -17,10 +17,11 @@ repository development shell and runs the locked Python CLI:
 nix develop --no-write-lock-file .#default --command uv run --locked python -m dotfiles_setup install
 ```
 
-The default install upgrades or adds this repository's Nix profile, links the
-managed configuration (backing up existing files), prepares Rust tooling, and
-verifies the result. It does **not** edit Bash or zsh startup files. Opt in to
-that behavior only when wanted:
+The default install upgrades or adds this repository's active Nix profile,
+links the managed configuration, prepares Rust tooling, and verifies the
+result. Remove an inactive profile element for this checkout before you rerun
+the install. It does **not** edit Bash or zsh startup files. Opt in to that
+behavior only when wanted:
 
 ```bash
 ./bootstrap.sh install --shell-handoff

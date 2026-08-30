@@ -28,16 +28,18 @@ bootstrap.sh
         v
 uv run --locked python -m dotfiles_setup <command>
         |
-        +--> cli.py: parsing, command routing, lock/journal boundary
-        +--> installer.py: serial install orchestration and PASS/FAIL/SKIP
+        +--> cli.py: parsing and command routing
+        +--> installer.py: mutation lock, journal, workflow boundaries, and terminal states
         +--> nix_profile.py: exact checkout profile add/upgrade/inspection
-        +--> links.py / cleanup.py: managed config and uninstall inventory
+        +--> paths.py: centralized HOME/XDG/CODEX and platform path resolution
+        +--> links.py: managed destination inventory and config plans
+        +--> cleanup.py: managed uninstall plans
         +--> rustup.py: exact repository Rust pin and rust-analyzer
         +--> agent_skills.py: exact external skill pin and Codex user-scope install
         +--> shell_handoff.py / git_user.py: explicit optional host changes
         +--> doctor.py: advisory environment diagnostics
         +--> verify.py: strict read-only acceptance
-        +--> locking.py / manifest.py / recovery.py: mutation safety
+        +--> locking.py / manifest.py / mutations.py / recovery.py: mutation safety
 ```
 
 The default install sequence is serial:
@@ -85,11 +87,12 @@ Dotfiles never mirrors the provider catalog. `agent-skills.lock.toml` records a
 full immutable commit and a relative shared user directory;
 `src/dotfiles_setup/agent_skills.py` delegates discovery and installation to
 `gh skill install --dir`, rejects conflicting installed names, and verifies
-GitHub CLI metadata. The runtime destination is derived from the lock's current
-`HOME` plus its portable relative directory and then confirmed by `gh skill
-list --dir`; it is not inferred from GitHub CLI's stale Codex host mapping.
-Installation is an explicit journaled command and remains outside the default
-install workflow; its `--check` form is read-only.
+GitHub CLI metadata plus installed Git blobs against the pinned provider tree.
+The runtime destination is derived from the lock's current `HOME` plus its
+portable relative directory and then confirmed by `gh skill list --dir`; it is
+not inferred from GitHub CLI's stale Codex host mapping. Installation is an
+explicit journaled command and remains outside the default install workflow;
+its `--check` form is read-only and requires GitHub access.
 
 ## State Ownership
 
@@ -113,8 +116,9 @@ install workflow; its `--check` form is read-only.
   GitHub CLI under `~/.agents/skills`.
 
 Existing physical destinations are backed up before replacement. The managed
-inventory, platform path resolvers, and HOME/XDG/CODEX overrides are part of the
-tested contract.
+destination inventory lives only in `links.py`. `paths.py` owns centralized
+HOME, XDG, CODEX, and platform path resolution. These boundaries are part of
+the tested contract.
 
 ### Machine-local and not repository-managed
 

@@ -9,9 +9,11 @@ import pytest
 from dotfiles_setup import cli
 from dotfiles_setup.nix_profile import (
     NixProfileError,
+    ProfileElement,
     ensure_profile,
     find_profile_element,
     list_profile_elements,
+    select_current_checkout_profile,
 )
 
 
@@ -19,9 +21,11 @@ class RecordingRunner:
     def __init__(self, profile_payload: dict[str, object]) -> None:
         self.profile_payload = profile_payload
         self.calls: list[list[str]] = []
+        self.kwargs: list[dict[str, object]] = []
 
-    def __call__(self, args: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+    def __call__(self, args: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         self.calls.append(args)
+        self.kwargs.append(kwargs)
         stdout = json.dumps(self.profile_payload) if args[-2:] == ["list", "--json"] else ""
         return subprocess.CompletedProcess(args, 0, stdout=stdout, stderr="")
 
@@ -53,11 +57,66 @@ def test_find_profile_matches_nix_path_url(tmp_path: Path) -> None:
     assert find_profile_element(elements, tmp_path) == "local-checkout"
 
 
+def test_current_checkout_selector_applies_active_policy(tmp_path: Path) -> None:
+    unrelated = ProfileElement(
+        name="unrelated",
+        original_url=f"git+{(tmp_path / 'other').as_uri()}",
+        store_paths=(),
+        active=True,
+    )
+    inactive = ProfileElement(
+        name="inactive-checkout",
+        original_url=f"git+{tmp_path.as_uri()}",
+        store_paths=(),
+        active=False,
+    )
+
+    assert (
+        select_current_checkout_profile(
+            (unrelated, inactive), tmp_path, active_only=True
+        )
+        is None
+    )
+    assert (
+        select_current_checkout_profile(
+            (unrelated, inactive), tmp_path, active_only=False
+        )
+        == inactive
+    )
+
+
+def test_profile_element_resolves_only_executable_outputs(tmp_path: Path) -> None:
+    first_store = tmp_path / "first-store"
+    second_store = tmp_path / "second-store"
+    unusable = first_store / "bin" / "rustup"
+    usable = second_store / "bin" / "rustup"
+    unusable.parent.mkdir(parents=True)
+    usable.parent.mkdir(parents=True)
+    unusable.write_text("not executable")
+    usable.write_text("#!/bin/sh\nexit 0\n")
+    usable.chmod(0o755)
+    element = ProfileElement(
+        name="checkout",
+        original_url=f"git+{tmp_path.as_uri()}",
+        store_paths=(first_store, second_store),
+        active=True,
+    )
+
+    assert element.executable("rustup") == usable
+    assert element.executable("missing") is None
+
+
 def test_existing_profile_is_upgraded(tmp_path: Path) -> None:
     runner = RecordingRunner(
         {
             "version": 3,
-            "elements": {"dotfiles": {"originalUrl": f"git+{tmp_path.as_uri()}"}},
+            "elements": {
+                "dotfiles": {
+                    "originalUrl": f"git+{tmp_path.as_uri()}",
+                    "active": True,
+                    "storePaths": [],
+                }
+            },
         }
     )
 
@@ -72,11 +131,46 @@ def test_existing_profile_is_upgraded(tmp_path: Path) -> None:
     ]
 
 
-def test_repository_profile_with_different_name_is_upgraded(tmp_path: Path) -> None:
+def test_inactive_repository_profile_is_rejected_with_recovery_guidance(
+    tmp_path: Path,
+) -> None:
     runner = RecordingRunner(
         {
             "version": 3,
-            "elements": {"checkout": {"originalUrl": f"git+{tmp_path.as_uri()}"}},
+            "elements": {
+                "checkout": {
+                    "originalUrl": f"git+{tmp_path.as_uri()}",
+                    "active": False,
+                    "storePaths": [],
+                }
+            },
+        }
+    )
+
+    with pytest.raises(NixProfileError, match="nix profile remove checkout"):
+        ensure_profile(tmp_path, runner=runner)
+
+    assert len(runner.calls) == 1
+
+
+def test_active_repository_profile_is_preferred_over_inactive_duplicate(
+    tmp_path: Path,
+) -> None:
+    runner = RecordingRunner(
+        {
+            "version": 3,
+            "elements": {
+                "inactive-checkout": {
+                    "originalUrl": f"git+{tmp_path.as_uri()}",
+                    "active": False,
+                    "storePaths": [],
+                },
+                "active-checkout": {
+                    "originalUrl": f"git+{tmp_path.as_uri()}",
+                    "active": True,
+                    "storePaths": [],
+                },
+            },
         }
     )
 
@@ -85,7 +179,7 @@ def test_repository_profile_with_different_name_is_upgraded(tmp_path: Path) -> N
     assert runner.calls[-1][-4:] == [
         "profile",
         "upgrade",
-        "checkout",
+        "active-checkout",
         "--no-write-lock-file",
     ]
 
@@ -104,6 +198,16 @@ def test_missing_profile_is_added_with_priority_five(tmp_path: Path) -> None:
         "5",
         "--no-write-lock-file",
     ]
+
+
+def test_profile_commands_use_the_selected_user_environment(tmp_path: Path) -> None:
+    runner = RecordingRunner({"version": 3, "elements": {}})
+    environment = {"HOME": str(tmp_path / "selected-home"), "PATH": "/nix/bin"}
+
+    ensure_profile(tmp_path, runner=runner, environment=environment)
+
+    assert len(runner.kwargs) == 2
+    assert all(call["env"] is environment for call in runner.kwargs)
 
 
 def test_invalid_profile_json_is_reported(tmp_path: Path) -> None:

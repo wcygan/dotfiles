@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 
 from dotfiles_setup import cli
+from dotfiles_setup import scoped_file_input as scoped_file_input_module
+from dotfiles_setup import shell_handoff as shell_handoff_module
 from dotfiles_setup.manifest import OperationJournal
 from dotfiles_setup.recovery import run_recovery
 from dotfiles_setup.shell_handoff import (
@@ -36,6 +38,27 @@ def test_zsh_shell_does_not_create_bash_profile(tmp_path: Path) -> None:
 
     assert not (tmp_path / ".bash_profile").exists()
     assert "[[ -o interactive && -t 1 ]]" in (tmp_path / ".zshrc").read_text()
+
+
+def test_symlink_home_is_normalized_before_shell_file_traversal(tmp_path: Path) -> None:
+    physical_home = tmp_path / "physical-home"
+    physical_home.mkdir()
+    visible_home = tmp_path / "home"
+    visible_home.symlink_to(physical_home, target_is_directory=True)
+
+    result = configure_shell_handoff(
+        home=visible_home,
+        shell="/bin/zsh",
+        backup_timestamp=42,
+    )
+
+    assert set(result.updated_files) == {
+        physical_home / ".bashrc",
+        physical_home / ".zshrc",
+        physical_home / ".zshenv",
+    }
+    assert "DOTFILES:EXEC_FISH" in (physical_home / ".bashrc").read_text()
+    assert visible_home.is_symlink()
 
 
 def test_rerunning_is_idempotent_and_does_not_create_new_backups(tmp_path: Path) -> None:
@@ -89,6 +112,27 @@ def test_existing_symlink_is_preserved_and_referent_is_backed_up(tmp_path: Path)
     assert "DOTFILES:EXEC_FISH" in target.read_text()
 
 
+def test_shell_handoff_refuses_user_edit_after_preparation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bashrc = tmp_path / ".bashrc"
+    bashrc.write_text("export PROJECT_VALUE=original\n")
+    execute_mutations = shell_handoff_module.execute_mutations
+
+    def edit_before_execution(*args: object, **kwargs: object) -> object:
+        bashrc.write_text("export PROJECT_VALUE=user-edit\n")
+        return execute_mutations(*args, **kwargs)
+
+    monkeypatch.setattr(shell_handoff_module, "execute_mutations", edit_before_execution)
+
+    with pytest.raises(ShellHandoffError, match="atomically complete"):
+        configure_shell_handoff(home=tmp_path, shell="/bin/zsh")
+
+    assert bashrc.read_text() == "export PROJECT_VALUE=user-edit\n"
+    assert not (tmp_path / ".zshrc").exists()
+    assert not (tmp_path / ".zshenv").exists()
+
+
 def test_shell_handoff_refuses_symlink_referent_outside_home(tmp_path: Path) -> None:
     home = tmp_path / "home"
     home.mkdir()
@@ -100,6 +144,44 @@ def test_shell_handoff_refuses_symlink_referent_outside_home(tmp_path: Path) -> 
         configure_shell_handoff(home=home, shell="/bin/zsh")
 
     assert external.read_text() == "preserve\n"
+
+
+def test_shell_handoff_swap_to_external_symlink_is_not_read_or_planned(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    bashrc = home / ".bashrc"
+    bashrc.write_text("export PROJECT_VALUE=original\n")
+    external = tmp_path / "external-bashrc"
+    external.write_text("outside secret\n")
+    original_read = scoped_file_input_module._read_regular_file_at
+    reads: list[Path] = []
+    executed = False
+
+    def swap_before_read(path: Path, *args: object, **kwargs: object) -> tuple[bytes, int]:
+        reads.append(path)
+        if path == bashrc:
+            bashrc.unlink()
+            bashrc.symlink_to(external)
+        return original_read(path, *args, **kwargs)
+
+    def unexpected_execution(*args: object, **kwargs: object) -> tuple[object, ...]:
+        nonlocal executed
+        executed = True
+        return ()
+
+    monkeypatch.setattr(scoped_file_input_module, "_read_regular_file_at", swap_before_read)
+    monkeypatch.setattr(shell_handoff_module, "execute_mutations", unexpected_execution)
+
+    with pytest.raises(ShellHandoffError, match="file input changed during inspection"):
+        configure_shell_handoff(home=home, shell="/bin/zsh")
+
+    assert reads == [bashrc]
+    assert external.read_text() == "outside secret\n"
+    assert bashrc.is_symlink()
+    assert not executed
+    assert not (home / ".zshrc").exists()
 
 
 def test_interrupted_shell_handoff_can_restore_all_changed_files(tmp_path: Path) -> None:

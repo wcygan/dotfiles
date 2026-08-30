@@ -6,6 +6,8 @@ import pytest
 
 from dotfiles_setup import cli
 from dotfiles_setup import links as links_module
+from dotfiles_setup import mutations as mutations_module
+from dotfiles_setup import scoped_file_input as scoped_file_input_module
 from dotfiles_setup.errors import LinkError
 from dotfiles_setup.links import link_config, managed_links
 
@@ -43,6 +45,17 @@ def test_links_use_absolute_sources_and_are_idempotent(tmp_path: Path) -> None:
     template = repo / "config" / "codex" / "config.toml"
     assert (codex / "config.toml").read_text() == template.read_text()
     assert (xdg / "Code" / "User" / "settings.json").is_symlink()
+
+
+def test_idempotent_link_run_does_not_report_transient_backups(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    values = environment(home)
+    link_config(Path.cwd(), environ=values, system="Linux", output=lambda _: None)
+    output: list[str] = []
+
+    link_config(Path.cwd(), environ=values, system="Linux", output=output.append)
+
+    assert not any("Backed up" in line for line in output)
 
 
 def test_darwin_uses_application_support_for_vscode(tmp_path: Path) -> None:
@@ -93,22 +106,18 @@ def test_link_rejects_destination_created_after_planning(
     home = tmp_path / "home"
     xdg = tmp_path / "xdg"
     destination = xdg / "git"
-    original_temporary_symlink = links_module._temporary_symlink
+    original_symlink = mutations_module._create_symlink
 
-    def competing_temporary_symlink(
-        planned_destination: Path,
-        source: Path,
-        *,
-        symlink: links_module.Symlink,
-    ) -> Path:
-        temporary = original_temporary_symlink(planned_destination, source, symlink=symlink)
-        if planned_destination == destination:
+    def competing_symlink(
+        source: Path | str, planned_destination: Path | str, **kwargs: object
+    ) -> None:
+        if Path(planned_destination) == destination:
             destination.write_text("created by competing actor")
-        return temporary
+        original_symlink(source, planned_destination, **kwargs)
 
-    monkeypatch.setattr(links_module, "_temporary_symlink", competing_temporary_symlink)
+    monkeypatch.setattr(mutations_module, "_create_symlink", competing_symlink)
 
-    with pytest.raises(LinkError, match="changed before apply"):
+    with pytest.raises(LinkError, match="atomically update"):
         link_config(Path.cwd(), environ=environment(home, xdg=xdg), system="Linux")
 
     assert destination.read_text() == "created by competing actor"
@@ -215,6 +224,117 @@ def test_npmrc_symlink_is_preserved_and_target_is_updated_atomically(tmp_path: P
     assert npmrc.is_symlink()
     assert target.read_text() == "prefix=${HOME}/.local\nmin-release-age=1\n"
     assert (home / "machine-npmrc.backup.456").read_text() == "prefix=/wrong\n"
+
+
+def test_npmrc_refuses_user_edit_after_preparation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    npmrc = home / ".npmrc"
+    npmrc.write_text("prefix=/wrong\n")
+    execute_mutations = links_module.execute_mutations
+
+    def edit_before_execution(*args: object, **kwargs: object) -> object:
+        npmrc.write_text("registry=https://user.example/\n")
+        return execute_mutations(*args, **kwargs)
+
+    monkeypatch.setattr(links_module, "execute_mutations", edit_before_execution)
+
+    with pytest.raises(LinkError, match="atomically update"):
+        link_config(Path.cwd(), environ=environment(home), system="Linux")
+
+    assert npmrc.read_text() == "registry=https://user.example/\n"
+    assert not (home / ".tmux.conf").exists()
+
+
+def test_npmrc_refuses_user_creation_after_preparation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    npmrc = home / ".npmrc"
+    execute_mutations = links_module.execute_mutations
+
+    def create_before_execution(*args: object, **kwargs: object) -> object:
+        npmrc.write_text("registry=https://user.example/\n")
+        return execute_mutations(*args, **kwargs)
+
+    monkeypatch.setattr(links_module, "execute_mutations", create_before_execution)
+
+    with pytest.raises(LinkError, match="atomically update"):
+        link_config(Path.cwd(), environ=environment(home), system="Linux")
+
+    assert npmrc.read_text() == "registry=https://user.example/\n"
+    assert not (home / ".tmux.conf").exists()
+
+
+def test_npmrc_swap_to_external_symlink_is_not_read_or_planned(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    npmrc = home / ".npmrc"
+    npmrc.write_text("prefix=/wrong\n")
+    external = tmp_path / "external-npmrc"
+    external.write_text("outside secret\n")
+    original_read = scoped_file_input_module._read_regular_file_at
+    reads: list[Path] = []
+    executed = False
+
+    def swap_before_read(path: Path, *args: object, **kwargs: object) -> tuple[bytes, int]:
+        reads.append(path)
+        if path == npmrc:
+            npmrc.unlink()
+            npmrc.symlink_to(external)
+        return original_read(path, *args, **kwargs)
+
+    def unexpected_execution(*args: object, **kwargs: object) -> tuple[object, ...]:
+        nonlocal executed
+        executed = True
+        return ()
+
+    monkeypatch.setattr(scoped_file_input_module, "_read_regular_file_at", swap_before_read)
+    monkeypatch.setattr(links_module, "execute_mutations", unexpected_execution)
+
+    with pytest.raises(LinkError, match="file input changed during inspection"):
+        link_config(Path.cwd(), environ=environment(home), system="Linux")
+
+    assert reads == [npmrc]
+    assert external.read_text() == "outside secret\n"
+    assert npmrc.is_symlink()
+    assert not executed
+    assert not (home / ".tmux.conf").exists()
+
+
+def test_codex_migration_refuses_symlink_change_after_preparation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    home = tmp_path / "home"
+    codex = home / ".codex"
+    codex.mkdir(parents=True)
+    original = home / "original-codex.toml"
+    replacement = home / "replacement-codex.toml"
+    original.write_text("original machine state\n")
+    replacement.write_text("new user state\n")
+    destination = codex / "config.toml"
+    destination.symlink_to(original)
+    execute_mutations = links_module.execute_mutations
+
+    def retarget_before_execution(*args: object, **kwargs: object) -> object:
+        destination.unlink()
+        destination.symlink_to(replacement)
+        return execute_mutations(*args, **kwargs)
+
+    monkeypatch.setattr(links_module, "execute_mutations", retarget_before_execution)
+
+    with pytest.raises(LinkError, match="atomically update"):
+        link_config(Path.cwd(), environ=environment(home), system="Linux")
+
+    assert destination.is_symlink()
+    assert destination.resolve() == replacement
+    assert replacement.read_text() == "new user state\n"
+    assert not (home / ".tmux.conf").exists()
 
 
 def test_dry_run_does_not_mutate_filesystem(tmp_path: Path) -> None:

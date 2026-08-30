@@ -2,24 +2,33 @@
 
 from __future__ import annotations
 
-import hashlib
 import os
-import shutil
 import stat
-import tempfile
 import time
-import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-from dotfiles_setup.errors import LinkError, ManifestError
+from dotfiles_setup.errors import LinkError
 from dotfiles_setup.manifest import OperationJournal
+from dotfiles_setup.mutations import (
+    DirectoryMutation,
+    FileMutation,
+    Mutation,
+    MutationExecutionError,
+    MutationResult,
+    SymlinkMutation,
+    capture_file_input,
+    execute_mutations,
+)
+from dotfiles_setup.paths import UserPathContext
+from dotfiles_setup.scoped_file_input import (
+    FileInputOutsideScopeError,
+    capture_scoped_file_input,
+)
 
 Output = Callable[[str], None]
 Timestamp = Callable[[], int]
-Replace = Callable[[Path, Path], None]
-Symlink = Callable[[str | Path, Path], None]
 
 
 @dataclass(frozen=True)
@@ -31,62 +40,49 @@ class Link:
 
 
 @dataclass(frozen=True)
-class PlannedLink:
-    """A fully classified link mutation produced before any write occurs."""
+class _PreparedFile:
+    """A local-file mutation and its success message."""
 
-    link: Link
-    prior_kind: str
-    prior_target: str | None
-    backup: Path | None
-    prior_device: int | None
-    prior_inode: int | None
-
-
-@dataclass
-class FileMutation:
-    """A content-free description of one atomic local-file replacement."""
-
-    source_label: str
-    visible_path: Path
-    destination: Path
-    prior_kind: str
-    prior_target: str | None
-    backup: Path | None
-    prior_hash: str | None
-    result_hash: str
-    mode: int | None
-    journal_index: int | None = None
+    mutation: FileMutation
+    success_message: str
 
 
 def resolve_home(environ: Mapping[str, str] | None = None) -> Path:
     """Return HOME, respecting an explicitly supplied environment."""
 
-    values = os.environ if environ is None else environ
-    return Path(values.get("HOME", str(Path.home()))).expanduser().resolve()
+    return UserPathContext.from_environment(environ).home
 
 
 def resolve_config_home(home: Path, environ: Mapping[str, str] | None = None) -> Path:
     """Return XDG_CONFIG_HOME, with the conventional HOME fallback."""
 
     values = os.environ if environ is None else environ
-    configured = Path(values.get("XDG_CONFIG_HOME", "")).expanduser()
-    return configured.resolve(strict=False) if configured.is_absolute() else home / ".config"
+    if not Path(values.get("XDG_CONFIG_HOME", "")).expanduser().is_absolute():
+        return home / ".config"
+    return UserPathContext.from_environment(environ, home=home).config_home
 
 
 def resolve_codex_home(home: Path, environ: Mapping[str, str] | None = None) -> Path:
     """Return CODEX_HOME, with the conventional HOME fallback."""
 
     values = os.environ if environ is None else environ
-    configured = Path(values.get("CODEX_HOME", "")).expanduser()
-    return configured.resolve(strict=False) if configured.is_absolute() else home / ".codex"
+    if not Path(values.get("CODEX_HOME", "")).expanduser().is_absolute():
+        return home / ".codex"
+    return UserPathContext.from_environment(environ, home=home).codex_home
 
 
 def vscode_config_home(home: Path, config_home: Path, system: str) -> Path:
     """Return VS Code's user settings directory for the current platform."""
 
-    if system.lower() == "darwin":
-        return home / "Library" / "Application Support" / "Code" / "User"
-    return config_home / "Code" / "User"
+    context = UserPathContext(
+        home=home,
+        config_home=config_home,
+        state_home=home / ".local" / "state",
+        cache_home=home / ".cache",
+        codex_home=home / ".codex",
+        platform=system,
+    )
+    return context.vscode_config_home
 
 
 def managed_links(
@@ -125,520 +121,6 @@ def managed_links(
     )
 
 
-def _backup_path(path: Path, timestamp: int) -> Path:
-    candidate = path.with_name(f"{path.name}.backup.{timestamp}")
-    suffix = 1
-    while candidate.exists() or candidate.is_symlink():
-        candidate = path.with_name(f"{path.name}.backup.{timestamp}.{suffix}")
-        suffix += 1
-    return candidate
-
-
-def _classify_destination(
-    path: Path,
-) -> tuple[str, str | None, int | None, int | None]:
-    try:
-        metadata = path.lstat()
-    except FileNotFoundError:
-        return "absent", None, None, None
-    except OSError as error:
-        raise LinkError(f"cannot inspect managed destination {path}: {error}") from error
-    if stat.S_ISLNK(metadata.st_mode):
-        try:
-            return "symlink", os.readlink(path), metadata.st_dev, metadata.st_ino
-        except OSError as error:
-            raise LinkError(f"cannot read managed symlink {path}: {error}") from error
-    if stat.S_ISREG(metadata.st_mode):
-        return "file", None, metadata.st_dev, metadata.st_ino
-    if stat.S_ISDIR(metadata.st_mode):
-        return "directory", None, metadata.st_dev, metadata.st_ino
-    raise LinkError(
-        f"unsupported destination type at {path}; no changes made. "
-        "Move it aside manually and retry."
-    )
-
-
-def _check_parent(path: Path) -> None:
-    ancestor = path.parent
-    while not ancestor.exists():
-        if ancestor.parent == ancestor:
-            raise LinkError(f"cannot find a writable parent for {path}; no changes made")
-        ancestor = ancestor.parent
-    if not ancestor.is_dir():
-        raise LinkError(f"parent path is not a directory for {path}: {ancestor}")
-    if not os.access(ancestor, os.W_OK | os.X_OK):
-        raise LinkError(f"parent directory is not writable for {path}: {ancestor}")
-
-
-def _plan_links(
-    links: tuple[Link, ...],
-    *,
-    now: Timestamp,
-) -> tuple[PlannedLink, ...]:
-    missing = [link.source for link in links if not link.source.exists()]
-    if missing:
-        rendered = ", ".join(str(path) for path in missing)
-        raise LinkError(f"managed source is missing ({rendered}); no destinations were changed")
-    plans: list[PlannedLink] = []
-    reserved: set[Path] = set()
-    for link in links:
-        _check_parent(link.destination)
-        prior_kind, prior_target, prior_device, prior_inode = _classify_destination(
-            link.destination
-        )
-        backup = None
-        if prior_kind in {"file", "directory"}:
-            candidate = _backup_path(link.destination, now())
-            backup = candidate.with_name(f"{candidate.name}.{uuid.uuid4().hex}")
-            while backup in reserved:
-                backup = candidate.with_name(f"{candidate.name}.{uuid.uuid4().hex}")
-            reserved.add(backup)
-        plans.append(
-            PlannedLink(
-                link,
-                prior_kind,
-                prior_target,
-                backup,
-                prior_device,
-                prior_inode,
-            )
-        )
-    return tuple(plans)
-
-
-def _temporary_symlink(
-    destination: Path,
-    source: Path,
-    *,
-    symlink: Symlink,
-) -> Path:
-    for _ in range(20):
-        temporary = destination.parent / f".{destination.name}.dotfiles.{uuid.uuid4().hex}"
-        try:
-            symlink(source, temporary)
-            return temporary
-        except FileExistsError:
-            continue
-        except OSError as error:
-            raise LinkError(f"cannot create temporary link for {destination}: {error}") from error
-    raise LinkError(f"cannot allocate a temporary link for {destination}")
-
-
-def _replace_link_destination(
-    plan: PlannedLink,
-    temporary: Path,
-    *,
-    replace: Replace,
-    output: Output,
-) -> None:
-    destination = plan.link.destination
-    if not _prior_state_matches(plan):
-        raise LinkError(
-            f"managed destination changed before apply: {destination}; "
-            "no destination was overwritten"
-        )
-    if plan.backup is not None:
-        if plan.backup.exists() or plan.backup.is_symlink():
-            raise LinkError(
-                f"planned backup path appeared before apply: {plan.backup}; "
-                "no destination was overwritten"
-            )
-        replace(destination, plan.backup)
-        output(f"-> Backed up {destination} to {plan.backup}")
-        if destination.exists() or destination.is_symlink():
-            raise LinkError(
-                f"managed destination was not cleared before apply: {destination}; "
-                "no replacement was installed"
-            )
-    replace(temporary, destination)
-
-
-def _raise_link_failure(
-    plan: PlannedLink,
-    error: OSError | ManifestError | LinkError,
-    *,
-    replace: Replace,
-    symlink: Symlink,
-    journal: OperationJournal | None,
-    journal_index: int | None,
-) -> None:
-    restored = _restore_plan(plan, replace=replace, symlink=symlink)
-    if restored and journal is not None and journal_index is not None:
-        try:
-            journal.update_link_entry(
-                journal_index,
-                mutation_started=False,
-                restored=True,
-                recovered=True,
-            )
-        except ManifestError:
-            restored = False
-    preserved = "prior destination restored" if restored else "recovery manifest preserved"
-    raise LinkError(
-        f"cannot replace {plan.link.destination}: {error}; {preserved}. "
-        "Run ./bootstrap.sh recover before retrying."
-    ) from error
-
-
-def _link_one(
-    plan: PlannedLink,
-    *,
-    dry_run: bool,
-    output: Output,
-    replace: Replace,
-    symlink: Symlink,
-    journal: OperationJournal | None,
-    journal_index: int | None,
-) -> None:
-    link = plan.link
-    destination = link.destination
-    if dry_run:
-        output(f"[DRY] Would link: {destination} -> {link.source}")
-        if plan.prior_kind == "symlink":
-            output("      (would replace existing symlink)")
-        elif plan.prior_kind != "absent":
-            output(f"      (would backup existing {destination})")
-        return
-
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = _temporary_symlink(destination, link.source, symlink=symlink)
-    temporary_identity = temporary.lstat()
-    if not _prior_state_matches(plan):
-        _unlink_owned_temporary(
-            temporary,
-            device=temporary_identity.st_dev,
-            inode=temporary_identity.st_ino,
-        )
-        raise LinkError(
-            f"managed destination changed before apply: {destination}; "
-            "no destination was overwritten"
-        )
-    temporary_owned = True
-    mutation_started = False
-    try:
-        if journal is not None and journal_index is not None:
-            journal.update_link_entry(journal_index, mutation_started=True)
-        _replace_link_destination(plan, temporary, replace=replace, output=output)
-        temporary_owned = False
-        mutation_started = True
-        if journal is not None and journal_index is not None:
-            journal.update_link_entry(journal_index, mutation_started=True, applied=True)
-    except (OSError, ManifestError, LinkError) as error:
-        _raise_link_failure(
-            plan,
-            error,
-            replace=replace,
-            symlink=symlink,
-            journal=journal,
-            journal_index=journal_index,
-        )
-    finally:
-        if temporary_owned:
-            _unlink_owned_temporary(
-                temporary,
-                device=temporary_identity.st_dev,
-                inode=temporary_identity.st_ino,
-            )
-    if not mutation_started:
-        raise AssertionError("link replacement completed without recording a mutation")
-    output(f"-> {destination} -> {link.source}")
-
-
-def _prior_state_matches(plan: PlannedLink) -> bool:
-    destination = plan.link.destination
-    if plan.prior_kind == "absent":
-        return not (destination.exists() or destination.is_symlink())
-    if plan.prior_kind == "symlink":
-        try:
-            return destination.is_symlink() and os.readlink(destination) == plan.prior_target
-        except OSError:
-            return False
-    try:
-        metadata = destination.lstat()
-    except (OSError, LinkError):
-        return False
-    return metadata.st_dev == plan.prior_device and metadata.st_ino == plan.prior_inode
-
-
-def _current_link_matches(plan: PlannedLink) -> bool:
-    try:
-        return plan.link.destination.is_symlink() and os.readlink(plan.link.destination) == str(
-            plan.link.source
-        )
-    except OSError:
-        return False
-
-
-def _restore_prior_symlink(
-    plan: PlannedLink,
-    *,
-    replace: Replace,
-    symlink: Symlink,
-) -> bool:
-    if not _current_link_matches(plan):
-        return False
-    temporary = _temporary_symlink(
-        plan.link.destination,
-        Path(str(plan.prior_target)),
-        symlink=symlink,
-    )
-    temporary_identity = temporary.lstat()
-    try:
-        replace(temporary, plan.link.destination)
-    except OSError:
-        _unlink_owned_temporary(
-            temporary,
-            device=temporary_identity.st_dev,
-            inode=temporary_identity.st_ino,
-        )
-        raise
-    return True
-
-
-def _restore_plan(
-    plan: PlannedLink,
-    *,
-    replace: Replace,
-    symlink: Symlink,
-) -> bool:
-    destination = plan.link.destination
-    if _prior_state_matches(plan):
-        return True
-    try:
-        if plan.backup is not None and plan.backup.exists():
-            if destination.exists() or destination.is_symlink():
-                if not _current_link_matches(plan):
-                    return False
-                destination.unlink()
-            replace(plan.backup, destination)
-        elif plan.prior_kind == "symlink" and plan.prior_target is not None:
-            if not _restore_prior_symlink(plan, replace=replace, symlink=symlink):
-                return False
-        elif plan.prior_kind == "absent":
-            if not _current_link_matches(plan):
-                return False
-            destination.unlink()
-        else:
-            return False
-    except OSError:
-        return False
-    return _prior_state_matches(plan)
-
-
-def _unlink_owned_temporary(path: Path, *, device: int, inode: int) -> None:
-    try:
-        metadata = path.lstat()
-        if metadata.st_dev == device and metadata.st_ino == inode:
-            path.unlink()
-    except OSError:
-        return
-
-
-def _rollback_links(
-    applied: list[tuple[PlannedLink, int]],
-    *,
-    replace: Replace,
-    symlink: Symlink,
-    journal: OperationJournal,
-) -> bool:
-    complete = True
-    for plan, index in reversed(applied):
-        try:
-            if not _restore_plan(plan, replace=replace, symlink=symlink):
-                complete = False
-                continue
-            journal.update_link_entry(index, recovered=True)
-        except (OSError, ManifestError, LinkError):
-            complete = False
-    return complete
-
-
-def _file_hash(path: Path) -> str | None:
-    try:
-        if not path.is_file() or path.is_symlink():
-            return None
-        return hashlib.sha256(path.read_bytes()).hexdigest()
-    except OSError:
-        return None
-
-
-def _apply_file_mutation(
-    mutation: FileMutation,
-    contents: bytes,
-    *,
-    journal: OperationJournal | None,
-) -> None:
-    if journal is not None:
-        mutation.journal_index = journal.add_link_entry(
-            {
-                "entry_type": "file",
-                "destination": str(mutation.destination),
-                "visible_destination": str(mutation.visible_path),
-                "source": mutation.source_label,
-                "prior_kind": mutation.prior_kind,
-                "prior_target": mutation.prior_target,
-                "prior_hash": mutation.prior_hash,
-                "backup": str(mutation.backup) if mutation.backup is not None else None,
-                "result_kind": "file",
-                "result_target": None,
-                "result_hash": mutation.result_hash,
-                "mutation_started": False,
-                "applied": False,
-                "recovered": False,
-            }
-        )
-    descriptor, temporary_name = tempfile.mkstemp(
-        prefix=f".{mutation.destination.name}.dotfiles.", dir=mutation.destination.parent
-    )
-    temporary = Path(temporary_name)
-    temporary_identity = os.fstat(descriptor)
-    temporary_owned = True
-    try:
-        if mutation.mode is not None:
-            os.fchmod(descriptor, mutation.mode)
-        with os.fdopen(descriptor, "wb") as file:
-            file.write(contents)
-            file.flush()
-            os.fsync(file.fileno())
-        if journal is not None and mutation.journal_index is not None:
-            journal.update_link_entry(mutation.journal_index, mutation_started=True)
-        if mutation.backup is not None:
-            if mutation.backup.exists() or mutation.backup.is_symlink():
-                raise LinkError(f"local-file backup path appeared: {mutation.backup}")
-            shutil.copy2(mutation.destination, mutation.backup)
-        os.replace(temporary, mutation.destination)
-        temporary_owned = False
-        if journal is not None and mutation.journal_index is not None:
-            journal.update_link_entry(mutation.journal_index, applied=True)
-    except (OSError, ManifestError, LinkError) as error:
-        restored = _rollback_file_mutation(mutation, journal=journal)
-        raise LinkError(
-            f"cannot atomically update {mutation.visible_path}: {error}; "
-            f"{'prior file restored' if restored else 'recovery manifest preserved'}"
-        ) from error
-    finally:
-        if temporary_owned:
-            _unlink_owned_temporary(
-                temporary,
-                device=temporary_identity.st_dev,
-                inode=temporary_identity.st_ino,
-            )
-
-
-def _file_prior_state(mutation: FileMutation, current_hash: str | None) -> bool | None:
-    if mutation.prior_kind == "file":
-        return True if current_hash == mutation.prior_hash else None
-    if mutation.prior_kind == "symlink" and mutation.destination.is_symlink():
-        try:
-            return True if os.readlink(mutation.destination) == mutation.prior_target else None
-        except OSError:
-            return None
-    if mutation.prior_kind == "absent" and not (
-        mutation.destination.exists() or mutation.destination.is_symlink()
-    ):
-        return True
-    return None
-
-
-def _restore_file_prior(mutation: FileMutation) -> bool:
-    try:
-        if mutation.backup is not None and mutation.backup.exists():
-            os.replace(mutation.backup, mutation.destination)
-        elif mutation.prior_kind == "symlink" and mutation.prior_target is not None:
-            temporary = _temporary_symlink(
-                mutation.destination,
-                Path(mutation.prior_target),
-                symlink=os.symlink,
-            )
-            temporary_identity = temporary.lstat()
-            try:
-                os.replace(temporary, mutation.destination)
-            except OSError:
-                _unlink_owned_temporary(
-                    temporary,
-                    device=temporary_identity.st_dev,
-                    inode=temporary_identity.st_ino,
-                )
-                raise
-        elif mutation.prior_kind == "absent":
-            mutation.destination.unlink()
-        else:
-            return False
-    except OSError:
-        return False
-    return True
-
-
-def _rollback_file_mutation(mutation: FileMutation, *, journal: OperationJournal | None) -> bool:
-    current_hash = _file_hash(mutation.destination)
-    restored = _file_prior_state(mutation, current_hash)
-    if restored is None:
-        restored = current_hash == mutation.result_hash and _restore_file_prior(mutation)
-    if restored and journal is not None and mutation.journal_index is not None:
-        try:
-            journal.update_link_entry(mutation.journal_index, recovered=True)
-        except ManifestError:
-            return False
-    return restored
-
-
-def _copy_codex_template(
-    repo_root: Path,
-    codex_home: Path,
-    *,
-    dry_run: bool,
-    output: Output,
-    journal: OperationJournal | None,
-) -> FileMutation | None:
-    source = repo_root.resolve() / "config" / "codex" / "config.toml"
-    destination = codex_home / "config.toml"
-    if dry_run:
-        if destination.is_symlink():
-            output(f"[DRY] Would migrate Codex config symlink to local file: {destination}")
-        elif destination.exists():
-            output(f"[DRY] Would preserve existing local Codex config: {destination}")
-        else:
-            output(f"[DRY] Would copy Codex config template: {source} -> {destination}")
-        return None
-
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    if destination.is_symlink():
-        contents = (destination if destination.exists() else source).read_bytes()
-        mutation = FileMutation(
-            "codex-template",
-            destination,
-            destination,
-            "symlink",
-            os.readlink(destination),
-            None,
-            None,
-            hashlib.sha256(contents).hexdigest(),
-            source.stat().st_mode & 0o777,
-        )
-        _apply_file_mutation(mutation, contents, journal=journal)
-        output(f"-> Migrated Codex config symlink to local file: {destination}")
-        return mutation
-    elif destination.exists():
-        output(f"-> Preserved existing local Codex config: {destination}")
-        return None
-    else:
-        contents = source.read_bytes()
-        mutation = FileMutation(
-            "codex-template",
-            destination,
-            destination,
-            "absent",
-            None,
-            None,
-            None,
-            hashlib.sha256(contents).hexdigest(),
-            source.stat().st_mode & 0o777,
-        )
-        _apply_file_mutation(mutation, contents, journal=journal)
-        output(f"-> Copied Codex config template to local file: {destination}")
-        return mutation
-
-
 def _normalised_npmrc(contents: str) -> str:
     prefix = "prefix=${HOME}/.local"
     minimum_age = "min-release-age=1"
@@ -664,162 +146,132 @@ def _normalised_npmrc(contents: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _configure_npm(
-    home: Path,
-    *,
-    dry_run: bool,
-    output: Output,
-    now: Timestamp,
-    journal: OperationJournal | None,
-) -> FileMutation | None:
+def _prepare_npm(home: Path, *, output: Output) -> _PreparedFile | None:
     npmrc = home / ".npmrc"
-    if dry_run:
-        output(f"[DRY] Would ensure npm global prefix in {npmrc}: ${{HOME}}/.local")
-        output("[DRY] Would ensure npm minimum release age: 1 day")
-        output(f"[DRY] Would ensure npm global directories exist under: {home / '.local'}")
-        return None
-
-    (home / ".local" / "bin").mkdir(parents=True, exist_ok=True)
-    (home / ".local" / "lib").mkdir(parents=True, exist_ok=True)
-    effective_npmrc = npmrc.resolve(strict=False) if npmrc.is_symlink() else npmrc
-    if not effective_npmrc.is_relative_to(home.resolve()):
+    try:
+        selected = capture_scoped_file_input(npmrc, scope_root=home)
+    except FileInputOutsideScopeError as error:
         raise LinkError(
-            f"npm config symlink resolves outside HOME: {npmrc} -> {effective_npmrc}; "
+            "npm config symlink resolves outside HOME: "
+            f"{error.visible_path} -> {error.effective_path}; "
             "preserved without changes"
-        )
-    effective_npmrc.parent.mkdir(parents=True, exist_ok=True)
-    original = effective_npmrc.read_text() if effective_npmrc.exists() else ""
+        ) from error
+    effective_npmrc = selected.effective_path
+    captured = selected.captured
+    original = captured.contents.decode() if captured.contents is not None else ""
     updated = _normalised_npmrc(original)
-    if effective_npmrc.exists() and updated == original:
+    if captured.state.kind != "absent" and updated == original:
         output(f"-> npm settings already configured in {npmrc}")
         return None
-    backup = None
-    mode = None
-    if effective_npmrc.exists():
-        mode = effective_npmrc.stat().st_mode & 0o777
-        backup = _backup_path(effective_npmrc, now())
-    contents = updated.encode()
+    existed = captured.state.kind != "absent"
     mutation = FileMutation(
-        "npmrc",
-        npmrc,
-        effective_npmrc,
-        "file" if effective_npmrc.exists() else "absent",
-        None,
-        backup,
-        hashlib.sha256(original.encode()).hexdigest() if effective_npmrc.exists() else None,
-        hashlib.sha256(contents).hexdigest(),
-        mode,
+        destination=effective_npmrc,
+        visible_destination=npmrc,
+        source="npmrc",
+        contents=updated.encode(),
+        mode=captured.state.mode,
+        precondition=captured.state,
     )
-    _apply_file_mutation(mutation, contents, journal=journal)
-    action = "Updated" if backup is not None else "Configured"
-    output(f"-> {action} npm settings in {npmrc}")
-    return mutation
+    action = "Updated" if existed else "Configured"
+    return _PreparedFile(mutation, f"-> {action} npm settings in {npmrc}")
 
 
-def _rollback_link_operations(
-    applied: list[tuple[PlannedLink, int]],
-    file_mutations: list[FileMutation],
-    *,
-    journal: OperationJournal,
-    replace: Replace,
-    symlink: Symlink,
-) -> bool:
-    files_rolled_back = True
-    for mutation in reversed(file_mutations):
-        if not _rollback_file_mutation(mutation, journal=journal):
-            files_rolled_back = False
-    rolled_back = _rollback_links(
-        applied,
-        replace=replace,
-        symlink=symlink,
-        journal=journal,
+def _prepare_codex_template(repo_root: Path, codex_home: Path) -> _PreparedFile | str:
+    source = repo_root.resolve() / "config" / "codex" / "config.toml"
+    destination = codex_home / "config.toml"
+    captured = capture_file_input(destination)
+    if captured.state.kind == "symlink":
+        contents = captured.contents if captured.contents is not None else source.read_bytes()
+        message = f"-> Migrated Codex config symlink to local file: {destination}"
+    elif captured.state.kind == "file":
+        return f"-> Preserved existing local Codex config: {destination}"
+    else:
+        contents = source.read_bytes()
+        message = f"-> Copied Codex config template to local file: {destination}"
+    return _PreparedFile(
+        FileMutation(
+            destination=destination,
+            visible_destination=destination,
+            source="codex-template",
+            contents=contents,
+            mode=source.stat().st_mode & 0o777,
+            precondition=captured.state,
+        ),
+        message,
     )
-    entries = journal.data["entries"]
-    assert isinstance(entries, list)
-    pending = any(
-        isinstance(entry, dict)
-        and entry.get("mutation_started")
-        and not entry.get("recovered")
-        and not entry.get("restored")
-        for entry in entries
-    )
-    return files_rolled_back and rolled_back and not pending
 
 
-def _record_link_entries(
-    plans: tuple[PlannedLink, ...],
-    journal: OperationJournal | None,
-) -> list[int | None]:
-    if journal is None:
-        return [None] * len(plans)
-    return [
-        journal.add_link_entry(
-            {
-                "destination": str(plan.link.destination),
-                "source": str(plan.link.source),
-                "prior_kind": plan.prior_kind,
-                "prior_target": plan.prior_target,
-                "prior_device": plan.prior_device,
-                "prior_inode": plan.prior_inode,
-                "backup": str(plan.backup) if plan.backup is not None else None,
-                "result_kind": "symlink",
-                "result_target": str(plan.link.source),
-                "mutation_started": False,
-                "applied": False,
-                "recovered": False,
-            }
-        )
-        for plan in plans
-    ]
+def _dry_destination_kind(path: Path) -> str:
+    try:
+        mode = path.lstat().st_mode
+    except FileNotFoundError:
+        return "absent"
+    except OSError as error:
+        raise LinkError(f"cannot inspect managed destination {path}: {error}") from error
+    if stat.S_ISLNK(mode):
+        return "symlink"
+    if stat.S_ISREG(mode):
+        return "file"
+    if stat.S_ISDIR(mode):
+        return "directory"
+    raise LinkError(f"unsupported destination type at {path}; no changes made")
 
 
-def _apply_link_operations(
-    plans: tuple[PlannedLink, ...],
-    journal_indices: list[int | None],
-    *,
-    applied: list[tuple[PlannedLink, int]],
-    file_mutations: list[FileMutation],
-    home: Path,
+def _show_dry_run(
+    inventory: tuple[Link, ...],
     repo_root: Path,
     codex_home: Path,
-    dry_run: bool,
+    home: Path,
+    *,
     output: Output,
-    now: Timestamp,
-    replace: Replace,
-    symlink: Symlink,
-    journal: OperationJournal | None,
 ) -> None:
-    for plan, journal_index in zip(plans, journal_indices, strict=True):
-        _link_one(
-            plan,
-            dry_run=dry_run,
-            output=output,
-            replace=replace,
-            symlink=symlink,
-            journal=journal,
-            journal_index=journal_index,
-        )
-        if journal_index is not None:
-            applied.append((plan, journal_index))
+    missing = [link.source for link in inventory if not link.source.exists()]
+    if missing:
+        rendered = ", ".join(str(path) for path in missing)
+        raise LinkError(f"managed source is missing ({rendered}); no destinations were changed")
+    for link in inventory:
+        kind = _dry_destination_kind(link.destination)
+        output(f"[DRY] Would link: {link.destination} -> {link.source}")
+        if kind == "symlink":
+            output("      (would replace existing symlink)")
+        elif kind != "absent":
+            output(f"      (would backup existing {link.destination})")
+    npmrc = home / ".npmrc"
+    output(f"[DRY] Would ensure npm global prefix in {npmrc}: ${{HOME}}/.local")
+    output("[DRY] Would ensure npm minimum release age: 1 day")
+    output(f"[DRY] Would ensure npm global directories exist under: {home / '.local'}")
+    destination = codex_home / "config.toml"
+    source = repo_root.resolve() / "config" / "codex" / "config.toml"
+    if destination.is_symlink():
+        output(f"[DRY] Would migrate Codex config symlink to local file: {destination}")
+    elif destination.exists():
+        output(f"[DRY] Would preserve existing local Codex config: {destination}")
+    else:
+        output(f"[DRY] Would copy Codex config template: {source} -> {destination}")
 
-    npm_mutation = _configure_npm(
-        home,
-        dry_run=dry_run,
-        output=output,
-        now=now,
-        journal=journal,
-    )
-    if npm_mutation is not None:
-        file_mutations.append(npm_mutation)
-    codex_mutation = _copy_codex_template(
-        repo_root,
-        codex_home,
-        dry_run=dry_run,
-        output=output,
-        journal=journal,
-    )
-    if codex_mutation is not None:
-        file_mutations.append(codex_mutation)
+
+def _report_results(
+    inventory: tuple[Link, ...],
+    results: tuple[MutationResult, ...],
+    prepared_files: tuple[_PreparedFile, ...],
+    preserved_codex_message: str | None,
+    *,
+    output: Output,
+) -> None:
+    link_results = {
+        result.mutation.destination: result
+        for result in results
+        if isinstance(result.mutation, SymlinkMutation)
+    }
+    for link in inventory:
+        result = link_results.get(link.destination)
+        if result is not None and result.backup is not None:
+            output(f"-> Backed up {link.destination} to {result.backup}")
+        output(f"-> {link.destination} -> {link.source}")
+    for prepared in prepared_files:
+        output(prepared.success_message)
+    if preserved_codex_message is not None:
+        output(preserved_codex_message)
 
 
 def link_config(
@@ -831,71 +283,70 @@ def link_config(
     output: Output = print,
     now: Timestamp = lambda: int(time.time()),
     journal: OperationJournal | None = None,
-    replace: Replace = os.replace,
-    symlink: Symlink = os.symlink,
 ) -> None:
     """Install managed links and preserve mutable, local configuration state."""
 
     values = os.environ if environ is None else environ
-    home = resolve_home(values)
-    config_home = resolve_config_home(home, values)
-    codex_home = resolve_codex_home(home, values)
-    platform_name = system or os.uname().sysname
-
+    context = UserPathContext.from_environment(values, system=system)
+    home = context.home
+    codex_home = context.codex_home
     inventory = managed_links(
         repo_root,
         home=home,
-        config_home=config_home,
+        config_home=context.config_home,
         codex_home=codex_home,
-        system=platform_name,
+        system=context.platform,
     )
+    if dry_run:
+        _show_dry_run(inventory, repo_root, codex_home, home, output=output)
+        return
+
+    missing = [link.source for link in inventory if not link.source.exists()]
+    if missing:
+        rendered = ", ".join(str(path) for path in missing)
+        raise LinkError(f"managed source is missing ({rendered}); no destinations were changed")
     try:
-        plans = _plan_links(inventory, now=now)
-    except LinkError:
-        if journal is not None:
-            journal.transition("failed")
-        raise
-    owns_journal = journal is None and not dry_run
+        prepared_npm = _prepare_npm(home, output=output)
+        prepared_codex = _prepare_codex_template(repo_root, codex_home)
+    except (MutationExecutionError, OSError) as error:
+        raise LinkError(f"cannot prepare link setup: {error}") from error
+    prepared_files = tuple(
+        prepared
+        for prepared in (prepared_npm, prepared_codex)
+        if isinstance(prepared, _PreparedFile)
+    )
+    preserved_codex_message = prepared_codex if isinstance(prepared_codex, str) else None
+    mutations: tuple[Mutation, ...] = (
+        *(SymlinkMutation(destination=link.destination, source=link.source) for link in inventory),
+        *(prepared.mutation for prepared in prepared_files),
+        DirectoryMutation(destination=home / ".local" / "bin"),
+        DirectoryMutation(destination=home / ".local" / "lib"),
+    )
+
+    owns_journal = journal is None
     if owns_journal:
         journal = OperationJournal("link", repo_root, environ=values)
-    journal_indices = _record_link_entries(plans, journal)
-    if owns_journal and journal is not None:
         journal.transition("applying")
-
-    applied: list[tuple[PlannedLink, int]] = []
-    file_mutations: list[FileMutation] = []
     try:
-        _apply_link_operations(
-            plans,
-            journal_indices,
-            applied=applied,
-            file_mutations=file_mutations,
-            home=home,
-            repo_root=repo_root,
-            codex_home=codex_home,
-            dry_run=dry_run,
-            output=output,
-            now=now,
-            replace=replace,
-            symlink=symlink,
+        results = execute_mutations(
+            mutations,
             journal=journal,
+            timestamp=now(),
+            authority_roots=(home, context.config_home, codex_home),
         )
-    except (LinkError, OSError, ManifestError) as error:
-        if journal is not None:
-            restored = _rollback_link_operations(
-                applied,
-                file_mutations,
-                journal=journal,
-                replace=replace,
-                symlink=symlink,
-            )
-            journal.transition(
-                "failed" if restored else "recovery-needed"
-            )
-        if isinstance(error, LinkError):
-            raise
-        raise LinkError(f"link setup failed: {error}") from error
+    except MutationExecutionError as error:
+        if journal is not None and journal.state not in {"failed", "recovery-needed"}:
+            journal.transition("failed")
+        status = "prior destination restored" if error.restored else "recovery manifest preserved"
+        raise LinkError(f"cannot atomically update link setup: {error}; {status}") from error
 
+    _report_results(
+        inventory,
+        results,
+        prepared_files,
+        preserved_codex_message,
+        output=output,
+    )
     if owns_journal and journal is not None:
         journal.record_operation("links", "completed")
         journal.transition("completed")

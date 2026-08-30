@@ -7,6 +7,8 @@ from pathlib import Path
 import pytest
 
 from dotfiles_setup import cli
+from dotfiles_setup import rustup as rustup_module
+from dotfiles_setup.nix_profile import ProfileElement
 from dotfiles_setup.rustup import (
     RustToolchain,
     RustupError,
@@ -62,6 +64,30 @@ def executable(path: Path) -> Path:
     path.write_text("#!/bin/sh\nexit 0\n")
     path.chmod(0o755)
     return path
+
+
+def profile_with_rustup(
+    tmp_path: Path,
+    repo_root: Path,
+    *,
+    active: bool = True,
+    executable_rustup: bool = True,
+) -> tuple[ProfileElement, Path]:
+    store_path = tmp_path / "profile-store"
+    rustup = store_path / "bin" / "rustup"
+    rustup.parent.mkdir(parents=True)
+    rustup.write_text("#!/bin/sh\nexit 0\n")
+    if executable_rustup:
+        rustup.chmod(0o755)
+    return (
+        ProfileElement(
+            name="checkout",
+            original_url=f"git+{repo_root.resolve().as_uri()}",
+            store_paths=(store_path,),
+            active=active,
+        ),
+        rustup,
+    )
 
 
 def test_repository_toolchain_is_exact_and_includes_rust_analyzer() -> None:
@@ -121,6 +147,86 @@ def test_setup_installs_and_resolves_only_the_pinned_toolchain(tmp_path: Path) -
     assert all("RUSTUP_TOOLCHAIN" not in environment for _, environment in runner.calls)
 
 
+def test_default_setup_uses_active_current_checkout_profile_over_path(tmp_path: Path) -> None:
+    write_toolchain(tmp_path)
+    profile, rustup = profile_with_rustup(tmp_path, tmp_path)
+    ambient = executable(tmp_path / "ambient" / "rustup")
+    analyzer = executable(tmp_path / "toolchains" / "1.97.1" / "bin" / "rust-analyzer")
+    install = (
+        str(rustup),
+        "toolchain",
+        "install",
+        "1.97.1",
+        "--profile",
+        "default",
+        "--component",
+        "rust-analyzer",
+        "--no-self-update",
+    )
+    lookup = (str(rustup), "which", "--toolchain", "1.97.1", "rust-analyzer")
+    runner = FakeRunner(
+        {
+            install: completed(install),
+            lookup: completed(lookup, stdout=f"{analyzer}\n"),
+        }
+    )
+
+    result = setup_rustup(
+        tmp_path,
+        run=runner,
+        profile_loader=lambda: (profile,),
+        environment={"PATH": str(ambient.parent)},
+    )
+
+    assert result.binary == analyzer
+    assert runner.calls[0][0][0] == str(rustup)
+
+
+@pytest.mark.parametrize("profile_kind", ["inactive", "unrelated"])
+def test_default_setup_rejects_profiles_without_active_checkout(
+    tmp_path: Path, profile_kind: str
+) -> None:
+    write_toolchain(tmp_path)
+    source = tmp_path if profile_kind == "inactive" else tmp_path / "other"
+    profile, _ = profile_with_rustup(
+        tmp_path, source, active=profile_kind != "inactive"
+    )
+    runner = FakeRunner({})
+
+    with pytest.raises(RustupError, match="rustup is not available"):
+        setup_rustup(
+            tmp_path,
+            run=runner,
+            profile_loader=lambda: (profile,),
+            environment={},
+        )
+
+    assert runner.calls == []
+
+
+@pytest.mark.parametrize("rustup_state", ["missing", "not-executable"])
+def test_default_setup_rejects_unusable_profile_rustup(
+    tmp_path: Path, rustup_state: str
+) -> None:
+    write_toolchain(tmp_path)
+    profile, rustup = profile_with_rustup(
+        tmp_path, tmp_path, executable_rustup=rustup_state != "not-executable"
+    )
+    if rustup_state == "missing":
+        rustup.unlink()
+    runner = FakeRunner({})
+
+    with pytest.raises(RustupError, match="rustup is not available"):
+        setup_rustup(
+            tmp_path,
+            run=runner,
+            profile_loader=lambda: (profile,),
+            environment={},
+        )
+
+    assert runner.calls == []
+
+
 def test_missing_rustup_fails_before_running_a_command(tmp_path: Path) -> None:
     write_toolchain(tmp_path)
     runner = FakeRunner({})
@@ -129,6 +235,25 @@ def test_missing_rustup_fails_before_running_a_command(tmp_path: Path) -> None:
         setup_rustup(tmp_path, run=runner, which=lambda _: None, environment={})
 
     assert runner.calls == []
+
+
+def test_default_profile_loader_uses_the_selected_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    write_toolchain(tmp_path)
+    environment = {"HOME": str(tmp_path / "selected-home")}
+    captured: dict[str, object] = {}
+
+    def load(**kwargs: object) -> tuple[ProfileElement, ...]:
+        captured.update(kwargs)
+        return ()
+
+    monkeypatch.setattr(rustup_module, "list_profile_elements", load)
+
+    with pytest.raises(RustupError, match="rustup is not available"):
+        setup_rustup(tmp_path, environment=environment)
+
+    assert captured == {"environment": environment}
 
 
 def test_install_failure_has_actionable_offline_guidance(tmp_path: Path) -> None:

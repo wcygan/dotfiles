@@ -65,7 +65,7 @@ def test_linker_and_codex_templates_are_wired() -> None:
     qmd = read_repo_file("config/fish/functions/qmd.fish")
 
     assert 'Link(config / "fish", config_home / "fish")' in linker
-    assert "_copy_codex_template" in linker
+    assert "_prepare_codex_template" in linker
     assert "Preserved existing local Codex config" in linker
     assert 'agents_source = config / "agents" / "AGENTS.md"' in linker
     assert "Link(agents_source, shared_agents)" in linker

@@ -9,6 +9,8 @@ from pathlib import Path
 import pytest
 
 from dotfiles_setup import cli
+from dotfiles_setup import installer as installer_module
+from dotfiles_setup import locking as locking_module
 from dotfiles_setup.errors import LockError
 from dotfiles_setup.locking import lock_path, mutation_lock
 from dotfiles_setup.manifest import state_directory
@@ -57,8 +59,61 @@ def test_second_process_fails_fast_and_lock_file_persists(tmp_path: Path) -> Non
     assert lock_path(values).is_file()
 
 
+@pytest.mark.parametrize("replacement_kind", ["directory", "symlink"])
+def test_parent_swap_cannot_bypass_an_acquired_lock(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    replacement_kind: str,
+) -> None:
+    values = _subprocess_environment(tmp_path / "home")
+    path = lock_path(values)
+    retained_parent = path.parent.with_name("dotfiles.retained")
+    alternate_parent = path.parent.with_name("dotfiles.alternate")
+
+    with mutation_lock("holder", environ=values):
+        real_open = locking_module.os.open
+        swapped = False
+
+        def swap_parent_before_leaf_open(
+            file: str | bytes | int,
+            flags: int,
+            mode: int = 0o777,
+            *,
+            dir_fd: int | None = None,
+        ) -> int:
+            nonlocal swapped
+            if file == path.name and dir_fd is not None and not swapped:
+                swapped = True
+                path.parent.rename(retained_parent)
+                if replacement_kind == "directory":
+                    path.parent.mkdir()
+                else:
+                    alternate_parent.mkdir()
+                    path.parent.symlink_to(alternate_parent, target_is_directory=True)
+            return real_open(file, flags, mode, dir_fd=dir_fd)
+
+        monkeypatch.setattr(locking_module.os, "open", swap_parent_before_leaf_open)
+        with (
+            pytest.raises(LockError, match="parent changed during acquisition"),
+            mutation_lock("contender", environ=values),
+        ):
+            pytest.fail("the contender acquired a separate lock")
+
+        assert swapped
+        assert not (path.parent / path.name).exists()
+        if path.parent.is_symlink():
+            path.parent.unlink()
+        else:
+            path.parent.rename(alternate_parent)
+        retained_parent.rename(path.parent)
+
+
 def test_doctor_and_verify_do_not_take_mutation_lock(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(cli, "mutation_lock", lambda *_args, **_kwargs: pytest.fail("locked"))
+    monkeypatch.setattr(
+        installer_module,
+        "mutation_lock",
+        lambda *_args, **_kwargs: pytest.fail("locked"),
+    )
     monkeypatch.setattr(cli, "run_doctor", lambda: 0)
     monkeypatch.setattr(cli, "run_verify", lambda _repo: 0)
 

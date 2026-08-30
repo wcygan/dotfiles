@@ -2,86 +2,48 @@
 
 from __future__ import annotations
 
-import hashlib
 import os
 import stat
-import uuid
 from collections.abc import Callable, Mapping
+from dataclasses import replace
 from pathlib import Path
-from typing import Any
 
 from dotfiles_setup import links as link_inventory
 from dotfiles_setup.errors import RecoveryError
-from dotfiles_setup.manifest import _atomic_json, read_manifest, state_directory
+from dotfiles_setup.manifest import ManifestRepository
+from dotfiles_setup.mutations import (
+    DirectoryRecoveryRecord,
+    FileRecoveryRecord,
+    LinkRecoveryRecord,
+    MutationExecutionError,
+    MutationRecordError,
+    RecoveryRecord,
+    decode_recovery_record,
+    prepare_recovery_record,
+    recover_mutation,
+)
+from dotfiles_setup.paths import UserPathContext
 
 Output = Callable[[str], None]
 
 
-def _matches_link(path: Path, target: str) -> bool:
-    try:
-        return path.is_symlink() and os.readlink(path) == target
-    except OSError:
-        return False
-
-
-def _restore_symlink(path: Path, target: str) -> None:
-    temporary: Path | None = None
-    for _ in range(20):
-        candidate = path.parent / f".{path.name}.recover.{uuid.uuid4().hex}"
-        try:
-            os.symlink(target, candidate)
-            temporary = candidate
-            break
-        except FileExistsError:
-            continue
-    if temporary is None:
-        raise RecoveryError(f"cannot allocate a temporary recovery link for {path}")
-    temporary_identity = temporary.lstat()
-    try:
-        os.replace(temporary, path)
-    except OSError:
-        try:
-            metadata = temporary.lstat()
-            if (
-                metadata.st_dev == temporary_identity.st_dev
-                and metadata.st_ino == temporary_identity.st_ino
-            ):
-                temporary.unlink()
-        except OSError:
-            pass
-        raise
-
-
-def _pending_manifest(environ: Mapping[str, str] | None) -> tuple[Path, dict[str, Any]] | None:
-    directory = state_directory(environ)
-    recovery = directory / "recovery-needed.json"
-    active = directory / "current.json"
-    if recovery.exists():
-        value = read_manifest(recovery)
-        if value["state"] == "recovery-needed":
-            return recovery, value
-    if active.exists():
-        value = read_manifest(active)
-        if value["state"] in {"applying", "recovery-needed"}:
-            return active, value
-    return None
-
-
-def _allowed_links(manifest: dict[str, Any], environ: Mapping[str, str] | None) -> dict[Path, Path]:
+def _allowed_links(
+    manifest: dict[str, object],
+    environ: Mapping[str, str] | None,
+    system: str | None,
+) -> dict[Path, Path]:
     values = os.environ if environ is None else environ
     repository_value = manifest.get("repository_root")
     if not isinstance(repository_value, str):
         raise RecoveryError("recovery manifest has no valid repository root")
     repository_root = Path(repository_value).expanduser().resolve()
-    home = link_inventory.resolve_home(values)
-    config_home = link_inventory.resolve_config_home(home, values)
-    codex_home = link_inventory.resolve_codex_home(home, values)
+    context = UserPathContext.from_environment(values, system=system)
     inventory = link_inventory.managed_links(
         repository_root,
-        home=home,
-        config_home=config_home,
-        codex_home=codex_home,
-        system=os.uname().sysname,
+        home=context.home,
+        config_home=context.config_home,
+        codex_home=context.codex_home,
+        system=context.platform,
     )
     return {link.destination: link.source for link in inventory}
 
@@ -95,21 +57,16 @@ def _recorded_path(value: str, label: str) -> Path:
 
 
 def _validate_file_entry(
-    manifest: dict[str, Any],
-    raw: dict[str, Any],
+    manifest: dict[str, object],
+    record: FileRecoveryRecord,
     destination: Path,
-    source: str,
     *,
     home: Path,
     codex_home: Path,
     shell_destinations: set[Path],
 ) -> None:
-    visible_value = raw.get("visible_destination")
-    visible = (
-        _recorded_path(visible_value, "visible destination")
-        if isinstance(visible_value, str)
-        else None
-    )
+    visible = _recorded_path(str(record.visible_destination), "visible destination")
+    source = record.source
     valid_scope = False
     if source == "shell-handoff":
         valid_scope = (
@@ -131,179 +88,412 @@ def _validate_file_entry(
         )
     if (
         not valid_scope
-        or raw.get("prior_kind") not in {"absent", "file", "symlink"}
-        or raw.get("result_kind") != "file"
+        or record.prior_kind not in {"absent", "file", "symlink"}
+        or record.result_kind != "file"
     ):
         raise RecoveryError(
             f"file recovery destination is outside the managed scope: {destination}"
         )
-    assert visible is not None
     if source == "codex-template" and visible.is_symlink():
-        if raw.get("prior_kind") != "symlink" or os.readlink(visible) != raw.get("prior_target"):
+        if record.prior_kind != "symlink" or os.readlink(visible) != record.prior_target:
             raise RecoveryError(f"Codex config symlink changed after interruption: {visible}")
     elif visible.is_symlink():
         if visible.resolve(strict=False) != destination:
             raise RecoveryError(f"shell file symlink changed after interruption: {visible}")
     elif visible != destination:
         raise RecoveryError(f"shell file destination changed after interruption: {visible}")
-    _validate_file_backup(raw, destination)
+    _validate_file_backup(record, destination)
 
 
 def _validate_link_entry(
-    raw: dict[str, Any],
+    record: LinkRecoveryRecord,
     destination: Path,
-    source_value: str,
     allowed: dict[Path, Path],
 ) -> None:
     expected_source = allowed.get(destination)
-    source = _recorded_path(source_value, "source")
+    source = _recorded_path(str(record.source), "source")
     if expected_source is None or source != expected_source:
         raise RecoveryError(
             f"recovery destination is outside the managed inventory: {destination}"
         )
-    if raw.get("prior_kind") not in {"absent", "symlink", "file", "directory"}:
+    if record.prior_kind not in {"absent", "symlink", "file", "directory"}:
         raise RecoveryError(f"invalid prior state for recovery destination {destination}")
-    if raw.get("result_kind") not in {"symlink", "absent"}:
+    if record.result_kind not in {"symlink", "absent"}:
         raise RecoveryError(f"invalid result state for recovery destination {destination}")
-    backup_value = raw.get("backup")
-    if backup_value is None:
+    if record.result_kind == "symlink" and record.result_target != str(expected_source):
+        raise RecoveryError(f"invalid result target for recovery destination {destination}")
+    backup = record.backup
+    if backup is None:
         return
-    if not isinstance(backup_value, str):
-        raise RecoveryError(f"invalid backup path for recovery destination {destination}")
-    backup = _recorded_path(backup_value, "backup")
+    backup = _recorded_path(str(backup), "backup")
     if backup.parent != destination.parent or not backup.name.startswith(
         f"{destination.name}.backup."
     ):
         raise RecoveryError(f"backup is outside the expected destination directory: {backup}")
     if backup.exists() or backup.is_symlink():
         metadata = backup.lstat()
-        if stat.S_ISLNK(metadata.st_mode):
-            raise RecoveryError(f"recovery backup must not be a symlink: {backup}")
-        if metadata.st_dev != raw.get("prior_device") or metadata.st_ino != raw.get(
-            "prior_inode"
-        ):
+        if stat.S_ISLNK(metadata.st_mode) and record.prior_kind != "symlink":
+            raise RecoveryError(f"recovery backup has an invalid type: {backup}")
+        if metadata.st_dev != record.prior_device or metadata.st_ino != record.prior_inode:
             raise RecoveryError(f"recovery backup identity changed: {backup}")
 
 
 def _validate_entries(
-    manifest: dict[str, Any],
-    entries: list[Any],
+    manifest: dict[str, object],
+    entries: list[object],
     environ: Mapping[str, str] | None,
-) -> None:
-    allowed = _allowed_links(manifest, environ)
+    system: str | None,
+) -> tuple[list[RecoveryRecord], list[dict[Path, tuple[int, int]]]]:
+    allowed = _allowed_links(manifest, environ, system)
     values = os.environ if environ is None else environ
-    home = link_inventory.resolve_home(values)
-    codex_home = link_inventory.resolve_codex_home(home, values)
+    context = UserPathContext.from_environment(values, system=system)
+    home = context.home
+    codex_home = context.codex_home
     shell_destinations = {
         home / ".bashrc",
         home / ".bash_profile",
         home / ".zshrc",
         home / ".zshenv",
     }
+    directory_destinations = _allowed_directories(
+        allowed,
+        home=home,
+        config_home=context.config_home,
+        codex_home=codex_home,
+        shell_destinations=shell_destinations,
+    )
+    records: list[RecoveryRecord] = []
+    root_candidates = (home, context.config_home, codex_home)
+    roots = tuple(
+        root
+        for root in root_candidates
+        if not any(
+            root != other and root.is_relative_to(other) for other in root_candidates
+        )
+    )
     for raw in entries:
         if not isinstance(raw, dict):
             raise RecoveryError("recovery manifest contains an invalid entry")
-        destination_value = raw.get("destination")
-        source_value = raw.get("source")
-        if not isinstance(destination_value, str) or not isinstance(source_value, str):
-            raise RecoveryError("recovery manifest entry has invalid paths")
-        destination = _recorded_path(destination_value, "destination")
-        if raw.get("entry_type") == "file":
+        try:
+            record = decode_recovery_record(raw)
+        except MutationRecordError as error:
+            raise RecoveryError(f"invalid recovery manifest entry: {error}") from error
+        destination = _recorded_path(str(record.destination), "destination")
+        _validate_managed_parent(destination, roots)
+        records.append(record)
+    planned_missing_roots = {
+        record.destination
+        for record in records
+        if isinstance(record, DirectoryRecoveryRecord)
+        and record.authority_root_was_missing
+        and record.destination in roots
+    }
+    planned_directories = {
+        record.destination
+        for record in records
+        if isinstance(record, DirectoryRecoveryRecord)
+        and record.mutation_started
+        and not record.recovered
+    }
+    for record in records:
+        destination = record.destination
+        _validate_result_backup(
+            record,
+            destination,
+            roots,
+            planned_missing_roots,
+        )
+        if isinstance(record, DirectoryRecoveryRecord):
+            if destination not in directory_destinations:
+                raise RecoveryError(
+                    f"directory recovery destination is outside managed scope: {destination}"
+                )
+            _validate_stage(record, destination, roots, planned_missing_roots)
+        elif isinstance(record, FileRecoveryRecord):
             _validate_file_entry(
                 manifest,
-                raw,
+                record,
                 destination,
-                source_value,
                 home=home,
                 codex_home=codex_home,
                 shell_destinations=shell_destinations,
             )
-            continue
-        _validate_link_entry(raw, destination, source_value, allowed)
+            _validate_stage(record, destination, roots, planned_missing_roots)
+        else:
+            _validate_link_entry(record, destination, allowed)
+    parent_identities = [
+        _capture_recovery_parent_identities(record, planned_directories)
+        if record.mutation_started and not record.recovered
+        else {}
+        for record in records
+    ]
+    return records, parent_identities
 
 
-def _file_hash(path: Path) -> str | None:
-    try:
-        if not path.is_file() or path.is_symlink():
-            return None
-        return hashlib.sha256(path.read_bytes()).hexdigest()
-    except OSError:
-        return None
+def _capture_recovery_parent_identities(
+    record: RecoveryRecord,
+    planned_directories: set[Path],
+) -> dict[Path, tuple[int, int]]:
+    """Capture each parent identity used by one recovery operation."""
+
+    paths = {
+        record.destination,
+        *(
+            path
+            for path in (
+                record.backup,
+                record.result_backup,
+                getattr(record, "stage_path", None),
+            )
+            if path is not None
+        ),
+    }
+    if isinstance(record, FileRecoveryRecord) and record.visible_kind is not None:
+        paths.add(record.visible_destination)
+    identities: dict[Path, tuple[int, int]] = {}
+    for parent in {path.parent for path in paths}:
+        current = parent
+        missing: list[Path] = []
+        while True:
+            try:
+                metadata = current.lstat()
+                break
+            except FileNotFoundError:
+                missing.append(current)
+                if current.parent == current:
+                    raise RecoveryError(
+                        f"recovery parent is unavailable: {parent}"
+                    ) from None
+                current = current.parent
+            except OSError as error:
+                raise RecoveryError(
+                    f"recovery parent is unavailable: {parent}"
+                ) from error
+        unplanned = tuple(path for path in missing if path not in planned_directories)
+        if unplanned:
+            raise RecoveryError(
+                f"recovery parent is unavailable: {unplanned[0]}"
+            )
+        if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+            raise RecoveryError(f"recovery parent is unsafe: {current}")
+        identities[current] = (metadata.st_dev, metadata.st_ino)
+    return identities
 
 
-def _validate_file_backup(raw: dict[str, Any], destination: Path) -> None:
-    backup_value = raw.get("backup")
-    if backup_value is None:
+def _allowed_directories(
+    allowed_links: Mapping[Path, Path],
+    *,
+    home: Path,
+    config_home: Path,
+    codex_home: Path,
+    shell_destinations: set[Path],
+) -> set[Path]:
+    roots = (home, config_home, codex_home)
+    destinations = {
+        *allowed_links,
+        *shell_destinations,
+        home / ".npmrc",
+        home / ".local" / "bin",
+        home / ".local" / "lib",
+        codex_home / "config.toml",
+    }
+    directories: set[Path] = set()
+    for destination in destinations:
+        candidate = (
+            destination
+            if destination.suffix == "" and destination.name in {"bin", "lib"}
+            else destination.parent
+        )
+        for root in roots:
+            if candidate.is_relative_to(root):
+                while candidate.is_relative_to(root):
+                    directories.add(candidate)
+                    if candidate == root:
+                        break
+                    candidate = candidate.parent
+                break
+    return directories
+
+
+def _validate_file_backup(record: FileRecoveryRecord, destination: Path) -> None:
+    backup = record.backup
+    if backup is None:
         return
-    if not isinstance(backup_value, str):
-        raise RecoveryError(f"invalid backup path for shell file {destination}")
-    backup = _recorded_path(backup_value, "file backup")
+    backup = _recorded_path(str(backup), "file backup")
     if backup.parent != destination.parent or not backup.name.startswith(
         f"{destination.name}.backup."
     ):
         raise RecoveryError(f"shell backup is outside the destination directory: {backup}")
-    if backup.is_symlink():
-        raise RecoveryError(f"file recovery backup must not be a symlink: {backup}")
+    if not (backup.exists() or backup.is_symlink()):
+        return
+    metadata = backup.lstat()
+    expected_type_matches = (
+        record.prior_kind == "file" and stat.S_ISREG(metadata.st_mode)
+    ) or (record.prior_kind == "symlink" and stat.S_ISLNK(metadata.st_mode))
+    if not expected_type_matches:
+        raise RecoveryError(f"file recovery backup has an invalid type: {backup}")
+    if (
+        record.prior_device is not None
+        and record.prior_inode is not None
+        and (metadata.st_dev, metadata.st_ino)
+        != (record.prior_device, record.prior_inode)
+    ):
+        raise RecoveryError(f"file recovery backup identity changed: {backup}")
+    if (
+        record.prior_kind == "file"
+        and record.prior_mode is not None
+        and stat.S_IMODE(metadata.st_mode) != record.prior_mode
+    ):
+        raise RecoveryError(f"file recovery backup mode changed: {backup}")
 
 
-def _matches_file_prior(destination: Path, raw: dict[str, Any]) -> bool:
-    if raw.get("prior_kind") == "absent":
-        return not (destination.exists() or destination.is_symlink())
-    if raw.get("prior_kind") == "symlink":
+def _validate_result_backup(
+    record: RecoveryRecord,
+    destination: Path,
+    roots: tuple[Path, ...],
+    planned_missing_roots: set[Path],
+) -> None:
+    result_backup = record.result_backup
+    if result_backup is None:
+        return
+    result_backup = _recorded_path(str(result_backup), "result quarantine")
+    candidates = tuple(
+        root for root in roots if destination == root or destination.is_relative_to(root)
+    )
+    root = max(candidates, key=lambda item: len(item.parts), default=None)
+    managed_parent = (
+        root is not None
+        and result_backup.parent.is_relative_to(root)
+        and destination.parent.is_relative_to(result_backup.parent)
+    )
+    root_parent = (
+        root is not None
+        and root in planned_missing_roots
+        and result_backup.parent == root.parent
+    )
+    if not (managed_parent or root_parent) or not result_backup.name.startswith(
+        f".{destination.name}.dotfiles-result."
+    ):
+        raise RecoveryError(
+            f"result quarantine is outside the managed destination path: {result_backup}"
+        )
+    if root_parent:
         try:
-            return destination.is_symlink() and os.readlink(destination) == raw.get("prior_target")
-        except OSError:
-            return False
-    return _file_hash(destination) == raw.get("prior_hash")
+            metadata = result_backup.parent.lstat()
+        except OSError as error:
+            raise RecoveryError(
+                f"result quarantine parent is unavailable: {result_backup.parent}"
+            ) from error
+        if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+            raise RecoveryError(
+                f"result quarantine parent is unsafe: {result_backup.parent}"
+            )
+        return
+    _validate_managed_parent(result_backup, roots)
 
 
-def _matches_prior(destination: Path, raw: dict[str, Any]) -> bool:
-    prior_kind = raw.get("prior_kind")
-    if prior_kind == "absent":
-        return not (destination.exists() or destination.is_symlink())
-    if prior_kind == "symlink":
+def _validate_stage(
+    record: FileRecoveryRecord | DirectoryRecoveryRecord,
+    destination: Path,
+    roots: tuple[Path, ...],
+    planned_missing_roots: set[Path],
+) -> None:
+    stage = record.stage_path
+    if stage is None:
+        return
+    stage = _recorded_path(str(stage), "stage path")
+    if not stage.name.startswith(f".{destination.name}.dotfiles."):
+        raise RecoveryError(f"stage path has an invalid name: {stage}")
+    candidates = tuple(
+        root for root in roots if destination == root or destination.is_relative_to(root)
+    )
+    root = max(candidates, key=lambda item: len(item.parts), default=None)
+    if (
+        root is not None
+        and root in planned_missing_roots
+        and stage.parent == root.parent
+    ):
         try:
-            return destination.is_symlink() and os.readlink(destination) == raw.get("prior_target")
-        except OSError:
-            return False
+            metadata = stage.parent.lstat()
+        except OSError as error:
+            raise RecoveryError(f"stage parent is unavailable: {stage.parent}") from error
+        if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+            raise RecoveryError(f"stage parent is unsafe: {stage.parent}")
+        return
+    _validate_managed_parent(stage, roots)
+
+
+def _validate_managed_parent(destination: Path, roots: tuple[Path, ...]) -> None:
+    candidates = tuple(
+        root for root in roots if destination == root or destination.is_relative_to(root)
+    )
+    if not candidates:
+        raise RecoveryError(
+            f"recovery destination is outside the managed inventory path roots: {destination}"
+        )
+    root = max(candidates, key=lambda item: len(item.parts))
     try:
-        metadata = destination.lstat()
-    except OSError:
-        return False
-    return metadata.st_dev == raw.get("prior_device") and metadata.st_ino == raw.get("prior_inode")
+        root_metadata = root.lstat()
+    except FileNotFoundError:
+        try:
+            parent_metadata = root.parent.lstat()
+        except OSError as error:
+            raise RecoveryError(f"managed path root is unavailable: {root}") from error
+        if stat.S_ISLNK(parent_metadata.st_mode) or not stat.S_ISDIR(
+            parent_metadata.st_mode
+        ):
+            raise RecoveryError(
+                f"managed path root parent is unsafe: {root.parent}"
+            ) from None
+        return
+    except OSError as error:
+        raise RecoveryError(f"managed path root is unavailable: {root}") from error
+    if stat.S_ISLNK(root_metadata.st_mode) or not stat.S_ISDIR(root_metadata.st_mode):
+        raise RecoveryError(f"managed path root is unsafe: {root}")
+    if destination == root:
+        return
+    current = root
+    for part in destination.parent.relative_to(root).parts:
+        current /= part
+        try:
+            metadata = current.lstat()
+        except FileNotFoundError:
+            break
+        except OSError as error:
+            raise RecoveryError(f"cannot inspect recovery parent path: {current}") from error
+        if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+            raise RecoveryError(f"recovery parent path is unsafe: {current}")
 
 
 def _persist_progress(
+    repository: ManifestRepository,
     path: Path,
-    manifest: dict[str, Any],
-    environ: Mapping[str, str] | None,
+    manifest: dict[str, object],
 ) -> None:
-    manifest["state"] = "recovery-needed"
-    _atomic_json(path, manifest)
-    _atomic_json(state_directory(environ) / "recovery-needed.json", manifest)
+    repository.checkpoint_recovery(path, manifest)
 
 
 def _report_recovery(
     path: Path,
-    manifest: dict[str, Any],
-    entries: list[Any],
+    manifest: dict[str, object],
+    entries: list[RecoveryRecord],
     output: Output,
 ) -> None:
     output(f"Recovery is needed for {manifest.get('command', 'setup')} ({path}).")
-    for raw in entries:
-        if not isinstance(raw, dict) or not raw.get("mutation_started"):
+    for record in entries:
+        if not record.mutation_started:
             continue
-        destination = raw.get("destination")
-        backup = raw.get("backup")
+        destination = record.destination
+        backup = record.backup
         action = (
             f"restore {backup}"
             if backup
             else "restore the prior file state"
-            if raw.get("entry_type") == "file"
+            if isinstance(record, FileRecoveryRecord)
             else "restore the prior link state"
         )
         output(f"- {destination}: {action}")
-    if not any(isinstance(raw, dict) and raw.get("mutation_started") for raw in entries):
+    if not any(record.mutation_started for record in entries):
         output(
             "No reversible link entries were recorded. Inspect the command's external state; "
             "an authorized apply acknowledges the current state but does not undo it."
@@ -320,168 +510,228 @@ def _report_recovery(
 
 
 def _mark_recovered(
+    repository: ManifestRepository,
     path: Path,
-    manifest: dict[str, Any],
-    raw: dict[str, Any],
-    environ: Mapping[str, str] | None,
+    manifest: dict[str, object],
+    index: int,
+    record: RecoveryRecord,
     destination: Path,
     output: Output,
     *,
     already: bool,
 ) -> None:
-    raw["recovered"] = True
-    _persist_progress(path, manifest, environ)
-    output(f"{'Already recovered' if already else 'Recovered'} {destination}")
-
-
-def _recover_file_entry(
-    path: Path,
-    manifest: dict[str, Any],
-    raw: dict[str, Any],
-    environ: Mapping[str, str] | None,
-    output: Output,
-) -> str | None:
-    destination = Path(str(raw["destination"]))
-    if _matches_file_prior(destination, raw):
-        _mark_recovered(path, manifest, raw, environ, destination, output, already=True)
-        return None
-    if _file_hash(destination) != raw.get("result_hash"):
-        return f"{destination}: current file changed; manual intervention required"
-
-    backup_value = raw.get("backup")
-    backup = Path(str(backup_value)) if backup_value else None
-    try:
-        if backup is not None and backup.exists():
-            if _file_hash(backup) != raw.get("prior_hash"):
-                return f"{destination}: backup contents changed; manual intervention required"
-            os.replace(backup, destination)
-        elif raw.get("prior_kind") == "symlink" and isinstance(raw.get("prior_target"), str):
-            _restore_symlink(destination, str(raw["prior_target"]))
-        elif raw.get("prior_kind") == "absent":
-            destination.unlink()
-        else:
-            return f"{destination}: shell backup is missing; manual intervention required"
-    except OSError as error:
-        return f"{destination}: {error}; manual intervention required"
-
-    _mark_recovered(path, manifest, raw, environ, destination, output, already=False)
-    return None
-
-
-def _apply_link_recovery(
-    destination: Path,
-    backup: Path | None,
-    prior_kind: Any,
-    prior_target: Any,
-    result_kind: Any,
-    current_expected: bool,
-) -> str | None:
-    try:
-        if backup is not None and backup.exists():
-            if not current_expected and (destination.exists() or destination.is_symlink()):
-                return f"{destination}: current state changed; preserved {backup}"
-            if current_expected:
-                destination.unlink()
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            os.replace(backup, destination)
-        elif prior_kind == "symlink" and isinstance(prior_target, str):
-            if not current_expected:
-                return f"{destination}: current state changed; prior link not restored"
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            if result_kind == "absent":
-                os.symlink(prior_target, destination)
-            else:
-                _restore_symlink(destination, prior_target)
-        elif prior_kind == "absent":
-            if not current_expected:
-                return f"{destination}: current state changed; link not removed"
-            destination.unlink()
-        else:
-            return f"{destination}: backup is missing; manual intervention required"
-    except OSError as error:
-        return f"{destination}: {error}; manual intervention required"
-    return None
-
-
-def _recover_link_entry(
-    path: Path,
-    manifest: dict[str, Any],
-    raw: dict[str, Any],
-    environ: Mapping[str, str] | None,
-    output: Output,
-) -> str | None:
-    destination = Path(str(raw["destination"]))
-    result_target = str(raw.get("result_target", ""))
-    backup_value = raw.get("backup")
-    backup = Path(str(backup_value)) if backup_value else None
-    prior_kind = raw.get("prior_kind")
-    prior_target = raw.get("prior_target")
-    result_kind = raw.get("result_kind")
-    if _matches_prior(destination, raw):
-        _mark_recovered(path, manifest, raw, environ, destination, output, already=True)
-        return None
-
-    current_expected = (
-        not (destination.exists() or destination.is_symlink())
-        if result_kind == "absent"
-        else _matches_link(destination, result_target)
+    repository.checkpoint_entry_recovery(
+        path,
+        manifest,
+        index,
+        replace(record, recovered=True),
     )
-    message = _apply_link_recovery(
-        destination, backup, prior_kind, prior_target, result_kind, current_expected
-    )
-    if message is not None:
-        return message
+    suffix = _retained_quarantine_suffix(record)
+    output(f"{'Already recovered' if already else 'Recovered'} {destination}{suffix}")
 
-    _mark_recovered(path, manifest, raw, environ, destination, output, already=False)
+
+def _retained_quarantine_suffix(record: RecoveryRecord) -> str:
+    """Report every recorded stage or result quarantine that still exists."""
+
+    retained = tuple(
+        path
+        for path in (
+            getattr(record, "stage_path", None),
+            record.result_backup,
+        )
+        if path is not None and (path.exists() or path.is_symlink())
+    )
+    return f"; retained quarantine: {', '.join(map(str, retained))}" if retained else ""
+
+
+def _unapplied_record_has_verified_missing_parent(
+    record: RecoveryRecord,
+    parent_identities: Mapping[Path, tuple[int, int]],
+) -> bool:
+    """Accept a prior absent state under a parent that validation found absent."""
+
+    destination_parent = record.destination.parent
+    if record.applied or record.prior_kind != "absent":
+        return False
+    if destination_parent in parent_identities:
+        return False
+    ancestors = tuple(
+        path
+        for path in parent_identities
+        if destination_parent.is_relative_to(path)
+    )
+    if not ancestors:
+        return False
+    ancestor = max(ancestors, key=lambda path: len(path.parts))
+    relative_parts = destination_parent.relative_to(ancestor).parts
+    if not relative_parts:
+        return False
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
+    descriptor = os.open(ancestor, flags)
+    try:
+        metadata = os.fstat(descriptor)
+        if (metadata.st_dev, metadata.st_ino) != parent_identities[ancestor]:
+            raise MutationExecutionError(
+                f"destination parent changed: {ancestor}", restored=False
+            )
+        try:
+            os.stat(
+                relative_parts[0],
+                dir_fd=descriptor,
+                follow_symlinks=False,
+            )
+        except FileNotFoundError:
+            return True
+        return False
+    finally:
+        os.close(descriptor)
+
+
+def _recover_entry(
+    repository: ManifestRepository,
+    path: Path,
+    manifest: dict[str, object],
+    index: int,
+    record: RecoveryRecord,
+    output: Output,
+    *,
+    parent_identities: Mapping[Path, tuple[int, int]],
+) -> str | None:
+    destination = record.destination
+    try:
+        if _unapplied_record_has_verified_missing_parent(
+            record,
+            parent_identities,
+        ):
+            _mark_recovered(
+                repository,
+                path,
+                manifest,
+                index,
+                record,
+                destination,
+                output,
+                already=True,
+            )
+            return None
+        prepared_record = prepare_recovery_record(
+            record,
+            expected_identities=parent_identities,
+        )
+    except MutationExecutionError as error:
+        return (
+            f"{destination}: {error}{_retained_quarantine_suffix(record)}; "
+            "manual intervention required"
+        )
+    except OSError as error:
+        return (
+            f"{destination}: recovery path is unavailable: {error}"
+            f"{_retained_quarantine_suffix(record)}; "
+            "manual intervention required"
+        )
+    if prepared_record != record:
+        repository.checkpoint_entry_recovery(
+            path,
+            manifest,
+            index,
+            prepared_record,
+        )
+    try:
+        result = recover_mutation(
+            prepared_record,
+            expected_identities=parent_identities,
+        )
+    except MutationExecutionError as error:
+        return (
+            f"{destination}: {error}"
+            f"{_retained_quarantine_suffix(prepared_record)}; "
+            "manual intervention required"
+        )
+    except OSError as error:
+        return (
+            f"{destination}: recovery path is unavailable: {error}"
+            f"{_retained_quarantine_suffix(prepared_record)}; "
+            "manual intervention required"
+        )
+    recovered_record = result.record or prepared_record
+    if not result.recovered:
+        return (
+            f"{destination}: {result.reason}"
+            f"{_retained_quarantine_suffix(recovered_record)}; "
+            "manual intervention required"
+        )
+
+    _mark_recovered(
+        repository,
+        path,
+        manifest,
+        index,
+        recovered_record,
+        destination,
+        output,
+        already=result.already_recovered,
+    )
     return None
 
 
 def run_recovery(
     *,
     environ: Mapping[str, str] | None = None,
+    system: str | None = None,
     apply: bool = False,
     yes: bool = False,
     output: Output = print,
 ) -> int:
     """Describe or explicitly apply recovery for the latest interrupted operation."""
 
-    pending = _pending_manifest(environ)
+    repository = ManifestRepository.from_environment(environ)
+    pending = repository.pending()
     if pending is None:
         output("No interrupted dotfiles operation needs recovery.")
         return 0
-    path, manifest = pending
+    path = pending.path
+    manifest = pending.data
     entries = manifest.get("entries", [])
     if not isinstance(entries, list):
         raise RecoveryError(f"invalid recovery entries in {path}")
-    _validate_entries(manifest, entries, environ)
-    _report_recovery(path, manifest, entries, output)
+    records, parent_identities = _validate_entries(manifest, entries, environ, system)
+    _report_recovery(path, manifest, records, output)
     if not apply:
         output("Dry run only. Apply with: ./bootstrap.sh recover --apply --yes")
         return 0
     if not yes:
         raise RecoveryError("recovery mutation requires both --apply and --yes")
 
-    _persist_progress(path, manifest, environ)
+    _persist_progress(repository, path, manifest)
 
     unresolved: list[str] = []
-    for raw in reversed(entries):
-        if not isinstance(raw, dict) or not raw.get("mutation_started") or raw.get("recovered"):
+    for index in reversed(range(len(records))):
+        record = records[index]
+        if not record.mutation_started or record.recovered:
             continue
-        recover = _recover_file_entry if raw.get("entry_type") == "file" else _recover_link_entry
-        message = recover(path, manifest, raw, environ, output)
+        message = _recover_entry(
+            repository,
+            path,
+            manifest,
+            index,
+            record,
+            output,
+            parent_identities=parent_identities[index],
+        )
         if message is not None:
             unresolved.append(message)
 
     if unresolved:
         for message in unresolved:
             output(f"[FAIL] {message}")
-        _persist_progress(path, manifest, environ)
+        _persist_progress(repository, path, manifest)
         raise RecoveryError(f"recovery remains incomplete; manifest preserved at {path}")
 
-    manifest["state"] = "completed"
-    _atomic_json(state_directory(environ) / "current.json", manifest)
-    _atomic_json(state_directory(environ) / "completed.json", manifest)
-    recovery_path = state_directory(environ) / "recovery-needed.json"
-    recovery_path.unlink(missing_ok=True)
+    repository.complete_recovery(manifest)
     output("Recovery completed. Re-running recovery is safe.")
     return 0

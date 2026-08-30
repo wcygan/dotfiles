@@ -1,6 +1,6 @@
-[install]
-# 3 days, in seconds. Bun applies this to newly resolved npm package versions.
-minimumReleaseAge = 259200
-
-# Keep local workspace packages from waiting on the public registry cooldown.
-minimumReleaseAgeExcludes = ["@wcygan/*"]
+# minimumReleaseAge (3-day cooldown) removed 2026-08-29:
+# it blocked `omp update` for freshly published @oh-my-pi/* versions.
+# bun's minimumReleaseAgeExcludes only accepts exact package names (no globs;
+# "@wcygan/*" / "@oh-my-pi/*" patterns silently never matched), so the cooldown
+# cannot be scoped to the omp package family. Re-add only if you want to guard
+# third-party deps and are willing to enumerate every trusted package by name.

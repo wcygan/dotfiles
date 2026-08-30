@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-from dotfiles_setup.links import resolve_codex_home, resolve_config_home
 from dotfiles_setup.paths import UserPathContext
 
 
@@ -99,12 +98,13 @@ def test_tilde_overrides_use_selected_home_fallbacks(
     assert context.cache_home == selected_home / ".cache"
 
 
-def test_compatibility_wrappers_preserve_a_relative_explicit_home() -> None:
-    home = Path("relative-home")
+def test_explicit_home_keeps_conventional_fallbacks(tmp_path: Path) -> None:
+    home = tmp_path / "home"
 
-    assert resolve_config_home(home, {}) == home / ".config"
-    assert resolve_codex_home(home, {}) == home / ".codex"
+    context = UserPathContext.from_environment({}, home=home)
 
+    assert context.config_home == home / ".config"
+    assert context.codex_home == home / ".codex"
 
 def test_agent_skill_target_stays_inside_home(tmp_path: Path) -> None:
     context = UserPathContext.from_environment(

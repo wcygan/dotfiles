@@ -117,7 +117,7 @@ def test_link_rejects_destination_created_after_planning(
 
     monkeypatch.setattr(mutations_module, "_create_symlink", competing_symlink)
 
-    with pytest.raises(LinkError, match="atomically update"):
+    with pytest.raises(LinkError, match=r"cannot atomically update link setup: .*File exists"):
         link_config(Path.cwd(), environ=environment(home, xdg=xdg), system="Linux")
 
     assert destination.read_text() == "created by competing actor"

@@ -4,6 +4,23 @@ Read this reference before changing compatibility guarantees, restoring retired
 behavior, or replacing a setup boundary. Add an entry when a breaking change is
 intentional, alongside focused migration tests.
 
+## 2026-08-29 — Require physical destination parents and no-replace renames
+
+Managed mutations now validate every destination parent through a descriptor
+walk. A symlinked ancestor of a managed destination, such as a synced
+`~/.config`, fails with an unsafe-parent error. Replace the symlink with a
+real directory before you install.
+
+Atomic replacement now uses no-replace renames. Linux needs `renameat2` with
+`RENAME_NOREPLACE` filesystem support. macOS needs `renameatx_np`. A
+filesystem without support fails with `ENOTSUP`. Move the managed
+destinations to a filesystem with no-replace support.
+
+Created directories now install with mode `0755` by default; a caller may
+declare a stricter mode. The transactional rewrite had created
+`~/.local/bin` and `~/.local/lib` with mode `0700`. Replace those
+directories if the restrictive mode matters to you.
+
 ## 2026-08-29 — Reject inactive checkout profile elements
 
 Profile setup now upgrades only an active element from the current checkout.

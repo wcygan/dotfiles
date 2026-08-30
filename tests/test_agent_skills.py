@@ -421,6 +421,47 @@ def test_install_allows_a_verified_legacy_catalog_migration(tmp_path: Path) -> N
     assert (home / ".codex" / "skills" / "animate").is_dir()
 
 
+def test_install_allows_a_partial_legacy_catalog(tmp_path: Path) -> None:
+    _write_lock(tmp_path)
+    home = tmp_path / "home"
+    calls: list[list[str]] = []
+    installed = False
+    _write_catalog(home / ".codex" / "skills", ("animate",))
+    legacy_inventory = [
+        item
+        for item in json.loads(_legacy_installed(home))
+        if item["skillName"] == "animate"
+    ]
+
+    def runner(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        nonlocal installed
+        calls.append(command)
+        if command[1] == "api":
+            return _completed(command, stdout=_pinned_tree())
+        if command[1:3] != ["skill", "list"]:
+            if "--all" in command:
+                installed = True
+                _write_catalog(home / ".agents" / "skills")
+                return _completed(command, stdout="Installed 2 skills\n")
+            return _completed(
+                command,
+                stdout="animate\tdescription\nhill-climbing\tdescription\n",
+            )
+        if "--dir" in command:
+            return _completed(command, stdout=_installed(home) if installed else "[]")
+        return _completed(command, stdout=json.dumps(legacy_inventory))
+
+    result = install_agent_skills(
+        tmp_path,
+        run=runner,
+        which=lambda _: "/bin/gh",
+        environ={"HOME": str(home)},
+    )
+
+    assert result.count == 2
+    assert any("--all" in command for command in calls)
+
+
 def test_verify_requires_the_exact_pin_for_every_catalog_skill(tmp_path: Path) -> None:
     _write_lock(tmp_path)
     home = tmp_path / "home"

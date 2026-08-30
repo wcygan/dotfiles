@@ -47,30 +47,6 @@ class _PreparedFile:
     success_message: str
 
 
-def resolve_home(environ: Mapping[str, str] | None = None) -> Path:
-    """Return HOME, respecting an explicitly supplied environment."""
-
-    return UserPathContext.from_environment(environ).home
-
-
-def resolve_config_home(home: Path, environ: Mapping[str, str] | None = None) -> Path:
-    """Return XDG_CONFIG_HOME, with the conventional HOME fallback."""
-
-    values = os.environ if environ is None else environ
-    if not Path(values.get("XDG_CONFIG_HOME", "")).expanduser().is_absolute():
-        return home / ".config"
-    return UserPathContext.from_environment(environ, home=home).config_home
-
-
-def resolve_codex_home(home: Path, environ: Mapping[str, str] | None = None) -> Path:
-    """Return CODEX_HOME, with the conventional HOME fallback."""
-
-    values = os.environ if environ is None else environ
-    if not Path(values.get("CODEX_HOME", "")).expanduser().is_absolute():
-        return home / ".codex"
-    return UserPathContext.from_environment(environ, home=home).codex_home
-
-
 def vscode_config_home(home: Path, config_home: Path, system: str) -> Path:
     """Return VS Code's user settings directory for the current platform."""
 

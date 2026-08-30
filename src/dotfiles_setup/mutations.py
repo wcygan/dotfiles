@@ -742,7 +742,7 @@ class DirectoryMutation:
     """Declare one required empty directory."""
 
     destination: Path
-
+    mode: int | None = None
 
 Mutation = SymlinkMutation | FileMutation | DirectoryMutation
 
@@ -1584,6 +1584,15 @@ def _stage_mutations(
                 temporary, expected_identities=parent_identities
             ) as parent_descriptor:
                 os.mkdir(temporary.name, mode=0o700, dir_fd=parent_descriptor)
+                declared_mode = (
+                    0o755 if plan.mutation.mode is None else plan.mutation.mode
+                )
+                os.chmod(
+                    temporary.name,
+                    declared_mode,
+                    dir_fd=parent_descriptor,
+                    follow_symlinks=False,
+                )
                 plan.staged = temporary
                 identity = os.stat(
                     temporary.name,

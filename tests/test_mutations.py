@@ -673,6 +673,16 @@ def test_directory_stage_child_injection_is_rejected_after_the_namespace_move(
     assert journal.state == "recovery-needed"
 
 
+def test_directory_mutation_installs_with_the_declared_mode(tmp_path: Path) -> None:
+    destination = tmp_path / "created"
+    execute_mutations((DirectoryMutation(destination=destination),))
+    assert stat.S_IMODE(destination.stat().st_mode) == 0o755
+
+    restricted = tmp_path / "restricted"
+    execute_mutations((DirectoryMutation(destination=restricted, mode=0o700),))
+    assert stat.S_IMODE(restricted.stat().st_mode) == 0o700
+
+
 def test_reverse_rollback_preserves_a_changed_applied_result(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

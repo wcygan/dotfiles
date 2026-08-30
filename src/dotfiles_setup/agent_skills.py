@@ -362,12 +362,7 @@ def install_agent_skills(
     expected = registry.discover(lock)
     destination = _target_directory(lock, environment)
     _reject_collisions(registry.list_shared(destination), expected, lock, destination)
-    _legacy_cleanup_candidates(
-        registry.list_legacy(lock),
-        expected,
-        lock,
-        environment,
-    )
+    _reject_conflicting_legacy_skills(registry.list_legacy(lock), expected, lock)
     registry.install(lock, destination)
     catalog = _accept_catalog(registry, lock, expected, destination)
     _accept_pinned_content(registry, lock, expected, catalog)
@@ -475,6 +470,38 @@ def _reject_collisions(
                 f"refusing to overwrite user skill {name!r} from another scope: "
                 f"{item.scope or 'unknown'}"
             )
+
+
+def _reject_conflicting_legacy_skills(
+    installed: Sequence[InstalledSkill],
+    expected: tuple[str, ...],
+    lock: AgentSkillsLock,
+) -> None:
+    """Refuse install when a legacy copy of a pinned name conflicts with the pin."""
+
+    expected_names = set(expected)
+    matching = [item for item in installed if item.name in expected_names]
+    if not matching:
+        return
+    problems: list[str] = []
+    for name, matches in _inventory_by_name(matching, expected).items():
+        if len(matches) > 1:
+            problems.append(f"{name}: legacy catalog is duplicated")
+            continue
+        if not matches:
+            continue
+        item = matches[0]
+        _append_source_pin_version_problems(
+            problems,
+            name,
+            item,
+            lock,
+            source_label="legacy source",
+            version_label="legacy version",
+        )
+        if item.scope != "user":
+            problems.append(f"{name}: legacy scope is not user")
+    _raise_inventory_problems(problems, "refusing legacy skill install")
 
 
 def _existing_expected_targets(

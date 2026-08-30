@@ -38,6 +38,29 @@ install instead:
 
 Full documentation available at: https://wcygan.github.io/dotfiles/
 
+## Install Flow
+
+`./bootstrap.sh install` runs as journaled, reversible steps under one
+per-user lock. An interrupted step leaves a recovery manifest; `recover`
+finishes or reverses it.
+
+```mermaid
+flowchart TD
+    A["./bootstrap.sh install"] --> B["Nix dev shell → locked Python CLI"]
+    B --> C["Per-user mutation lock<br/>(locking.py)"]
+    C --> D{"Interrupted<br/>operation pending?"}
+    D -- "yes" --> E["Refuse: run ./bootstrap.sh recover"]
+    D -- "no" --> F["Nix profile<br/>upgrade/add active element"]
+    F --> G["Link managed config<br/>(links.py)"]
+    G --> H["Plan → stage → journal →<br/>atomic no-replace apply<br/>(mutations.py)"]
+    H -- "any failure" --> I["Guarded rollback →<br/>recovery-needed manifest"]
+    H -- "ok" --> J["Rust tooling pin<br/>(rustup.py)"]
+    J --> K["Strict verify<br/>(verify.py)"]
+    I -.-> R["recover: journal replay<br/>or reverse rollback"]
+    E -.-> R
+    K --> L["PASS: install complete"]
+```
+
 ## What You Get
 
 - **🚀 Modern CLI tools**: ripgrep, fd, bat, eza, fzf, delta, and more

@@ -177,6 +177,15 @@ def test_docs_build_on_pull_requests_and_deploy_only_from_main_push() -> None:
     assert "id-token: write" in workflow
 
 
+def test_ci_skips_documentation_only_changes() -> None:
+    ci = REPO_ROOT.joinpath(".github/workflows/ci.yml").read_text()
+
+    assert ci.count("paths-ignore:") == 2
+    for path in ("README.md", "docs/**"):
+        assert path in ci
+    assert "AGENTS.md" not in ci
+
+
 def test_all_system_evaluation_and_macos_acceptance_are_explicit() -> None:
     flake = REPO_ROOT.joinpath("flake.nix").read_text()
     makefile = REPO_ROOT.joinpath("Makefile").read_text()

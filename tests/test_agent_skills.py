@@ -22,7 +22,7 @@ from dotfiles_setup.agent_skills import (
 )
 from dotfiles_setup.manifest import state_directory
 
-COMMIT = "1fd1be4aff30a4f4741e1f9cc3ae9faf1a876398"
+COMMIT = "2ee4c6b85a7d7ca5c0a0c9f5cc0b4f4d7b1fc9a4"
 
 
 def _write_lock(repo_root: Path, *, commit: str = COMMIT) -> None:
@@ -85,7 +85,7 @@ def _write_catalog(
     for name in names:
         skill = destination / name
         skill.mkdir(parents=True)
-        skill.joinpath("SKILL.md").write_bytes(_skill_contents(name))
+        skill.joinpath("SKILL.md").write_bytes(_gh_installed_contents(name))
 
 
 def _skill_contents(name: str) -> bytes:
@@ -97,6 +97,44 @@ def _git_blob_id(contents: bytes) -> str:
     digest.update(f"blob {len(contents)}\0".encode())
     digest.update(contents)
     return digest.hexdigest()
+
+
+def _tree_object_sha(entries: tuple[tuple[str, str, str], ...]) -> str:
+    body = b"".join(
+        f"{mode} {path_name}\0".encode() + bytes.fromhex(sha)
+        for mode, path_name, sha in entries
+    )
+    digest = hashlib.sha1()
+    digest.update(f"tree {len(body)}\0".encode())
+    digest.update(body)
+    return digest.hexdigest()
+
+
+_GH_TREE_SHAS = {
+    name: _tree_object_sha(
+        (("100644", "SKILL.md", _git_blob_id(_skill_contents(name))),)
+    )
+    for name in ("animate", "hill-climbing")
+}
+
+
+def _gh_installed_contents(name: str) -> bytes:
+    """Simulate GitHub CLI's installed SKILL.md rewrite: alphabetized
+    frontmatter plus injected github-* source metadata."""
+    return (
+        "---\n"
+        "description: test skill\n"
+        "metadata:\n"
+        f"    github-path: skills/{name}\n"
+        f"    github-pinned: {COMMIT}\n"
+        f"    github-ref: {COMMIT}\n"
+        "    github-repo: https://github.com/wcygan/agent-skills\n"
+        f"    github-tree-sha: {_GH_TREE_SHAS[name]}\n"
+        f"name: {name}\n"
+        "---\n"
+    ).encode()
+
+
 
 
 def _pinned_tree() -> str:
@@ -462,6 +500,56 @@ def test_install_allows_a_partial_legacy_catalog(tmp_path: Path) -> None:
     assert any("--all" in command for command in calls)
 
 
+def test_install_skips_namespaced_builtin_entries_in_legacy_inventory(tmp_path: Path) -> None:
+    """Codex built-in .system/* entries are agent-internal and never user catalog members."""
+    _write_lock(tmp_path)
+    home = tmp_path / "home"
+    calls: list[list[str]] = []
+    installed = False
+
+    def runner(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        nonlocal installed
+        calls.append(command)
+        if command[1] == "api":
+            return _completed(command, stdout=_pinned_tree())
+        if command[1:3] != ["skill", "list"]:
+            if "--all" in command:
+                installed = True
+                _write_catalog(home / ".agents" / "skills")
+                return _completed(command, stdout="Installed 2 skills\n")
+            return _completed(
+                command,
+                stdout="animate\tdescription\nhill-climbing\tdescription\n",
+            )
+        if "--dir" in command:
+            return _completed(command, stdout=_installed(home) if installed else "[]")
+        return _completed(
+            command,
+            stdout=json.dumps(
+                [
+                    {
+                        "skillName": ".system/imagegen",
+                        "sourceURL": "",
+                        "scope": "custom",
+                        "version": "",
+                        "pinned": False,
+                        "path": str(home / ".codex" / "skills" / ".system" / "imagegen"),
+                    }
+                ]
+            ),
+        )
+
+    result = install_agent_skills(
+        tmp_path,
+        run=runner,
+        which=lambda _: "/bin/gh",
+        environ={"HOME": str(home)},
+    )
+
+    assert result.count == 2
+    assert any("--all" in command for command in calls)
+
+
 def test_verify_requires_the_exact_pin_for_every_catalog_skill(tmp_path: Path) -> None:
     _write_lock(tmp_path)
     home = tmp_path / "home"
@@ -813,14 +901,9 @@ def test_local_content_digest_is_stable_and_detects_content_changes(tmp_path: Pa
     second = verify(homes[1])
 
     assert first.local_content_digest == second.local_content_digest
+    # SKILL.md is attested rather than content-hashed, and these catalogs
+    # contain no other files, so the non-attested content digest is empty.
     expected_digest = hashlib.sha256()
-    for name in ("animate", "hill-climbing"):
-        relative = f"{name}/SKILL.md".encode()
-        content = _skill_contents(name)
-        expected_digest.update(len(relative).to_bytes(8, "big"))
-        expected_digest.update(relative)
-        expected_digest.update(len(content).to_bytes(8, "big"))
-        expected_digest.update(content)
     assert first.local_content_digest == expected_digest.hexdigest()
     homes[1].joinpath(".agents/skills/animate/SKILL.md").write_text("changed\n")
     with pytest.raises(AgentSkillsError, match="does not match the pinned commit"):
@@ -911,7 +994,7 @@ def test_verify_rejects_a_file_replaced_between_snapshot_stat_and_open(
             environ={"HOME": str(home)},
         )
 
-    assert displaced.read_bytes() == _skill_contents("animate")
+    assert displaced.read_bytes() == _gh_installed_contents("animate")
     assert target.read_text() == "attacker content\n"
 
 

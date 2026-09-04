@@ -237,7 +237,13 @@ class GitHubSkillRegistry:
             raise AgentSkillsError("gh skill list returned invalid JSON") from error
         if not isinstance(payload, list) or not all(isinstance(item, dict) for item in payload):
             raise AgentSkillsError("gh skill list returned an invalid skill inventory")
-        return tuple(self._parse_installed_skill(item) for item in payload)
+        # Namespaced entries (e.g. Codex built-ins ".system/imagegen") are
+        # agent-internal skills, never members of the user catalog; skip them.
+        return tuple(
+            self._parse_installed_skill(item)
+            for item in payload
+            if "/" not in str(item.get("skillName", ""))
+        )
 
     @staticmethod
     def _parse_installed_skill(item: dict[object, object]) -> InstalledSkill:
@@ -305,12 +311,14 @@ class _AcceptedCatalog:
     skills: tuple[InstalledSkill, ...]
     local_content_digest: str
     local_git_blobs: tuple[tuple[str, str], ...]
+    skill_sources: Mapping[str, bytes] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
 class _LocalCatalogSnapshot:
     digest: str
     git_blobs: tuple[tuple[str, str], ...]
+    skill_sources: Mapping[str, bytes] = field(default_factory=dict)
 
 
 def load_agent_skills_lock(repo_root: Path) -> AgentSkillsLock:
@@ -659,6 +667,7 @@ def _accept_catalog(
         tuple(accepted),
         snapshot.digest,
         snapshot.git_blobs,
+        snapshot.skill_sources,
     )
 
 
@@ -723,14 +732,22 @@ def _local_catalog_snapshot(
 
     digest = hashlib.sha256()
     git_blobs: list[tuple[str, str]] = []
+    skill_sources: dict[str, bytes] = {}
     for relative, content in sorted(files):
+        skill_name = relative.split("/", 1)[0]
+        if relative == f"{skill_name}/SKILL.md":
+            # GitHub CLI rewrites SKILL.md frontmatter (sorted keys plus
+            # injected github-* source metadata), so it cannot be compared
+            # by content blob; the source attestation check covers it.
+            skill_sources[skill_name] = content
+            continue
         encoded_path = relative.encode()
         digest.update(len(encoded_path).to_bytes(8, "big"))
         digest.update(encoded_path)
         digest.update(len(content).to_bytes(8, "big"))
         digest.update(content)
         git_blobs.append((relative, _git_blob_id(content)))
-    return _LocalCatalogSnapshot(digest.hexdigest(), tuple(git_blobs))
+    return _LocalCatalogSnapshot(digest.hexdigest(), tuple(git_blobs), skill_sources)
 
 
 def _capture_skill_files(
@@ -1018,6 +1035,10 @@ def _pinned_catalog_blobs(
                 )
             continue
         relative = PurePosixPath(*parts[2:])
+        if relative.as_posix() == "SKILL.md":
+            # GitHub CLI rewrites SKILL.md frontmatter; verified via the
+            # source attestation instead of a content blob.
+            continue
         installed_path = f"{skill_name}/{relative.as_posix()}"
         if entry.kind == "tree":
             continue
@@ -1032,9 +1053,41 @@ def _pinned_catalog_blobs(
             )
         blobs[installed_path] = entry.object_id
     for name in expected:
-        if f"{name}/SKILL.md" not in blobs:
+        if not any(
+            entry.path.parts[:2] == ("skills", name) and entry.kind == "tree"
+            for entry in tree
+        ):
             raise AgentSkillsError(f"pinned agent skill source is missing {name}/SKILL.md")
     return tuple(sorted(blobs.items()))
+
+
+def _pinned_skill_tree_shas(
+    tree: tuple[_GitTreeEntry, ...],
+    expected: tuple[str, ...],
+) -> dict[str, str]:
+    shas: dict[str, str] = {}
+    for name in expected:
+        children = sorted(
+            (
+                entry
+                for entry in tree
+                if len(entry.path.parts) == 3
+                and entry.path.parts[0] == "skills"
+                and entry.path.parts[1] == name
+            ),
+            key=lambda entry: entry.path.parts[-1]
+            + ("/" if entry.kind == "tree" else ""),
+        )
+        body = b"".join(
+            f"{'40000' if entry.kind == 'tree' else entry.mode} {entry.path.parts[-1]}\0".encode()
+            + bytes.fromhex(entry.object_id)
+            for entry in children
+        )
+        digest = hashlib.sha1(usedforsecurity=False)
+        digest.update(f"tree {len(body)}\0".encode())
+        digest.update(body)
+        shas[name] = digest.hexdigest()
+    return shas
 
 
 def _accept_pinned_content(
@@ -1043,8 +1096,57 @@ def _accept_pinned_content(
     expected: tuple[str, ...],
     catalog: _AcceptedCatalog,
 ) -> None:
-    pinned_blobs = _pinned_catalog_blobs(registry.pinned_tree(lock), expected)
+    tree = registry.pinned_tree(lock)
+    pinned_blobs = _pinned_catalog_blobs(tree, expected)
     _require_pinned_content(catalog.local_git_blobs, pinned_blobs)
+    _require_source_attestation(catalog.skill_sources, tree, expected, lock)
+
+
+_GH_META_LINES = {
+    name: re.compile(rf"^    {name}: (.+)$", re.MULTILINE)
+    for name in ("github-path", "github-pinned", "github-ref", "github-tree-sha")
+}
+
+
+def _require_source_attestation(
+    skill_sources: Mapping[str, bytes],
+    tree: tuple[_GitTreeEntry, ...],
+    expected: tuple[str, ...],
+    lock: AgentSkillsLock,
+) -> None:
+    """Verify GitHub CLI's injected source metadata pins each SKILL.md to the lock.
+
+    GitHub CLI rewrites SKILL.md frontmatter (alphabetized keys plus injected
+    github-* source metadata), so SKILL.md content cannot be byte-compared
+    against the pinned tree. GitHub CLI instead records which git tree each
+    skill was installed from; that attestation must name the lock commit and
+    the pinned skill directory's exact tree SHA.
+    """
+    expected_trees = _pinned_skill_tree_shas(tree, expected)
+    missing = sorted(set(expected) - set(skill_sources))
+    if missing:
+        raise AgentSkillsError(
+            "agent skill verification failed: installed SKILL.md is unreadable "
+            f"for {', '.join(missing[:3])}"
+        )
+    problems: list[str] = []
+    for name in sorted(expected):
+        text = skill_sources[name].decode("utf-8", errors="replace")
+        found = {
+            meta: (match.group(1).strip() if (match := pattern.search(text)) else None)
+            for meta, pattern in _GH_META_LINES.items()
+        }
+        if found["github-path"] != f"skills/{name}":
+            problems.append(f"{name}: SKILL.md source path is not attested")
+        if found["github-pinned"] != lock.commit or found["github-ref"] != lock.commit:
+            problems.append(f"{name}: SKILL.md is not attested to the pinned commit")
+        if found["github-tree-sha"] != expected_trees[name]:
+            problems.append(f"{name}: SKILL.md tree does not match the pinned tree")
+    if problems:
+        raise AgentSkillsError(
+            "agent skill verification failed: installed source attestation does not "
+            f"match the pinned commit ({'; '.join(problems[:3])})"
+        )
 
 
 def _require_pinned_content(

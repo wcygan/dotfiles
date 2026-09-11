@@ -83,8 +83,10 @@ authorized migration may quarantine the prior Codex-host copies with:
 
 That cleanup refuses to move any legacy entry unless every expected skill has
 one matching Codex user-scope path, source, pin, and version. It reports each
-retained `.dotfiles-cleanup.*` path. Inspect those trees before you move them to
-the platform trash. The command does not purge foreign or stale skills.
+retained `.dotfiles-cleanup.*` path. GitHub CLI still discovers skills in these
+quarantines. Inspect the trees and verify the shared catalog, then move the
+reported quarantines to the platform trash to finish duplicate removal.
+The command does not purge foreign or stale skills.
 
 ## Inspect and Diagnose
 

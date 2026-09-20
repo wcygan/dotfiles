@@ -118,6 +118,7 @@
     },
     "Rust": {
       "colorize_brackets": true,
+      "semantic_tokens": "combined",
       "tasks": {
         "prefer_lsp": true
       },

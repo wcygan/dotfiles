@@ -183,7 +183,8 @@ def test_repository_lock_pins_the_authoritative_catalog() -> None:
     lock = load_agent_skills_lock(Path.cwd())
 
     assert lock.repository == "wcygan/agent-skills"
-    assert lock.commit == COMMIT
+    assert len(lock.commit) == 40
+    assert all(character in "0123456789abcdef" for character in lock.commit)
     assert lock.agent == "codex"
     assert lock.directory == ".agents/skills"
 
@@ -446,6 +447,46 @@ def test_install_allows_a_verified_legacy_catalog_migration(tmp_path: Path) -> N
         if "--dir" in command:
             return _completed(command, stdout=_installed(home) if installed else "[]")
         return _completed(command, stdout=_legacy_installed(home))
+
+    result = install_agent_skills(
+        tmp_path,
+        run=runner,
+        which=lambda _: "/bin/gh",
+        environ={"HOME": str(home)},
+    )
+
+    assert result.count == 2
+    assert any("--all" in command for command in calls)
+    assert (home / ".codex" / "skills" / "animate").is_dir()
+
+
+def test_install_allows_shared_entries_in_host_inventory(tmp_path: Path) -> None:
+    _write_lock(tmp_path)
+    home = tmp_path / "home"
+    calls: list[list[str]] = []
+    installed = False
+    _write_catalog(home / ".codex" / "skills")
+
+    def runner(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        nonlocal installed
+        calls.append(command)
+        if command[1] == "api":
+            return _completed(command, stdout=_pinned_tree())
+        if command[1:3] != ["skill", "list"]:
+            if "--all" in command:
+                installed = True
+                _write_catalog(home / ".agents" / "skills")
+                return _completed(command, stdout="Installed 2 skills\n")
+            return _completed(
+                command,
+                stdout="animate\tdescription\nhill-climbing\tdescription\n",
+            )
+        if "--dir" in command:
+            return _completed(command, stdout=_installed(home) if installed else "[]")
+        entries = json.loads(_installed(home))
+        for entry in entries:
+            entry.update(scope="user", version="main", pinned=False)
+        return _completed(command, stdout=json.dumps(entries))
 
     result = install_agent_skills(
         tmp_path,

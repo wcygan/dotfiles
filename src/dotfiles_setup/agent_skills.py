@@ -370,7 +370,13 @@ def install_agent_skills(
     expected = registry.discover(lock)
     destination = _target_directory(lock, environment)
     _reject_collisions(registry.list_shared(destination), expected, lock, destination)
-    _reject_conflicting_legacy_skills(registry.list_legacy(lock), expected, lock)
+    # Newer gh versions report shared destinations in the host inventory too.
+    # These entries already passed shared-directory collision checks above.
+    legacy = tuple(
+        item for item in registry.list_legacy(lock)
+        if item.path != destination / item.name
+    )
+    _reject_conflicting_legacy_skills(legacy, expected, lock)
     registry.install(lock, destination)
     catalog = _accept_catalog(registry, lock, expected, destination)
     _accept_pinned_content(registry, lock, expected, catalog)

@@ -96,7 +96,9 @@ alias dev 'cd ~/Development/'
 alias lg lazygit
 alias ldc lazydocker
 alias py python3
-alias lfgc 'codex --dangerously-bypass-approvals-and-sandbox'
+alias p 'prime-agent --provider openai --model openai/gpt-6-luna --thinking high'
+# Keep terminal sessions independent of the app's shared server feature settings.
+alias lfgc 'codex --no-daemon --dangerously-bypass-approvals-and-sandbox'
 alias lfg 'claude --dangerously-skip-permissions'
 alias lfgt 'claude --dangerously-skip-permissions --tmux --worktree'
 alias reload 'exec fish -l'

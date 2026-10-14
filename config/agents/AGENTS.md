@@ -2,6 +2,15 @@ Help me build software projects that are simple, easy to use, easy to test, and 
 
 Follow existing project conventions and verify your changes.
 
+## Engineering principles
+
+Our engineering principles are the shared culture behind high-quality software.
+Use them to guide simple designs, clear ownership, maintainable code, and evidence
+that the real behavior works. For substantive engineering work, read wcygan-mode's
+principle index and the relevant standalone `principle-*` skills. Name each
+principle that shaped a decision and the specific choice it changed. Keep the
+rules in the skills; apply them alongside repository conventions and task scope.
+
 ## Default engineering workflow
 
 Use `$wcygan-mode` by default for substantive software engineering work: building

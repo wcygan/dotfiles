@@ -56,8 +56,10 @@ exact commit.
   `~/.agents/.skill-lock.json` even when source, pin, paths, and contents are
   unchanged. A timestamp-only tracking diff is expected; any inventory,
   duplicate-name, source, scope, pin, path, or file-content change is not.
-- Treat removal separately when advancing a pin: GitHub CLI installation does
-  not prove that skills removed upstream were pruned locally.
+- `--check` rejects retired provider-owned skills as stale. Use `--prune` for
+  authorized provider-only reconciliation, or `--reset --yes` for an explicitly
+  requested full shared-user reset. Both retain contents outside discovery roots.
+  Never infer full-reset authority from a normal pin update.
 
 ## Workflow
 
@@ -78,7 +80,8 @@ exact commit.
    in the provider repository.
 5. For a pin advance, use the reviewed provider commit's full SHA, update only
    `agent-skills.lock.toml`, run the explicit installer, then run the read-only
-   check. Inspect removed or renamed skills before any cleanup.
+   check. Inspect removed or renamed skills before cleanup. Run the supported `--prune`
+   operation when removal is authorized; a full reset requires explicit scope.
 6. For integration code changes, preserve the root `bootstrap.sh` entry point,
    mutation journal, recovery behavior, and metadata-based verification; add
    focused tests for each changed invariant.

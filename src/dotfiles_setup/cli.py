@@ -46,6 +46,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Verify the pinned shared user skill catalog without changing it",
     )
     agent_skills_parser.add_argument(
+        "--prune",
+        action="store_true",
+        help="Archive provider-owned skills removed from the pinned catalog",
+    )
+    agent_skills_parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Archive every shared user skill outside the pinned catalog; requires --yes",
+    )
+    agent_skills_parser.add_argument(
         "--cleanup-legacy",
         action="store_true",
         help="Remove the verified legacy Codex user-scope catalog after migration",
@@ -53,7 +63,7 @@ def build_parser() -> argparse.ArgumentParser:
     agent_skills_parser.add_argument(
         "--yes",
         action="store_true",
-        help="Authorize legacy user-scope skill removal",
+        help="Authorize legacy cleanup or a full shared-user reset",
     )
 
     link_parser = subcommands.add_parser("link", help="Link repository configuration")
@@ -115,11 +125,20 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def _handle_agent_skills(args: argparse.Namespace) -> int:
+    if args.reset and (args.check or args.cleanup_legacy or args.prune):
+        print("agent-skills --reset cannot be combined with --check, --cleanup-legacy or --prune.")
+        return 2
+    if args.reset and not args.yes:
+        print("Shared catalog reset requires --yes.")
+        return 2
+    if args.prune and (args.check or args.cleanup_legacy):
+        print("agent-skills --prune cannot be combined with --check or --cleanup-legacy.")
+        return 2
     if args.check and args.cleanup_legacy:
         print("agent-skills --check cannot be combined with --cleanup-legacy.")
         return 2
-    if args.yes and not args.cleanup_legacy:
-        print("agent-skills --yes is only valid with --cleanup-legacy.")
+    if args.yes and not (args.cleanup_legacy or args.reset):
+        print("agent-skills --yes is only valid with --cleanup-legacy or --reset.")
         return 2
     if args.check:
         try:
@@ -137,9 +156,16 @@ def _handle_agent_skills(args: argparse.Namespace) -> int:
             REPO_ROOT,
             lambda _journal: print(cleanup_legacy_agent_skills(REPO_ROOT)),
         )
-    return run_mutation(
-        "agent-skills", REPO_ROOT, lambda _journal: print(install_agent_skills(REPO_ROOT))
-    )
+    def install(_journal: object) -> None:
+        if args.reset:
+            result = install_agent_skills(REPO_ROOT, reset=True)
+        elif args.prune:
+            result = install_agent_skills(REPO_ROOT, prune=True)
+        else:
+            result = install_agent_skills(REPO_ROOT)
+        print(result)
+
+    return run_mutation("agent-skills", REPO_ROOT, install)
 
 
 def _handle_link(args: argparse.Namespace) -> int:

@@ -4,6 +4,22 @@ Read this reference before changing compatibility guarantees, restoring retired
 behavior, or replacing a setup boundary. Add an entry when a breaking change is
 intentional, alongside focused migration tests.
 
+## 2026-10-14 — Reconcile catalog retirements and support explicit reset
+
+The provider archived its 116-skill catalog and retained `uv-python`, `just`,
+and `design-loop`. Updating the pin is insufficient because GitHub CLI does not
+remove retired local skills. `agent-skills --check` now rejects stale copies
+owned by the pinned provider. Authorized `agent-skills --prune` archives those
+copies before completing verification; skills from other sources remain intact.
+
+An explicitly requested `agent-skills --reset --yes` archives every shared user
+skill outside the pinned catalog, including foreign and untracked local skills.
+Both operations use the existing user mutation lock and journal, validate each
+accepted directory tree and move it to a dated XDG-state archive outside skill
+discovery. Failed acceptance restores prior directories when safe; interrupted
+operations retain recovery state and archive paths. Global built-in/plugin skills
+and project-local skills are outside this shared-directory reset.
+
 ## 2026-08-29 — Require physical destination parents and no-replace renames
 
 Managed mutations now validate every destination parent through a descriptor

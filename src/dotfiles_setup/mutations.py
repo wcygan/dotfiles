@@ -803,6 +803,7 @@ def remove_verified_directories(
     *,
     parent_identity: tuple[int, int],
     parent_parent_identity: tuple[int, int],
+    archive_parent: Path | None = None,
 ) -> tuple[Path, ...]:
     """Move accepted directories to retained descriptor-bound quarantines."""
 
@@ -818,11 +819,22 @@ def remove_verified_directories(
         parent: parent_identity,
         parent.parent: parent_parent_identity,
     }
+    retained_parent = parent if archive_parent is None else archive_parent
+    if archive_parent is not None:
+        if archive_parent == parent or archive_parent.is_relative_to(parent):
+            raise MutationExecutionError(
+                "archive must be outside the skill directory", restored=True
+            )
+        for path in (archive_parent, archive_parent.parent):
+            metadata = path.lstat()
+            if not stat.S_ISDIR(metadata.st_mode) or stat.S_ISLNK(metadata.st_mode):
+                raise MutationExecutionError(f"unsafe archive parent: {path}", restored=True)
+            expected[path] = (metadata.st_dev, metadata.st_ino)
     quarantined: list[tuple[VerifiedDirectory, Path]] = []
     additional_retained: list[Path] = []
     try:
         for directory in directories:
-            quarantine = _runtime_cleanup_backup(directory.path)
+            quarantine = retained_parent / _runtime_cleanup_backup(directory.path).name
             try:
                 _move_no_replace(
                     directory.path,
@@ -873,7 +885,7 @@ def remove_verified_directories(
         ) from error
 
     try:
-        with _open_directory(parent, expected_identities=expected) as parent_descriptor:
+        with _open_directory(retained_parent, expected_identities=expected) as parent_descriptor:
             for directory, quarantine in quarantined:
                 _validate_verified_directory_at(
                     parent_descriptor,

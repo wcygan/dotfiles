@@ -267,6 +267,112 @@ def test_install_discovers_installs_and_verifies_with_gh(tmp_path: Path) -> None
     assert list_count == 3
 
 
+@pytest.mark.parametrize("reset", [False, True])
+def test_catalog_pruning_archives_retired_copies_outside_discovery(
+    tmp_path: Path, reset: bool
+) -> None:
+    _write_lock(tmp_path)
+    home = tmp_path / "home"
+    destination = home / ".agents" / "skills"
+    _write_catalog(destination)
+    for name in ("retired", "foreign"):
+        skill = destination / name
+        skill.mkdir()
+        skill.joinpath("SKILL.md").write_text(f"{name} original contents\n")
+    calls: list[list[str]] = []
+
+    def runner(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        calls.append(command)
+        if command[1:3] == ["skill", "list"]:
+            records = json.loads(_installed(home))
+            for name in ("retired", "foreign"):
+                if (destination / name).exists():
+                    records.append({
+                        "skillName": name,
+                        "sourceURL": "https://github.com/other/skills" if name == "foreign"
+                        else "https://github.com/wcygan/agent-skills",
+                        "scope": "custom", "version": "a" * 40, "pinned": True,
+                        "path": str(destination / name),
+                    })
+            return _completed(command, stdout=json.dumps(records))
+        if "--all" in command:
+            return _completed(command)
+        return _catalog_response(command)
+
+    result = install_agent_skills(
+        tmp_path, run=runner, which=lambda _: "gh", environ={"HOME": str(home)},
+        prune=not reset, reset=reset,
+    )
+
+    assert result.count == 2
+    assert not (destination / "retired").exists()
+    assert (destination / "foreign").exists() is (not reset)
+    archives = list((home / ".local/state/dotfiles/agent-skills-archives").glob("*/.*/SKILL.md"))
+    assert len(archives) == (2 if reset else 1)
+    assert {p.read_text() for p in archives} == (
+        {"retired original contents\n", "foreign original contents\n"}
+        if reset else {"retired original contents\n"}
+    )
+    assert all(not path.is_relative_to(destination) for path in archives)
+    manifest = json.loads(archives[0].parent.parent.joinpath("manifest.json").read_text())
+    assert manifest["reset"] is reset
+    assert {entry["name"] for entry in manifest["skills"]} == (
+        {"retired", "foreign"} if reset else {"retired"}
+    )
+
+
+def test_check_rejects_retired_provider_skills(tmp_path: Path) -> None:
+    _write_lock(tmp_path)
+    home = tmp_path / "home"
+    _write_catalog(home / ".agents/skills")
+
+    def runner(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        if command[1:3] == ["skill", "list"]:
+            records = json.loads(_installed(home))
+            records.append({
+                "skillName": "retired", "sourceURL": "https://github.com/wcygan/agent-skills",
+                "scope": "custom", "version": "a" * 40, "pinned": True,
+                "path": str(home / ".agents/skills/retired"),
+            })
+            return _completed(command, stdout=json.dumps(records))
+        return _catalog_response(command)
+
+    with pytest.raises(AgentSkillsError, match="retired provider skill remains"):
+        verify_agent_skills(tmp_path, run=runner, which=lambda _: "gh",
+                            environ={"HOME": str(home)})
+
+
+def test_prune_rejects_a_retired_copy_outside_the_destination(tmp_path: Path) -> None:
+    _write_lock(tmp_path)
+    home = tmp_path / "home"
+    _write_catalog(home / ".agents/skills")
+
+    def runner(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        if command[1:3] == ["skill", "list"]:
+            records = json.loads(_installed(home))
+            records.append({
+                "skillName": "retired", "sourceURL": "https://github.com/wcygan/agent-skills",
+                "scope": "custom", "version": "a" * 40, "pinned": True,
+                "path": str(home / "outside/retired"),
+            })
+            return _completed(command, stdout=json.dumps(records))
+        return _completed(command) if "--all" in command else _catalog_response(command)
+
+    with pytest.raises(AgentSkillsError, match="outside the shared directory"):
+        install_agent_skills(tmp_path, run=runner, which=lambda _: "gh",
+                             environ={"HOME": str(home)}, prune=True)
+    assert not (home / ".local/state/dotfiles/agent-skills-archives").exists()
+
+
+def test_catalog_reset_requires_explicit_yes_and_rejects_check(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert cli.main(["agent-skills", "--reset"]) == 2
+    assert "reset requires --yes" in capsys.readouterr().out
+    assert cli.main(["agent-skills", "--reset", "--yes", "--check"]) == 2
+    assert cli.main(["agent-skills", "--prune", "--check"]) == 2
+
+
 def test_install_rejects_content_that_does_not_match_the_pinned_tree(
     tmp_path: Path,
 ) -> None:

@@ -122,8 +122,10 @@ find ../agent-skills/skills -mindepth 2 -maxdepth 2 -name SKILL.md \
 
 gh skill install does not prove that removed upstream skills are pruned.
 If the provider tree is available, identify installed names absent from that
-tree and report them. Do not delete them automatically; removal is a separate
-user-authorized cleanup.
+tree and report them. Removal is a separately authorized cleanup. Use
+`./bootstrap.sh agent-skills --prune` for retired provider copies when removal
+is requested. Use `--reset --yes` only for an explicit entire shared-user reset.
+Both operations retain the old copies outside skill discovery roots.
 
 ### 4. Install through the supported boundary
 

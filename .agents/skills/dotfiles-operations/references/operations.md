@@ -62,8 +62,14 @@ read-only and requires GitHub access. Installed skill copies and GitHub CLI
 tracking state are machine-local outputs. GitHub CLI's
 current Codex host mapping still uses `~/.codex/skills`; this integration uses
 the shared user directory documented by Codex instead. GitHub CLI does not
-prune files or skill directories removed upstream, so review cleanup separately
-when advancing the pin.
+prune files or skill directories removed upstream. The consumer check now
+rejects retired provider-owned entries. Reconcile an authorized provider update
+with `./bootstrap.sh agent-skills --prune`; it archives only retired copies
+belonging to that provider. An explicitly requested complete shared-user reset
+uses `./bootstrap.sh agent-skills --reset --yes` and also archives unrelated
+shared user skills. Both preserve exact accepted trees under
+`$XDG_STATE_HOME/dotfiles/agent-skills-archives` (default `~/.local/state`),
+outside skill discovery roots. Normal installation does not imply reset authority.
 
 An unchanged rerun is catalog-state idempotent, not a byte-for-byte no-op.
 Because the command uses `--force`, GitHub CLI refreshes `updatedAt` for the

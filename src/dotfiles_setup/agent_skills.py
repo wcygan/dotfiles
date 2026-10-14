@@ -12,6 +12,7 @@ import subprocess
 import tomllib
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 
 from dotfiles_setup.errors import SetupError
@@ -361,6 +362,8 @@ def install_agent_skills(
     run: CommandRunner = subprocess.run,
     which: CommandLocator = shutil.which,
     environ: Mapping[str, str] | None = None,
+    prune: bool = False,
+    reset: bool = False,
 ) -> AgentSkillsResult:
     """Install every skill at the locked commit and verify the resulting user catalog."""
 
@@ -378,9 +381,83 @@ def install_agent_skills(
     )
     _reject_conflicting_legacy_skills(legacy, expected, lock)
     registry.install(lock, destination)
+    if prune or reset:
+        _prune_retired_skills(registry, lock, expected, destination, environment, reset=reset)
     catalog = _accept_catalog(registry, lock, expected, destination)
     _accept_pinned_content(registry, lock, expected, catalog)
     return _result(lock, catalog)
+
+
+def _retired_skills(
+    installed: Sequence[InstalledSkill],
+    expected: tuple[str, ...],
+    lock: AgentSkillsLock,
+) -> tuple[InstalledSkill, ...]:
+    return tuple(
+        item for item in installed
+        if item.name not in expected and _source_matches(item.source, lock.repository)
+    )
+
+
+def _prune_retired_skills(
+    registry: GitHubSkillRegistry,
+    lock: AgentSkillsLock,
+    expected: tuple[str, ...],
+    destination: Path,
+    environment: Mapping[str, str],
+    *,
+    reset: bool = False,
+) -> None:
+    """Archive retired copies outside discovery, optionally resetting all sources."""
+    installed = registry.list_shared(destination)
+    retired = (
+        tuple(item for item in installed if item.name not in expected)
+        if reset else _retired_skills(installed, expected, lock)
+    )
+    if not retired:
+        return
+    problems: list[str] = []
+    candidates: list[VerifiedDirectory] = []
+    seen: set[str] = set()
+    for item in retired:
+        if item.name in seen or item.scope != "custom" or item.path != destination / item.name:
+            problems.append(
+                f"{item.name}: retired copy is duplicated or outside the shared directory"
+            )
+            continue
+        seen.add(item.name)
+        candidate = _inspect_legacy_skill_directory(problems, item.name, item.path)
+        if candidate is not None:
+            candidates.append(candidate)
+    _raise_inventory_problems(problems, "refusing retired skill cleanup")
+    context = UserPathContext.from_environment(environment)
+    archive = (
+        context.state_directory / "agent-skills-archives"
+        / datetime.now(UTC).strftime("%Y-%m-%dT%H%M%S.%fZ")
+    )
+    archive.mkdir(parents=True, exist_ok=False, mode=0o700)
+    parent = destination.lstat()
+    grandparent = destination.parent.lstat()
+    try:
+        retained = remove_verified_directories(
+            tuple(candidates),
+            parent_identity=(parent.st_dev, parent.st_ino),
+            parent_parent_identity=(grandparent.st_dev, grandparent.st_ino),
+            archive_parent=archive,
+        )
+    except MutationExecutionError as error:
+        raise AgentSkillsError(f"refusing retired skill cleanup: {error}") from error
+    archive.joinpath("manifest.json").write_text(json.dumps({
+        "repository": lock.repository,
+        "target_commit": lock.commit,
+        "reset": reset,
+        "skills": [
+            {"name": item.name, "source": item.source, "version": item.version,
+             "original_path": str(item.path), "archive_path": str(path)}
+            for item, path in zip(retired, retained, strict=True)
+        ],
+    }, indent=2) + "\n")
+    print(f"Archived {len(retained)} retired user skills at {archive}")
 
 
 def verify_agent_skills(
@@ -637,6 +714,8 @@ def _accept_catalog(
 ) -> _AcceptedCatalog:
     installed = registry.list_shared(destination)
     problems: list[str] = []
+    for item in _retired_skills(installed, expected, lock):
+        problems.append(f"{item.name}: retired provider skill remains; run agent-skills --prune")
     accepted: list[InstalledSkill] = []
     matches_by_name = _inventory_by_name(installed, expected)
     for name in expected:

@@ -64,8 +64,10 @@ current Codex host mapping still uses `~/.codex/skills`; this integration uses
 the shared user directory documented by Codex instead. GitHub CLI does not
 prune files or skill directories removed upstream. The consumer check now
 rejects retired provider-owned entries. Reconcile an authorized provider update
-with `./bootstrap.sh agent-skills --prune`; it archives only retired copies
-belonging to that provider. An explicitly requested complete shared-user reset
+with `./bootstrap.sh agent-skills --prune`; it archives retired copies
+belonging to that provider and installed skill trees containing files absent from
+the new pin. Those affected trees are reinstalled through GitHub CLI after archival;
+this prevents its overlay install from retaining removed files. An explicitly requested complete shared-user reset
 uses `./bootstrap.sh agent-skills --reset --yes` and also archives unrelated
 shared user skills. Both preserve exact accepted trees under
 `$XDG_STATE_HOME/dotfiles/agent-skills-archives` (default `~/.local/state`),

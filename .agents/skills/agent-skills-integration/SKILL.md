@@ -57,8 +57,10 @@ exact commit.
   unchanged. A timestamp-only tracking diff is expected; any inventory,
   duplicate-name, source, scope, pin, path, or file-content change is not.
 - `--check` rejects retired provider-owned skills as stale. Use `--prune` for
-  authorized provider-only reconciliation, or `--reset --yes` for an explicitly
-  requested full shared-user reset. Both retain contents outside discovery roots.
+  authorized provider-only reconciliation, including obsolete files within a
+  retained skill: archive that entire tree before GitHub CLI reinstalls it. Use
+  `--reset --yes` only for an explicitly requested full shared-user reset. Both
+  retain contents outside discovery roots.
   Never infer full-reset authority from a normal pin update.
 
 ## Workflow

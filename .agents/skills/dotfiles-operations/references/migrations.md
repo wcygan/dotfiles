@@ -4,6 +4,15 @@ Read this reference before changing compatibility guarantees, restoring retired
 behavior, or replacing a setup boundary. Add an entry when a breaking change is
 intentional, alongside focused migration tests.
 
+## 2026-10-15 — Reconcile removed files inside pinned skills
+
+`agent-skills --prune` now archives installed provider-owned skill trees containing
+files absent from the target pin before reinstalling those skills through GitHub
+CLI. This addresses overlay installs retaining deleted demos. Archives remain
+outside discovery roots and preserve the entire previous tree. Normal installation
+and read-only verification still reject obsolete files; unrelated shared-user
+skills remain untouched unless the existing explicit reset mode is requested.
+
 ## 2026-10-14 — Reconcile catalog retirements and support explicit reset
 
 The provider archived its 116-skill catalog and retained `uv-python`, `just`,

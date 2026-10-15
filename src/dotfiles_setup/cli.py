@@ -48,7 +48,7 @@ def build_parser() -> argparse.ArgumentParser:
     agent_skills_parser.add_argument(
         "--prune",
         action="store_true",
-        help="Archive provider-owned skills removed from the pinned catalog",
+        help="Archive retired provider skills and skill trees containing obsolete files",
     )
     agent_skills_parser.add_argument(
         "--reset",

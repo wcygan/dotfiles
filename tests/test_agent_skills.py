@@ -321,6 +321,43 @@ def test_catalog_pruning_archives_retired_copies_outside_discovery(
     )
 
 
+def test_prune_reinstalls_skill_trees_with_obsolete_files(tmp_path: Path) -> None:
+    _write_lock(tmp_path)
+    home = tmp_path / "home"
+    destination = home / ".agents" / "skills"
+    _write_catalog(destination)
+    obsolete = destination / "animate" / "removed-demo.html"
+    obsolete.write_text("previous demo\n")
+    installed_clean_tree: list[bool] = []
+
+    def runner(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        if command[1:3] == ["skill", "list"]:
+            return _completed(command, stdout=_installed(home))
+        if "--all" in command:
+            if not (destination / "animate").exists():
+                installed_clean_tree.append(True)
+                _write_catalog(destination, ("animate",))
+            return _completed(command)
+        return _catalog_response(command)
+
+    kwargs = {"run": runner, "which": lambda _: "gh", "environ": {"HOME": str(home)}}
+    with pytest.raises(AgentSkillsError, match="unexpected animate/removed-demo.html"):
+        install_agent_skills(tmp_path, **kwargs)
+    assert obsolete.exists(), "Normal installation does not silently remove files"
+    result = install_agent_skills(tmp_path, prune=True, **kwargs)
+    assert result.count == 2
+    assert installed_clean_tree == [True]
+    assert not obsolete.exists()
+    archives = list(
+        (home / ".local/state/dotfiles/agent-skills-archives").glob("*/.*/removed-demo.html")
+    )
+    assert len(archives) == 1
+    assert archives[0].read_text() == "previous demo\n"
+    assert (destination / "hill-climbing" / "SKILL.md").exists()
+    install_agent_skills(tmp_path, prune=True, **kwargs)
+    assert installed_clean_tree == [True], "An unchanged reinstall does not archive again"
+
+
 def test_check_rejects_retired_provider_skills(tmp_path: Path) -> None:
     _write_lock(tmp_path)
     home = tmp_path / "home"

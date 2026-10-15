@@ -380,9 +380,9 @@ def install_agent_skills(
         if item.path != destination / item.name
     )
     _reject_conflicting_legacy_skills(legacy, expected, lock)
-    registry.install(lock, destination)
     if prune or reset:
         _prune_retired_skills(registry, lock, expected, destination, environment, reset=reset)
+    registry.install(lock, destination)
     catalog = _accept_catalog(registry, lock, expected, destination)
     _accept_pinned_content(registry, lock, expected, catalog)
     return _result(lock, catalog)
@@ -408,28 +408,42 @@ def _prune_retired_skills(
     *,
     reset: bool = False,
 ) -> None:
-    """Archive retired copies outside discovery, optionally resetting all sources."""
+    """Archive retired copies and trees with obsolete files before reinstalling."""
     installed = registry.list_shared(destination)
     retired = (
         tuple(item for item in installed if item.name not in expected)
         if reset else _retired_skills(installed, expected, lock)
     )
-    if not retired:
-        return
+    pinned_files = dict(_pinned_catalog_blobs(registry.pinned_tree(lock), expected))
     problems: list[str] = []
     candidates: list[VerifiedDirectory] = []
+    selected: list[InstalledSkill] = []
+    retired_names = {item.name for item in retired}
     seen: set[str] = set()
-    for item in retired:
+    for item in installed:
+        if item.name not in retired_names and item.name not in expected:
+            continue
         if item.name in seen or item.scope != "custom" or item.path != destination / item.name:
             problems.append(
-                f"{item.name}: retired copy is duplicated or outside the shared directory"
+                f"{item.name}: cleanup copy is duplicated or outside the shared directory"
             )
             continue
         seen.add(item.name)
         candidate = _inspect_legacy_skill_directory(problems, item.name, item.path)
-        if candidate is not None:
+        if candidate is None:
+            continue
+        obsolete = any(
+            entry.kind == "file"
+            and entry.relative_path != Path("SKILL.md")
+            and f"{item.name}/{entry.relative_path.as_posix()}" not in pinned_files
+            for entry in candidate.entries
+        )
+        if item.name in retired_names or obsolete:
             candidates.append(candidate)
+            selected.append(item)
     _raise_inventory_problems(problems, "refusing retired skill cleanup")
+    if not candidates:
+        return
     context = UserPathContext.from_environment(environment)
     archive = (
         context.state_directory / "agent-skills-archives"
@@ -454,10 +468,10 @@ def _prune_retired_skills(
         "skills": [
             {"name": item.name, "source": item.source, "version": item.version,
              "original_path": str(item.path), "archive_path": str(path)}
-            for item, path in zip(retired, retained, strict=True)
+            for item, path in zip(selected, retained, strict=True)
         ],
     }, indent=2) + "\n")
-    print(f"Archived {len(retained)} retired user skills at {archive}")
+    print(f"Archived {len(retained)} retired or obsolete user skill trees at {archive}")
 
 
 def verify_agent_skills(

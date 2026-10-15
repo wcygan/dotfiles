@@ -122,7 +122,9 @@ find ../agent-skills/skills -mindepth 2 -maxdepth 2 -name SKILL.md \
 
 gh skill install does not prove that removed upstream skills are pruned.
 If the provider tree is available, identify installed names absent from that
-tree and report them. Removal is a separately authorized cleanup. Use
+tree and report them. GitHub CLI overlays existing directories, so removed files
+inside a retained skill can also fail verification. For authorized removal,
+`--prune` archives the affected skill tree and reinstalls it from the exact pin. Removal is a separately authorized cleanup. Use
 `./bootstrap.sh agent-skills --prune` for retired provider copies when removal
 is requested. Use `--reset --yes` only for an explicit entire shared-user reset.
 Both operations retain the old copies outside skill discovery roots.

@@ -6,8 +6,7 @@ sandbox_mode = "danger-full-access"
 personality = "pragmatic"
 suppress_unstable_features_warning = true
 service_tier = "default"
-model = "gpt-5.6-sol"
-model_auto_compact_token_limit = 300000
+model = "gpt-6-luna"
 model_reasoning_effort = "medium"
 model_verbosity = "low"
 
@@ -27,4 +26,4 @@ use_memories = false
 
 [agents]
 # Spawned-agent cap; the primary task is additional.
-max_concurrent_threads_per_session = 12
+max_concurrent_threads_per_session = 6

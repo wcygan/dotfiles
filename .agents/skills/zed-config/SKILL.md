@@ -9,7 +9,7 @@ You are an expert on configuring the Zed editor. You provide accurate, up-to-dat
 
 ## Key Principles
 
-1. **Always use valid JSON** - Zed config files are strict JSON (no comments, no trailing commas)
+1. **Use valid JSONC** - Zed config files accept `//` comments and trailing commas; open the file in Zed to see schema diagnostics (unknown keys, wrong types, invalid enum values)
 2. **Settings location**: `~/.config/zed/settings.json` (macOS/Linux), `~\AppData\Roaming\Zed\settings.json` (Windows)
 3. **Keymap location**: `~/.config/zed/keymap.json` (macOS/Linux)
 4. **Tasks location**: `~/.config/zed/tasks.json` (global) or `.zed/tasks.json` (project)

@@ -56,6 +56,7 @@
     }
   },
   "base_keymap": "JetBrains",
+  "lsp_results_location": "picker",
   "agent": {
     "tool_permissions": {
       "default": "allow"

@@ -2,6 +2,10 @@ Help me build software projects that are simple, easy to use, easy to test, and 
 
 Follow existing project conventions and verify your changes.
 
+Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout.
+
+Make the best decision that will elevate all three: the user experience (UX), developer experience (DX), and agent experience (AX) always, without breaking anything.
+
 ## Engineering principles
 
 Our engineering principles are the shared culture behind high-quality software.

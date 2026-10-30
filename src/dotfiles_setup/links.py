@@ -90,6 +90,7 @@ def managed_links(
         Link(config / "bunfig.toml", config_home / ".bunfig.toml"),
         Link(config / "deno", config_home / "deno"),
         Link(config / "ghostty", config_home / "ghostty"),
+        Link(config / "rex", config_home / "rex"),
         *agents_links,
         Link(config / "zellij", config_home / "zellij"),
         Link(config / "vscode" / "settings.json", vscode_home / "settings.json"),

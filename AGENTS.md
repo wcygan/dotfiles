@@ -16,7 +16,7 @@ onboarding, deterministic CI, and straightforward rollback.
   installation, verification, collisions, stale copies, or recovery, you
   **must** also use `$agent-skills-integration`.
 - **Application configuration:** Route Fish, Ghostty, lazygit, Neovim,
-  Starship, Zed, and Zellij changes through `$config-change` and its selected
+  Rex, Starship, Zed, and Zellij changes through `$config-change` and its selected
   focused skill. Edit the repository source in `config/**`; change a host
   destination only through the managed-link workflow.
 - **Nix input updates:** Use `$nix-update` for any `flake.lock` update; use

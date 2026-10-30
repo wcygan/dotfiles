@@ -1,6 +1,6 @@
 ---
 name: config-change
-description: "Route dotfiles configuration changes to the right project-local skill. Use for fish, Ghostty, lazygit, Neovim, Starship, Zed, Zellij, or cross-platform config edits in this repository."
+description: "Route dotfiles configuration changes to the right project-local skill. Use for fish, Ghostty, lazygit, Neovim, Rex, Starship, Zed, Zellij, or cross-platform config edits in this repository."
 ---
 
 # Config Change Router
@@ -19,6 +19,7 @@ Stop when the requested config change is applied or the user has clarified which
 - `ghostty-config`: `config/ghostty/`, including themes, fonts, keybindings, and performance settings.
 - `lazygit-config`: `config/git/lazygit/`, including `config.yml`, delta integration, themes, and keybindings.
 - `nvim-config`: `config/nvim/`, including `init.lua`, plugins, LSP settings, and keymaps.
+- `rex-docs`: `config/rex/`, including `init.lua` key bindings, modes, and custom actions.
 - `starship-config`: `config/starship.toml`, including prompt modules, presets, and performance.
 - `zed-config`: `config/zed/`, including `settings.json`, `keymap.json`, themes, and agents.
 - `zellij-config`: `config/zellij/`, including layouts, themes, keybindings, and KDL format.

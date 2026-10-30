@@ -21,3 +21,9 @@ end
 if test -x $HOME/.local/bin/mise
     $HOME/.local/bin/mise activate fish | source
 end
+
+# Rex puts its matching rex CLI first on PATH; keep it there after the path
+# changes above. Must stay last: https://www.superlogical.com/rex/docs/automate/cli#path
+if set -q REX_BIN_DIR
+    fish_add_path --path --prepend --move $REX_BIN_DIR
+end

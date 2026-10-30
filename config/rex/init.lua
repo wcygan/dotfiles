@@ -82,7 +82,8 @@ rex.action{
       label = label,
       initial_windows = {
         { window_label = "blog", layout = rex.layout.horizontal(0.6,
-            term("agent", {}),
+            -- Typed into the shell so quitting the agent leaves a shell.
+            term("agent", { initial_input = "codex -m gpt-6-luna\n" }),
             rex.layout.vertical(0.6,
               term("dev", {
                 command = { "/bin/zsh", "-lc", dev },

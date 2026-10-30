@@ -26,6 +26,20 @@ onboarding, deterministic CI, and straightforward rollback.
 When more than one route applies, use every matching skill. Do not replace the
 repository-operation contract with a focused configuration or provider skill.
 
+## Writing and repeated UI text
+
+Use `$write-clearly` for prose and repeated UI text. For feeds, cards, table
+summaries, notifications, or session titles, read its repeated-item guidance and
+review the collection together. Put distinguishing information early, use
+consistent structure and terminology within comparable groups, and make variation
+reflect meaningful differences. Preserve factual status, uncertainty, and mixed
+feedback; never imply progress, completion, or sentiment without evidence.
+
+Keep descriptive headings for explanations and action labels for controls. Check
+wrapping and truncation in the actual layout, and retain essential labels, units,
+constraints, and recovery guidance. Keep reusable writing rules in the provider
+skill rather than duplicating its checklist here.
+
 ## Invariants
 
 - `bootstrap.sh` is the only root setup shell entry point; operational behavior

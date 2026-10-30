@@ -46,12 +46,12 @@ local function find_session(label)
   end
 end
 
--- Open Blog Workspace: agent pane with a shell beside it, Vite on the
--- tailnet so other devices can open the site, and a tab for checks.
+-- Open Blog Workspace: one tab with the agent, Vite on the tailnet so
+-- other devices can open the site, and a shell for checks.
 rex.action{
   name = "blog_workspace",
   title = "Open Blog Workspace",
-  description = "wcygan.net: agent, dev server on the tailnet, checks",
+  description = "wcygan.net: agent, dev server on the tailnet, and checks in one tab",
   run = function(ctx, args)
     local label = "wcygan-net"
     local existing = find_session(label)
@@ -72,21 +72,24 @@ rex.action{
       .. "export HOST=${host:-localhost} PORT=3000; "
       .. "echo \"Blog dev server: http://$HOST:$PORT\"; exec bun run dev-vite"
 
-    local function term(options)
+    local function term(label, options)
       options.cwd = repo
-      return rex.layout.block{ flavor = shell, options = options }
+      return rex.layout.block{ flavor = shell, label = label, options = options }
     end
 
+    -- One tab: the agent on the left, the dev server above checks on the right.
     local created, err = rex.call("session.create", {
       label = label,
       initial_windows = {
-        { window_label = "dev", layout = term({
-            command = { "/bin/zsh", "-lc", dev },
-            shell = "none",
-            exit = { on_completion = false },
-        }) },
-        { window_label = "checks", layout = term({}) },
-        { window_label = "agent", layout = rex.layout.horizontal(0.6, term({}), term({})) },
+        { window_label = "blog", layout = rex.layout.horizontal(0.6,
+            term("agent", {}),
+            rex.layout.vertical(0.6,
+              term("dev", {
+                command = { "/bin/zsh", "-lc", dev },
+                shell = "none",
+                exit = { on_completion = false },
+              }),
+              term("checks", {}))) },
       },
     })
     if not created then

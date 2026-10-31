@@ -163,22 +163,46 @@ npm install -g @playwright/cli@latest
 playwright-cli --help
 ```
 
+### Zed
+
+Nix provides `zed` and `zeditor`. On macOS, launch the managed app with
+`zed` or `~/.nix-profile/Applications/Zed.app`. An existing Homebrew Zed
+installation is retained; `command -v zed` shows which CLI takes precedence.
+
+### CLI migration checks
+
+Run the installed-profile checks before removing an alternate installation:
+
+```bash
+python3 scripts/check-cli-migration.py --group first
+python3 scripts/check-cli-migration.py --group next
+```
+
+The first group exercises encryption, Kubernetes configuration, container image
+creation, package scripts, version control, and a temporary Temporal server.
+It requires a running Docker engine to execute a local act workflow with a
+pinned container image. The next group exercises document rendering, OCR,
+metadata, video encoding, benchmarking, and a localhost yt-dlp download.
+
+Both checks exclude Homebrew from PATH and use disposable files, repositories,
+keys, and service state. They do not access your Kubernetes cluster or Temporal
+server. The yt-dlp package includes its own Deno runtime.
+
+Remove Homebrew copies only after their group passes, then rerun the checks.
+Retain formulae required by other Homebrew applications; for example, FreeRDP
+and unpaper still depend on Homebrew FFmpeg. No automatic dependency cleanup
+is part of this migration.
+
 ### Dependency Install Cooldowns
 
 The repo's docs site uses npm (`docs/package-lock.json`). The installer manages
-dependency release-age settings for npm, Bun, and Deno:
+dependency release-age settings for npm and Bun:
 
 - Bun: links `config/bunfig.toml` to global bunfig locations with
   `minimumReleaseAge = 259200`.
 - npm: manages `min-release-age=1` in `~/.npmrc`. npm does not currently expose
   a documented package or scope exemption key for this setting.
-- Deno: links `config/deno/deno.jsonc` and shell wrappers apply it to
-  `deno install`, `deno add`, `deno update`, `deno outdated`, and `deno x` when
-  no project `deno.json` or `deno.jsonc` is already active. Its dependency age
-  is set to one day so package releases settle for 24 hours before install.
-
-Bun exempts the `@wcygan/*` workspace scope from the cooldown. Deno keeps the
-same exemption entries in its config for future nonzero cooldowns.
+Bun exempts the `@wcygan/*` workspace scope from the cooldown.
 
 ## Per-Project Dev Environments (nix-direnv)
 

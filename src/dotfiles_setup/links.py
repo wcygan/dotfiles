@@ -88,7 +88,6 @@ def managed_links(
         Link(config / "zed", config_home / "zed"),
         Link(config / "bunfig.toml", home / ".bunfig.toml"),
         Link(config / "bunfig.toml", config_home / ".bunfig.toml"),
-        Link(config / "deno", config_home / "deno"),
         Link(config / "ghostty", config_home / "ghostty"),
         Link(config / "rex", config_home / "rex"),
         *agents_links,

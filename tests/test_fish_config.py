@@ -1,12 +1,60 @@
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FISH_ROOT = REPO_ROOT / "config" / "fish"
+
+
+@pytest.mark.parametrize("shell", ["fish", "bash"])
+@pytest.mark.parametrize("custom_ca", [False, True])
+def test_shell_ca_defaults_preserve_explicit_overrides(
+    tmp_path: Path, shell: str, custom_ca: bool
+) -> None:
+    certificates = tmp_path / ".nix-profile/etc/ssl/certs"
+    certificates.mkdir(parents=True)
+    bundle = certificates / "ca-bundle.crt"
+    bundle.touch()
+    environment = os.environ.copy()
+    environment["HOME"] = str(tmp_path)
+    for key in ("SSL_CERT_FILE", "SSL_CERT_DIR", "NIX_SSL_CERT_FILE"):
+        environment.pop(key, None)
+    expected = [str(bundle), str(certificates), str(bundle)]
+    if custom_ca:
+        expected = [
+            str(tmp_path / "custom.pem"),
+            str(tmp_path / "custom-certs"),
+            str(tmp_path / "nix-custom.pem"),
+        ]
+        environment.update(
+            zip(("SSL_CERT_FILE", "SSL_CERT_DIR", "NIX_SSL_CERT_FILE"), expected, strict=True)
+        )
+    if shell == "fish":
+        command = [
+            shell,
+            "--no-config",
+            "-c",
+            'source $argv[1]; printf "%s\\n" "$SSL_CERT_FILE" "$SSL_CERT_DIR" "$NIX_SSL_CERT_FILE"',
+            str(FISH_ROOT / "conf.d/10-nix.fish"),
+        ]
+    else:
+        command = [
+            shell,
+            "--noprofile",
+            "--norc",
+            "-c",
+            '. "$1"; printf "%s\\n" "$SSL_CERT_FILE" "$SSL_CERT_DIR" "$NIX_SSL_CERT_FILE"',
+            "test",
+            str(REPO_ROOT / "config/shell-nix.sh"),
+        ]
+    result = subprocess.run(command, env=environment, text=True, capture_output=True, check=True)
+    assert result.stdout.splitlines()[-3:] == expected
 
 
 def read_repo_file(relative_path: str) -> str:
@@ -101,3 +149,54 @@ def test_fish_path_priorities_and_nix_defaults_are_preserved() -> None:
 def test_direnv_uses_the_repository_flake() -> None:
     envrc = read_repo_file(".envrc")
     assert "use flake" in envrc
+
+
+def test_retired_deno_integration_is_absent() -> None:
+    from dotfiles_setup.links import managed_links
+
+    home = Path("/tmp/dotfiles-test-home")
+    links = managed_links(
+        REPO_ROOT,
+        home=home,
+        config_home=home / ".config",
+        codex_home=home / ".codex",
+        system="Darwin",
+    )
+    assert all(link.source != REPO_ROOT / "config/deno" for link in links)
+    assert not (FISH_ROOT / "conf.d/15-deno.fish").exists()
+    assert not (FISH_ROOT / "completions/deno.fish").exists()
+
+
+@pytest.mark.parametrize("custom_java", [False, True])
+@pytest.mark.parametrize("installed", [False, True])
+def test_java_home_uses_available_homebrew_jdk_without_overriding_user(
+    tmp_path: Path, custom_java: bool, installed: bool
+) -> None:
+    bin_home = tmp_path / "bin"
+    bin_home.mkdir()
+    jdk = tmp_path / "homebrew" / "openjdk"
+    if installed:
+        (jdk / "bin").mkdir(parents=True)
+    brew = bin_home / "brew"
+    brew.write_text(f"#!/bin/sh\nprintf '%s\\n' '{jdk}'\n")
+    brew.chmod(0o755)
+    environment = os.environ.copy()
+    environment["PATH"] = f"{bin_home}:{environment['PATH']}"
+    environment.pop("JAVA_HOME", None)
+    if custom_java:
+        environment["JAVA_HOME"] = "/custom/jdk"
+    result = subprocess.run(
+        [
+            "fish",
+            "--no-config",
+            "-c",
+            'source $argv[1]; printf "%s" "$JAVA_HOME"',
+            str(FISH_ROOT / "conf.d/java.fish"),
+        ],
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    expected = "/custom/jdk" if custom_java else str(jdk) if installed else ""
+    assert result.stdout == expected

@@ -7,7 +7,6 @@ function fix-paths --description 'Reset and rebuild PATH with correct priority'
     set -l new_path /usr/local/bin /usr/bin /bin /usr/sbin /sbin
 
     # 2. User manual installs.
-    test -d $HOME/.deno/bin; and set new_path $HOME/.deno/bin $new_path
     test -d $HOME/go/bin; and set new_path $HOME/go/bin $new_path
     test -d $HOME/.cargo/bin; and set new_path $HOME/.cargo/bin $new_path
     test -d $HOME/.tiup/bin; and set new_path $HOME/.tiup/bin $new_path
@@ -27,10 +26,6 @@ function fix-paths --description 'Reset and rebuild PATH with correct priority'
     set -gx PATH $new_path
 
     echo "✅ PATH has been reset with correct priority:"
-    echo ""
-    echo "Current deno:"
-    which deno
-    deno --version 2>/dev/null || echo "Deno not found"
     echo ""
     echo "Current npm:"
     which npm

@@ -191,8 +191,11 @@ def test_all_system_evaluation_and_macos_acceptance_are_explicit() -> None:
     makefile = REPO_ROOT.joinpath("Makefile").read_text()
     macos = REPO_ROOT.joinpath(".github/workflows/macos.yml").read_text()
 
-    for system in ("x86_64-linux", "aarch64-linux", "x86_64-darwin", "aarch64-darwin"):
-        assert flake.count(f'"{system}"') == 1
+    systems = re.search(r"allSystems = \[(.*?)\];", flake, re.DOTALL)
+    assert systems is not None
+    assert sorted(re.findall(r'"([^"]+)"', systems[1])) == sorted(
+        ("x86_64-linux", "aarch64-linux", "x86_64-darwin", "aarch64-darwin")
+    )
     assert "flake check --all-systems --no-build --no-write-lock-file" in makefile
     assert "runs-on: macos-15" in macos
     assert "runs-on: macos-15-intel" in macos

@@ -56,6 +56,13 @@ end
 # Set flake features at the process level (good default)
 set -gx NIX_CONFIG 'experimental-features = nix-command flakes'
 
+# Prefer the profile's filtered trust store; retain explicit CA overrides.
+if test -f "$HOME/.nix-profile/etc/ssl/certs/ca-bundle.crt"
+  set -q NIX_SSL_CERT_FILE; or set -gx NIX_SSL_CERT_FILE "$HOME/.nix-profile/etc/ssl/certs/ca-bundle.crt"
+  set -q SSL_CERT_FILE; or set -gx SSL_CERT_FILE "$HOME/.nix-profile/etc/ssl/certs/ca-bundle.crt"
+  set -q SSL_CERT_DIR; or set -gx SSL_CERT_DIR "$HOME/.nix-profile/etc/ssl/certs"
+end
+
 # If multi-user daemon profile exists, import environment once per shell.
 # We avoid sourcing bash in fish; instead, we ask bash to print env and we import it.
 if test -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh

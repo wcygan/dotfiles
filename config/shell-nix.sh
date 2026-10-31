@@ -26,6 +26,12 @@ if [ -z "${_ORIGINAL_PATH_BEFORE_NIX+x}" ]; then
     export _ORIGINAL_PATH_BEFORE_NIX="$PATH"
 fi
 
+if [ -f "$HOME/.nix-profile/etc/ssl/certs/ca-bundle.crt" ]; then
+    export NIX_SSL_CERT_FILE="${NIX_SSL_CERT_FILE-$HOME/.nix-profile/etc/ssl/certs/ca-bundle.crt}"
+    export SSL_CERT_FILE="${SSL_CERT_FILE-$HOME/.nix-profile/etc/ssl/certs/ca-bundle.crt}"
+    export SSL_CERT_DIR="${SSL_CERT_DIR-$HOME/.nix-profile/etc/ssl/certs}"
+fi
+
 # Nix single-user installation
 if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
     . "$HOME/.nix-profile/etc/profile.d/nix.sh"

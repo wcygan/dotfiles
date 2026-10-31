@@ -4,6 +4,67 @@ Read this reference before changing compatibility guarantees, restoring retired
 behavior, or replacing a setup boundary. Add an entry when a breaking change is
 intentional, alongside focused migration tests.
 
+## 2026-10-31 — Migrate CLI tools from Homebrew in verified groups
+
+The Nix profile now owns the two requested CLI groups. The first group uses
+the stable input. Hyperfine, Typst, Graphviz, OCRmyPDF, FFmpeg, and yt-dlp use
+the existing newer input where supported; Intel macOS retains stable packages.
+The yt-dlp dependency closure includes Deno, without restoring the retired
+global Deno configuration.
+
+`scripts/check-cli-migration.py` exercises real behavior using the installed
+profile, a PATH without Homebrew, and disposable fixtures. Run `--group first`
+and `--group next` before and after removing matching Homebrew formulae.
+The first group requires Docker. It starts only a temporary localhost Temporal
+server and does not contact a Kubernetes cluster. The second group verifies
+local rendering, OCR, media encoding, metadata, and a localhost download; it
+does not establish compatibility with every external video site.
+
+On this Mac, Graphviz intentionally moves from Homebrew 16.1.0 to Nix 15.1.1
+after rendering checks, as explicitly requested. Retain Homebrew FFmpeg while
+FreeRDP and unpaper require it. Disable Homebrew autoremove during migration
+so unrelated dependencies and state remain intact.
+
+A Nix profile rollback restores the previous package generation but does not
+reinstall removed Homebrew formulae. To restore Homebrew ownership, reinstall
+the affected formulae explicitly and verify PATH precedence.
+
+## 2026-10-31 — Use upstream security packages and retire Deno
+
+The main package set now follows `nixos-26.05`, which retains Intel macOS
+support and includes patched certificates, Go and Node. A second locked
+`nixpkgs-unstable` input supplies uv and Zed on the other three systems. Intel macOS uses stable Zed and retains upstream uv 0.13.4
+because unstable no longer supports that platform. Bun is temporarily pinned
+to its patched 1.4.4 release on all systems; nixpkgs still supplies older
+versions. Live checks showed that Bun 1.4.2 accepted an affected chain even
+with the newer trust store.
+
+The remaining Comodo root filter and curl CA settings protect clients using
+the profile trust store. The previous emSign root exclusion is no longer
+needed because the upstream bundle has removed that root.
+
+The profile provides `zed` alongside nixpkgs' `zeditor` command. On macOS,
+the application is available under `~/.nix-profile/Applications/Zed.app`.
+Existing Homebrew installations are retained; check `command -v zed` after
+installation to confirm command precedence.
+
+Deno is no longer a top-level profile tool or configured by the repository. Its managed-link inventory entry,
+Fish wrappers, abbreviations and completions have been removed. Existing
+machine-local Deno installations and the old `~/.config/deno` link are not
+deleted automatically.
+
+Managed Fish/Bash/zsh configuration and the development shell set default
+`SSL_CERT_FILE`, `SSL_CERT_DIR` and `NIX_SSL_CERT_FILE` values for clients
+such as Python and wget. Open a new shell after installation. Explicit CA
+environment overrides remain supported.
+
+Apply with `make profile`, then run `make verify` and
+`python3 scripts/check-emudhra.py` from a new shell. The live check requires
+certificate rejection for both incident hosts and successful HTTPS to
+example.com. DNS failures and timeouts fail the check. Apple tools, other
+applications and previously built binaries need their own verification.
+`nix profile rollback` restores the previous packages and certificate policy.
+
 ## 2026-10-15 — Reconcile removed files inside pinned skills
 
 `agent-skills --prune` now archives installed provider-owned skill trees containing

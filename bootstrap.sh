@@ -108,6 +108,11 @@ run_dotfiles_setup() {
 
 main() {
   parse_bootstrap_arguments "$@"
+  if [[ "${forwarded_args[0]:-}" == nightly-run || "${forwarded_args[0]:-}" == nightly-probe ]]; then
+    cd "$REPO_ROOT"
+    export PYTHONPATH="$REPO_ROOT/src"
+    exec "$HOME/.nix-profile/bin/python3" -m dotfiles_setup "${forwarded_args[@]}"
+  fi
   load_nix_profile
   ensure_nix_available
   run_dotfiles_setup

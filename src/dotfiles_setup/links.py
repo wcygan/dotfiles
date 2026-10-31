@@ -326,3 +326,15 @@ def link_config(
     if owns_journal and journal is not None:
         journal.record_operation("links", "completed")
         journal.transition("completed")
+
+
+def nightly_files(repo_root: Path, context: UserPathContext) -> tuple[Path, ...]:
+    """Inventory the explicitly enabled nightly updater's managed files."""
+    if context.platform.lower() == "darwin":
+        schedule = (context.home / "Library/LaunchAgents/com.wcygan.dotfiles.nightly.plist",)
+    else:
+        schedule = (
+            context.config_home / "systemd/user/dotfiles-nightly.service",
+            context.config_home / "systemd/user/dotfiles-nightly.timer",
+        )
+    return (*schedule, repo_root.resolve() / "flake.lock")

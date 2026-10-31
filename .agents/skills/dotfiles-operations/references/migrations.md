@@ -4,6 +4,22 @@ Read this reference before changing compatibility guarantees, restoring retired
 behavior, or replacing a setup boundary. Add an entry when a breaking change is
 intentional, alongside focused migration tests.
 
+## 2026-10-31 — Opt in to quarantined nightly Nix updates
+
+Add explicit `nightly-schedule` and `nightly-run` commands. Default setup and
+ordinary consumers still preserve lockfiles. The explicitly enabled nightly
+updater may replace `flake.lock` only after snapshot quarantine, temporary
+candidate verification, checkout ownership checks, and the 03:00 local time gate.
+It shares the mutation lock, journals lockfile and scheduler file replacements,
+and leaves guarded recovery state after interruption. File recovery now accepts
+only the exact nightly destinations and matching nightly journal commands.
+
+macOS LaunchAgents and Linux systemd user units are generated at opt-in time;
+host paths are not committed. The observation delay is seven days after first
+local observation, not each package's release date. No automatic Git publication
+or default skill installation is introduced. Disable the schedule explicitly
+before retiring the checkout.
+
 ## 2026-10-31 — Migrate CLI tools from Homebrew in verified groups
 
 The Nix profile now owns the two requested CLI groups. The first group uses

@@ -94,6 +94,21 @@ not inferred from GitHub CLI's stale Codex host mapping. Installation is an
 explicit journaled command and remains outside the default install workflow;
 its `--check` form is read-only and requires GitHub access.
 
+## Optional Nightly Updates
+
+`nightly.py` owns local observation quarantine, candidate verification, checkout
+ownership, deadlines, and guarded application. `nightly_schedule.py` renders
+and registers LaunchAgents/systemd user units. `nightly_health.py` supplies
+an ephemeral scheduler probe at enable/repair time and read-only acceptance.
+The first opt-in is explicit; normal installs remember and reconcile it.
+`links.nightly_files` owns the generated destination inventory, and recovery
+accepts only those exact file/command combinations.
+
+Scheduler configuration is machine-local. Seven-day observation metadata and
+last-run/probe results live in the user's private dotfiles state directory.
+No default lockfile update, Git publication, or global skill installation is
+introduced. Nightly lockfile application alone has explicit update authority.
+
 ## State Ownership
 
 ### Repository-owned

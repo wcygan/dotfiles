@@ -169,6 +169,55 @@ Nix provides `zed` and `zeditor`. On macOS, launch the managed app with
 `zed` or `~/.nix-profile/Applications/Zed.app`. An existing Homebrew Zed
 installation is retained; `command -v zed` shows which CLI takes precedence.
 
+### Nightly Nix updates
+
+Enable a local 03:00 schedule after installing the profile:
+
+```bash
+make nightly-enable
+make nightly-status
+make nightly-disable
+```
+
+After that first opt-in, normal `./bootstrap.sh install` remembers the choice
+and repairs the scheduler on subsequent installs. Enabling or repairing it runs
+a harmless job through launchd/systemd to prove that the scheduler can execute
+this checkout and write an acknowledgement. Strict `make verify` checks the
+generated configuration, registration, and installation probe without starting
+jobs or modifying state. A broken timer fails verification rather than silently
+appearing installed.
+
+macOS uses a user LaunchAgent; Linux uses a systemd user timer. The user service
+manager must be running. WSL needs systemd enabled. The job does not wake the
+computer or run at login. A late wake-up outside 03:00–04:00 local time is
+skipped by the updater itself. No commits, pushes, Git pulls, or skill catalog
+installations run automatically.
+
+Each GitHub input revision is quarantined for seven complete days after this
+machine first observes it. The first week collects candidates without installing
+them. This delays newly observed Nix snapshots; it is not a guarantee about
+every upstream package's release date and is not protection against zero-days.
+It also delays security fixes. Manual `make update` bypasses quarantine when
+you explicitly need an urgent update.
+
+Candidates withdrawn from the current branch history are rejected.
+Eligible candidates are tested in a temporary checkout before the real profile
+and lockfile change. The job uses the setup mutation lock and journal, stops
+launching work before the window closes, and reserves time for rollback. A
+failed installation restores the previous profile and guarded lockfile; an
+interruption leaves recovery state and prevents another update until reviewed.
+
+Logs and observation metadata live under
+`${XDG_STATE_HOME:-~/.local/state}/dotfiles/nightly`. `last-run.log` contains
+build/test diagnostics. The scheduler captures the final outcome separately
+(on Linux, use `journalctl --user -u dotfiles-nightly.service`).
+
+The updated `flake.lock` remains local for review, with numbered backups for
+guarded recovery. Unrelated checkout changes cause a skip. Re-enabling explicitly
+accepts the current checkout as the baseline; committing a clean checkout also
+lets it proceed. Disable the schedule before moving or removing the checkout.
+Normal setup commands continue preserving committed lockfiles.
+
 ### CLI migration checks
 
 Run the installed-profile checks before removing an alternate installation:

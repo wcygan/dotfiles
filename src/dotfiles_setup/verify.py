@@ -313,8 +313,21 @@ def verify_installation(
             system=context.platform,
         )
     ]
+    from dotfiles_setup.nightly_health import check_scheduler
+
+    nightly_results = []
+    try:
+        detail = check_scheduler(repo_root, context)
+        if detail is not None:
+            nightly_results.append(VerificationResult("nightly-schedule", True, detail))
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        nightly_results.append(VerificationResult(
+            "nightly-schedule", False,
+            f"nightly scheduler needs repair: {error}; run ./bootstrap.sh install",
+        ))
     return [
         *profile_results,
+        *nightly_results,
         rust_result,
         *link_results,
         _codex_config_result(context.codex_home),

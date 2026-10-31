@@ -131,3 +131,14 @@ docs-build:
 	@npm --prefix docs run build
 
 quickstart: install test-pre
+
+
+.PHONY: nightly-enable nightly-disable nightly-status
+nightly-enable:
+	@$(BOOTSTRAP) nightly-schedule enable
+
+nightly-disable:
+	@$(BOOTSTRAP) nightly-schedule disable
+
+nightly-status:
+	@$(BOOTSTRAP) nightly-schedule status

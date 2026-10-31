@@ -31,6 +31,11 @@ def build_parser() -> argparse.ArgumentParser:
     subcommands = parser.add_subparsers(dest="command", required=True)
     subcommands.add_parser("doctor", help="Run read-only environment diagnostics")
     subcommands.add_parser("verify", help="Verify the configured environment")
+    probe = subcommands.add_parser("nightly-probe", help=argparse.SUPPRESS)
+    probe.add_argument("token")
+    nightly = subcommands.add_parser("nightly-schedule", help="Manage nightly local Nix updates")
+    nightly.add_argument("action", choices=("enable", "disable", "status"))
+    subcommands.add_parser("nightly-run", help="Run only inside the nightly update window")
     subcommands.add_parser("profile", help="Install or upgrade the Nix package profile")
     subcommands.add_parser(
         "rustup", help="Install rust-analyzer for the repository-pinned toolchain"
@@ -105,6 +110,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     handlers: dict[str, Callable[[argparse.Namespace], int]] = {
+        "nightly-schedule": _handle_nightly_schedule,
+        "nightly-run": _handle_nightly_run,
+        "nightly-probe": _handle_nightly_probe,
         "doctor": lambda _args: run_doctor(),
         "verify": lambda _args: run_verify(REPO_ROOT),
         "profile": lambda _args: run_mutation(
@@ -156,6 +164,7 @@ def _handle_agent_skills(args: argparse.Namespace) -> int:
             REPO_ROOT,
             lambda _journal: print(cleanup_legacy_agent_skills(REPO_ROOT)),
         )
+
     def install(_journal: object) -> None:
         if args.reset:
             result = install_agent_skills(REPO_ROOT, reset=True)
@@ -176,9 +185,7 @@ def _handle_link(args: argparse.Namespace) -> int:
             print(f"Link setup failed: {error}")
             return 1
         return 0
-    return run_mutation(
-        "link", REPO_ROOT, lambda journal: link_config(REPO_ROOT, journal=journal)
-    )
+    return run_mutation("link", REPO_ROOT, lambda journal: link_config(REPO_ROOT, journal=journal))
 
 
 def _handle_recover(args: argparse.Namespace) -> int:
@@ -235,3 +242,29 @@ def _handle_git_user(args: argparse.Namespace) -> int:
 
 def _handle_install(args: argparse.Namespace) -> int:
     return run_install(REPO_ROOT, shell_handoff=args.shell_handoff)
+
+
+def _handle_nightly_schedule(args: argparse.Namespace) -> int:
+    from dotfiles_setup.nightly_schedule import configure, status
+
+    if args.action == "status":
+        print(status())
+        return 0
+    return run_mutation(
+        "nightly-schedule",
+        REPO_ROOT,
+        lambda journal: configure(REPO_ROOT, journal, enabled=args.action == "enable"),
+    )
+
+
+def _handle_nightly_run(_args: argparse.Namespace) -> int:
+    from dotfiles_setup.nightly import run_nightly
+
+    return run_nightly(REPO_ROOT)
+
+
+def _handle_nightly_probe(args: argparse.Namespace) -> int:
+    from dotfiles_setup.nightly_health import acknowledge
+
+    acknowledge(REPO_ROOT, args.token)
+    return 0

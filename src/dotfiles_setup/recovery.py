@@ -64,11 +64,24 @@ def _validate_file_entry(
     home: Path,
     codex_home: Path,
     shell_destinations: set[Path],
+    context: UserPathContext,
 ) -> None:
     visible = _recorded_path(str(record.visible_destination), "visible destination")
     source = record.source
     valid_scope = False
-    if source == "shell-handoff":
+    if source in {"nightly-schedule", "nightly-lock"}:
+        repository = Path(str(manifest.get("repository_root", ""))).resolve()
+        inventory = link_inventory.nightly_files(repository, context)
+        valid_scope = (
+            repository.is_relative_to(home)
+            and manifest.get("command") in (
+                {"nightly-schedule", "install"}
+                if source == "nightly-schedule" else {"nightly-update"}
+            )
+            and destination == visible
+            and destination in (inventory[:-1] if source == "nightly-schedule" else inventory[-1:])
+        )
+    elif source == "shell-handoff":
         valid_scope = (
             manifest.get("command") in {"shell-handoff", "install"}
             and visible in shell_destinations
@@ -162,6 +175,15 @@ def _validate_entries(
         codex_home=codex_home,
         shell_destinations=shell_destinations,
     )
+    repository = Path(str(manifest.get("repository_root", ""))).resolve()
+    if manifest.get("command") in {"nightly-schedule", "nightly-update", "install"}:
+        for path in link_inventory.nightly_files(repository, context):
+            parent = path.parent
+            while parent.is_relative_to(home):
+                directory_destinations.add(parent)
+                if parent == home:
+                    break
+                parent = parent.parent
     records: list[RecoveryRecord] = []
     root_candidates = (home, context.config_home, codex_home)
     roots = tuple(
@@ -217,6 +239,7 @@ def _validate_entries(
                 home=home,
                 codex_home=codex_home,
                 shell_destinations=shell_destinations,
+                context=context,
             )
             _validate_stage(record, destination, roots, planned_missing_roots)
         else:

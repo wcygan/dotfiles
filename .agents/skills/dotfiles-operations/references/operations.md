@@ -203,6 +203,27 @@ systems, including Intel macOS. A successful Linux build is not proof of that
 contract; run `make test-eval` and use macOS evidence when behavior is
 platform-sensitive.
 
+### Local nightly Nix updates
+
+`./bootstrap.sh nightly-schedule enable|disable|status` owns the opt-in user
+scheduler. `nightly-run` checks the local 03:00–04:00 window before entering any
+Nix development shell. Generated scheduler destinations and the explicitly
+managed nightly lockfile are inventoried by `links.nightly_files`; these are
+journaled files, not default configuration links.
+
+Only newly observed direct GitHub input snapshots that have completed a
+seven-day quarantine are eligible. Observation age is machine-local, not a
+claim about individual upstream releases or Git commit age. Candidate build and
+repository checks run before application. Leave the resulting lockfile and
+backups for review; do not auto-commit or push. Unrelated edits, pending recovery,
+or an active setup mutation stop the run. See README for logs and rollback.
+First enablement is explicit. Subsequent normal installs reconcile a remembered
+opt-in, including recovering a requested-but-incomplete setup. Enable/repair
+runs an ephemeral scheduler job through the actual bootstrap entry point.
+Strict read-only verify checks generated files, loaded registration, and the
+matching successful probe. Linux additionally requires persistent enablement,
+an active timer, and a next execution time.
+
 ### Update Rust
 
 1. Review an official Rust release and choose an exact numeric patch version.

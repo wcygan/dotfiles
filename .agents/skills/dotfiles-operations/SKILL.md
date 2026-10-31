@@ -64,6 +64,8 @@ work when appropriate:
 
 - Nix package-set update: use `$nix-update` for the lock update and version
   comparison; use `$nix-manager` for Nix mechanics.
+- Local nightly updater configuration, repair, or acceptance: also use
+  [nightly-nix-updates](../nightly-nix-updates/SKILL.md).
 - Cross-platform/bootstrap change: also use `$cross-platform-guardian`.
 - Fish, Ghostty, Neovim, Starship, Zed, Zellij, or lazygit config: route through
   `$config-change` and the matching focused skill.

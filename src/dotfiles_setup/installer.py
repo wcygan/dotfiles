@@ -240,6 +240,22 @@ def _install_results(
         add(handoff)
         mutation_failed = mutation_failed or not handoff.succeeded
 
+    from dotfiles_setup.nightly import directory, read_state
+
+    schedule = read_state(directory(environ) / "schedule.json")
+    if schedule.get("requested_enabled", schedule.get("enabled")):
+        from dotfiles_setup.nightly_schedule import configure
+
+        if mutation_failed:
+            add(OperationResult("nightly-schedule", False, "required setup failed", skipped=True))
+        else:
+            scheduled = _run_operation(
+                "nightly-schedule",
+                lambda: configure(repo_root, journal, enabled=True, environ=environ),
+            )
+            add(scheduled)
+            mutation_failed = mutation_failed or not scheduled.succeeded
+
     verification, _verification_exit = _run_verification(
         repo_root,
         environ=environ,

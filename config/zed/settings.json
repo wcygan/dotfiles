@@ -7,6 +7,7 @@
 // custom settings, run `zed: open default settings` from the
 // command palette
 {
+  "disable_ai": true,
   "cli_default_open_behavior": "new_window",
   "project_panel": {
     "dock": "left"

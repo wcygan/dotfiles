@@ -13,6 +13,9 @@ rex.bind("cmd+shift+w", "pane.close")
 rex.bind("cmd+alt+right", "client.tab.next")
 rex.bind("cmd+alt+left", "client.tab.previous")
 
+-- Switch between machines
+rex.bind("cmd+shift+h", "client.host.switch")
+
 -- Reload the config
 rex.bind("cmd+shift+r", "client.config.reload")
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
@@ -535,3 +536,28 @@ def test_install_cli_forwards_optional_shell_handoff(
 
     assert cli.main(["install", "--shell-handoff"]) == 0
     assert captured == {"repo_root": cli.REPO_ROOT, "shell_handoff": True}
+
+
+def test_profile_failure_records_skipped_remembered_schedule(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Replay EveryRequestedPhaseRecorded: a failed profile still accounts for the schedule."""
+    home = tmp_path / "home"
+    values = _environment(home)
+    nightly = home / ".local/state/dotfiles/nightly"
+    nightly.mkdir(parents=True)
+    (nightly / "schedule.json").write_text(
+        json.dumps({"requested_enabled": True, "enabled": False})
+    )
+    events: list[str] = []
+    _install_stubs(monkeypatch, events, profile_error=RuntimeError("profile locked"))
+    output: list[str] = []
+
+    assert run_install(tmp_path, environ=values, output=output.append) == 1
+    assert "[SKIP] nightly-schedule: profile failed" in output
+    manifest = read_manifest(state_directory(values) / "recovery-needed.json")
+    operations = manifest["operations"]
+    assert any(
+        operation["name"] == "nightly-schedule" and operation["status"] == "skipped"
+        for operation in operations
+    )

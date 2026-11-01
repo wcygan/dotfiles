@@ -175,6 +175,12 @@ def _install_results(
 ) -> tuple[list[OperationResult], int]:
     results: list[OperationResult] = []
     context = UserPathContext.from_environment(environ)
+    from dotfiles_setup.nightly import directory, read_state
+
+    schedule_state = read_state(directory(environ) / "schedule.json")
+    schedule_requested = bool(
+        schedule_state.get("requested_enabled", schedule_state.get("enabled"))
+    )
 
     def add(result: OperationResult, *, report: bool = True) -> None:
         results.append(result)
@@ -192,6 +198,8 @@ def _install_results(
         add(OperationResult("rustup", False, "profile failed", skipped=True))
         if shell_handoff:
             add(OperationResult("shell-handoff", False, "profile failed", skipped=True))
+        if schedule_requested:
+            add(OperationResult("nightly-schedule", False, "profile failed", skipped=True))
         verification, verification_exit = _run_verification(
             repo_root,
             environ=environ,
@@ -240,10 +248,7 @@ def _install_results(
         add(handoff)
         mutation_failed = mutation_failed or not handoff.succeeded
 
-    from dotfiles_setup.nightly import directory, read_state
-
-    schedule = read_state(directory(environ) / "schedule.json")
-    if schedule.get("requested_enabled", schedule.get("enabled")):
+    if schedule_requested:
         from dotfiles_setup.nightly_schedule import configure
 
         if mutation_failed:

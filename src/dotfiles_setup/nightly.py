@@ -24,6 +24,12 @@ from dotfiles_setup.mutations import (
     execute_mutations,
     recover_mutation,
 )
+from dotfiles_setup.nightly_state import (
+    RunDecision,
+    SchedulerPhase,
+    phase_of,
+    run_result,
+)
 from dotfiles_setup.nix_profile import (
     list_profile_elements,
     select_current_checkout_profile,
@@ -349,28 +355,86 @@ def update(repo: Path, journal: OperationJournal, commands: Commands, state: dic
         print("Installed verified updates; flake.lock is ready for review.")
 
 
+_SKIP_MESSAGES = {
+    RunDecision.SKIP_WINDOW: "Skipped: outside the 03:00–04:00 local update window.",
+    RunDecision.SKIP_DISABLED: "Skipped: this checkout is not enabled for nightly updates.",
+    RunDecision.SKIP_DIRTY: "Skipped: checkout contains changes not owned by the nightly updater.",
+    RunDecision.SKIP_RECOVERY: "Skipped: interrupted setup needs recovery.",
+    RunDecision.SKIP_STATE_CHANGED: (
+        "Skipped: nightly configuration changed while waiting for the setup lock."
+    ),
+}
+
+
+def _decision(repo: Path, now: datetime) -> RunDecision:
+    """Return the one durable decision for this invocation.
+
+    The order is the contract: a daytime or disabled invocation must not read
+    recovery manifests or run git, so those checks come first.
+    """
+
+    if now.hour != 3:
+        return RunDecision.SKIP_WINDOW
+    state = read_state(directory() / "schedule.json")
+    if (
+        phase_of(state) is not SchedulerPhase.ENABLED
+        or state.get("repository") != str(repo.resolve())
+    ):
+        return RunDecision.SKIP_DISABLED
+    if not checkout_allowed(repo, state):
+        return RunDecision.SKIP_DIRTY
+    if ManifestRepository.from_environment().pending() is not None:
+        return RunDecision.SKIP_RECOVERY
+    return RunDecision.PROCEED
+
+
+def _write_last_run(
+    decision: RunDecision,
+    *,
+    now: datetime,
+    exit_code: int,
+    lock_changed: bool,
+) -> None:
+    _atomic_json(
+        directory() / "last-run.json",
+        {
+            "started_at": now.isoformat(),
+            "finished_at": datetime.now().astimezone().isoformat(),
+            "result": run_result(decision, exit_code=exit_code, lock_changed=lock_changed),
+            "exit_code": exit_code,
+        },
+    )
+
+
 def run_nightly(repo: Path) -> int:
     now = datetime.now().astimezone()
-    state = read_state(directory() / "schedule.json")
-    if now.hour != 3:
-        print("Skipped: outside the 03:00–04:00 local update window.")
-        return 0
-    if not state.get("enabled") or state.get("repository") != str(repo.resolve()):
-        print("Skipped: this checkout is not enabled for nightly updates.")
-        return 0
-    if not checkout_allowed(repo, state):
-        print("Skipped: checkout contains changes not owned by the nightly updater.")
+    decision = _decision(repo, now)
+    if decision is not RunDecision.PROCEED:
+        _write_last_run(decision, now=now, exit_code=0, lock_changed=False)
+        print(_SKIP_MESSAGES[decision])
         return 0
     end = now.replace(hour=4, minute=0, second=0, microsecond=0).timestamp()
     log = directory() / "last-run.log"
     log.write_text(f"Nightly run at {now.isoformat()}\n")
     commands = Commands(end, log)
+    outcome: RunDecision | None = None
 
     def operation(journal: OperationJournal) -> None:
-        if not checkout_allowed(repo, state):
-            raise NightlyError("checkout changed before acquiring the setup lock")
+        nonlocal outcome
+        fresh = read_state(directory() / "schedule.json")
+        if (
+            phase_of(fresh) is not SchedulerPhase.ENABLED
+            or fresh.get("repository") != str(repo.resolve())
+        ):
+            outcome = RunDecision.SKIP_STATE_CHANGED
+            print(_SKIP_MESSAGES[outcome])
+            return
+        if not checkout_allowed(repo, fresh):
+            outcome = RunDecision.SKIP_DIRTY
+            print(_SKIP_MESSAGES[outcome])
+            return
         try:
-            update(repo, journal, commands, state)
+            update(repo, journal, commands, fresh)
         except (NightlyError, OSError, ValueError) as error:
             if journal.pending_entries:
                 raise
@@ -378,22 +442,12 @@ def run_nightly(repo: Path) -> int:
             journal.transition("failed")
             print(f"Nightly update did not apply: {error}")
 
-    if ManifestRepository.from_environment().pending() is not None:
-        print("Skipped: interrupted setup needs recovery.")
-        return 0
     before = lock_hash(repo)
     code = run_mutation("nightly-update", repo, operation)
-    _atomic_json(
-        directory() / "last-run.json",
-        {
-            "started_at": now.isoformat(),
-            "finished_at": datetime.now().astimezone().isoformat(),
-            "result": "failed"
-            if code
-            else "installed"
-            if lock_hash(repo) != before
-            else "observed",
-            "exit_code": code,
-        },
+    _write_last_run(
+        outcome or RunDecision.PROCEED,
+        now=now,
+        exit_code=code,
+        lock_changed=outcome is None and lock_hash(repo) != before,
     )
     return code

@@ -407,3 +407,168 @@ def test_verify_detects_orphaned_scheduler_files(tmp_path: Path) -> None:
     plist.write_text("orphaned")
     with pytest.raises(ValueError, match="without setup state"):
         check_scheduler(tmp_path, context)
+
+
+def _clock_at(hour: int):
+    from datetime import datetime
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            local = datetime(2026, 10, 31, hour).astimezone()
+            return local if tz is None else local.astimezone(tz)
+
+    return Clock
+
+
+def test_disabled_scheduler_with_registered_timer_is_rejected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Replay DisabledNotRegistered: a disabled configuration cannot hide a live timer."""
+    from dotfiles_setup import nightly_health
+
+    context = UserPathContext.from_environment({"HOME": str(tmp_path)}, system="Darwin")
+    root = context.state_directory / "nightly"
+    root.mkdir(parents=True)
+    (root / "schedule.json").write_text(
+        json.dumps(
+            {
+                "repository": str(tmp_path),
+                "requested_enabled": False,
+                "enabled": False,
+            }
+        )
+    )
+    monkeypatch.setattr(nightly_health, "service_registered", lambda _: True)
+    with pytest.raises(ValueError, match="still registered"):
+        nightly_health.check_scheduler(tmp_path, context)
+
+    monkeypatch.setattr(nightly_health, "service_registered", lambda _: False)
+    assert nightly_health.check_scheduler(tmp_path, context) is None
+
+
+def test_skipped_run_is_recorded_in_last_run(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Replay EveryRunRecorded: a skip must leave a durable last-run record."""
+    monkeypatch.setattr(nightly, "datetime", _clock_at(0))
+    monkeypatch.setattr(nightly, "directory", lambda: tmp_path)
+
+    def unexpected(*args, **kwargs):
+        raise AssertionError("a daytime run must not start a mutating workflow")
+
+    monkeypatch.setattr(nightly, "run_mutation", unexpected)
+    assert nightly.run_nightly(REPO) == 0
+    payload = json.loads((tmp_path / "last-run.json").read_text())
+    assert payload["result"] == "skipped-window"
+    assert payload["exit_code"] == 0
+
+
+def test_run_does_not_apply_after_disable_lands_before_lock(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Replay NoApplyAfterDisable: a run must re-read state under the setup lock."""
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setenv("HOME", str(home))
+    for key in ("XDG_CACHE_HOME", "XDG_STATE_HOME", "XDG_CONFIG_HOME"):
+        monkeypatch.delenv(key, raising=False)
+    repo = (home / "repo").resolve()
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    (repo / "flake.lock").write_text('{"lock": 1}\n')
+    (repo / "source.txt").write_text("baseline\n")
+    state_dir = home / ".local/state/dotfiles/nightly"
+    state_dir.mkdir(parents=True)
+    schedule_path = state_dir / "schedule.json"
+    schedule_path.write_text(
+        json.dumps(
+            {
+                "repository": str(repo),
+                "requested_enabled": True,
+                "enabled": True,
+                "health_token": "a" * 32,
+                "source_hash": nightly.fingerprint(repo),
+                "lock_hash": nightly.lock_hash(repo),
+            }
+        )
+    )
+    original = (repo / "flake.lock").read_text()
+    monkeypatch.setattr(nightly, "datetime", _clock_at(3))
+    monkeypatch.setattr(
+        nightly,
+        "update",
+        lambda *args, **kwargs: pytest.fail("update ran after the configuration was disabled"),
+    )
+    real_run_mutation = nightly.run_mutation
+
+    def racing(command, repo_root, operation, **kwargs):
+        # A separate disable completed just before this run acquired the lock.
+        state = json.loads(schedule_path.read_text())
+        state.update(requested_enabled=False, enabled=False, health_token=None)
+        schedule_path.write_text(json.dumps(state))
+        return real_run_mutation(command, repo_root, operation, **kwargs)
+
+    monkeypatch.setattr(nightly, "run_mutation", racing)
+    assert nightly.run_nightly(repo) == 0
+    assert (repo / "flake.lock").read_text() == original
+    assert json.loads(schedule_path.read_text())["requested_enabled"] is False
+    payload = json.loads((state_dir / "last-run.json").read_text())
+    assert payload["result"] == "skipped-state-changed"
+    assert payload["exit_code"] == 0
+
+
+def test_run_skips_and_records_while_setup_is_incomplete(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Replay EveryRunRecorded: a timer that fires before setup completes still leaves a record."""
+    monkeypatch.setattr(nightly, "datetime", _clock_at(3))
+    state_dir = tmp_path / "nightly"
+    state_dir.mkdir()
+    (state_dir / "schedule.json").write_text(
+        json.dumps(
+            {
+                "repository": str(REPO.resolve()),
+                "requested_enabled": True,
+                "enabled": False,
+            }
+        )
+    )
+    monkeypatch.setattr(nightly, "directory", lambda: state_dir)
+
+    def unexpected(*args, **kwargs):
+        raise AssertionError("an incomplete setup must not start a mutating workflow")
+
+    monkeypatch.setattr(nightly, "run_mutation", unexpected)
+    assert nightly.run_nightly(REPO) == 0
+    payload = json.loads((state_dir / "last-run.json").read_text())
+    assert payload["result"] == "skipped-disabled"
+    assert payload["exit_code"] == 0
+
+
+def test_disable_fails_when_timer_stays_registered(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Replay DisabledNotRegistered: configure must not call a disable complete."""
+    from dotfiles_setup import nightly_health, nightly_schedule
+
+    home = tmp_path / "home"
+    binary = home / ".nix-profile/bin/python3"
+    binary.parent.mkdir(parents=True)
+    binary.write_text("#!/bin/sh\nexit 0\n")
+    repo = home / "repo"
+    repo.mkdir()
+    values = {"HOME": str(home)}
+    journal = OperationJournal("nightly-schedule", repo, environ=values)
+    journal.transition("applying")
+    monkeypatch.setattr(nightly_schedule, "execute_mutations", lambda *a, **kw: None)
+    monkeypatch.setattr(
+        nightly_schedule.subprocess,
+        "run",
+        lambda *a, **kw: subprocess.CompletedProcess(a[0], 0),
+    )
+    monkeypatch.setattr(nightly_health, "service_registered", lambda _: True)
+    with pytest.raises(nightly.NightlyError, match="still registered"):
+        nightly_schedule.configure(repo, journal, enabled=False, environ=values)
+    state = json.loads((home / ".local/state/dotfiles/nightly/schedule.json").read_text())
+    assert state["requested_enabled"] is False

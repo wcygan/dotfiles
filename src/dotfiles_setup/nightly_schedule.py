@@ -11,7 +11,20 @@ from pathlib import Path
 from dotfiles_setup.links import nightly_files
 from dotfiles_setup.manifest import OperationJournal, _atomic_json
 from dotfiles_setup.mutations import FileMutation, execute_mutations
-from dotfiles_setup.nightly import directory, fingerprint, lock_hash, owned_backups, read_state
+from dotfiles_setup.nightly import (
+    NightlyError,
+    directory,
+    fingerprint,
+    lock_hash,
+    owned_backups,
+    read_state,
+)
+from dotfiles_setup.nightly_state import (
+    SchedulerEvent,
+    SchedulerPhase,
+    phase_of,
+    transition_state,
+)
 from dotfiles_setup.paths import UserPathContext
 
 LABEL = "com.wcygan.dotfiles.nightly"
@@ -102,11 +115,20 @@ def configure(repo: Path, journal: OperationJournal, *, enabled: bool, environ=N
     if not (context.home / ".nix-profile/bin/python3").is_file():
         raise ValueError("install the Nix profile before scheduling updates")
     state = read_state(root / "schedule.json")
-    if state and state.get("repository") != str(repo):
-        if state.get("requested_enabled", state.get("enabled")):
+    phase = phase_of(state)
+    if phase is not SchedulerPhase.UNCONFIGURED and state.get("repository") != str(repo):
+        if phase in {
+            SchedulerPhase.REQUESTED,
+            SchedulerPhase.ENABLED,
+            SchedulerPhase.UNKNOWN,
+        }:
             raise ValueError("another checkout owns the nightly schedule; disable it there first")
         state = {}
-    state.update(repository=str(repo), requested_enabled=enabled, enabled=False)
+        phase = SchedulerPhase.UNCONFIGURED
+    state = dict(state)
+    state["repository"] = str(repo)
+    event = SchedulerEvent.REQUEST_ENABLE if enabled else SchedulerEvent.REQUEST_DISABLE
+    state = transition_state(state, event)
     _atomic_json(root / "schedule.json", state)
     contents = schedule_contents(repo, context, enabled=enabled)
     execute_mutations(
@@ -140,11 +162,18 @@ def configure(repo: Path, journal: OperationJournal, *, enabled: bool, environ=N
         subprocess.run(
             ["systemctl", "--user", action, "--now", "dotfiles-nightly.timer"], check=True
         )
-    health_token = None
-    if enabled:
-        from dotfiles_setup.nightly_health import probe_scheduler
+    from dotfiles_setup.nightly_health import probe_scheduler, service_registered
 
+    if enabled:
         health_token = probe_scheduler(repo, context)
+        state = transition_state(state, SchedulerEvent.COMMIT_ENABLE, token=health_token)
+    else:
+        health_token = None
+        if service_registered(context):
+            raise NightlyError(
+                "nightly updates are disabled but the scheduler is still registered; "
+                "run ./bootstrap.sh nightly-schedule disable"
+            )
     state.update(
         health_token=health_token,
         enabled=enabled,

@@ -13,6 +13,7 @@ from dotfiles_setup.nightly_state import (
     acceptance_error,
     phase_of,
     run_result,
+    select_mature_revision,
     transition_state,
 )
 
@@ -133,3 +134,45 @@ def test_run_result_covers_every_decision(
     decision: RunDecision, exit_code: int, changed: bool, expected: str
 ) -> None:
     assert run_result(decision, exit_code=exit_code, lock_changed=changed) == expected
+
+
+def _observation(first_seen: float, last_modified: int, rev: str) -> dict:
+    return {"first_seen": first_seen, "locked": {"rev": rev, "lastModified": last_modified}}
+
+
+def test_mature_revision_picks_the_latest_first_observation() -> None:
+    records = [
+        _observation(100, 5, "older-mature"),
+        _observation(200, 6, "newer-mature"),
+    ]
+
+    selected = select_mature_revision(
+        records, now=1000, age_seconds=700, current_last_modified=4
+    )
+
+    assert selected == records[1]["locked"]
+
+
+def test_mature_revision_ignores_unmatured_and_not_newer_records() -> None:
+    records = [
+        _observation(500, 9, "not-mature"),
+        _observation(100, 3, "no-newer-than-lock"),
+    ]
+
+    assert (
+        select_mature_revision(records, now=1000, age_seconds=700, current_last_modified=4)
+        is None
+    )
+
+
+def test_mature_revision_boundary_is_inclusive_on_age_and_strict_on_newer() -> None:
+    records = [_observation(300, 5, "exact-boundary")]
+
+    assert (
+        select_mature_revision(records, now=1000, age_seconds=700, current_last_modified=4)
+        == records[0]["locked"]
+    )
+    assert (
+        select_mature_revision(records, now=1000, age_seconds=700, current_last_modified=5)
+        is None
+    )

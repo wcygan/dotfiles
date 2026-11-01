@@ -29,6 +29,7 @@ from dotfiles_setup.nightly_state import (
     SchedulerPhase,
     phase_of,
     run_result,
+    select_mature_revision,
 )
 from dotfiles_setup.nix_profile import (
     list_profile_elements,
@@ -128,15 +129,12 @@ def observe(records: list[dict], locked: dict, now: float) -> list[dict]:
 
 
 def mature_revision(records: list[dict], now: float, current: dict) -> dict | None:
-    eligible = [
-        record
-        for record in records
-        if 0 <= record["first_seen"] <= now - AGE_SECONDS
-        and record["locked"]["lastModified"] > current["lastModified"]
-    ]
-    if not eligible:
-        return None
-    return max(eligible, key=lambda record: record["first_seen"])["locked"]
+    return select_mature_revision(
+        records,
+        now=now,
+        age_seconds=AGE_SECONDS,
+        current_last_modified=current["lastModified"],
+    )
 
 
 def still_on_branch(owner: str, project: str, candidate: str, head: str) -> bool:

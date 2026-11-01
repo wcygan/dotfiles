@@ -12,7 +12,7 @@ durable writes and scheduler commands.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
@@ -169,6 +169,34 @@ def acceptance_error(observation: SchedulerObservation) -> str | None:
     if not observation.registered:
         return "nightly scheduler is enabled but not registered"
     return None
+
+
+def select_mature_revision(
+    records: Sequence[Mapping[str, Any]],
+    *,
+    now: float,
+    age_seconds: int,
+    current_last_modified: int,
+) -> dict[str, Any] | None:
+    """Return the mature revision that should replace the locked one.
+
+    A record is eligible when it was first observed at least ``age_seconds``
+    ago and points at a newer ``lastModified`` than the locked revision. Among
+    eligible records the latest ``first_seen`` wins.
+
+    This is the current product rule, now explicit: a future change to "newest
+    lastModified" or "first to mature" only needs to change this function.
+    """
+
+    eligible = [
+        record
+        for record in records
+        if 0 <= record["first_seen"] <= now - age_seconds
+        and record["locked"]["lastModified"] > current_last_modified
+    ]
+    if not eligible:
+        return None
+    return max(eligible, key=lambda record: record["first_seen"])["locked"]
 
 
 class RunDecision(StrEnum):

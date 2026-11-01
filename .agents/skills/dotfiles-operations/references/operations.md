@@ -298,6 +298,13 @@ Make targets canonical so CI and developer acceptance cannot drift apart.
 isolated HOME/XDG/CODEX/RUSTUP/CARGO tree. Intel macOS is manual to control
 cost. Both run locked tests plus install, doctor, and strict verification.
 
+Locally, `make test-macos` runs that isolated-tree flow without a VM, and
+`make test-macos-vm` runs it in an ephemeral Tart VM (Apple Silicon only). The
+VM target clones a base image, boots it headless with the checkout shared in,
+installs Nix in the guest if absent, runs install twice, doctor, and strict
+verify, then deletes the VM. Pass flags to the runner directly, for example
+`python3 tests/macos_vm_e2e.py --keep` or `--base <image>`.
+
 ### Upstream freshness
 
 `.github/workflows/freshness.yml` is scheduled/manual compatibility evidence.

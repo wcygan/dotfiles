@@ -8,7 +8,7 @@ UV_RUN := $(NIX_DEV) uv run --locked
 .PHONY: \
 	help install profile install-packages agent-skills agent-skills-check link link-dry git-user rustup setup-rustup-components \
 	setup-shell-handoff shell-handoff uninstall uninstall-dry verify doctor \
-	test test-pre test-local test-shell test-docker docker-test docker-fedora docker-ubuntu test-macos \
+	test test-pre test-local test-shell test-docker docker-test docker-fedora docker-ubuntu test-macos test-macos-vm \
 	test-syntax test-eval docs-build latest update clean docs quickstart
 
 help:
@@ -34,6 +34,7 @@ help:
 	@echo "  make test-eval               - Evaluate all four flake systems without building"
 	@echo "  make test-docker             - Build Ubuntu and Fedora validation images"
 	@echo "  make test-macos              - Run install twice in an isolated macOS HOME"
+	@echo "  make test-macos-vm           - Run install twice in an ephemeral Tart macOS VM"
 	@echo "  make docs-build              - Install and build documentation reproducibly"
 
 install:
@@ -105,6 +106,9 @@ test-docker:
 
 test-macos:
 	@python3 tests/macos_e2e.py
+
+test-macos-vm:
+	@python3 tests/macos_vm_e2e.py
 
 docker-test: test-docker
 

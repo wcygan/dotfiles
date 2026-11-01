@@ -67,6 +67,9 @@ work when appropriate:
 - Local nightly updater configuration, repair, or acceptance: also use
   [nightly-nix-updates](../nightly-nix-updates/SKILL.md).
 - Cross-platform/bootstrap change: also use `$cross-platform-guardian`.
+- Local platform acceptance (macOS host, Tart VM, Ubuntu/Fedora containers):
+  use [dotfiles-platform-verification](../dotfiles-platform-verification/SKILL.md)
+  for the matrix and its cleanup contract.
 - Fish, Ghostty, Neovim, Starship, Zed, Zellij, or lazygit config: route through
   `$config-change` and the matching focused skill.
 - Dotfiles-local skill design: use `$brainstorm-skills`.

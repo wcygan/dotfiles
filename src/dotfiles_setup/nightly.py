@@ -374,9 +374,8 @@ def _decision(repo: Path, now: datetime) -> RunDecision:
     if now.hour != 3:
         return RunDecision.SKIP_WINDOW
     state = read_state(directory() / "schedule.json")
-    if (
-        phase_of(state) is not SchedulerPhase.ENABLED
-        or state.get("repository") != str(repo.resolve())
+    if phase_of(state) is not SchedulerPhase.ENABLED or state.get("repository") != str(
+        repo.resolve()
     ):
         return RunDecision.SKIP_DISABLED
     if not checkout_allowed(repo, state):
@@ -392,23 +391,47 @@ def _write_last_run(
     now: datetime,
     exit_code: int,
     lock_changed: bool,
+    reason: str | None = None,
+    checkout_status: list[str] | None = None,
 ) -> None:
+    result = run_result(decision, exit_code=exit_code, lock_changed=lock_changed)
+    if reason is None:
+        reason = {
+            "observed": "No newer input revision has completed its seven-day quarantine.",
+            "installed": "Installed verified updates; flake.lock is ready for review.",
+            "failed": "Update failed; inspect scheduler output and recovery state.",
+        }.get(result)
     _atomic_json(
         directory() / "last-run.json",
         {
             "started_at": now.isoformat(),
             "finished_at": datetime.now().astimezone().isoformat(),
-            "result": run_result(decision, exit_code=exit_code, lock_changed=lock_changed),
+            "result": result,
             "exit_code": exit_code,
+            "reason": reason,
+            "checkout_status": checkout_status,
         },
     )
+
+
+def _checkout_status(repo: Path) -> list[str]:
+    return subprocess.check_output(
+        ["git", "status", "--short", "--untracked-files=all"], cwd=repo, text=True
+    ).splitlines()
 
 
 def run_nightly(repo: Path) -> int:
     now = datetime.now().astimezone()
     decision = _decision(repo, now)
     if decision is not RunDecision.PROCEED:
-        _write_last_run(decision, now=now, exit_code=0, lock_changed=False)
+        _write_last_run(
+            decision,
+            now=now,
+            exit_code=0,
+            lock_changed=False,
+            reason=_SKIP_MESSAGES[decision],
+            checkout_status=_checkout_status(repo) if decision is RunDecision.SKIP_DIRTY else None,
+        )
         print(_SKIP_MESSAGES[decision])
         return 0
     end = now.replace(hour=4, minute=0, second=0, microsecond=0).timestamp()
@@ -416,36 +439,48 @@ def run_nightly(repo: Path) -> int:
     log.write_text(f"Nightly run at {now.isoformat()}\n")
     commands = Commands(end, log)
     outcome: RunDecision | None = None
+    reason: str | None = None
+    checkout_status: list[str] | None = None
 
     def operation(journal: OperationJournal) -> None:
-        nonlocal outcome
+        nonlocal outcome, reason, checkout_status
         fresh = read_state(directory() / "schedule.json")
-        if (
-            phase_of(fresh) is not SchedulerPhase.ENABLED
-            or fresh.get("repository") != str(repo.resolve())
+        if phase_of(fresh) is not SchedulerPhase.ENABLED or fresh.get("repository") != str(
+            repo.resolve()
         ):
             outcome = RunDecision.SKIP_STATE_CHANGED
-            print(_SKIP_MESSAGES[outcome])
+            reason = _SKIP_MESSAGES[outcome]
+            print(reason)
             return
         if not checkout_allowed(repo, fresh):
             outcome = RunDecision.SKIP_DIRTY
-            print(_SKIP_MESSAGES[outcome])
+            reason = _SKIP_MESSAGES[outcome]
+            checkout_status = _checkout_status(repo)
+            print(reason)
             return
         try:
             update(repo, journal, commands, fresh)
         except (NightlyError, OSError, ValueError) as error:
+            reason = str(error)
             if journal.pending_entries:
                 raise
             journal.record_operation("nightly-update", "failed")
             journal.transition("failed")
             print(f"Nightly update did not apply: {error}")
 
+    def report(message: str) -> None:
+        nonlocal reason
+        reason = reason or message
+        print(message)
+
     before = lock_hash(repo)
-    code = run_mutation("nightly-update", repo, operation)
+    code = run_mutation("nightly-update", repo, operation, output=report)
     _write_last_run(
         outcome or RunDecision.PROCEED,
         now=now,
         exit_code=code,
         lock_changed=outcome is None and lock_hash(repo) != before,
+        reason=reason,
+        checkout_status=checkout_status,
     )
     return code

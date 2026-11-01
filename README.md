@@ -208,9 +208,13 @@ failed installation restores the previous profile and guarded lockfile; an
 interruption leaves recovery state and prevents another update until reviewed.
 
 Logs and observation metadata live under
-`${XDG_STATE_HOME:-~/.local/state}/dotfiles/nightly`. `last-run.log` contains
-build/test diagnostics. The scheduler captures the final outcome separately
-(on Linux, use `journalctl --user -u dotfiles-nightly.service`).
+`${XDG_STATE_HOME:-~/.local/state}/dotfiles/nightly`. `make nightly-status`
+shows the latest recorded result and reason. For a dirty-checkout skip, it also
+records Git's short status, including filenames but not file contents; this is a
+snapshot taken after the guard detects changes. `last-run.log` contains build and
+test diagnostics. The scheduler captures output separately (on Linux, use
+`journalctl --user -u dotfiles-nightly.service`). These files are local, not a
+history or remote alerting system; an interrupted process may leave an older result.
 
 The updated `flake.lock` remains local for review, with numbered backups for
 guarded recovery. Unrelated checkout changes cause a skip. Re-enabling explicitly

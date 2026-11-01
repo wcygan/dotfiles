@@ -572,3 +572,73 @@ def test_disable_fails_when_timer_stays_registered(
         nightly_schedule.configure(repo, journal, enabled=False, environ=values)
     state = json.loads((home / ".local/state/dotfiles/nightly/schedule.json").read_text())
     assert state["requested_enabled"] is False
+
+
+def test_dirty_skip_records_checkout_status(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    (repo / "flake.lock").write_text("{}")
+    state_dir = tmp_path / "nightly"
+    state_dir.mkdir()
+    (state_dir / "schedule.json").write_text(
+        json.dumps(
+            {
+                "repository": str(repo.resolve()),
+                "requested_enabled": True,
+                "enabled": True,
+                "health_token": "a" * 32,
+                "source_hash": nightly.fingerprint(repo),
+                "lock_hash": nightly.lock_hash(repo),
+            }
+        )
+    )
+    (repo / "unreviewed.txt").write_text("private contents")
+    monkeypatch.setattr(nightly, "datetime", _clock_at(3))
+    monkeypatch.setattr(nightly, "directory", lambda: state_dir)
+
+    assert nightly.run_nightly(repo) == 0
+    payload = json.loads((state_dir / "last-run.json").read_text())
+    assert payload["result"] == "skipped-dirty"
+    assert "checkout contains changes" in payload["reason"]
+    assert "?? unreviewed.txt" in payload["checkout_status"]
+    assert "private contents" not in (state_dir / "last-run.json").read_text()
+
+
+def test_failed_run_records_reason(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setenv("HOME", str(home))
+    for key in ("XDG_CACHE_HOME", "XDG_STATE_HOME", "XDG_CONFIG_HOME"):
+        monkeypatch.delenv(key, raising=False)
+    repo = home / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    (repo / "flake.lock").write_text("{}")
+    state_dir = home / ".local/state/dotfiles/nightly"
+    state_dir.mkdir(parents=True)
+    (state_dir / "schedule.json").write_text(
+        json.dumps(
+            {
+                "repository": str(repo.resolve()),
+                "requested_enabled": True,
+                "enabled": True,
+                "health_token": "a" * 32,
+                "source_hash": nightly.fingerprint(repo),
+                "lock_hash": nightly.lock_hash(repo),
+            }
+        )
+    )
+    monkeypatch.setattr(nightly, "datetime", _clock_at(3))
+
+    def fail(*args, **kwargs):
+        raise nightly.NightlyError("verification failed")
+
+    monkeypatch.setattr(nightly, "update", fail)
+
+    assert nightly.run_nightly(repo) == 1
+    payload = json.loads((state_dir / "last-run.json").read_text())
+    assert payload["result"] == "failed"
+    assert payload["reason"] == "verification failed"

@@ -16,6 +16,8 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Literal, Protocol
 
+from dotfiles_setup.lifecycle import EntryProgress, LifecycleError
+
 
 class MutationRecordError(ValueError):
     """A recovery entry does not match the supported schema."""
@@ -50,48 +52,21 @@ def _optional_integer(raw: Mapping[str, Any], key: str) -> int | None:
     return value
 
 
-def _progress(raw: Mapping[str, Any], key: str) -> bool:
-    value = raw.get(key, False)
-    if not isinstance(value, bool):
-        raise MutationRecordError(f"recovery entry has an invalid {key}")
-    return value
-
-
-def _restored(raw: Mapping[str, Any]) -> bool | None:
-    if "restored" not in raw:
-        return None
-    value = raw["restored"]
-    if not isinstance(value, bool):
-        raise MutationRecordError("recovery entry has an invalid restored flag")
-    return value
-
-
 def _progress_state(
     raw: Mapping[str, Any],
 ) -> tuple[bool, bool, bool, bool | None]:
     """Decode and validate one monotonic recovery progress state."""
 
-    mutation_started = _progress(raw, "mutation_started")
-    applied = _progress(raw, "applied")
-    recovered = _progress(raw, "recovered")
-    restored = _restored(raw)
-    if applied and not mutation_started:
-        raise MutationRecordError(
-            "recovery entry is applied without a started mutation"
-        )
-    if restored is True and not recovered:
-        raise MutationRecordError(
-            "recovery entry is restored without completed recovery"
-        )
-    if restored is True and (mutation_started or applied):
-        raise MutationRecordError(
-            "recovery entry is restored while mutation progress remains active"
-        )
-    if recovered and not mutation_started and restored is not True:
-        raise MutationRecordError(
-            "recovery entry is recovered without a started mutation"
-        )
-    return mutation_started, applied, recovered, restored
+    try:
+        progress = EntryProgress.from_manifest(raw)
+    except LifecycleError as error:
+        raise MutationRecordError(str(error)) from error
+    return (
+        progress.mutation_started,
+        progress.applied,
+        progress.recovered,
+        progress.restored,
+    )
 
 
 @dataclass(frozen=True, kw_only=True)

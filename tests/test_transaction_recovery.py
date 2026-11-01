@@ -1293,3 +1293,10 @@ def test_failed_direct_mutation_is_reported_as_recovery_needed(
     manifest = read_manifest(state_directory() / "recovery-needed.json")
     assert manifest["state"] == "recovery-needed"
     assert "injected profile failure" in capsys.readouterr().out
+
+
+def test_recovery_apply_requires_confirmation(tmp_path: Path) -> None:
+    values, _, _ = _interrupted_manifest(tmp_path)
+
+    with pytest.raises(RecoveryError, match="requires both"):
+        run_recovery(environ=values, apply=True, yes=False, output=lambda _: None)

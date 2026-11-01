@@ -14,11 +14,19 @@ from pathlib import Path
 from typing import Any
 
 from dotfiles_setup.errors import ManifestError
+from dotfiles_setup.lifecycle import (
+    EntryEvent,
+    EntryProgress,
+    LifecycleError,
+    OperationState,
+    advance_operation,
+    coerce_operation_state,
+)
 from dotfiles_setup.mutations import RecoveryRecord, decode_recovery_record
 from dotfiles_setup.paths import UserPathContext
 
 SCHEMA_VERSION = 1
-VALID_STATES = {"planned", "applying", "completed", "failed", "recovery-needed"}
+VALID_STATES = frozenset(state.value for state in OperationState)
 
 
 def state_directory(environ: Mapping[str, str] | None = None) -> Path:
@@ -243,8 +251,10 @@ def _read_manifest(path: Path) -> dict[str, Any]:
             os.close(descriptor)
     if not isinstance(value, dict) or value.get("schema_version") != SCHEMA_VERSION:
         raise ManifestError(f"unsupported operation manifest at {path}")
-    if value.get("state") not in VALID_STATES:
-        raise ManifestError(f"invalid operation state in {path}")
+    try:
+        coerce_operation_state(value.get("state"))
+    except LifecycleError as error:
+        raise ManifestError(f"invalid operation state in {path}: {error}") from error
     return value
 
 
@@ -332,7 +342,11 @@ class ManifestRepository:
     def checkpoint_recovery(self, path: Path, manifest: dict[str, Any]) -> None:
         """Persist recovery progress at both durable recovery locations."""
 
-        manifest["state"] = "recovery-needed"
+        try:
+            state = advance_operation(manifest.get("state"), OperationState.RECOVERY_NEEDED)
+        except LifecycleError as error:
+            raise ManifestError(f"cannot checkpoint recovery: {error}") from error
+        manifest["state"] = state.value
         manifest["updated_at"] = int(time.time())
         self.write(path, manifest)
         self.write(self.recovery_path, manifest)
@@ -349,8 +363,15 @@ class ManifestRepository:
         entries = manifest.get("entries")
         if not isinstance(entries, list):
             raise ManifestError("operation manifest has invalid recovery entries")
+        replacement = entry.to_manifest()
         try:
-            entries[index] = entry.to_manifest()
+            EntryProgress.from_manifest(replacement)
+        except LifecycleError as error:
+            raise ManifestError(
+                f"recovery checkpoint for entry {index} is invalid: {error}"
+            ) from error
+        try:
+            entries[index] = replacement
         except IndexError as error:
             raise ManifestError(f"operation manifest has no entry {index}") from error
         self.checkpoint_recovery(path, manifest)
@@ -376,7 +397,11 @@ class ManifestRepository:
                 raise ManifestError(
                     f"operation manifest entry {index} still needs recovery"
                 )
-        manifest["state"] = "completed"
+        try:
+            state = advance_operation(manifest.get("state"), OperationState.COMPLETED)
+        except LifecycleError as error:
+            raise ManifestError(f"cannot complete recovery: {error}") from error
+        manifest["state"] = state.value
         manifest["updated_at"] = int(time.time())
         self.write(self.active_path, manifest)
         self.write(self.completed_path, manifest)
@@ -416,13 +441,16 @@ class OperationJournal:
         self.repository.write(self.active_path, self.data)
 
     @property
-    def state(self) -> str:
+    def state(self) -> OperationState:
         """Return the current journal state."""
 
         state = self.data.get("state")
         if not isinstance(state, str):
             raise ManifestError("operation journal has no valid state")
-        return state
+        try:
+            return coerce_operation_state(state)
+        except LifecycleError as error:
+            raise ManifestError(str(error)) from error
 
     @property
     def failed_operations(self) -> tuple[str, ...]:
@@ -474,14 +502,18 @@ class OperationJournal:
         except ValueError as error:
             raise ManifestError(f"invalid recovery entry: {error}") from error
 
-    def transition(self, state: str) -> None:
-        if state not in VALID_STATES:
-            raise ManifestError(f"invalid operation state: {state}")
-        self.data["state"] = state
+    def transition(self, state: str | OperationState) -> None:
+        """Record the next operation state, rejecting illegal movement."""
+
+        try:
+            target = advance_operation(self.state, state)
+        except LifecycleError as error:
+            raise ManifestError(str(error)) from error
+        self.data["state"] = target.value
         self._write()
-        if state == "completed":
+        if target is OperationState.COMPLETED:
             self.repository.write(self.completed_path, self.data)
-        elif state == "recovery-needed":
+        elif target is OperationState.RECOVERY_NEEDED:
             self.repository.write(self.recovery_path, self.data)
 
     def add_entry(self, entry: RecoveryRecord) -> int:
@@ -508,36 +540,36 @@ class OperationJournal:
         for field in ("mutation_started", "applied", "recovered", "restored"):
             if current.get(field) is True:
                 replacement[field] = True
+        try:
+            EntryProgress.from_manifest(replacement)
+        except LifecycleError as error:
+            raise ManifestError(
+                f"replacement for operation journal entry {index} is invalid: {error}"
+            ) from error
         entries[index] = replacement
         self._write()
 
     def mark_started(self, index: int) -> None:
         """Record that an entry can require recovery."""
 
-        self._update_entry(index, mutation_started=True)
+        self._transition_entry(index, EntryEvent.START)
 
     def mark_applied(self, index: int) -> None:
         """Record that an entry reached its planned result."""
 
-        self._update_entry(index, mutation_started=True, applied=True)
+        self._transition_entry(index, EntryEvent.APPLY)
 
     def mark_recovered(self, index: int) -> None:
         """Record that recovery restored an entry."""
 
-        self._update_entry(index, recovered=True)
+        self._transition_entry(index, EntryEvent.RECOVER)
 
     def mark_restored(self, index: int) -> None:
         """Record that immediate rollback restored an entry."""
 
-        self._update_entry(
-            index,
-            mutation_started=False,
-            applied=False,
-            restored=True,
-            recovered=True,
-        )
+        self._transition_entry(index, EntryEvent.RESTORE)
 
-    def _update_entry(self, index: int, **changes: Any) -> None:
+    def _transition_entry(self, index: int, event: EntryEvent) -> None:
         entries = self.data["entries"]
         assert isinstance(entries, list)
         try:
@@ -546,6 +578,17 @@ class OperationJournal:
             raise ManifestError(f"operation journal has no entry {index}") from error
         if not isinstance(entry, dict):
             raise ManifestError(f"operation journal entry {index} is invalid")
+        try:
+            progress = EntryProgress.from_manifest(entry).advance(event)
+        except LifecycleError as error:
+            raise ManifestError(
+                f"operation journal entry {index} cannot {event.value}: {error}"
+            ) from error
+        changes = {
+            key: value
+            for key, value in progress.fields().items()
+            if (key in entry and entry[key] != value) or (key not in entry and value)
+        }
         entry.update(changes)
         self._write()
 
@@ -561,7 +604,22 @@ class OperationJournal:
     def update_link_entry(self, index: int, **changes: Any) -> None:
         """Update a raw entry through the schema-v1 compatibility facade."""
 
-        self._update_entry(index, **changes)
+        entries = self.data["entries"]
+        assert isinstance(entries, list)
+        try:
+            entry = entries[index]
+        except IndexError as error:
+            raise ManifestError(f"operation journal has no entry {index}") from error
+        if not isinstance(entry, dict):
+            raise ManifestError(f"operation journal entry {index} is invalid")
+        try:
+            EntryProgress.from_manifest({**entry, **changes})
+        except LifecycleError as error:
+            raise ManifestError(
+                f"operation journal entry {index} update is invalid: {error}"
+            ) from error
+        entry.update(changes)
+        self._write()
 
     def record_operation(self, name: str, status: str) -> None:
         operations = self.data["operations"]

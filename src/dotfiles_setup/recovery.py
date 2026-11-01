@@ -10,6 +10,12 @@ from pathlib import Path
 
 from dotfiles_setup import links as link_inventory
 from dotfiles_setup.errors import RecoveryError
+from dotfiles_setup.lifecycle import (
+    LifecycleError,
+    RecoveryEvent,
+    RecoveryPhase,
+    advance_recovery,
+)
 from dotfiles_setup.manifest import ManifestRepository
 from dotfiles_setup.mutations import (
     DirectoryRecoveryRecord,
@@ -713,10 +719,12 @@ def run_recovery(
     """Describe or explicitly apply recovery for the latest interrupted operation."""
 
     repository = ManifestRepository.from_environment(environ)
+    phase = RecoveryPhase.IDLE
     pending = repository.pending()
     if pending is None:
         output("No interrupted dotfiles operation needs recovery.")
         return 0
+    phase = advance_recovery(phase, RecoveryEvent.DISCOVER)
     path = pending.path
     manifest = pending.data
     entries = manifest.get("entries", [])
@@ -725,10 +733,13 @@ def run_recovery(
     records, parent_identities = _validate_entries(manifest, entries, environ, system)
     _report_recovery(path, manifest, records, output)
     if not apply:
+        advance_recovery(phase, RecoveryEvent.PREVIEW)
         output("Dry run only. Apply with: ./bootstrap.sh recover --apply --yes")
         return 0
-    if not yes:
-        raise RecoveryError("recovery mutation requires both --apply and --yes")
+    try:
+        phase = advance_recovery(phase, RecoveryEvent.APPLY, confirmed=yes)
+    except LifecycleError as error:
+        raise RecoveryError(str(error)) from error
 
     _persist_progress(repository, path, manifest)
 
@@ -750,11 +761,13 @@ def run_recovery(
             unresolved.append(message)
 
     if unresolved:
+        advance_recovery(phase, RecoveryEvent.ENTRY_FAILED)
         for message in unresolved:
             output(f"[FAIL] {message}")
         _persist_progress(repository, path, manifest)
         raise RecoveryError(f"recovery remains incomplete; manifest preserved at {path}")
 
+    advance_recovery(phase, RecoveryEvent.FINISH)
     repository.complete_recovery(manifest)
     output("Recovery completed. Re-running recovery is safe.")
     return 0

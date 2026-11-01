@@ -289,3 +289,33 @@ def test_profile_cli_reports_failure(
 
     assert cli.main(["profile"]) == 1
     assert "profile is locked" in capsys.readouterr().out
+
+
+def _element(name: str, repo_root: Path, *, active: bool) -> ProfileElement:
+    return ProfileElement(
+        name=name,
+        original_url=f"git+{repo_root.as_uri()}",
+        store_paths=(),
+        active=active,
+    )
+
+
+def test_profile_state_matches_the_selector(tmp_path: Path) -> None:
+    from dotfiles_setup.nix_profile import ProfileState, profile_state
+
+    assert profile_state((), tmp_path) is ProfileState.ABSENT
+    assert (
+        profile_state((_element("active", tmp_path, active=True),), tmp_path)
+        is ProfileState.ACTIVE
+    )
+    assert (
+        profile_state((_element("inactive", tmp_path, active=False),), tmp_path)
+        is ProfileState.INACTIVE
+    )
+
+
+def test_profile_actions_are_total() -> None:
+    from dotfiles_setup.nix_profile import PROFILE_ACTIONS, ProfileAction, ProfileState
+
+    assert set(PROFILE_ACTIONS) == set(ProfileState)
+    assert set(PROFILE_ACTIONS.values()) == set(ProfileAction)

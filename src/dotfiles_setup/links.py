@@ -6,6 +6,7 @@ import os
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
 
 from dotfiles_setup.destinations import DestinationState, classify
@@ -122,6 +123,49 @@ def _normalised_npmrc(contents: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+class NpmrcState(StrEnum):
+    """The lifecycle state of the local npmrc file."""
+
+    ABSENT = "absent"
+    CURRENT = "current"
+    STALE = "stale"
+    SYMLINK = "symlink"
+
+
+class NpmrcAction(StrEnum):
+    """What link setup must do for one npmrc state."""
+
+    CREATE = "create"
+    NOOP = "no-op"
+    REWRITE = "rewrite"
+    FOLLOW = "follow"
+
+
+NPMRC_ACTIONS: Mapping[NpmrcState, NpmrcAction] = {
+    NpmrcState.ABSENT: NpmrcAction.CREATE,
+    NpmrcState.CURRENT: NpmrcAction.NOOP,
+    NpmrcState.STALE: NpmrcAction.REWRITE,
+    NpmrcState.SYMLINK: NpmrcAction.FOLLOW,
+}
+
+
+def npmrc_state(kind: str, original: str, updated: str) -> NpmrcState:
+    """Return the one npmrc state for a captured file input.
+
+    Matching content is CURRENT even through a symlink: the referent already
+    holds the normalized settings, so a rewrite would create needless backups.
+    A symlink is only SYMLINK when its referent still needs the update.
+    """
+
+    if kind == "absent":
+        return NpmrcState.ABSENT
+    if updated == original:
+        return NpmrcState.CURRENT
+    if kind == "symlink":
+        return NpmrcState.SYMLINK
+    return NpmrcState.STALE
+
+
 def _prepare_npm(home: Path, *, output: Output) -> _PreparedFile | None:
     npmrc = home / ".npmrc"
     try:
@@ -136,10 +180,12 @@ def _prepare_npm(home: Path, *, output: Output) -> _PreparedFile | None:
     captured = selected.captured
     original = captured.contents.decode() if captured.contents is not None else ""
     updated = _normalised_npmrc(original)
-    if captured.state.kind != "absent" and updated == original:
+    visible_kind = "symlink" if npmrc.is_symlink() else captured.state.kind
+    state = npmrc_state(visible_kind, original, updated)
+    action = NPMRC_ACTIONS[state]
+    if action is NpmrcAction.NOOP:
         output(f"-> npm settings already configured in {npmrc}")
         return None
-    existed = captured.state.kind != "absent"
     mutation = FileMutation(
         destination=effective_npmrc,
         visible_destination=npmrc,
@@ -148,8 +194,8 @@ def _prepare_npm(home: Path, *, output: Output) -> _PreparedFile | None:
         mode=captured.state.mode,
         precondition=captured.state,
     )
-    action = "Updated" if existed else "Configured"
-    return _PreparedFile(mutation, f"-> {action} npm settings in {npmrc}")
+    label = "Configured" if action is NpmrcAction.CREATE else "Updated"
+    return _PreparedFile(mutation, f"-> {label} npm settings in {npmrc}")
 
 
 def _prepare_codex_template(repo_root: Path, codex_home: Path) -> _PreparedFile | str:

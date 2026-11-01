@@ -5,6 +5,7 @@ import os
 import subprocess
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlparse
@@ -167,6 +168,45 @@ def list_profile_elements(
     return tuple(inventory)
 
 
+class ProfileState(StrEnum):
+    """The checkout's element in the user Nix profile."""
+
+    ABSENT = "absent"
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+
+
+class ProfileAction(StrEnum):
+    """What the install must do for one profile state."""
+
+    ADD = "add"
+    UPGRADE = "upgrade"
+    BLOCKED = "blocked"
+
+
+PROFILE_ACTIONS: Mapping[ProfileState, ProfileAction] = {
+    ProfileState.ABSENT: ProfileAction.ADD,
+    ProfileState.ACTIVE: ProfileAction.UPGRADE,
+    ProfileState.INACTIVE: ProfileAction.BLOCKED,
+}
+
+
+def profile_state(inventory: Sequence[ProfileElement], repo_root: Path) -> ProfileState:
+    """Return the one state for this checkout's profile element."""
+
+    if select_current_checkout_profile(inventory, repo_root, active_only=True) is not None:
+        return ProfileState.ACTIVE
+    if select_current_checkout_profile(inventory, repo_root, active_only=False) is not None:
+        return ProfileState.INACTIVE
+    return ProfileState.ABSENT
+
+
+def profile_action(state: ProfileState) -> ProfileAction:
+    """Return the install action for one profile state."""
+
+    return PROFILE_ACTIONS[state]
+
+
 def ensure_profile(
     repo_root: Path,
     *,
@@ -174,9 +214,12 @@ def ensure_profile(
     environment: Mapping[str, str] | None = None,
 ) -> str:
     inventory = list_profile_elements(runner=runner, environment=environment)
-    element = select_current_checkout_profile(inventory, repo_root, active_only=True)
+    state = profile_state(inventory, repo_root)
+    action = PROFILE_ACTIONS[state]
 
-    if element is not None:
+    if action is ProfileAction.UPGRADE:
+        element = select_current_checkout_profile(inventory, repo_root, active_only=True)
+        assert element is not None
         _run(
             runner,
             _nix_command("profile", "upgrade", element.name, "--no-write-lock-file"),
@@ -184,8 +227,9 @@ def ensure_profile(
         )
         return f"Upgraded Nix profile element: {element.name}"
 
-    inactive = select_current_checkout_profile(inventory, repo_root, active_only=False)
-    if inactive is not None:
+    if action is ProfileAction.BLOCKED:
+        inactive = select_current_checkout_profile(inventory, repo_root, active_only=False)
+        assert inactive is not None
         raise NixProfileError(
             f"Nix profile element {inactive.name!r} for this checkout is inactive; "
             f"remove it with `nix profile remove {inactive.name}` and rerun "

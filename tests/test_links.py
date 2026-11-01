@@ -367,3 +367,42 @@ def test_link_setup_does_not_mutate_fish_universal_variables() -> None:
     source = (Path.cwd() / "src" / "dotfiles_setup" / "links.py").read_text()
 
     assert "set -U fish_greeting" not in source
+
+
+def test_npmrc_state_classifies_absent_current_stale_and_symlink() -> None:
+    from dotfiles_setup.links import NpmrcState, npmrc_state
+
+    assert npmrc_state("absent", "", "updated") is NpmrcState.ABSENT
+    assert npmrc_state("file", "same", "same") is NpmrcState.CURRENT
+    assert npmrc_state("file", "old", "new") is NpmrcState.STALE
+    assert npmrc_state("symlink", "same", "same") is NpmrcState.CURRENT
+    assert npmrc_state("symlink", "old", "new") is NpmrcState.SYMLINK
+
+
+def test_npmrc_actions_are_total() -> None:
+    from dotfiles_setup.links import NPMRC_ACTIONS, NpmrcAction, NpmrcState
+
+    assert set(NPMRC_ACTIONS) == set(NpmrcState)
+    assert set(NPMRC_ACTIONS.values()) == set(NpmrcAction)
+
+
+def test_current_symlinked_npmrc_is_not_rewritten(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    target = home / "machine-npmrc"
+    target.write_text(
+        "registry=https://registry.npmjs.org/\nprefix=${HOME}/.local\nmin-release-age=1\n"
+    )
+    (home / ".npmrc").symlink_to(target)
+    values = environment(home)
+
+    link_config(
+        Path.cwd(), environ=values, system="Linux", now=lambda: 456, output=lambda _: None
+    )
+    second: list[str] = []
+    link_config(Path.cwd(), environ=values, system="Linux", now=lambda: 456, output=second.append)
+
+    assert any("already configured" in line for line in second)
+    assert not any("Updated npm settings" in line for line in second)
+    assert (home / ".npmrc").is_symlink()
+    assert not list(home.glob("*.backup.*"))

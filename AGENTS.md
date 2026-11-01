@@ -26,6 +26,30 @@ onboarding, deterministic CI, and straightforward rollback.
 When more than one route applies, use every matching skill. Do not replace the
 repository-operation contract with a focused configuration or provider skill.
 
+## Agent skills: ownership and flow
+
+- `wcygan/agent-skills` owns reusable skill source and provider-side validation.
+  Edit reusable skills there, not in installed copies or this repository.
+- Dotfiles owns project-specific skills in `.agents/skills/**` and the consumer
+  integration. `agent-skills.lock.toml` pins the provider repository and full
+  commit SHA, plus the agent and portable shared user directory. Dotfiles does
+  not vendor the reusable catalog.
+- GitHub CLI installs the pinned catalog into the shared Codex user scope
+  (`~/.agents/skills` with the current lock). Installed copies and tracking
+  state are machine-local, not source of truth.
+
+To update a reusable skill, change and validate it in the provider repository;
+then, in an explicit update task, advance the dotfiles lock to the reviewed
+provider commit. Installing or reconciling the pin is a separate, mutating
+operation: `./bootstrap.sh agent-skills`. It is not part of the default install.
+Use `./bootstrap.sh agent-skills --check` for read-only verification. Do not
+assume a pin update authorizes installation, pruning, or a full reset.
+
+For collision handling, stale copies, recovery, and verification, follow
+[$agent-skills-integration](.agents/skills/agent-skills-integration/SKILL.md)
+and the [pinned skills runbook](.agents/skills/dotfiles-operations/references/operations.md#pinned-global-agent-skills).
+Keep `$dotfiles-operations` active for repository operations.
+
 ## Writing and repeated UI text
 
 Use `$write-clearly` for prose and repeated UI text. For feeds, cards, table

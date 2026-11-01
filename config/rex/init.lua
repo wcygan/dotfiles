@@ -104,3 +104,77 @@ rex.action{
   end,
 }
 rex.bind("cmd+shift+b", "blog_workspace")
+
+rex.action{
+  name = "open_pi",
+  title = "Open Pi",
+  description = "Start Pi in the focused terminal pane",
+  category = "Agents",
+  keywords = "pi coding agent terminal",
+  run = function(ctx, args)
+    if not ctx.block_id then
+      error("Open Pi needs a focused terminal pane", 0)
+    end
+
+    local _, err = rex.block.call("com.superlogical.terminal", "write", {
+      block_id = ctx.block_id,
+      data = "pi\n",
+    })
+    if err then
+      error(err, 0)
+    end
+  end,
+}
+
+local function open_pi_project(name, title, folder)
+  local directory = home .. "/Development/" .. folder
+
+  rex.action{
+    name = name,
+    title = title,
+    description = "Start Pi in ~/Development/" .. folder .. " on the Foobar laptop",
+    category = "Agents",
+    keywords = "pi coding agent " .. folder,
+    run = function(ctx, args)
+      if not ctx.session_id then
+        error(title .. " needs an active Rex session", 0)
+      end
+
+      local host, host_err = rex.exec({ "hostname", "-s" })
+      if not host or not host.ok then
+        error("could not identify the Rex host: " .. tostring(host_err), 0)
+      end
+      if host.stdout:match("^%s*(.-)%s*$") ~= "foobar2" then
+        error(title .. " is only available on the Foobar laptop (foobar2)", 0)
+      end
+
+      local exists = rex.exec({ "test", "-d", directory })
+      if not exists or not exists.ok then
+        error("project folder is missing on Foobar laptop: " .. directory, 0)
+      end
+
+      local window, err = rex.session.new_window{
+        window_label = title,
+        focus = false,
+        layout = rex.layout.block{
+          flavor = shell,
+          label = title,
+          options = { cwd = directory, initial_input = "pi\n" },
+        },
+      }
+      if not window then
+        error(err, 0)
+      end
+      rex.client.queue("session.select", {
+        session_id = ctx.session_id,
+        window_id = window.window_id,
+      })
+      return { window_id = window.window_id, block_ids = window.block_ids }
+
+    end,
+  }
+end
+
+open_pi_project("open_anton", "Anton", "anton")
+open_pi_project("open_agent_skills", "Agent Skills", "agent-skills")
+open_pi_project("open_dotfiles", "Dotfiles", "dotfiles")

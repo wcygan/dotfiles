@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import os
-import stat
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
+from dotfiles_setup.destinations import DestinationState, classify
 from dotfiles_setup.errors import LinkError
 from dotfiles_setup.manifest import OperationJournal
 from dotfiles_setup.mutations import (
@@ -156,10 +156,14 @@ def _prepare_codex_template(repo_root: Path, codex_home: Path) -> _PreparedFile 
     source = repo_root.resolve() / "config" / "codex" / "config.toml"
     destination = codex_home / "config.toml"
     captured = capture_file_input(destination)
-    if captured.state.kind == "symlink":
+    classification = classify(destination, source)
+    if classification.state is DestinationState.CORRECT:
         contents = captured.contents if captured.contents is not None else source.read_bytes()
         message = f"-> Migrated Codex config symlink to local file: {destination}"
-    elif captured.state.kind == "file":
+    elif classification.state in {DestinationState.STALE, DestinationState.BROKEN}:
+        contents = captured.contents if captured.contents is not None else source.read_bytes()
+        message = f"-> Migrated stale Codex config symlink to local file: {destination}"
+    elif classification.state is DestinationState.UNMANAGED_FILE:
         return f"-> Preserved existing local Codex config: {destination}"
     else:
         contents = source.read_bytes()
@@ -178,19 +182,7 @@ def _prepare_codex_template(repo_root: Path, codex_home: Path) -> _PreparedFile 
 
 
 def _dry_destination_kind(path: Path) -> str:
-    try:
-        mode = path.lstat().st_mode
-    except FileNotFoundError:
-        return "absent"
-    except OSError as error:
-        raise LinkError(f"cannot inspect managed destination {path}: {error}") from error
-    if stat.S_ISLNK(mode):
-        return "symlink"
-    if stat.S_ISREG(mode):
-        return "file"
-    if stat.S_ISDIR(mode):
-        return "directory"
-    raise LinkError(f"unsupported destination type at {path}; no changes made")
+    return classify(path).kind.value
 
 
 def _show_dry_run(

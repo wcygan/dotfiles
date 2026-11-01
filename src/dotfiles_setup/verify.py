@@ -8,6 +8,7 @@ from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
+from dotfiles_setup.destinations import DestinationState, classify
 from dotfiles_setup.links import managed_links
 from dotfiles_setup.nix_profile import (
     NixProfileError,
@@ -146,44 +147,46 @@ def _profile_results(
 
 def _link_result(source: Path, destination: Path) -> VerificationResult:
     name = f"link:{destination}"
-    if not destination.is_symlink():
-        if destination.exists():
-            state = "unmanaged destination exists and is not a symlink"
-        else:
-            state = "managed destination is absent"
-        return VerificationResult(name, False, f"{destination}: {state}; run ./bootstrap.sh link")
-
-    try:
-        target = destination.resolve(strict=False)
-        target_exists = destination.exists()
-    except (OSError, RuntimeError) as error:
+    classification = classify(destination, source)
+    if classification.state is DestinationState.CORRECT:
+        return VerificationResult(name, True, f"{destination} resolves to {source.resolve()}")
+    if classification.state is DestinationState.ABSENT:
         return VerificationResult(
-            name,
-            False,
-            f"{destination}: broken symlink cannot be resolved ({error}); run ./bootstrap.sh link",
+            name, False, f"{destination}: managed destination is absent; run ./bootstrap.sh link"
         )
-    if not target_exists:
+    if classification.state is DestinationState.BROKEN:
+        detail = classification.target or "an unresolvable target"
         return VerificationResult(
             name,
             False,
-            f"{destination}: broken symlink resolves to {target}; run ./bootstrap.sh link",
+            f"{destination}: broken symlink resolves to {detail}; run ./bootstrap.sh link",
         )
-    try:
-        expected = source.resolve()
-    except (OSError, RuntimeError) as error:
+    if classification.state is DestinationState.STALE:
         return VerificationResult(
             name,
             False,
-            f"{destination}: repository source {source} cannot be resolved ({error})",
+            f"{destination}: stale symlink resolves to {classification.target}, "
+            f"expected {source.resolve()}; run ./bootstrap.sh link",
         )
-    if target != expected:
+    if classification.state is DestinationState.UNMANAGED_DIRECTORY:
         return VerificationResult(
             name,
             False,
-            f"{destination}: stale symlink resolves to {target}, expected {expected}; "
+            f"{destination}: unmanaged destination exists and is a directory; "
             "run ./bootstrap.sh link",
         )
-    return VerificationResult(name, True, f"{destination} resolves to {expected}")
+    if classification.state is DestinationState.UNMANAGED_FILE:
+        return VerificationResult(
+            name,
+            False,
+            f"{destination}: unmanaged destination exists and is not a symlink; "
+            "run ./bootstrap.sh link",
+        )
+    return VerificationResult(
+        name,
+        False,
+        f"{destination}: unsupported destination type; run ./bootstrap.sh link",
+    )
 
 
 def _codex_config_result(codex_home: Path) -> VerificationResult:

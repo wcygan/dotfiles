@@ -223,3 +223,33 @@ def test_shell_handoff_cli_reports_updated_files(
 
     assert cli.main(["shell-handoff"]) == 0
     assert "Updated 2" in capsys.readouterr().out
+
+
+def test_stale_block_is_replaced(tmp_path: Path) -> None:
+    bashrc = tmp_path / ".bashrc"
+    bashrc.write_text(
+        "# Added by dotfiles Python shell-handoff setup (DOTFILES:NIX_SHELL_HELPERS)\n"
+        "source old-helpers\n"
+    )
+
+    configure_shell_handoff(home=tmp_path, shell="/bin/zsh", backup_timestamp=42)
+
+    text = bashrc.read_text()
+    assert "source old-helpers" not in text
+    assert text.count("DOTFILES:NIX_SHELL_HELPERS") == 1
+    assert 'source "$HOME/.config/shell-nix.sh" 2>/dev/null || true' in text
+
+
+def test_block_state_distinguishes_absent_current_and_stale() -> None:
+    from dotfiles_setup.shell_handoff import ShellBlockState, _block_header, _block_state
+
+    marker = "DOTFILES:EXEC_FISH"
+    content = "if command -v fish; then exec fish; fi\n"
+    header = _block_header(marker)
+
+    assert _block_state("", marker, content) is ShellBlockState.ABSENT
+    assert (
+        _block_state(f"{header}\n{content}", marker, content)
+        is ShellBlockState.CURRENT
+    )
+    assert _block_state(f"{header}\nold\n", marker, content) is ShellBlockState.STALE

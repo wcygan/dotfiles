@@ -1597,3 +1597,17 @@ def test_removal_rejects_a_symlink_to_an_unmanaged_source(tmp_path: Path) -> Non
         )
 
     assert destination.resolve() == unmanaged_source
+
+
+def test_stale_symlink_is_replaced_not_skipped(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    source.write_text("managed")
+    other = tmp_path / "other"
+    other.write_text("other")
+    destination = tmp_path / "destination"
+    destination.symlink_to(other)
+
+    execute_mutations((SymlinkMutation(destination=destination, source=source),))
+
+    assert destination.is_symlink()
+    assert destination.resolve() == source.resolve()

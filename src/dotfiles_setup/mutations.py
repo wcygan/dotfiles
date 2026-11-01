@@ -16,6 +16,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Literal, Protocol
 
+from dotfiles_setup.destinations import DestinationState, classify
 from dotfiles_setup.lifecycle import EntryProgress, LifecycleError
 
 
@@ -1378,12 +1379,8 @@ def _expand_mutations(
         if (
             isinstance(mutation, SymlinkMutation)
             and mutation.present
-            and mutation.destination.is_symlink()
-            and _symlink_target_matches(
-                mutation.destination,
-                os.readlink(mutation.destination),
-                mutation.source,
-            )
+            and classify(mutation.destination, mutation.source).state
+            is DestinationState.CORRECT
         ):
             continue
         requested.append((mutation, True))
@@ -2803,17 +2800,13 @@ def _rename_no_replace(
 
 
 def _classify(path: Path) -> tuple[str, str | None, int | None, int | None]:
-    try:
-        metadata = path.lstat()
-    except FileNotFoundError:
-        return "absent", None, None, None
-    if stat.S_ISLNK(metadata.st_mode):
-        return "symlink", os.readlink(path), metadata.st_dev, metadata.st_ino
-    if stat.S_ISREG(metadata.st_mode):
-        return "file", None, metadata.st_dev, metadata.st_ino
-    if stat.S_ISDIR(metadata.st_mode):
-        return "directory", None, metadata.st_dev, metadata.st_ino
-    return "unsupported", None, metadata.st_dev, metadata.st_ino
+    classification = classify(path)
+    return (
+        classification.kind.value,
+        classification.target,
+        classification.device,
+        classification.inode,
+    )
 
 
 def _symlink_target_matches(

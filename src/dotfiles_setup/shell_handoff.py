@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
 
 from dotfiles_setup.errors import ShellHandoffError
@@ -113,6 +114,61 @@ def configure_shell_handoff(
     )
 
 
+_BLOCK_HEADER_PREFIX = f"# Added by dotfiles {_SETUP_SOURCE} ("
+
+
+class ShellBlockState(StrEnum):
+    """The lifecycle state of one managed block inside a shell rc file."""
+
+    ABSENT = "absent"
+    CURRENT = "current"
+    STALE = "stale"
+
+
+def _block_header(marker: str) -> str:
+    return f"{_BLOCK_HEADER_PREFIX}{marker})"
+
+
+def _block_state(existing: str, marker: str, content: str) -> ShellBlockState:
+    """Return whether the marker block is absent, current, or stale."""
+
+    header = _block_header(marker)
+    lines = existing.splitlines()
+    for index, line in enumerate(lines):
+        if line.strip() != header:
+            continue
+        body: list[str] = []
+        for later in lines[index + 1 :]:
+            if later.startswith(_BLOCK_HEADER_PREFIX):
+                break
+            body.append(later)
+        return (
+            ShellBlockState.CURRENT
+            if "\n".join(body).strip() == content.strip()
+            else ShellBlockState.STALE
+        )
+    return ShellBlockState.ABSENT
+
+
+def _replace_block(existing: str, marker: str, content: str) -> str:
+    """Replace one stale marker block, leaving all other lines intact."""
+
+    header = _block_header(marker)
+    lines = existing.splitlines(keepends=True)
+    result: list[str] = []
+    index = 0
+    while index < len(lines):
+        if lines[index].strip() == header:
+            index += 1
+            while index < len(lines) and not lines[index].startswith(_BLOCK_HEADER_PREFIX):
+                index += 1
+            result.append(f"{header}\n{content}\n")
+            continue
+        result.append(lines[index])
+        index += 1
+    return "".join(result)
+
+
 def _requested_shell_blocks(
     home: Path,
     shell: str | None,
@@ -166,8 +222,11 @@ def _plan_shell_files(
         effective_path = selected.effective_path
         updated = existing
         for marker, content in blocks:
-            if marker not in updated:
-                updated += f"\n# Added by dotfiles {_SETUP_SOURCE} ({marker})\n{content}\n"
+            state = _block_state(updated, marker, content)
+            if state is ShellBlockState.ABSENT:
+                updated += f"\n{_block_header(marker)}\n{content}\n"
+            elif state is ShellBlockState.STALE:
+                updated = _replace_block(updated, marker, content)
         if updated == existing:
             continue
         ancestor = effective_path.parent

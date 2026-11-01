@@ -32,7 +32,7 @@ help:
 	@echo "  make test                    - Run the locked Python test suite in the Nix dev shell"
 	@echo "  make test-syntax             - Parse shell and workflow-owned source files"
 	@echo "  make test-eval               - Evaluate all four flake systems without building"
-	@echo "  make test-docker             - Build Ubuntu and Fedora validation images"
+	@echo "  make test-docker             - Build and clean up Ubuntu and Fedora validation images"
 	@echo "  make test-macos              - Run install twice in an isolated macOS HOME"
 	@echo "  make test-macos-vm           - Run install twice in an ephemeral Tart macOS VM"
 	@echo "  make docs-build              - Install and build documentation reproducibly"

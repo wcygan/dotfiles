@@ -8,6 +8,7 @@ afterward unless --keep is passed.
 from __future__ import annotations
 
 import argparse
+import json
 import platform
 import shutil
 import subprocess
@@ -132,6 +133,26 @@ def ensure_nix(vm: str) -> None:
     )
 
 
+def vm_exists(vm: str) -> bool:
+    """Return whether Tart still lists the VM."""
+
+    result = subprocess.run(
+        ["tart", "list", "--format", "json"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return True
+    try:
+        entries = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return True
+    return any(
+        isinstance(entry, dict) and entry.get("Name") == vm for entry in entries
+    )
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     if platform.system() != "Darwin" or platform.machine() != "arm64":
@@ -151,19 +172,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     log_path = Path(tempfile.gettempdir()) / f"{vm}-tart.log"
-    log = log_path.open("w")
-    runner = subprocess.Popen(  # noqa: S603 - tart is the intended executable
-        [
-            "tart",
-            "run",
-            "--no-graphics",
-            f"--dir={SHARE_NAME}:{REPO_ROOT}",
-            vm,
-        ],
-        stdout=log,
-        stderr=subprocess.STDOUT,
-    )
+    log = None
+    runner = None
+    success = False
+    cleanup_failed = False
     try:
+        log = log_path.open("w")
+        runner = subprocess.Popen(  # noqa: S603 - tart is the intended executable
+            [
+                "tart",
+                "run",
+                "--no-graphics",
+                f"--dir={SHARE_NAME}:{REPO_ROOT}",
+                vm,
+            ],
+            stdout=log,
+            stderr=subprocess.STDOUT,
+        )
         print(f"vm: {vm} (log: {log_path})", flush=True)
         wait_for_ip(vm, runner)
         wait_for_agent(vm)
@@ -175,19 +200,32 @@ def main(argv: Sequence[str] | None = None) -> int:
         guest(vm, "cd ~/dotfiles && ./bootstrap.sh verify", timeout=600)
         if args.with_tests:
             guest(vm, "cd ~/dotfiles && make test-syntax && make test-pre", timeout=3600)
+        success = True
     finally:
-        log.close()
+        if log is not None:
+            log.close()
         if args.keep:
             print(f"kept VM: {vm}")
             print(f"stop with: tart stop {vm} && tart delete {vm}")
         else:
-            runner.terminate()
-            try:
-                runner.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                runner.kill()
-            run(["tart", "stop", vm], check=False, timeout=180)
-            run(["tart", "delete", vm], check=False, timeout=120)
+            if runner is not None:
+                runner.terminate()
+                try:
+                    runner.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    runner.kill()
+            run(["tart", "stop", vm], check=False, timeout=180, capture=True, quiet=True)
+            run(["tart", "delete", vm], check=False, timeout=120, capture=True, quiet=True)
+            if vm_exists(vm):
+                print(
+                    f"cleanup failed: {vm} still exists; run tart delete {vm}",
+                    file=sys.stderr,
+                )
+                cleanup_failed = True
+            elif success:
+                log_path.unlink(missing_ok=True)
+    if cleanup_failed:
+        return 1
     print("macOS Tart acceptance passed")
     return 0
 

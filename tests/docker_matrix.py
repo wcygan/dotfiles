@@ -102,6 +102,29 @@ def run(command: Sequence[str]) -> None:
     subprocess.run(command, cwd=REPO_ROOT, env=docker_environment(), check=True)
 
 
+def remove_image(tag: str, *, dry_run: bool) -> None:
+    command = ["docker", "image", "rm", "-f", tag]
+    print("+", " ".join(command))
+    if dry_run:
+        return
+    result = subprocess.run(
+        command,
+        cwd=REPO_ROOT,
+        env=docker_environment(),
+        text=True,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        print(f"  (no image to remove: {tag})")
+
+
+def prune_cache(*, dry_run: bool) -> None:
+    command = ["docker", "builder", "prune", "-f"]
+    print("+", " ".join(command))
+    if not dry_run:
+        subprocess.run(command, cwd=REPO_ROOT, env=docker_environment(), check=True)
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Build and smoke-test Ubuntu and Fedora test images."
@@ -113,6 +136,16 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--case",
         choices=[case.name for case in CASES],
         help="run only one distro case (used by the CI matrix)",
+    )
+    parser.add_argument(
+        "--keep",
+        action="store_true",
+        help="keep the built images instead of removing them",
+    )
+    parser.add_argument(
+        "--prune-cache",
+        action="store_true",
+        help="also prune the global Docker build cache (affects other projects)",
     )
     return parser.parse_args(argv)
 
@@ -129,10 +162,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     selected = tuple(case for case in CASES if args.case in {None, case.name})
     for case in selected:
         commands = (build_command(case), smoke_command(case))
-        for command in commands:
-            print("+", " ".join(command))
-            if not args.dry_run:
-                run(command)
+        try:
+            for command in commands:
+                print("+", " ".join(command))
+                if not args.dry_run:
+                    run(command)
+        finally:
+            if not args.keep:
+                remove_image(case.image_tag, dry_run=args.dry_run)
+    if args.prune_cache:
+        prune_cache(dry_run=args.dry_run)
     return 0
 
 

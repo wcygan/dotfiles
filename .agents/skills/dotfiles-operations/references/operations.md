@@ -305,6 +305,12 @@ installs Nix in the guest if absent, runs install twice, doctor, and strict
 verify, then deletes the VM. Pass flags to the runner directly, for example
 `python3 tests/macos_vm_e2e.py --keep` or `--base <image>`.
 
+Local acceptance cleans up after itself. `tests/macos_e2e.py` removes its temp
+tree, `tests/macos_vm_e2e.py` deletes its VM and verifies that deletion, and
+`tests/docker_matrix.py` removes each built image after its smoke test. Pass
+`--keep` to retain a temp tree, VM, or image for debugging. `--prune-cache`
+additionally prunes the shared Docker build cache.
+
 ### Upstream freshness
 
 `.github/workflows/freshness.yml` is scheduled/manual compatibility evidence.

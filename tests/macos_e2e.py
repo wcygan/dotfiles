@@ -90,7 +90,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.keep:
             print(f"kept isolated tree: {root}")
         else:
-            shutil.rmtree(root, ignore_errors=True)
+            shutil.rmtree(root)
     print("macOS isolated acceptance passed")
     return 0
 

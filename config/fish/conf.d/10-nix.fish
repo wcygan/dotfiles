@@ -68,16 +68,13 @@ end
 if test -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
   # Prevent repeated imports in the same session
   if not set -q __nix_env_imported
-    for line in (bash -lc 'source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh >/dev/null 2>&1; env' | string split0)
+    for line in (bash -c 'source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh >/dev/null 2>&1; env -0' | string split0)
       set kv (string split -m1 '=' -- $line)
       set -l k $kv[1]
       set -l v $kv[2]
-      # Only set variables that aren't already exported by fish or that we know we want
-      if test -n "$k"; and test -n "$v"
-        # Skip PATH here; fish_add_path handles ordering better
-        if test $k != PATH
-          set -gx $k $v
-        end
+      # Keep Fish-owned process state and PATH ordering.
+      if test -n "$k"; and not contains -- "$k" PATH PWD OLDPWD SHLVL _
+        set -gx "$k" "$v"
       end
     end
     set -g __nix_env_imported 1

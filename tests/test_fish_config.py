@@ -200,3 +200,177 @@ def test_java_home_uses_available_homebrew_jdk_without_overriding_user(
     )
     expected = "/custom/jdk" if custom_java else str(jdk) if installed else ""
     assert result.stdout == expected
+
+
+def test_java_home_uses_known_homebrew_prefix_without_running_brew(tmp_path: Path) -> None:
+    prefix = tmp_path / "homebrew"
+    (prefix / "bin").mkdir(parents=True)
+    (prefix / "opt/openjdk/bin").mkdir(parents=True)
+    brew = prefix / "bin/brew"
+    brew.write_text("#!/bin/sh\nexit 1\n")
+    brew.chmod(0o755)
+    environment = os.environ.copy()
+    environment.update(PATH=f"{prefix / 'bin'}:{environment['PATH']}", HOMEBREW_PREFIX=str(prefix))
+    environment.pop("JAVA_HOME", None)
+    result = subprocess.run(
+        [
+            "fish",
+            "--no-config",
+            "-c",
+            'source $argv[1]; printf "%s\\n" "$JAVA_HOME"; contains -- "$JAVA_HOME/bin" $PATH',
+            str(FISH_ROOT / "conf.d/java.fish"),
+        ],
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stdout.strip() == str(prefix / "opt/openjdk")
+
+
+def test_nix_daemon_import_handles_newlines_empty_values_and_shell_state(tmp_path: Path) -> None:
+    daemon = tmp_path / "nix-daemon.sh"
+    daemon.write_text(
+        "export NIX_TEST_VALUE='a=b\nc'\n"
+        "export NIX_TEST_EMPTY=''\n"
+        "export NIX_PROFILES='system user'\n"
+        'export PATH="/daemon/path:$PATH"\n'
+    )
+    config = tmp_path / "nix.fish"
+    config.write_text(
+        (FISH_ROOT / "conf.d/10-nix.fish")
+        .read_text()
+        .replace("/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh", str(daemon))
+    )
+    env = os.environ.copy()
+    env["HOME"] = str(tmp_path)
+    env.pop("NIX_TEST_EMPTY", None)
+    env.pop("NIX_TEST_VALUE", None)
+    result = subprocess.run(
+        [
+            "fish",
+            "--no-config",
+            "-c",
+            'source $argv[1]; test "$NIX_TEST_VALUE" = "a=b\nc"; or exit 1; '
+            'set -q NIX_TEST_EMPTY; or exit 2; test -z "$NIX_TEST_EMPTY"; or exit 3; '
+            'test "$NIX_PROFILES" = "system user"; or exit 4; '
+            "contains -- /daemon/path $PATH; and exit 5; "
+            'printf "%s" "$NIX_TEST_VALUE"',
+            str(config),
+        ],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stdout == "a=b\nc"
+
+
+@pytest.mark.parametrize("standard_brew", [False, True])
+def test_homebrew_initialization_preserves_standard_and_custom_installs(
+    tmp_path: Path, standard_brew: bool
+) -> None:
+    prefix = tmp_path / "homebrew"
+    (prefix / "bin").mkdir(parents=True)
+    other_bin = tmp_path / "other-bin"
+    other_bin.mkdir()
+    uname = other_bin / "uname"
+    uname.write_text("#!/bin/sh\nprintf 'Darwin\\n'\n")
+    uname.chmod(0o755)
+    log = tmp_path / "brew.log"
+    brew = (prefix / "bin" if standard_brew else other_bin) / "brew"
+    brew.write_text(f"#!/bin/sh\nprintf called > '{log}'\nprintf 'export BREW_EXTRA=custom\\n'\n")
+    brew.chmod(0o755)
+    config = tmp_path / "homebrew.fish"
+    config.write_text(
+        (FISH_ROOT / "conf.d/05-homebrew.fish").read_text().replace("/opt/homebrew", str(prefix))
+    )
+    env = os.environ.copy()
+    env["PATH"] = f"{other_bin}:{env['PATH']}"
+    env.pop("HOMEBREW_PREFIX", None)
+    env.pop("BREW_EXTRA", None)
+    result = subprocess.run(
+        [
+            "fish",
+            "--no-config",
+            "-c",
+            'source $argv[1]; printf "%s\\n" "$HOMEBREW_PREFIX" "$BREW_EXTRA"',
+            str(config),
+        ],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stdout.splitlines() == [str(prefix), "" if standard_brew else "custom"]
+    assert log.exists() is not standard_brew
+
+
+@pytest.mark.parametrize("installed", [False, True])
+def test_project_envrc_uses_cache_when_available_and_falls_back(
+    tmp_path: Path, installed: bool
+) -> None:
+    if installed:
+        script = tmp_path / ".nix-profile/share/nix-direnv/direnvrc"
+        script.parent.mkdir(parents=True)
+        script.write_text(
+            "use_flake() { printf 'cached\\n'; }\n"
+            "nix_direnv_disallow_fallback() { printf 'no stale fallback\\n'; }\n"
+        )
+    env = os.environ.copy()
+    env.update(HOME=str(tmp_path), XDG_STATE_HOME=str(tmp_path / "state"))
+    command = (
+        "use() { if declare -F use_flake >/dev/null; then use_flake; "
+        "else printf 'builtin\\n'; fi; }; source \"$1\""
+    )
+    result = subprocess.run(
+        ["bash", "--noprofile", "--norc", "-c", command, "test", str(REPO_ROOT / ".envrc")],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stdout.splitlines() == (
+        ["no stale fallback", "cached"] if installed else ["builtin"]
+    )
+
+
+def test_project_envrc_keeps_existing_nix_direnv_configuration(tmp_path: Path) -> None:
+    script = tmp_path / ".nix-profile/share/nix-direnv/direnvrc"
+    script.parent.mkdir(parents=True)
+    script.write_text("printf 'unexpected override\\n'\n")
+    env = os.environ.copy()
+    env.update(HOME=str(tmp_path), XDG_STATE_HOME=str(tmp_path / "state"))
+    command = (
+        "nix_direnv_version() { :; }; "
+        "nix_direnv_disallow_fallback() { printf 'unexpected override\\n'; }; "
+        "use() { printf 'existing cache\\n'; }; source \"$1\""
+    )
+    result = subprocess.run(
+        ["bash", "--noprofile", "--norc", "-c", command, "test", str(REPO_ROOT / ".envrc")],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stdout == "existing cache\n"
+
+
+def test_project_envrc_keeps_custom_direnvrc(tmp_path: Path) -> None:
+    script = tmp_path / ".nix-profile/share/nix-direnv/direnvrc"
+    script.parent.mkdir(parents=True)
+    script.write_text("printf 'unexpected override\\n'\n")
+    config = tmp_path / "custom-direnv"
+    config.mkdir()
+    (config / "direnvrc").write_text("# Existing configuration\n")
+    env = os.environ.copy()
+    env.update(HOME=str(tmp_path), DIRENV_CONFIG=str(config))
+    command = "use() { printf 'existing implementation\\n'; }; source \"$1\""
+    result = subprocess.run(
+        ["bash", "--noprofile", "--norc", "-c", command, "test", str(REPO_ROOT / ".envrc")],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stdout == "existing implementation\n"

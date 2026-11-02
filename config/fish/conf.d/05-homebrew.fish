@@ -41,11 +41,12 @@ if test (uname) = "Darwin"
         end
     end
 
-    # Homebrew shellenv equivalent for any additional paths
-    # This ensures all Homebrew-installed tools are available
-    if command -v brew >/dev/null 2>&1
+    # Retain the existing shellenv fallback for nonstandard Homebrew installs.
+    if command -v brew >/dev/null 2>&1; and begin
+        not set -q HOMEBREW_PREFIX; or test (command -s brew) != "$HOMEBREW_PREFIX/bin/brew"
+    end
         # Get any additional environment variables from brew shellenv
-        for line in (brew shellenv | grep "^export" | sed 's/^export //')
+        for line in (brew shellenv | string match -r '^export .*' | string replace -r '^export ' '')
             set kv (string split -m1 '=' -- $line)
             if test (count $kv) -eq 2
                 set -l k $kv[1]

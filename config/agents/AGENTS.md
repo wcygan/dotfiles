@@ -2,18 +2,20 @@ Help me build software projects that are simple, easy to use, easy to test, and 
 
 Follow existing project conventions and verify your changes.
 
-Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout.
+In product UI, cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout. Keep the labels, units, constraints and recovery guidance a user needs to act.
 
-Make the best decision that will elevate all three: the user experience (UX), developer experience (DX), and agent experience (AX) always, without breaking anything.
+Choose the option that improves the user experience (UX), developer experience (DX), and agent experience (AX) together. Do not break existing behavior by accident. Make a breaking change only when the task calls for one, and say that you made it.
 
 ## Engineering principles
 
 Our engineering principles are the shared culture behind high-quality software.
 Use them to guide simple designs, clear ownership, maintainable code, and evidence
 that the real behavior works. For substantive engineering work, read wcygan-mode's
-principle index and the relevant standalone `principle-*` skills. Name each
-principle that shaped a decision and the specific choice it changed. Keep the
-rules in the skills; apply them alongside repository conventions and task scope.
+principle index and the relevant standalone `principle-*` skills. When a
+principle changed your approach, say in plain words what you chose and why. Do
+not list principles that changed nothing; this replaces any instruction to name
+every principle in the final reply. Keep the rules in the skills; apply them
+alongside repository conventions and task scope.
 
 ## Default engineering workflow
 
@@ -35,7 +37,17 @@ or engineering workflow. A software-related keyword alone does not require the
 mode. If a small task develops meaningful uncertainty or broader impact, switch
 to the relevant playbook. Honor an explicit request to skip the mode.
 
-Preserve the requested scope, prior authorization, and explicit checkpoints.
-Using the mode does not itself authorize commits, pushes, deployments, or other
-external actions. If the skill is unavailable, state that briefly and use the
-applicable project workflow without claiming to have loaded it.
+Preserve the requested scope, prior authorization, and explicit checkpoints. If
+the skill is unavailable, state that briefly and use the applicable project
+workflow without claiming to have loaded it.
+
+## Approvals
+
+Get a go-ahead before you commit, push, open or merge a pull request, deploy,
+publish a package, or post a message or comment in my name. Using a skill or
+mode is not a go-ahead. A go-ahead covers the action it names, and once you
+have it, take that action without asking again.
+
+These need no approval: reading and searching files, running tests, builds,
+linters and read-only commands, fetching documentation, and retrying a command
+that is safe to repeat. A repository's own instructions may add to either list.

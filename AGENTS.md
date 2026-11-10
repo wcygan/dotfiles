@@ -6,6 +6,11 @@ Provide reproducible tools with Nix and portable, editable configuration through
 repository-owned links. Keep Home Manager out of scope and preserve fast
 onboarding, deterministic CI, and straightforward rollback.
 
+This codebase is yours: what it's for and how it's built are your call, and
+you'll keep building on it. Merge duplicated code and fix related problems you
+find instead of only reporting them, within the Invariants and Change Contract
+below, and list every such change in the handoff.
+
 ## Route Before Acting
 
 - **Repository operations:** You **must** use `$dotfiles-operations` for setup,
@@ -95,6 +100,20 @@ skill rather than duplicating its checklist here.
 4. Finish only when every changed invariant has evidence, unexpected lockfile
    changes are absent, recovery state is understood, and the handoff reports
    residual risk plus commit, push, and deployment status.
+
+## Approvals
+
+These need no approval: reading files and Git history; the Make targets
+`test-pre`, `test-local`, `test-shell`, `test-syntax`, `test-eval`,
+`test-docker`, `test-macos`, and `docs-build`; `./bootstrap.sh doctor`,
+`verify`, `recover` without `--apply`, and `agent-skills --check`; and any
+`--dry-run` preview.
+
+Get a go-ahead first for: commit, push, pull, or deploy; a change to any
+lockfile; installing Nix; `./bootstrap.sh install`, `profile`, `link`,
+`rustup`, `uninstall`, `shell-handoff`, `git-user`, `nightly-schedule`,
+`agent-skills` without `--check`, and `recover --apply`. A go-ahead covers the
+action it names.
 
 ## References
 

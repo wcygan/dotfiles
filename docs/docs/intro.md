@@ -65,7 +65,7 @@ I personally test the dotfiles on these Operating Systems:
 | macOS (Apple Silicon) | 15 | Weekly and manual CI acceptance |
 | macOS (Intel) | 15 | Manual CI acceptance |
 | Ubuntu | 24.04 | Docker acceptance on every pull request |
-| Fedora | 43 | Docker acceptance on every pull request |
+| Fedora | 45 | Docker acceptance on every pull request |
 
 Other versions and operating systems may work but are not tested.
 

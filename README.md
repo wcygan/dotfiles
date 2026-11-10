@@ -366,7 +366,7 @@ Committed CI and local Docker acceptance use full GitHub Action SHAs and
 multi-platform image manifest digests, so pull requests test exactly the
 reviewed inputs. A separate scheduled/manual upstream-freshness workflow strips
 the committed image digests in a temporary runner file and builds the current
-Ubuntu 24.04, Fedora 43, and Nix 2.30.3 tags. It reports compatibility drift but
+Ubuntu 24.04, Fedora 45, and Nix 2.35.4 tags. It reports compatibility drift but
 never edits the repository. Dependabot proposes weekly Action and Docker digest
 updates for human review; no automatic merge is configured. Platform refreshes
 are evaluated against the official [Ubuntu release lifecycle](https://wiki.ubuntu.com/Releases)

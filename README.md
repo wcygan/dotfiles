@@ -81,6 +81,7 @@ dotfiles/
 │   ├── zed/            # Zed config
 │   ├── ghostty/        # Ghostty config
 │   ├── starship.toml   # Starship prompt
+│   ├── direnv/         # direnv settings (quiet environment diff)
 │   └── shell-nix.sh    # Bash/zsh compatibility
 ├── src/dotfiles_setup/  # Locked Python setup CLI
 ├── tests/               # Python and platform test suites

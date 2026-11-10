@@ -86,6 +86,7 @@ def managed_links(
         Link(config / "shell-nix.sh", config_home / "shell-nix.sh"),
         Link(config / "fish", config_home / "fish"),
         Link(config / "starship.toml", config_home / "starship.toml"),
+        Link(config / "direnv" / "direnv.toml", config_home / "direnv" / "direnv.toml"),
         Link(config / "zed", config_home / "zed"),
         Link(config / "bunfig.toml", home / ".bunfig.toml"),
         Link(config / "bunfig.toml", config_home / ".bunfig.toml"),

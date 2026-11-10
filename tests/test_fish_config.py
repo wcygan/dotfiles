@@ -335,6 +335,54 @@ def test_project_envrc_uses_cache_when_available_and_falls_back(
     )
 
 
+@pytest.mark.parametrize(
+    ("stale", "expected"),
+    [
+        (None, ["watch flake.nix flake.lock", "import cache"]),
+        ("flake.nix", ["use flake"]),
+        ("flake.lock", ["use flake"]),
+        (".envrc", ["use flake"]),
+        ("profile", ["use flake"]),
+    ],
+)
+def test_project_envrc_imports_fresh_cache_without_nix_direnv_checks(
+    tmp_path: Path, stale: str | None, expected: list[str]
+) -> None:
+    project = tmp_path / "project"
+    cache = project / ".direnv/flake-profile-test.rc"
+    cache.parent.mkdir(parents=True)
+    (project / ".envrc").write_text(read_repo_file(".envrc"))
+    for name in ("flake.nix", "flake.lock"):
+        (project / name).write_text("")
+    cache.write_text("")
+    if stale != "profile":
+        cache.with_suffix("").write_text("")
+    for path in project.iterdir():
+        os.utime(path, (1_000, 1_000))
+    os.utime(cache, (2_000, 2_000))
+    if stale not in (None, "profile"):
+        os.utime(project / stale, (3_000, 3_000))
+    env = os.environ.copy()
+    env.update(HOME=str(tmp_path), XDG_STATE_HOME=str(tmp_path / "state"))
+    env.pop("DIRENV_CONFIG", None)
+    env.pop("XDG_CONFIG_HOME", None)
+    command = (
+        "nix_direnv_version() { :; }; "
+        "_nix_import_env() { printf 'import cache\\n'; }; "
+        "watch_file() { printf 'watch %s %s\\n' \"$1\" \"$2\"; }; "
+        "use() { printf 'use %s\\n' \"$1\"; }; source ./.envrc"
+    )
+    result = subprocess.run(
+        ["bash", "--noprofile", "--norc", "-c", command],
+        cwd=project,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stdout.splitlines() == expected
+
+
 def test_project_envrc_keeps_existing_nix_direnv_configuration(tmp_path: Path) -> None:
     script = tmp_path / ".nix-profile/share/nix-direnv/direnvrc"
     script.parent.mkdir(parents=True)

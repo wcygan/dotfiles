@@ -1,0 +1,3 @@
+[global]
+# Omit the "direnv: export +VAR ..." line; Nix dev shells export dozens of names.
+hide_env_diff = true

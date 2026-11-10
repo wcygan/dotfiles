@@ -76,6 +76,9 @@ def test_relative_config_overrides_fall_back_inside_home(tmp_path: Path) -> None
     link_config(Path.cwd(), environ=values, system="Linux")
 
     assert (home / ".config" / "git").is_symlink()
+    direnv_config = home / ".config" / "direnv" / "direnv.toml"
+    assert direnv_config.readlink() == (Path.cwd() / "config" / "direnv" / "direnv.toml").resolve()
+    assert not direnv_config.parent.is_symlink()
     assert (home / ".agents" / "AGENTS.md").is_symlink()
     assert (home / ".codex" / "AGENTS.md").is_symlink()
     assert not (Path.cwd() / "relative-config").exists()

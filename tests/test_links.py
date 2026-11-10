@@ -15,7 +15,7 @@ from dotfiles_setup.links import link_config, managed_links
 def environment(
     home: Path, *, xdg: Path | None = None, codex: Path | None = None
 ) -> dict[str, str]:
-    values = {"HOME": str(home), "DOTFILES_SKIP_FISH_GREETING": "1"}
+    values = {"HOME": str(home)}
     if xdg is not None:
         values["XDG_CONFIG_HOME"] = str(xdg)
     if codex is not None:
@@ -156,11 +156,16 @@ def test_codex_home_at_shared_agents_root_has_one_agents_link(tmp_path: Path) ->
 
     agents_destination = agents_home / "AGENTS.md"
     assert [link.destination for link in links].count(agents_destination) == 1
+    claude_instructions = home / ".claude" / "CLAUDE.md"
+    assert [link.source for link in links if link.destination == claude_instructions] == [
+        (repo / "config" / "agents" / "AGENTS.md").resolve()
+    ]
 
     link_config(repo, environ=values, system="Linux")
     link_config(repo, environ=values, system="Linux")
 
     assert agents_destination.readlink() == (repo / "config" / "agents" / "AGENTS.md").resolve()
+    assert claude_instructions.readlink() == (repo / "config" / "agents" / "AGENTS.md").resolve()
 
 
 def test_migrates_symlinked_codex_config_but_preserves_local_state(tmp_path: Path) -> None:

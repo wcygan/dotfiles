@@ -53,7 +53,7 @@ def test_noninteractive_writes_local_identity_and_removes_global(tmp_path: Path)
     )
 
     result = configure_git_user(
-        home=tmp_path,
+        home=tmp_path, environ={},
         name="New Name",
         email="new@example.com",
         remove_global=True,
@@ -84,7 +84,7 @@ def test_noninteractive_existing_config_can_decline_update_without_prompt(tmp_pa
         }
     )
 
-    result = configure_git_user(home=tmp_path, update=False, run=runner)
+    result = configure_git_user(home=tmp_path, environ={}, update=False, run=runner)
 
     assert result.name == "Existing"
     assert result.email == "existing@example.com"
@@ -114,7 +114,9 @@ def test_interactive_preserves_global_defaults_and_default_global_removal(tmp_pa
     )
     answers = iter(["", "", ""])
 
-    result = configure_git_user(home=tmp_path, input_func=lambda _: next(answers), run=runner)
+    result = configure_git_user(
+        home=tmp_path, environ={}, input_func=lambda _: next(answers), run=runner
+    )
 
     assert result.name == "Global Name"
     assert result.email == "global@example.com"
@@ -136,7 +138,7 @@ def test_interactive_existing_config_keeps_it_when_update_prompt_declines(tmp_pa
         }
     )
 
-    result = configure_git_user(home=tmp_path, input_func=lambda _: "n", run=runner)
+    result = configure_git_user(home=tmp_path, environ={}, input_func=lambda _: "n", run=runner)
 
     assert result.updated is False
     assert result.name == "Existing"
@@ -144,13 +146,13 @@ def test_interactive_existing_config_keeps_it_when_update_prompt_declines(tmp_pa
 
 def test_noninteractive_write_requires_complete_identity(tmp_path: Path) -> None:
     with pytest.raises(GitUserError, match="requires both name and email"):
-        configure_git_user(home=tmp_path, name="Only Name", run=FakeRunner({}))
+        configure_git_user(home=tmp_path, environ={}, name="Only Name", run=FakeRunner({}))
 
 
 def test_interactive_eof_is_a_clear_failure(tmp_path: Path) -> None:
     with pytest.raises(GitUserError, match="reached EOF"):
         configure_git_user(
-            home=tmp_path,
+            home=tmp_path, environ={},
             input_func=lambda _: (_ for _ in ()).throw(EOFError()),
             run=FakeRunner({}),
         )
@@ -169,7 +171,23 @@ def test_git_write_failure_includes_diagnostic(tmp_path: Path) -> None:
     )
 
     with pytest.raises(GitUserError, match="permission denied"):
-        configure_git_user(home=tmp_path, name="Name", email="email@example.com", run=runner)
+        configure_git_user(
+            home=tmp_path, environ={}, name="Name", email="email@example.com", run=runner
+        )
+
+
+def test_identity_file_follows_xdg_config_home(tmp_path: Path) -> None:
+    config_home = tmp_path / "xdg"
+
+    result = configure_git_user(
+        home=tmp_path / "home",
+        environ={"XDG_CONFIG_HOME": str(config_home)},
+        name="Name",
+        email="email@example.com",
+        run=lambda command, **_kwargs: completed(command),
+    )
+
+    assert result.path == config_home / "git" / "config.local"
 
 
 def test_git_user_cli_forwards_noninteractive_identity(

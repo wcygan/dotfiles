@@ -26,10 +26,8 @@ __maybe_alias find fd       # find -> fd (faster, friendlier)
 __maybe_alias grep rg       # grep -> ripgrep (faster)
 __maybe_alias sed sd        # sed -> sd (simpler syntax)
 __maybe_alias du dust       # du -> dust (better disk usage)
-__maybe_alias ps procs      # ps -> procs (if available)
 __maybe_alias top btop      # top -> btop (better monitoring)
 __maybe_alias htop btop     # htop -> btop (even better)
-__maybe_alias dig dog       # dig -> dog (DNS lookup)
 
 # Decorated examples using functions (more robust than raw alias)
 if type -q eza
@@ -40,20 +38,20 @@ end
 
 # ——— Interactive abbreviations ———
 # Use for long flaggy commands; expands on SPACE/TAB in interactive shells.
-abbr -a kctx 'kubectl config use-context'
-abbr -a kp 'kubectl get pods'
-abbr -a kn 'kubectl get nodes'
+if type -q kubectl
+    abbr -a kctx 'kubectl config use-context'
+    abbr -a kp 'kubectl get pods'
+    abbr -a kn 'kubectl get nodes'
+end
 abbr -a gco 'git checkout'
 abbr -a gs 'git status -sb'
 abbr -a gl 'git log --oneline --graph --decorate --all'
 abbr -a gb 'git branch'
 abbr -a gd 'git diff'
 abbr -a gp 'git push'
-abbr -a dc 'docker compose'
 abbr -a l 'eza -la'
 abbr -a gcl 'git clone'
 abbr -a gc 'git commit'
-abbr -a h 'hermes'
 abbr -a br 'broot'
 
 # Cargo (Rust package manager)
@@ -71,11 +69,6 @@ if type -q cargo
     abbr -a cga 'cargo add'
     abbr -a cgu 'cargo update'
     abbr -a cgw 'cargo watch'
-end
-
-# Guard example: only add k* abbr if kubectl is present
-if not type -q kubectl
-    abbr -e kctx 2>/dev/null
 end
 
 # Global editor default if unset (harmless if already set elsewhere)
@@ -137,7 +130,7 @@ alias gaa 'git add .'
 alias gbddd 'git branch | grep -v "main" | xargs git branch -d'
 alias gsw 'git switch -c'
 alias gpu 'eval git push -u origin $(git rev-parse --abbrev-ref HEAD)'
-alias gds 'gd --stat'
+alias gds 'git diff --stat'
 alias gca 'git commit --amend --no-edit'
 alias grco 'git rebase --continue'
 alias gpr 'git pull --rebase'
@@ -164,5 +157,5 @@ end
 alias map "xargs -n1"
 
 # Projects
-alias dotfiles 'zed /Users/wcygan/Development/dotfiles'
-alias n 'zed /Users/wcygan/Development/notes'
+alias dotfiles 'zed $HOME/Development/dotfiles'
+alias n 'zed $HOME/Development/notes'

@@ -58,15 +58,16 @@ Determinate installer.
 
 ## Supported Platforms
 
-I am personally test the dotfiles on these Operating Systems:
+I personally test the dotfiles on these Operating Systems:
 
-| Platform | Version | Status |
-|----------|---------|--------|
-| macOS | 12+ (Intel & Apple Silicon) | ✅ Fully supported |
-| Ubuntu | 20.04+ | ✅ Fully supported |
-| Fedora | 38+ | ✅ Fully supported |
+| Platform | Tested version | How it is tested |
+|----------|----------------|------------------|
+| macOS (Apple Silicon) | 15 | Weekly and manual CI acceptance |
+| macOS (Intel) | 15 | Manual CI acceptance |
+| Ubuntu | 24.04 | Docker acceptance on every pull request |
+| Fedora | 43 | Docker acceptance on every pull request |
 
-Note: Other Operating Systems may "just work".
+Other versions and operating systems may work but are not tested.
 
 ## After Installation
 
@@ -172,7 +173,7 @@ make test-pre    # Locked Ruff and pytest checks
 make test-local  # Ephemeral-HOME-focused pytest
 make test-shell  # Shell-handoff pytest
 make test-docker # Python Ubuntu/Fedora driver
-make test         # All non-Docker tests
+make test        # Alias for make test-pre
 ```
 
 ### Roll Back

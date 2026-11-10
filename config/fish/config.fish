@@ -1,16 +1,14 @@
-# Interactive-only guards are fine if you want to keep prompt snappy
-status is-interactive; and begin
-  # general interactive-only settings can go here
+# Antigravity CLI, when installed. --path keeps this out of the persistent
+# universal fish_user_paths (see conf.d/10-nix.fish).
+if test -d $HOME/.antigravity/antigravity/bin
+    fish_add_path --path $HOME/.antigravity/antigravity/bin
 end
-
-# Added by Antigravity
-fish_add_path /Users/wcygan/.antigravity/antigravity/bin
 
 # Disable fish greeting
 set -g fish_greeting ""
 
 # Per-host bastion env (anton cluster access from secondary machines)
-switch (hostname)
+switch $hostname
     case betty
         set -gx KUBECONFIG $HOME/anton/kubeconfig
         set -gx TALOSCONFIG $HOME/anton/talos/clusterconfig/talosconfig

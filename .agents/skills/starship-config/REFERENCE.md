@@ -5,7 +5,7 @@ Detailed guide for advanced Starship customization and optimization.
 ## Configuration File Structure
 
 ```toml
-# config/starship/starship.toml
+# config/starship.toml
 
 # Global settings
 format = "$all"           # Order of modules
@@ -150,7 +150,7 @@ disabled = true
 
 ```bash
 # Export preset as base
-starship preset nerd-font-symbols -o config/starship/starship.toml
+starship preset nerd-font-symbols -o config/starship.toml
 
 # Then customize sections
 ```

@@ -4,7 +4,7 @@
 set -euo pipefail
 
 PRESET="${1:-}"
-OUTPUT="${2:-config/starship/starship.toml}"
+OUTPUT="${2:-config/starship.toml}"
 
 if [[ -z "$PRESET" ]]; then
     echo "Usage: $0 <preset-name> [output-file]"

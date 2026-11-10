@@ -14,7 +14,7 @@ from dotfiles_setup.manifest import OperationJournal, read_manifest, state_direc
 
 
 def _environment(home: Path) -> dict[str, str]:
-    return {"HOME": str(home), "DOTFILES_SKIP_FISH_GREETING": "1"}
+    return {"HOME": str(home)}
 
 
 def _install_stubs(

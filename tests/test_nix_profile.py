@@ -11,7 +11,6 @@ from dotfiles_setup.nix_profile import (
     NixProfileError,
     ProfileElement,
     ensure_profile,
-    find_profile_element,
     list_profile_elements,
     select_current_checkout_profile,
 )
@@ -28,33 +27,6 @@ class RecordingRunner:
         self.kwargs.append(kwargs)
         stdout = json.dumps(self.profile_payload) if args[-2:] == ["list", "--json"] else ""
         return subprocess.CompletedProcess(args, 0, stdout=stdout, stderr="")
-
-
-def test_find_profile_prefers_current_checkout_over_element_name(tmp_path: Path) -> None:
-    elements = {
-        "another-name": {"originalUrl": f"git+{tmp_path.as_uri()}"},
-        "dotfiles": {"originalUrl": "github:someone/else"},
-    }
-
-    assert find_profile_element(elements, tmp_path) == "another-name"
-
-
-def test_find_profile_ignores_unrelated_dotfiles_element(tmp_path: Path) -> None:
-    elements = {"dotfiles": {"originalUrl": "github:someone/else"}}
-
-    assert find_profile_element(elements, tmp_path) is None
-
-
-def test_find_profile_matches_repository_file_url(tmp_path: Path) -> None:
-    elements = {"local-checkout": {"originalUrl": f"git+{tmp_path.as_uri()}"}}
-
-    assert find_profile_element(elements, tmp_path) == "local-checkout"
-
-
-def test_find_profile_matches_nix_path_url(tmp_path: Path) -> None:
-    elements = {"local-checkout": {"originalUrl": f"path:{tmp_path.resolve()}"}}
-
-    assert find_profile_element(elements, tmp_path) == "local-checkout"
 
 
 def test_current_checkout_selector_applies_active_policy(tmp_path: Path) -> None:

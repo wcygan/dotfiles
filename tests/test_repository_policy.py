@@ -27,11 +27,14 @@ def test_root_agent_instructions_use_live_progressive_disclosure() -> None:
     assert "## Migrations" not in agents
 
 
-def test_claude_guidance_is_a_single_source_pointer_to_agent_instructions() -> None:
-    claude = REPO_ROOT / "CLAUDE.md"
+def test_agents_md_is_the_only_project_instruction_file() -> None:
+    # Claude Code 2.1.277+ loads AGENTS.md itself, but only while no CLAUDE.md
+    # exists anywhere in the project; one would also hide docs/AGENTS.md.
+    tracked = [*REPO_ROOT.glob("CLAUDE.md"), *REPO_ROOT.glob("*/CLAUDE.md")]
 
-    assert claude.is_symlink()
-    assert claude.readlink() == Path("AGENTS.md")
+    assert tracked == []
+    assert REPO_ROOT.joinpath("AGENTS.md").is_file()
+    assert not REPO_ROOT.joinpath("AGENTS.md").is_symlink()
 
 
 def test_bootstrap_is_the_only_root_setup_shell_entrypoint() -> None:
@@ -51,6 +54,15 @@ def test_shell_compatibility_config_remains_declarative() -> None:
 
     assert shell_config.is_file()
     assert "Shell configuration for Nix package manager" in shell_config.read_text()
+
+
+def test_tracked_git_config_holds_no_machine_local_values() -> None:
+    config = REPO_ROOT.joinpath("config/git/config").read_text()
+
+    assert "path = config.local" in config
+    assert "[user]" not in config
+    assert "[credential" not in config
+    assert "/Users/" not in config and "/home/" not in config
 
 
 def test_zed_install_task_uses_bootstrap_entrypoint() -> None:
@@ -157,11 +169,11 @@ def test_ci_uses_canonical_commands_reports_and_strict_summary() -> None:
     assert "--junitxml=reports/pytest.xml" in ci
     assert "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" in ci
     assert "if: always()" in ci
-    assert "needs: [quality, flake-eval, docs, docker-matrix]" in ci
-    for job in ("quality", "flake-eval", "docs", "docker-matrix"):
+    assert "needs: [quality, flake-eval, docker-matrix]" in ci
+    for job in ("quality", "flake-eval", "docker-matrix"):
         assert f'test "${{{{ needs.{job}.result }}}}" = success' in ci
-    assert "make docs-build" in ci
-    assert ci.count("git diff --exit-code") == 4
+    assert "make docs-build" not in ci
+    assert ci.count("git diff --exit-code") == 3
 
 
 def test_docs_build_on_pull_requests_and_deploy_only_from_main_push() -> None:
@@ -200,7 +212,8 @@ def test_all_system_evaluation_and_macos_acceptance_are_explicit() -> None:
     assert "runs-on: macos-15" in macos
     assert "runs-on: macos-15-intel" in macos
     assert "schedule:" in macos and "workflow_dispatch:" in macos
-    assert "./bootstrap.sh verify" in macos
+    assert macos.count("make test-macos") == 2
+    assert '["./bootstrap.sh", "verify"]' in REPO_ROOT.joinpath("tests/macos_e2e.py").read_text()
     assert "git diff --exit-code" in macos
 
 

@@ -284,7 +284,6 @@ the handoff.
 - locked Ruff/pytest and syntax validation;
 - native Linux install twice to prove idempotency, followed by strict verify;
 - all-system flake evaluation without building;
-- reproducible docs build;
 - Ubuntu/Fedora Docker acceptance with separate BuildKit cache scopes;
 - an always-run summary that fails unless every required job succeeded.
 
@@ -296,7 +295,8 @@ Make targets canonical so CI and developer acceptance cannot drift apart.
 
 `.github/workflows/macos.yml` runs Apple Silicon weekly or manually in an
 isolated HOME/XDG/CODEX/RUSTUP/CARGO tree. Intel macOS is manual to control
-cost. Both run locked tests plus install, doctor, and strict verification.
+cost. Both run `make test-macos`: locked tests, install twice, doctor, and strict
+verification.
 
 Locally, `make test-macos` runs that isolated-tree flow without a VM, and
 `make test-macos-vm` runs it in an ephemeral Tart VM (Apple Silicon only). The
@@ -320,7 +320,8 @@ commit repository files.
 
 ### Documentation deployment
 
-Pull requests build the Docusaurus site through `make docs-build`. Pages upload
+`.github/workflows/deploy-docs.yml` alone builds the Docusaurus site, through
+`make docs-build`, on pull requests that touch documentation inputs. Pages upload
 and deployment occur only on a push to `main`, with write permissions scoped
 to the deploy job.
 

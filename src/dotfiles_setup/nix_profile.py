@@ -99,19 +99,6 @@ def _original_path(original_url: object) -> Path | None:
     return Path(unquote(parsed.path)).resolve()
 
 
-def find_profile_element(
-    elements: Mapping[str, Mapping[str, Any]],
-    repo_root: Path,
-) -> str | None:
-    """Find a checkout in a raw inventory kept for compatibility callers."""
-
-    resolved_root = repo_root.resolve()
-    for name, details in elements.items():
-        if _original_path(details.get("originalUrl")) == resolved_root:
-            return name
-    return None
-
-
 def select_current_checkout_profile(
     elements: Sequence[ProfileElement],
     repo_root: Path,
@@ -199,12 +186,6 @@ def profile_state(inventory: Sequence[ProfileElement], repo_root: Path) -> Profi
     if select_current_checkout_profile(inventory, repo_root, active_only=False) is not None:
         return ProfileState.INACTIVE
     return ProfileState.ABSENT
-
-
-def profile_action(state: ProfileState) -> ProfileAction:
-    """Return the install action for one profile state."""
-
-    return PROFILE_ACTIONS[state]
 
 
 def ensure_profile(

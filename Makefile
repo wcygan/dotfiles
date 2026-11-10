@@ -27,6 +27,10 @@ help:
 	@echo "  make uninstall               - Remove managed links (asks for confirmation)"
 	@echo "  make doctor                  - Run setup diagnostics"
 	@echo "  make verify                  - Run strict post-installation acceptance"
+	@echo "  make latest                  - git pull --rebase, then install"
+	@echo "  make update                  - Update flake.lock, then the profile"
+	@echo "  make nightly-status          - Show the nightly updater (also nightly-enable, nightly-disable)"
+	@echo "  make clean                   - Delete old Nix generations and collect garbage"
 	@echo ""
 	@echo "Validation:"
 	@echo "  make test                    - Run the locked Python test suite in the Nix dev shell"
@@ -36,6 +40,7 @@ help:
 	@echo "  make test-macos              - Run install twice in an isolated macOS HOME"
 	@echo "  make test-macos-vm           - Run install twice in an ephemeral Tart macOS VM"
 	@echo "  make docs-build              - Install and build documentation reproducibly"
+	@echo "  make docs                    - Serve the documentation site locally"
 
 install:
 	@$(BOOTSTRAP) install

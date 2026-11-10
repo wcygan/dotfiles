@@ -82,7 +82,6 @@ if test -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 end
 
 # Handy abbr/aliases (fish native)
-abbr -a nix-update 'nix flake update && nix profile upgrade --no-write-lock-file'
 abbr -a nix-search 'nix search nixpkgs'
 abbr -a nix-list   'nix profile list'
 abbr -a nix-clean  'nix-collect-garbage -d'

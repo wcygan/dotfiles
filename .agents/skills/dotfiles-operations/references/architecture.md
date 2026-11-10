@@ -126,7 +126,8 @@ introduced. Nightly lockfile application alone has explicit update authority.
 - npm prefix and release-age settings in `~/.npmrc`;
 - the optional Bash/zsh Fish handoff blocks;
 - the local Git identity file when explicitly configured;
-- the shared and Codex `AGENTS.md` links sourced from `config/agents/AGENTS.md`;
+- the shared and Codex `AGENTS.md` links and the `~/.claude/CLAUDE.md` link, all
+  sourced from `config/agents/AGENTS.md`;
 - the pinned Codex shared user-scope skill copies installed by the current
   GitHub CLI under `~/.agents/skills`.
 

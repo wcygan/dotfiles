@@ -1,9 +1,0 @@
-{
-  "lsp": {
-    "nixd": {
-      "binary": {
-        "path": "/Users/wcygan/.nix-profile/bin/nixd"
-      }
-    }
-  }
-}

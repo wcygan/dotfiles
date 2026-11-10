@@ -7,9 +7,9 @@ differently, so a destination could be "correct" to one caller and "stale" to
 another. A destination that one caller considered already installed was
 therefore silently skipped by the install path.
 
-The transition table is ``DESTINATION_STATES``: for each raw kind and each
-expected-source situation, exactly one semantic state. Every destination
-therefore resolves to one enum value, never to an implicit "unknown".
+``classify`` maps each raw kind and expected-source situation to exactly one
+semantic state, so every destination resolves to one enum value, never to an
+implicit "unknown".
 """
 
 from __future__ import annotations
@@ -54,18 +54,6 @@ class DestinationClassification:
     inode: int | None = None
     reason: str | None = None
 
-    @property
-    def needs_replacement(self) -> bool:
-        """Return whether installing the managed link must change this destination."""
-
-        return self.state in {
-            DestinationState.ABSENT,
-            DestinationState.STALE,
-            DestinationState.BROKEN,
-            DestinationState.UNMANAGED_FILE,
-            DestinationState.UNMANAGED_DIRECTORY,
-            DestinationState.UNMANAGED_OTHER,
-        }
 
 
 def _resolve_target(destination: Path, target: str) -> Path | None:
@@ -168,23 +156,3 @@ def classify(
         device=metadata.st_dev,
         inode=metadata.st_ino,
     )
-
-
-def state_for(kind: FileKind, *, matches_expected: bool | None = None) -> DestinationState:
-    """Return the semantic state for a raw kind.
-
-    ``matches_expected`` applies only to symlinks; other kinds ignore it. The
-    table is total so no kind can fall through to an implicit default.
-    """
-
-    if kind is FileKind.ABSENT:
-        return DestinationState.ABSENT
-    if kind is FileKind.FILE:
-        return DestinationState.UNMANAGED_FILE
-    if kind is FileKind.DIRECTORY:
-        return DestinationState.UNMANAGED_DIRECTORY
-    if kind is FileKind.SYMLINK:
-        if matches_expected is None:
-            return DestinationState.UNMANAGED_OTHER
-        return DestinationState.CORRECT if matches_expected else DestinationState.STALE
-    return DestinationState.UNMANAGED_OTHER

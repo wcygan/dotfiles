@@ -52,7 +52,6 @@ def isolated_environment(root: Path, *, reuse_rustup: bool) -> dict[str, str]:
         XDG_CACHE_HOME=str(home / ".cache"),
         XDG_STATE_HOME=str(home / ".local/state"),
         CODEX_HOME=str(home / ".codex"),
-        DOTFILES_SKIP_FISH_GREETING="1",
     )
     if not reuse_rustup:
         environment["RUSTUP_HOME"] = str(home / ".rustup")

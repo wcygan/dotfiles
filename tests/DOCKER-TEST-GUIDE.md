@@ -76,7 +76,6 @@ type -a nix-install
 nix-
 
 # Should show completions like:
-# nix-update → nix flake update && nix profile upgrade --no-write-lock-file
 # nix-search → nix search nixpkgs
 # nix-list → nix profile list
 # nix-clean → nix-collect-garbage -d
@@ -103,12 +102,12 @@ which nix-install
 find ~/.config/fish -type f -name "*.fish" | sort
 
 # Should show:
-# /home/testuser/.config/fish/conf.d/10-nix.fish
-# /home/testuser/.config/fish/conf.d/20-direnv.fish
-# /home/testuser/.config/fish/conf.d/30-starship.fish
-# /home/testuser/.config/fish/config.fish
-# /home/testuser/.config/fish/functions/nix-install.fish
-# /home/testuser/.config/fish/functions/nix-try.fish
+# /home/tester/.config/fish/conf.d/10-nix.fish
+# /home/tester/.config/fish/conf.d/20-direnv.fish
+# /home/tester/.config/fish/conf.d/30-starship.fish
+# /home/tester/.config/fish/config.fish
+# /home/tester/.config/fish/functions/nix-install.fish
+# /home/tester/.config/fish/functions/nix-try.fish
 ```
 
 ## Expected Output Summary

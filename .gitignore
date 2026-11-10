@@ -1,4 +1,3 @@
-.idea
 .platform.sh
 **/.DS_Store
 .cache
@@ -7,7 +6,6 @@ result-*
 .nix-defexpr
 .direnv/
 .envrc.local
-.DS_Store
 .vscode/
 .idea/
 .jj

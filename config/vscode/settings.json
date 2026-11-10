@@ -55,16 +55,12 @@
   "remote.SSH.localServerDownload": "auto",
   "terminal.integrated.enablePersistentSessions": false,
   "remote.SSH.connectTimeout": 45,
-  "yaml.schemas": {
-    "file:///home/coder/.vscode-server/extensions/atlassian.atlascode-2.4.2/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
-  },
   "github.copilot.editor.enableAutoCompletions": true,
   "window.restoreFullscreen": true,
   "go.toolsManagement.autoUpdate": true,
   "github.copilot.chat.search.semanticTextResults": true,
   "workbench.colorTheme": "One Monokai",
   "vs-kubernetes": {
-    "vs-kubernetes.minikube-show-information-expiration": "2024-10-25T03:45:25.984Z",
     "vs-kubernetes.crd-code-completion": "disabled"
   },
   "markdown-preview-enhanced.mermaidTheme": "dark",
@@ -82,7 +78,7 @@
   "github.copilot.chat.editor.temporalContext.enabled": true,
   "terminal.integrated.profiles.osx": {
     "fish (nix)": {
-      "path": "/Users/wcygan/.nix-profile/bin/fish",
+      "path": "${env:HOME}/.nix-profile/bin/fish",
       "args": ["-l"], // start as a login shell (optional)
       "env": {} // don't put KEY=VALUE here unless you really need to
     }

@@ -132,7 +132,8 @@ Other Codex state is managed narrowly:
 `config/codex/config.toml` is a portable template copied to
 `${CODEX_HOME:-~/.codex}/config.toml` only when missing, and
 `config/agents/AGENTS.md` is the authoritative global instruction file linked to
-both `~/.agents/AGENTS.md` and `${CODEX_HOME:-~/.codex}/AGENTS.md`.
+`~/.agents/AGENTS.md`, `${CODEX_HOME:-~/.codex}/AGENTS.md`, and
+`~/.claude/CLAUDE.md` (the only user-level file Claude Code reads).
 `config/codex/AGENTS.md` remains a repository compatibility link to that source.
 Skills, the GitHub CLI skill lock, custom agents, and the rest of `CODEX_HOME`
 remain machine-local outputs rather than repository content. Codex may write
@@ -252,11 +253,11 @@ is part of this migration.
 The repo's docs site uses npm (`docs/package-lock.json`). The installer manages
 dependency release-age settings for npm and Bun:
 
-- Bun: links `config/bunfig.toml` to global bunfig locations with
-  `minimumReleaseAge = 259200`.
 - npm: manages `min-release-age=1` in `~/.npmrc`. npm does not currently expose
   a documented package or scope exemption key for this setting.
-Bun exempts the `@wcygan/*` workspace scope from the cooldown.
+- Bun: links `config/bunfig.toml` to the global bunfig locations, but it sets no
+  cooldown. `minimumReleaseAge` was removed because Bun's exclusion list accepts
+  only exact package names; the file records the reasoning.
 
 ## Per-Project Dev Environments (nix-direnv)
 
@@ -292,8 +293,6 @@ For reproducible per-project tool versions, use [nix-direnv](https://determinate
 3. `direnv allow` to trust the environment.
 
 Commit `.envrc` and `flake.nix`; gitignore `.direnv/`. Use cases: language toolchains (Node 20 vs 18), pinned database clients, exact build tool versions, locked cloud CLIs.
-
-For troubleshooting concurrent direnv rebuilds and Nix daemon issues, the agent has a dedicated `nix-direnv-perf` skill.
 
 ## Nix Installation (macOS)
 
@@ -415,7 +414,7 @@ make test-shell    # shell-handoff pytest suite
 make test-syntax   # Bash and Fish parsing
 make test-eval     # all four flake systems, evaluation only
 make test-docker   # Python Ubuntu/Fedora driver
-make test           # every non-Docker test
+make test          # alias for make test-pre
 
 # Documentation
 make docs-build    # clean install and production build

@@ -12,7 +12,7 @@ from dotfiles_setup.links import link_config
 
 
 def environment(home: Path, codex: Path) -> dict[str, str]:
-    return {"HOME": str(home), "CODEX_HOME": str(codex), "DOTFILES_SKIP_FISH_GREETING": "1"}
+    return {"HOME": str(home), "CODEX_HOME": str(codex)}
 
 
 def test_cleanup_removes_only_managed_links_and_preserves_local_state(tmp_path: Path) -> None:

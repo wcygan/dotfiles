@@ -12,7 +12,7 @@ Manages complete Starship prompt configuration lifecycle including setup, custom
 ### 1. Understand Context
 
 Check project structure:
-- **Config location**: `config/starship/starship.toml` (symlinked to `~/.config/starship.toml`)
+- **Config location**: `config/starship.toml` (symlinked to `~/.config/starship.toml`)
 - **Existing config**: Read current `starship.toml` if present
 - **Shell integration**: Check `config/fish/conf.d/30-starship.fish` for hook
 - **Nix package**: Verify starship in `flake.nix`
@@ -198,13 +198,13 @@ env STARSHIP_CONFIG=./test-config.toml fish
 ### 6. Integration with Dotfiles
 
 **When modifying:**
-1. Edit `config/starship/starship.toml`
+1. Edit `config/starship.toml`
 2. Test with `exec fish -l`
 3. Verify symlink active: `ls -la ~/.config/starship.toml`
 4. Commit to git if satisfied
 
 **When creating new:**
-1. Write to `config/starship/starship.toml`
+1. Write to `config/starship.toml`
 2. Ensure `src/dotfiles_setup/links.py` manages the Starship symlink
 3. Verify link in `~/.config/starship.toml`
 4. Add to README if new setup step required
@@ -268,7 +268,7 @@ starship timings
 
 This is a Nix-based dotfiles repository:
 - Starship installed via `flake.nix`
-- Config lives in `config/starship/starship.toml`
+- Config lives in `config/starship.toml`
 - Symlinked to `~/.config/starship.toml` by `src/dotfiles_setup/links.py`
 - Fish shell integration in `config/fish/conf.d/30-starship.fish`
 - Cross-platform support: macOS, Ubuntu, Fedora

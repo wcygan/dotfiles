@@ -4,13 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from dotfiles_setup.destinations import (
     DestinationState,
     FileKind,
     classify,
-    state_for,
 )
 
 
@@ -19,7 +16,6 @@ def test_absent_destination(tmp_path: Path) -> None:
 
     assert result.kind is FileKind.ABSENT
     assert result.state is DestinationState.ABSENT
-    assert result.needs_replacement
 
 
 def test_correct_symlink(tmp_path: Path) -> None:
@@ -33,7 +29,6 @@ def test_correct_symlink(tmp_path: Path) -> None:
     assert result.kind is FileKind.SYMLINK
     assert result.state is DestinationState.CORRECT
     assert result.target == str(source)
-    assert not result.needs_replacement
 
 
 def test_stale_symlink_to_another_repo(tmp_path: Path) -> None:
@@ -48,7 +43,6 @@ def test_stale_symlink_to_another_repo(tmp_path: Path) -> None:
 
     assert result.kind is FileKind.SYMLINK
     assert result.state is DestinationState.STALE
-    assert result.needs_replacement
 
 
 def test_broken_symlink(tmp_path: Path) -> None:
@@ -61,7 +55,6 @@ def test_broken_symlink(tmp_path: Path) -> None:
 
     assert result.kind is FileKind.SYMLINK
     assert result.state is DestinationState.BROKEN
-    assert result.needs_replacement
 
 
 def test_unmanaged_file(tmp_path: Path) -> None:
@@ -74,7 +67,6 @@ def test_unmanaged_file(tmp_path: Path) -> None:
 
     assert result.kind is FileKind.FILE
     assert result.state is DestinationState.UNMANAGED_FILE
-    assert result.needs_replacement
 
 
 def test_unmanaged_directory(tmp_path: Path) -> None:
@@ -87,15 +79,3 @@ def test_unmanaged_directory(tmp_path: Path) -> None:
 
     assert result.kind is FileKind.DIRECTORY
     assert result.state is DestinationState.UNMANAGED_DIRECTORY
-    assert result.needs_replacement
-
-
-@pytest.mark.parametrize("kind", list(FileKind))
-def test_state_for_is_total(kind: FileKind) -> None:
-    assert state_for(kind) in set(DestinationState)
-
-
-def test_state_for_symlink_needs_the_expected_result() -> None:
-    assert state_for(FileKind.SYMLINK) is DestinationState.UNMANAGED_OTHER
-    assert state_for(FileKind.SYMLINK, matches_expected=True) is DestinationState.CORRECT
-    assert state_for(FileKind.SYMLINK, matches_expected=False) is DestinationState.STALE

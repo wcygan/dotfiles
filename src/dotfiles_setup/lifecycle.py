@@ -31,13 +31,6 @@ class OperationState(StrEnum):
     RECOVERY_NEEDED = "recovery-needed"
 
 
-TERMINAL_OPERATION_STATES: Final[frozenset[OperationState]] = frozenset(
-    {OperationState.COMPLETED, OperationState.FAILED}
-)
-FAILURE_OPERATION_STATES: Final[frozenset[OperationState]] = frozenset(
-    {OperationState.FAILED, OperationState.RECOVERY_NEEDED}
-)
-
 # Self-loops are legal: a checkpoint may be re-recorded after a retry.
 # A completed operation may be downgraded to recovery-needed when its own
 # completion record cannot be persisted.

@@ -17,7 +17,7 @@ Stop when the requested config change is applied or the user has clarified which
 
 - `fish-shell-config`: `config/fish/`, including `config.fish`, functions, abbreviations, prompts, and environment variables.
 - `ghostty-config`: `config/ghostty/`, including themes, fonts, keybindings, and performance settings.
-- `lazygit-config`: `config/git/lazygit/`, including `config.yml`, delta integration, themes, and keybindings.
+- `lazygit-config`: lazygit's `config.yml`, delta integration, themes, and keybindings. The repository tracks no lazygit config yet; add one under `config/lazygit/` with a managed-link inventory entry before relying on it.
 - `nvim-config`: `config/nvim/`, including `init.lua`, plugins, LSP settings, and keymaps.
 - `rex-docs`: `config/rex/`, including `init.lua` key bindings, modes, and custom actions.
 - `starship-config`: `config/starship.toml`, including prompt modules, presets, and performance.

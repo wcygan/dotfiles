@@ -8,6 +8,6 @@ function nix-install
   nix search nixpkgs $pkg | head -n 20
   read -P "Install package? (y/n) " -l reply
   if string match -qi 'y*' -- $reply
-    nix profile install "nixpkgs#$pkg"
+    nix profile add "nixpkgs#$pkg"
   end
 end

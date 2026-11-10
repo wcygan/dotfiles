@@ -25,25 +25,12 @@ jobs:
       - name: Configure Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@8a218f9e264e9c3803c9a1ee1c30d8e4ab55be63 # v2
 
-      - name: Run locked tests and isolated setup acceptance
+      - name: Run the canonical isolated macOS acceptance
         env:
           PYTEST_ADDOPTS: --junitxml=reports/pytest-macos-arm64.xml
         run: |
           mkdir -p reports
-          make test-syntax
-          make test-pre
-          isolated_home="$RUNNER_TEMP/dotfiles-home-arm64"
-          mkdir -p "$isolated_home"
-          export HOME="$isolated_home"
-          export XDG_CONFIG_HOME="$isolated_home/.config"
-          export XDG_CACHE_HOME="$isolated_home/.cache"
-          export XDG_STATE_HOME="$isolated_home/.local/state"
-          export CODEX_HOME="$isolated_home/.codex"
-          export RUSTUP_HOME="$isolated_home/.rustup"
-          export CARGO_HOME="$isolated_home/.cargo"
-          ./bootstrap.sh install
-          ./bootstrap.sh doctor
-          ./bootstrap.sh verify
+          make test-macos
 
       - name: Upload pytest report
         if: always()
@@ -80,25 +67,12 @@ jobs:
       - name: Configure Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@8a218f9e264e9c3803c9a1ee1c30d8e4ab55be63 # v2
 
-      - name: Run locked tests and isolated setup acceptance
+      - name: Run the canonical isolated macOS acceptance
         env:
           PYTEST_ADDOPTS: --junitxml=reports/pytest-macos-intel.xml
         run: |
           mkdir -p reports
-          make test-syntax
-          make test-pre
-          isolated_home="$RUNNER_TEMP/dotfiles-home-intel"
-          mkdir -p "$isolated_home"
-          export HOME="$isolated_home"
-          export XDG_CONFIG_HOME="$isolated_home/.config"
-          export XDG_CACHE_HOME="$isolated_home/.cache"
-          export XDG_STATE_HOME="$isolated_home/.local/state"
-          export CODEX_HOME="$isolated_home/.codex"
-          export RUSTUP_HOME="$isolated_home/.rustup"
-          export CARGO_HOME="$isolated_home/.cargo"
-          ./bootstrap.sh install
-          ./bootstrap.sh doctor
-          ./bootstrap.sh verify
+          make test-macos
 
       - name: Upload pytest report
         if: always()

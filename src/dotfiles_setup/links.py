@@ -77,9 +77,12 @@ def managed_links(
     agents_source = config / "agents" / "AGENTS.md"
     shared_agents = home / ".agents" / "AGENTS.md"
     codex_agents = codex_home / "AGENTS.md"
+    # Claude Code reads user-level instructions only from ~/.claude/CLAUDE.md.
+    claude_instructions = home / ".claude" / "CLAUDE.md"
     agents_links = [Link(agents_source, shared_agents)]
     if codex_agents != shared_agents:
         agents_links.append(Link(agents_source, codex_agents))
+    agents_links.append(Link(agents_source, claude_instructions))
     return (
         Link(config / "git", config_home / "git"),
         Link(config / "tmux" / "tmux.conf", home / ".tmux.conf"),
@@ -94,6 +97,7 @@ def managed_links(
         Link(config / "rex", config_home / "rex"),
         *agents_links,
         Link(config / "zellij", config_home / "zellij"),
+        Link(config / "nvim", config_home / "nvim"),
         Link(config / "vscode" / "settings.json", vscode_home / "settings.json"),
         Link(config / "vscode" / "keybindings.json", vscode_home / "keybindings.json"),
     )

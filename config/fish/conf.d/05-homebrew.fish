@@ -1,5 +1,6 @@
 # Homebrew configuration for macOS
-# This file loads before 10-nix.fish to ensure Homebrew takes precedence
+# This file loads before 10-nix.fish, which then moves the Nix profile and
+# user bin directories ahead of Homebrew on PATH.
 
 if test (uname) = "Darwin"
     # Apple Silicon Macs (M1/M2/M3)

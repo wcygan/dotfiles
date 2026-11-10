@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import subprocess
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+
+from dotfiles_setup.paths import UserPathContext
 
 CommandRunner = Callable[..., subprocess.CompletedProcess[str]]
 InputFunction = Callable[[str], str]
@@ -29,6 +31,7 @@ class GitUserConfig:
 def configure_git_user(
     *,
     home: Path | None = None,
+    environ: Mapping[str, str] | None = None,
     name: str | None = None,
     email: str | None = None,
     update: bool | None = None,
@@ -36,14 +39,14 @@ def configure_git_user(
     input_func: InputFunction = input,
     run: CommandRunner = subprocess.run,
 ) -> GitUserConfig:
-    """Configure ``~/.config/git/config.local`` without leaking identity data.
+    """Configure ``config.local`` beside the managed Git config without leaking identity data.
 
     With no controls supplied, this keeps the original interactive prompt flow.
     Supplying any control selects non-interactive mode: a write then requires
     both a name and an email, so a CI process never waits for stdin unexpectedly.
     """
-    home_directory = Path.home() if home is None else home.expanduser()
-    path = home_directory / ".config" / "git" / "config.local"
+    context = UserPathContext.from_environment(environ, home=home)
+    path = context.config_home / "git" / "config.local"
     interactive = all(value is None for value in (name, email, update, remove_global))
     exists = path.is_file()
     existing_name = _get_config(run, ("--file", str(path)), "user.name") if exists else None

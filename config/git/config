@@ -1,11 +1,13 @@
 # Global Git configuration
-# User-specific settings (name, email) should be in ~/.config/git/config.local
-# Create that file with:
-#   git config --file ~/.config/git/config.local user.name "Your Name"
-#   git config --file ~/.config/git/config.local user.email "your.email@example.com"
+# This file is tracked and linked to $XDG_CONFIG_HOME/git. Without a
+# ~/.gitconfig, `git config --global` and `gh auth setup-git` write here, so
+# keep identity, credential helpers, and other machine-local values in the
+# untracked config.local beside it:
+#   ./bootstrap.sh git-user
+#   git config --file ~/.config/git/config.local <key> <value>
 
 [include]
-    path = ~/.config/git/config.local
+    path = config.local
 
 [core]
     editor = nvim
@@ -123,12 +125,3 @@
 
     # Clean
     cleanup = !git branch --merged | grep -v '\\*\\|main\\|master\\|develop' | xargs -n 1 git branch -d
-[user]
-	email = wcygan.io@gmail.com
-	name = Will Cygan
-[credential "https://github.com"]
-	helper = 
-	helper = !/Users/wcygan/.nix-profile/bin/.gh-wrapped auth git-credential
-[credential "https://gist.github.com"]
-	helper = 
-	helper = !/Users/wcygan/.nix-profile/bin/.gh-wrapped auth git-credential

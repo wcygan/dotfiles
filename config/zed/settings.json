@@ -92,9 +92,6 @@
   },
   "lsp": {
     "rust-analyzer": {
-      "binary": {
-        "path": "/Users/wcygan/.nix-profile/bin/rust-analyzer"
-      },
       "initialization_options": {
         "inlayHints": {
           "maxLength": null,

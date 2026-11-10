@@ -165,6 +165,7 @@ def test_retired_deno_integration_is_absent() -> None:
     assert all(link.source != REPO_ROOT / "config/deno" for link in links)
     assert not (FISH_ROOT / "conf.d/15-deno.fish").exists()
     assert not (FISH_ROOT / "completions/deno.fish").exists()
+    assert "deno" not in read_repo_file("config/shell-nix.sh").lower()
 
 
 @pytest.mark.parametrize("custom_java", [False, True])

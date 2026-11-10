@@ -108,7 +108,7 @@ pane_frames false
 theme "default"
 default_shell "fish"
 copy_on_select true
-scrollback_editor "/usr/bin/nvim"
+scrollback_editor "nvim"
 
 // Session configuration
 session_serialization true

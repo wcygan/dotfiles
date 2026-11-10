@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-CONFIG_FILE="${1:-config/starship/starship.toml}"
+CONFIG_FILE="${1:-config/starship.toml}"
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
     echo "❌ Config file not found: $CONFIG_FILE"

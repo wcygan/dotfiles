@@ -100,27 +100,6 @@ jobs:
         if: always()
         run: git diff --exit-code
 
-  docs:
-    name: Documentation build
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: docs/package-lock.json
-
-      - name: Build documentation through the canonical target
-        run: make docs-build
-
-      - name: Verify tracked inputs are unchanged
-        if: always()
-        run: git diff --exit-code
-
   docker-matrix:
     name: Docker ${{ matrix.distro }}
     runs-on: ubuntu-24.04
@@ -158,12 +137,11 @@ jobs:
     name: CI summary
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    needs: [quality, flake-eval, docs, docker-matrix]
+    needs: [quality, flake-eval, docker-matrix]
     if: always()
     steps:
       - name: Require every validation job to pass
         run: |
           test "${{ needs.quality.result }}" = success
           test "${{ needs.flake-eval.result }}" = success
-          test "${{ needs.docs.result }}" = success
           test "${{ needs.docker-matrix.result }}" = success

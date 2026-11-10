@@ -26,7 +26,6 @@ from dotfiles_setup.mutations import RecoveryRecord, decode_recovery_record
 from dotfiles_setup.paths import UserPathContext
 
 SCHEMA_VERSION = 1
-VALID_STATES = frozenset(state.value for state in OperationState)
 
 
 def state_directory(environ: Mapping[str, str] | None = None) -> Path:
@@ -600,26 +599,6 @@ class OperationJournal:
         entries.append(entry)
         self._write()
         return len(entries) - 1
-
-    def update_link_entry(self, index: int, **changes: Any) -> None:
-        """Update a raw entry through the schema-v1 compatibility facade."""
-
-        entries = self.data["entries"]
-        assert isinstance(entries, list)
-        try:
-            entry = entries[index]
-        except IndexError as error:
-            raise ManifestError(f"operation journal has no entry {index}") from error
-        if not isinstance(entry, dict):
-            raise ManifestError(f"operation journal entry {index} is invalid")
-        try:
-            EntryProgress.from_manifest({**entry, **changes})
-        except LifecycleError as error:
-            raise ManifestError(
-                f"operation journal entry {index} update is invalid: {error}"
-            ) from error
-        entry.update(changes)
-        self._write()
 
     def record_operation(self, name: str, status: str) -> None:
         operations = self.data["operations"]

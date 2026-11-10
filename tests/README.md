@@ -14,7 +14,7 @@ make test-local
 # Shell handoff pytest suite (Bash/zsh -> Fish)
 make test-shell
 
-# All non-Docker tests
+# Alias for make test-pre
 make test
 
 # Python driver across Ubuntu and Fedora

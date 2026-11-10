@@ -4,6 +4,59 @@ Read this reference before changing compatibility guarantees, restoring retired
 behavior, or replacing a setup boundary. Add an entry when a breaking change is
 intentional, alongside focused migration tests.
 
+## 2026-11-10 — Load agent instructions in Claude Code from AGENTS.md
+
+The managed inventory links `config/agents/AGENTS.md` to `~/.claude/CLAUDE.md`
+as well, because Claude Code reads user-level instructions only from that path.
+The global file stays the single source. An existing physical
+`~/.claude/CLAUDE.md` is backed up before replacement, and strict verification
+fails on an existing installation until `./bootstrap.sh link` runs.
+`CLAUDE_CONFIG_DIR` is not consulted.
+
+The repository's `CLAUDE.md -> AGENTS.md` symlink is removed. Claude Code
+2.1.277 and later load `AGENTS.md` and `docs/AGENTS.md` directly, but only
+while the project has no `CLAUDE.md`; the symlink had been hiding
+`docs/AGENTS.md`. Older Claude Code versions no longer receive the repository
+instructions, so upgrade before using this checkout.
+
+## 2026-11-09 — Link Neovim, align Bash/zsh PATH, and keep Git identity local
+
+The managed inventory now links `config/nvim` to `$XDG_CONFIG_HOME/nvim`. The
+directory was tracked but never installed, so strict verification fails on an
+existing installation until `./bootstrap.sh link` runs. An existing physical
+`~/.config/nvim` is backed up first. The first Neovim start then clones
+lazy.nvim and the configured plugins.
+
+`config/shell-nix.sh` now orders PATH as Fish does: Nix profiles, then language
+and user directories, then Homebrew, then system paths. It previously appended
+the Nix profiles last. `_ORIGINAL_PATH_BEFORE_NIX` is no longer exported. The
+`nix-update` alias and Fish abbreviation are removed because they updated
+`flake.lock` outside `make update`; `nix-install` uses `nix profile add`.
+
+`config/git/config` includes `config.local` by a path relative to itself, and
+`git-user` writes that file under `XDG_CONFIG_HOME` instead of a fixed
+`~/.config`. The tracked file must hold no `[user]` or `[credential]` section;
+a repository-policy test enforces this. On a machine without `~/.gitconfig`,
+`git config --global` and `gh auth setup-git` write into the tracked file
+through the managed link, so move such values to `config.local` afterward.
+
+Fish no longer ships `conf.d/05-compat.fish` or the `env-compat` function. The
+first re-executed any Fish script whose first argument looked like `NAME=value`
+under Bash; Fish has accepted `NAME=value command` natively since 3.1.
+
+CI changes: `ci.yml` no longer builds documentation (`deploy-docs.yml` owns
+that on documentation changes), and `macos.yml` runs `make test-macos`, which
+installs twice. Dependabot also proposes `docs/` npm and uv updates.
+
+## 2026-11-09 — Finish the Deno retirement in the Bash/zsh helper
+
+`config/shell-nix.sh` no longer defines the `deno` wrapper function or exports
+`DOTFILES_DENO_COOLDOWN_CONFIG`. Both pointed at the `~/.config/deno` link that
+the 2026-10-31 retirement removed from the managed inventory. Shells that
+source the helper now run a machine-local `deno` directly. A leftover
+`~/.config/deno` symlink remains machine-local and is not deleted
+automatically.
+
 ## 2026-10-31 — Opt in to quarantined nightly Nix updates
 
 Add explicit `nightly-schedule` and `nightly-run` commands. Default setup and

@@ -27,3 +27,19 @@ end
 if set -q REX_BIN_DIR
     fish_add_path --path --prepend --move $REX_BIN_DIR
 end
+
+if status is-interactive
+    function __configure_tv_ssh --on-event fish_prompt
+        if set -q GHOSTTY_BIN_DIR; and functions -q ssh
+            functions --copy ssh __ghostty_ssh
+            function ssh --wraps=ssh
+                if test (count $argv) -eq 1; and test "$argv[1]" = tv
+                    env TERM=xterm-256color ssh tv
+                else
+                    __ghostty_ssh $argv
+                end
+            end
+        end
+        functions --erase __configure_tv_ssh
+    end
+end

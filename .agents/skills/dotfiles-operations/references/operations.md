@@ -73,6 +73,11 @@ shared user skills. Both preserve exact accepted trees under
 `$XDG_STATE_HOME/dotfiles/agent-skills-archives` (default `~/.local/state`),
 outside skill discovery roots. Normal installation does not imply reset authority.
 
+Pruning refuses a skill tree that holds anything but files and directories, such
+as a `.venv` a tool wrote into an installed copy, and names the entry. Move the
+entry out with the user's go-ahead, run `./bootstrap.sh recover --apply --yes`
+to acknowledge the failed run, then rerun the command.
+
 An unchanged rerun is catalog-state idempotent, not a byte-for-byte no-op.
 Because the command uses `--force`, GitHub CLI refreshes `updatedAt` for the
 managed entries in the machine-local `~/.agents/.skill-lock.json`. Treat a

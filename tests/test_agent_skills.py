@@ -401,6 +401,31 @@ def test_prune_rejects_a_retired_copy_outside_the_destination(tmp_path: Path) ->
     assert not (home / ".local/state/dotfiles/agent-skills-archives").exists()
 
 
+def test_prune_names_the_entry_that_prevents_archiving_a_tree(tmp_path: Path) -> None:
+    _write_lock(tmp_path)
+    home = tmp_path / "home"
+    destination = home / ".agents" / "skills"
+    _write_catalog(destination)
+    stray = destination / "animate" / ".venv" / "python"
+    stray.parent.mkdir()
+    stray.symlink_to("/usr/bin/true")
+
+    def runner(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        if command[1:3] == ["skill", "list"]:
+            return _completed(command, stdout=_installed(home))
+        return _completed(command) if "--all" in command else _catalog_response(command)
+
+    with pytest.raises(AgentSkillsError) as refusal:
+        install_agent_skills(tmp_path, run=runner, which=lambda _: "gh",
+                             environ={"HOME": str(home)}, prune=True)
+    assert "refusing retired skill cleanup: animate: cannot inspect the installed copy" in str(
+        refusal.value
+    )
+    assert str(stray) in str(refusal.value)
+    assert stray.is_symlink(), "A refused cleanup leaves the tree in place"
+    assert not (home / ".local/state/dotfiles/agent-skills-archives").exists()
+
+
 def test_catalog_reset_requires_explicit_yes_and_rejects_check(
     capsys: pytest.CaptureFixture[str],
 ) -> None:

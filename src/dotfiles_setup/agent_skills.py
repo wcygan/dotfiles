@@ -1429,8 +1429,8 @@ def _inspect_legacy_skill_directory(
             problems.append(f"{name}: legacy path changed during validation")
             return None
         return candidate
-    except (MutationExecutionError, OSError):
-        problems.append(f"{name}: legacy path changed or SKILL.md is unreadable")
+    except (MutationExecutionError, OSError) as error:
+        problems.append(f"{name}: cannot inspect the installed copy: {error}")
         return None
     finally:
         for descriptor in (

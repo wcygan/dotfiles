@@ -1,41 +1,89 @@
 # syntax=docker/dockerfile:1
+# Stages: base -> prewarm -> acceptance -> tests. Name the stage with --target.
+# The text after the "Shared with" marker is identical in both Dockerfiles.
+
+# Build with --build-arg INSTALL_BASE=base to skip the prewarm stage, so the
+# install downloads everything itself. The weekly freshness workflow does.
+ARG INSTALL_BASE=prewarm
+
 # A pinned Nix fixture keeps this image from invoking a remote installer.
 FROM nixos/nix:2.35.4@sha256:f159a58f390677f41e8e900a74b6e2f9c7f27b364122ae6acf7a652ce6c551c0 AS nix-fixture
 
-FROM fedora:45@sha256:a7d72ba2745b100a3351087472e5ee7b2450af7cf331e7673007e3817612839c
+FROM fedora:45@sha256:a7d72ba2745b100a3351087472e5ee7b2450af7cf331e7673007e3817612839c AS base
 
-ARG USER=tester
 ARG UID=1000
 ARG GID=1000
 
 RUN dnf -y install \
       bash ca-certificates coreutils findutils git hostname make procps-ng sudo && \
     dnf clean all && \
-    groupadd --gid "${GID}" "${USER}" && \
-    useradd --create-home --uid "${UID}" --gid "${GID}" --shell /bin/bash "${USER}" && \
-    echo "${USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/99-${USER}"
+    groupadd --gid "${GID}" tester && \
+    useradd --create-home --uid "${UID}" --gid "${GID}" --shell /bin/bash tester && \
+    echo "tester ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/99-tester
+
+# Shared with the other distro's Dockerfile from here on.
 
 # The fixture supplies Nix; this Dockerfile must never run the remote installer.
-COPY --from=nix-fixture /nix /nix
+COPY --from=nix-fixture --chown=tester:tester /nix /nix
 COPY --from=nix-fixture /etc/nix /etc/nix
 
-RUN chown -R "${USER}:${USER}" /nix
-
-USER ${USER}
-WORKDIR /home/${USER}/app
+USER tester
+WORKDIR /home/tester/app
 
 ENV NIX_REMOTE=local
-ENV PATH="/home/${USER}/.nix-profile/bin:/nix/var/nix/profiles/default/bin:${PATH}"
+ENV PATH="/home/tester/.nix-profile/bin:/nix/var/nix/profiles/default/bin:${PATH}"
 
-COPY --chown=${USER}:${USER} bootstrap.sh flake.nix flake.lock pyproject.toml uv.lock rust-toolchain.toml README.md ./
-COPY --chown=${USER}:${USER} src ./src
-COPY --chown=${USER}:${USER} config ./config
+# The slow downloads, in a layer that depends only on the locked inputs: the
+# Nix closure of the profile and the dev shell, and the pinned Rust toolchain.
+# A change under src/ or config/ reuses this layer.
+FROM base AS prewarm
 
-# Keep the cold install in its own cacheable layer so test-only changes do not
-# rebuild the entire Nix profile.
+COPY --chown=tester:tester flake.nix flake.lock rust-toolchain.toml ./
+
+RUN nix --extra-experimental-features "nix-command flakes" \
+      build --no-link --no-write-lock-file .#default && \
+    nix --extra-experimental-features "nix-command flakes" \
+      develop --no-write-lock-file .#default \
+      --command rustup toolchain install --no-self-update
+
+FROM ${INSTALL_BASE} AS acceptance
+
+COPY --chown=tester:tester bootstrap.sh flake.nix flake.lock pyproject.toml uv.lock rust-toolchain.toml README.md ./
+COPY --chown=tester:tester src ./src
+COPY --chown=tester:tester config ./config
+
+# First install into a home that setup has never touched. With the prewarm
+# base, the Nix store paths and the Rust toolchain are already fetched; the
+# weekly freshness build uses INSTALL_BASE=base to install from nothing.
 RUN ./bootstrap.sh install
 
-# Warm path: the same setup operation must be idempotent.
-RUN ./bootstrap.sh install && ./bootstrap.sh doctor && ./bootstrap.sh verify
+# The same setup operation must be idempotent.
+RUN ./bootstrap.sh install && ./bootstrap.sh profile && ./bootstrap.sh doctor && ./bootstrap.sh verify
+
+# Check the installed result from a login shell, as a user would meet it.
+RUN <<'SMOKE'
+#!/bin/bash -l
+set -eu
+export TERM=xterm-256color
+test "$(id -un)" = tester
+test -d /home/tester/app
+test -f config/fish/config.fish
+test -f config/fish/conf.d/10-nix.fish
+test -x bootstrap.sh
+bash -n bootstrap.sh
+./bootstrap.sh verify
+command -v fish
+command -v rg
+command -v nvim
+fish --private --interactive --command \
+  'functions -q nix-try; and functions -q __direnv_export_eval; and set -q NIX_CONFIG'
+SMOKE
 
 CMD ["/bin/bash"]
+
+# The repository's own checks on Linux, in the home directory installed above.
+FROM acceptance AS tests
+
+COPY --chown=tester:tester . .
+
+RUN make test-syntax test-pre

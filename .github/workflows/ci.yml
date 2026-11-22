@@ -22,9 +22,9 @@ concurrency:
 
 jobs:
   quality:
-    name: Locked quality and bootstrap
+    name: Locked quality
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -45,13 +45,6 @@ jobs:
           make test-syntax
           make test-pre
 
-      - name: Prove native bootstrap idempotency
-        run: |
-          ./bootstrap.sh doctor
-          ./bootstrap.sh install
-          ./bootstrap.sh install
-          ./bootstrap.sh verify
-
       - name: Upload pytest report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -59,6 +52,42 @@ jobs:
           name: pytest-linux
           path: reports/pytest.xml
           if-no-files-found: warn
+
+      - name: Safe Nix failure diagnostics
+        if: failure()
+        run: |
+          df -h / /nix || true
+          nix store info || true
+
+      - name: Verify tracked inputs are unchanged
+        if: always()
+        run: git diff --exit-code
+
+  # A separate job so it runs beside the quality checks, not after them. This
+  # is the per-change install that downloads everything itself.
+  bootstrap:
+    name: Native bootstrap
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
+        with:
+          extra-conf: |
+            experimental-features = nix-command flakes
+
+      - name: Configure Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7 # v15
+
+      - name: Prove native bootstrap idempotency
+        run: |
+          ./bootstrap.sh doctor
+          ./bootstrap.sh install
+          ./bootstrap.sh install
+          ./bootstrap.sh profile
+          ./bootstrap.sh verify
 
       - name: Safe Nix failure diagnostics
         if: failure()
@@ -103,7 +132,7 @@ jobs:
   docker-matrix:
     name: Docker ${{ matrix.distro }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -113,13 +142,22 @@ jobs:
 
       - name: Configure Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          # The runner is discarded; removing the builder only costs time.
+          cleanup: false
 
-      - name: Expose GitHub runtime for BuildKit cache
-        uses: crazy-max/ghaction-github-runtime@04d248b84655b509d8c44dc1d6f990c879747487 # v4.0.0
+      # The slow layers depend only on these files, so a change anywhere else
+      # restores them instead of downloading the Nix closure and Rust again.
+      - name: Restore the locked-input layers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/docker-layers
+          key: docker-layers-${{ matrix.distro }}-${{ hashFiles(format('Dockerfile.{0}', matrix.distro), 'flake.nix', 'flake.lock', 'rust-toolchain.toml') }}
 
       - name: Build and run canonical distro acceptance
         env:
           DOCKER_CASE: ${{ matrix.distro }}
+          DOCKER_LAYER_CACHE: ${{ runner.temp }}/docker-layers
         run: make test-docker
 
       - name: Safe Docker failure diagnostics
@@ -137,11 +175,12 @@ jobs:
     name: CI summary
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    needs: [quality, flake-eval, docker-matrix]
+    needs: [quality, bootstrap, flake-eval, docker-matrix]
     if: always()
     steps:
       - name: Require every validation job to pass
         run: |
           test "${{ needs.quality.result }}" = success
+          test "${{ needs.bootstrap.result }}" = success
           test "${{ needs.flake-eval.result }}" = success
           test "${{ needs.docker-matrix.result }}" = success

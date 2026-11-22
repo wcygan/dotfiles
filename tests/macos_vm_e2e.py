@@ -196,6 +196,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         ensure_nix(vm)
         guest(vm, "cd ~/dotfiles && ./bootstrap.sh install", timeout=3600)
         guest(vm, "cd ~/dotfiles && ./bootstrap.sh install", timeout=3600)
+        guest(vm, "cd ~/dotfiles && ./bootstrap.sh profile", timeout=3600)
         guest(vm, "cd ~/dotfiles && ./bootstrap.sh doctor", timeout=600)
         guest(vm, "cd ~/dotfiles && ./bootstrap.sh verify", timeout=600)
         if args.with_tests:

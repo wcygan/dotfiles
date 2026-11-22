@@ -114,11 +114,15 @@ def test_github_actions_are_pinned_to_full_release_shas() -> None:
 
 def test_reproducible_dockerfiles_pin_manifest_digests() -> None:
     pinned = re.compile(r"^FROM\s+\S+:\S+@sha256:[0-9a-f]{64}(?:\s+AS\s+\S+)?$")
+    # A stage may also start from an earlier stage of the same file.
+    stage = re.compile(r"^FROM\s+(base|acceptance|\$\{INSTALL_BASE\})\s+AS\s+\S+$")
 
     for path in sorted(REPO_ROOT.glob("Dockerfile.*")):
         from_lines = [line for line in path.read_text().splitlines() if line.startswith("FROM ")]
-        assert from_lines
-        assert all(pinned.fullmatch(line) for line in from_lines), f"unpinned image in {path}"
+        assert sum(1 for line in from_lines if pinned.fullmatch(line)) == 2
+        assert all(pinned.fullmatch(line) or stage.fullmatch(line) for line in from_lines), (
+            f"unpinned image in {path}"
+        )
 
 
 def test_floating_images_are_confined_to_freshness_workflow() -> None:
@@ -133,6 +137,8 @@ def test_floating_images_are_confined_to_freshness_workflow() -> None:
     assert "schedule:" in freshness
     assert "workflow_dispatch:" in freshness
     assert "docker build --pull" in freshness
+    # The scheduled build is the one that installs with nothing fetched ahead.
+    assert "--build-arg INSTALL_BASE=base --target acceptance" in freshness
     assert "s/@sha256:[0-9a-f]{64}//g" in freshness
     assert "docker run --rm" in freshness
     assert "git diff --exit-code" in freshness
@@ -172,11 +178,18 @@ def test_ci_uses_canonical_commands_reports_and_strict_summary() -> None:
     assert "--junitxml=reports/pytest.xml" in ci
     assert "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" in ci
     assert "if: always()" in ci
-    assert "needs: [quality, flake-eval, docker-matrix]" in ci
-    for job in ("quality", "flake-eval", "docker-matrix"):
+    for step in ("doctor", "install", "install", "verify"):
+        assert f"          ./bootstrap.sh {step}\n" in ci
+    # The summary requires every job, so a job cannot be added and forgotten.
+    jobs = re.findall(r"^  ([a-z-]+):$", ci.split("\njobs:\n", 1)[1], re.MULTILINE)
+    assert jobs == ["quality", "bootstrap", "flake-eval", "docker-matrix", "summary"]
+    assert f"needs: [{', '.join(jobs[:-1])}]" in ci
+    for job in jobs[:-1]:
         assert f'test "${{{{ needs.{job}.result }}}}" = success' in ci
     assert "make docs-build" not in ci
-    assert ci.count("git diff --exit-code") == 3
+    assert ci.count("git diff --exit-code") == len(jobs) - 1
+    # CI enters the dev environment only through make and bootstrap.sh.
+    assert "nix develop" not in ci
 
 
 def test_docs_build_on_pull_requests_and_deploy_only_from_main_push() -> None:
@@ -224,6 +237,7 @@ def test_reproducible_docker_acceptance_is_cached_and_runtime_checked() -> None:
     driver = REPO_ROOT.joinpath("tests/docker_matrix.py").read_text()
     makefile = REPO_ROOT.joinpath("Makefile").read_text()
     dockerignore = REPO_ROOT.joinpath(".dockerignore").read_text()
+    ci = REPO_ROOT.joinpath(".github/workflows/ci.yml").read_text()
 
     acceptance_sources = [
         *REPO_ROOT.glob("Dockerfile.*"),
@@ -232,20 +246,85 @@ def test_reproducible_docker_acceptance_is_cached_and_runtime_checked() -> None:
         *REPO_ROOT.joinpath(".github/workflows").glob("*.yml"),
     ]
     assert all("docker-test-commands.fish" not in path.read_text() for path in acceptance_sources)
-    assert "buildx" in driver and '"--load"' in driver
-    assert "type=gha,scope={scope}" in driver
-    assert "type=gha,mode=max,scope={scope}" in driver
+    # CI never exports the image; it restores only the locked-input layers.
+    assert '"type=cacheonly"' in driver
+    assert "type=gha" not in driver
+    assert "actions/cache@" in ci
+    assert "DOCKER_LAYER_CACHE: ${{ runner.temp }}/docker-layers" in ci
     assert (
-        "crazy-max/ghaction-github-runtime@"
-        in REPO_ROOT.joinpath(".github/workflows/ci.yml").read_text()
-    )
-    assert "./bootstrap.sh verify" in driver
-    assert "__direnv_export_eval" in driver
+        "hashFiles(format('Dockerfile.{0}', matrix.distro), "
+        "'flake.nix', 'flake.lock', 'rust-toolchain.toml')"
+    ) in ci
     assert "python3 tests/docker_matrix.py" in makefile
+    assert "python3 tests/docker_matrix.py --target tests" in makefile
     assert dockerignore.startswith("**\n")
     for path in sorted(REPO_ROOT.glob("Dockerfile.*")):
         contents = path.read_text()
-        assert "COPY --chown=${USER}:${USER} . ." not in contents
         assert "hostname" in contents
         for locked_input in ("flake.lock", "uv.lock", "rust-toolchain.toml"):
             assert locked_input in contents
+
+
+def _dockerfile_stages(path: Path) -> dict[str, str]:
+    stages: dict[str, str] = {}
+    name = ""
+    for line in path.read_text().splitlines():
+        if line.startswith("FROM "):
+            name = line.rsplit(" AS ", 1)[1]
+        stages[name] = stages.get(name, "") + line + "\n"
+    return stages
+
+
+def test_docker_heavy_layers_depend_only_on_locked_inputs() -> None:
+    for path in sorted(REPO_ROOT.glob("Dockerfile.*")):
+        stages = _dockerfile_stages(path)
+        assert list(stages) == ["", "nix-fixture", "base", "prewarm", "acceptance", "tests"]
+
+        # Nothing from the checkout reaches the image before the prewarm stage.
+        assert "COPY --chown" not in stages["base"]
+        copies = [line for line in stages["prewarm"].splitlines() if line.startswith("COPY ")]
+        assert copies == ["COPY --chown=tester:tester flake.nix flake.lock rust-toolchain.toml ./"]
+        assert "bootstrap.sh" not in stages["prewarm"]
+        assert stages["prewarm"].count("--no-write-lock-file") == 2
+        assert "rustup toolchain install" in stages["prewarm"]
+
+
+def test_docker_acceptance_proves_install_reinstall_and_the_installed_result() -> None:
+    for path in sorted(REPO_ROOT.glob("Dockerfile.*")):
+        stages = _dockerfile_stages(path)
+        acceptance = stages["acceptance"]
+
+        assert stages[""].count("ARG INSTALL_BASE=prewarm") == 1
+        assert acceptance.startswith("FROM ${INSTALL_BASE} AS acceptance\n")
+        runs = [line for line in acceptance.splitlines() if line.startswith("RUN ")]
+        assert runs[:2] == [
+            "RUN ./bootstrap.sh install",
+            "RUN ./bootstrap.sh install && ./bootstrap.sh profile"
+            " && ./bootstrap.sh doctor && ./bootstrap.sh verify",
+        ]
+        smoke = acceptance.split("RUN <<'SMOKE'\n", 1)[1].split("\nSMOKE\n", 1)[0]
+        assert smoke.startswith("#!/bin/bash -l\nset -eu\n")
+        for check in (
+            'test "$(id -un)" = tester',
+            "bash -n bootstrap.sh",
+            "./bootstrap.sh verify",
+            "command -v fish",
+            "command -v rg",
+            "command -v nvim",
+            "__direnv_export_eval",
+        ):
+            assert check in smoke
+        for installer in ("install.determinate.systems", "curl --proto", "| sh"):
+            assert installer not in path.read_text()
+        assert "COPY --chown=tester:tester . ." not in acceptance
+        assert stages["tests"].rstrip().endswith("RUN make test-syntax test-pre")
+
+
+def test_distro_dockerfiles_differ_only_in_the_base_packages() -> None:
+    marker = "# Shared with the other distro's Dockerfile from here on.\n"
+    ubuntu = REPO_ROOT.joinpath("Dockerfile.ubuntu").read_text()
+    fedora = REPO_ROOT.joinpath("Dockerfile.fedora").read_text()
+
+    assert ubuntu.count(marker) == fedora.count(marker) == 1
+    assert ubuntu.split(marker)[1] == fedora.split(marker)[1]
+    assert ubuntu.split("FROM ubuntu:")[0] == fedora.split("FROM fedora:")[0]

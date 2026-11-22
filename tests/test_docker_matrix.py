@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from tests.docker_matrix import (
     CASES,
     build_command,
+    build_commands,
     docker_environment,
     main,
-    smoke_command,
 )
 
 
@@ -16,52 +18,80 @@ def test_matrix_covers_ubuntu_and_fedora() -> None:
     ]
 
 
-def test_build_commands_use_the_expected_images_and_context() -> None:
+def test_build_runs_the_acceptance_stage_without_exporting_an_image() -> None:
     command = build_command(CASES[0])
 
     assert command[:3] == ["docker", "buildx", "build"]
-    assert "--load" in command
     assert "--progress=plain" in command
     assert "--pull" not in command
-    assert command[-3:] == ["-t", "nixdotfiles:test-ubuntu", str(command[-1])]
+    assert command[command.index("--target") + 1] == "acceptance"
+    assert command[command.index("--output") + 1] == "type=cacheonly"
+    assert "--load" not in command
+    assert "-t" not in command
+    assert command[command.index("-f") + 1].endswith("Dockerfile.ubuntu")
 
 
-def test_ci_build_commands_use_separate_gha_cache_scopes() -> None:
-    ubuntu = build_command(CASES[0], environ={"GITHUB_ACTIONS": "true"})
-    fedora = build_command(CASES[1], environ={"GITHUB_ACTIONS": "true"})
+def test_keep_loads_a_tagged_image_for_debugging() -> None:
+    command = build_command(CASES[1], keep=True)
 
-    assert "type=gha,scope=dotfiles-ubuntu" in ubuntu
-    assert "type=gha,mode=max,scope=dotfiles-ubuntu" in ubuntu
-    assert "type=gha,scope=dotfiles-fedora" in fedora
-    assert "type=gha,mode=max,scope=dotfiles-fedora" in fedora
+    assert command[-4:-1] == ["--load", "-t", "nixdotfiles:test-fedora"]
+    assert "--output" not in command
 
 
-def test_smoke_command_checks_the_non_root_repo_and_never_installs_nix() -> None:
-    command = smoke_command(CASES[1])
-    shell_command = command[-1]
+def test_empty_layer_cache_is_seeded_with_only_the_locked_input_stages(
+    tmp_path: Path,
+) -> None:
+    seed, build = build_commands(CASES[0], layer_cache=tmp_path)
 
-    assert command[:3] == ["docker", "run", "--rm"]
-    assert '$(id -un)" = tester' in shell_command
-    assert "bash -n bootstrap.sh" in shell_command
-    assert "./bootstrap.sh verify" in shell_command
-    assert "__direnv_export_eval" in shell_command
-    assert "install.determinate.systems" not in shell_command
-    assert "curl --proto" not in shell_command
-    assert "| sh" not in shell_command
+    assert seed[seed.index("--target") + 1] == "prewarm"
+    assert f"type=local,dest={tmp_path},mode=max,compression=zstd" in seed
+    assert "--cache-to" not in build
+    assert f"type=local,src={tmp_path}" in build
+    assert build[build.index("--target") + 1] == "acceptance"
 
 
-def test_dry_run_does_not_require_docker(capsys) -> None:
+def test_restored_layer_cache_is_read_and_never_rewritten(tmp_path: Path) -> None:
+    tmp_path.joinpath("index.json").write_text("{}")
+
+    (build,) = build_commands(CASES[0], layer_cache=tmp_path)
+
+    assert f"type=local,src={tmp_path}" in build
+    assert "--cache-to" not in build
+
+
+def test_local_runs_use_only_the_builder_cache() -> None:
+    (build,) = build_commands(CASES[0], target="tests")
+
+    assert build[build.index("--target") + 1] == "tests"
+    assert "--cache-from" not in build
+    assert "--cache-to" not in build
+
+
+def test_dry_run_does_not_require_docker(capsys, monkeypatch) -> None:
+    monkeypatch.delenv("DOCKER_LAYER_CACHE", raising=False)
     assert main(["--dry-run"]) == 0
     output = capsys.readouterr().out
-    assert "nixdotfiles:test-ubuntu" in output
-    assert "nixdotfiles:test-fedora" in output
+    assert "Dockerfile.ubuntu" in output
+    assert "Dockerfile.fedora" in output
+    assert "passed" not in output
 
 
-def test_dry_run_can_select_one_ci_case(capsys) -> None:
+def test_dry_run_can_select_one_ci_case(capsys, monkeypatch) -> None:
+    monkeypatch.delenv("DOCKER_LAYER_CACHE", raising=False)
     assert main(["--dry-run", "--case", "fedora"]) == 0
     output = capsys.readouterr().out
-    assert "nixdotfiles:test-fedora" in output
-    assert "nixdotfiles:test-ubuntu" not in output
+    assert "Dockerfile.fedora" in output
+    assert "Dockerfile.ubuntu" not in output
+
+
+def test_layer_cache_directory_comes_from_the_ci_environment(
+    capsys, monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("DOCKER_LAYER_CACHE", str(tmp_path))
+    assert main(["--dry-run", "--case", "ubuntu"]) == 0
+    output = capsys.readouterr().out
+    assert f"--cache-to type=local,dest={tmp_path}" in output
+    assert f"--cache-from type=local,src={tmp_path}" in output
 
 
 def test_darwin_docker_environment_restores_host_helper_paths() -> None:

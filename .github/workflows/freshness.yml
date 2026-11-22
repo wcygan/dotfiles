@@ -24,6 +24,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # INSTALL_BASE=base skips the prewarm stage: the install in this build
+      # downloads the Nix closure and the Rust toolchain itself.
       - name: Build against current upstream tags
         env:
           SOURCE_DOCKERFILE: ${{ matrix.dockerfile }}
@@ -31,7 +33,8 @@ jobs:
         run: |
           temporary="$RUNNER_TEMP/${SOURCE_DOCKERFILE}"
           sed -E 's/@sha256:[0-9a-f]{64}//g' "$SOURCE_DOCKERFILE" > "$temporary"
-          docker build --pull --file "$temporary" --tag "$IMAGE_TAG" .
+          docker build --pull --build-arg INSTALL_BASE=base --target acceptance \
+            --file "$temporary" --tag "$IMAGE_TAG" .
           docker run --rm "$IMAGE_TAG" /bin/bash -lc './bootstrap.sh verify'
 
       - name: Verify tracked inputs are unchanged

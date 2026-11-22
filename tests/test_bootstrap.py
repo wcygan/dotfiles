@@ -29,7 +29,7 @@ def bootstrap_environment(command_bin: Path, tmp_path: Path) -> dict[str, str]:
     inherited = {
         name: value
         for name, value in os.environ.items()
-        if name != "DOTFILES_BOOTSTRAP_DEV_CACHE"
+        if name not in {"DOTFILES_BOOTSTRAP_DEV_CACHE", "DOTFILES_DEV_SHELL"}
     }
     return {
         **inherited,
@@ -315,7 +315,7 @@ def test_changed_flake_input_rebuilds_the_dev_environment(
     (checkout / changed).write_text("second\n")
 
     assert len(run_checkout(checkout, command_bin, tmp_path)) == 2
-    assert len(list((tmp_path / "cache" / "dotfiles" / "dev-env").glob("*/*"))) == 1
+    assert len(list((tmp_path / "cache" / "dotfiles" / "dev-env").glob("*/default/*"))) == 1
 
 
 def test_each_checkout_keeps_its_own_dev_environment(
@@ -334,7 +334,7 @@ def test_collected_dev_environment_is_rebuilt(
     checkout: Path, command_bin: Path, tmp_path: Path
 ) -> None:
     run_checkout(checkout, command_bin, tmp_path)
-    (profile,) = (tmp_path / "cache" / "dotfiles" / "dev-env").glob("*/*/profile")
+    (profile,) = (tmp_path / "cache" / "dotfiles" / "dev-env").glob("*/default/*/profile")
     profile.unlink()
 
     assert len(run_checkout(checkout, command_bin, tmp_path)) == 2
@@ -389,3 +389,14 @@ def test_run_without_a_command_is_rejected(command_bin: Path, tmp_path: Path) ->
 
     assert result.returncode == 2
     assert "--run needs a command." in result.stderr
+
+
+def test_dev_shell_can_be_selected_and_is_saved_separately(
+    checkout: Path, command_bin: Path, tmp_path: Path
+) -> None:
+    run_checkout(checkout, command_bin, tmp_path)
+    selected = run_checkout(checkout, command_bin, tmp_path, DOTFILES_DEV_SHELL="checks")
+
+    assert selected[-1].endswith(" .#checks")
+    assert len(run_checkout(checkout, command_bin, tmp_path)) == 2
+    assert len(run_checkout(checkout, command_bin, tmp_path, DOTFILES_DEV_SHELL="checks")) == 2

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -55,30 +56,34 @@ def _report(result: OperationResult, output: Output) -> None:
 
 def _record_result(journal: OperationJournal, result: OperationResult) -> None:
     status = "skipped" if result.skipped else "completed" if result.succeeded else "failed"
-    duration_ms = None if result.seconds is None else round(result.seconds * 1000)
+    duration_ms = None if result.seconds is None else _duration_ms(result.seconds)
     journal.record_operation(result.name, status, duration_ms=duration_ms)
 
 
-def _startup_seconds(environ: Mapping[str, str]) -> tuple[float, bool] | None:
-    """Return the time since bootstrap.sh started and whether its clock was sub-second."""
+def _duration_ms(seconds: float) -> int:
+    return round(seconds * 1000)
 
-    raw = environ.get(_BOOTSTRAP_STARTED_AT, "").replace(",", ".")
-    try:
-        elapsed = time.time() - float(raw)
-    except ValueError:
+
+def _startup_seconds(environ: Mapping[str, str]) -> float | None:
+    """Return the time since bootstrap.sh started, when its clock was sub-second.
+
+    A whole-second start time is up to a second early, which is longer than a
+    normal startup, so it is not reported. A `date` without `%N` leaves a
+    fraction that is not a number and lands here too.
+    """
+
+    raw = environ.get(_BOOTSTRAP_STARTED_AT, "")
+    if not re.fullmatch(r"[0-9]+[.,][0-9]+", raw):
         return None
+    elapsed = time.time() - float(raw.replace(",", "."))
     if not 0 <= elapsed < _LONGEST_PLAUSIBLE_STARTUP_SECONDS:
         return None
-    if "." in raw:
-        return elapsed, True
-    # A whole-second start time was truncated, so the true wait is up to one
-    # second shorter; report the middle of that range.
-    return max(0.0, elapsed - 0.5), False
+    return elapsed
 
 
 def _timing_summary(
     results: list[OperationResult],
-    startup: tuple[float, bool] | None,
+    startup: float | None,
     workflow_seconds: float,
 ) -> str:
     """Render where one install spent its time."""
@@ -86,9 +91,8 @@ def _timing_summary(
     parts: list[str] = []
     total = workflow_seconds
     if startup is not None:
-        seconds, exact = startup
-        total += seconds
-        parts.append(f"startup {seconds:.1f}s" if exact else f"startup ~{seconds:.0f}s")
+        total += startup
+        parts.append(f"startup {startup:.1f}s")
     parts.extend(
         f"{result.name} {result.seconds:.1f}s"
         for result in results
@@ -101,13 +105,14 @@ def _checkpoint_failure(
     journal: OperationJournal,
     *,
     operation_name: str | None = None,
+    duration_ms: int | None = None,
 ) -> tuple[str, ...]:
     """Persist one failure checkpoint and return each checkpoint error."""
 
     errors: list[str] = []
     if operation_name is not None:
         try:
-            journal.record_operation(operation_name, "failed")
+            journal.record_operation(operation_name, "failed", duration_ms=duration_ms)
         except Exception as error:  # noqa: BLE001 - report every journal failure
             errors.append(f"could not record {operation_name} failure: {error}")
 
@@ -167,9 +172,13 @@ def run_mutation(
     environ: Mapping[str, str] | None = None,
     output: Output = print,
 ) -> int:
-    """Run one direct mutation under one lock and durable journal."""
+    """Run one direct mutation under one lock and durable journal.
+
+    The journal's entry for the command records how long the operation took.
+    """
 
     values = os.environ if environ is None else environ
+    started = time.monotonic()
     journal: OperationJournal | None = None
     primary_error: Exception | None = None
     journal_errors: tuple[str, ...] = ()
@@ -182,7 +191,11 @@ def run_mutation(
                 journal.transition("applying")
                 operation(journal)
                 if journal.state not in _TERMINAL_FAILURE_STATES:
-                    journal.record_operation(command, "completed")
+                    journal.record_operation(
+                        command,
+                        "completed",
+                        duration_ms=_duration_ms(time.monotonic() - started),
+                    )
                     journal.transition("completed")
                 exit_code = 1 if journal.state in _TERMINAL_FAILURE_STATES else 0
             except Exception as error:  # noqa: BLE001 - checkpoint before lock release
@@ -191,6 +204,7 @@ def run_mutation(
                     journal_errors = _checkpoint_failure(
                         journal,
                         operation_name=command,
+                        duration_ms=_duration_ms(time.monotonic() - started),
                     )
     except Exception as error:  # noqa: BLE001 - command boundary converts failures to exit codes
         if primary_error is None:
@@ -236,7 +250,7 @@ def _install_results(
 
     profile = _run_operation(
         "profile",
-        lambda: ensure_profile(repo_root, environment=environ),
+        lambda: ensure_profile(repo_root, environment=environ, skip_when_current=True),
     )
     add(profile)
     if not profile.succeeded:

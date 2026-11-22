@@ -104,13 +104,15 @@ ensure_nix_available() {
 # Print the path of a reusable copy of the dev shell environment, or fail.
 #
 # `nix develop` spends seconds per entry even when nothing changed. The
-# environment depends only on flake.nix and flake.lock, so one saved copy per
-# content of those files is reused. Its Nix profile keeps the store paths alive.
+# environment depends only on flake.nix and flake.lock, so each checkout keeps
+# one saved copy for the current content of those files. Its Nix profile keeps
+# the store paths alive.
 cached_dev_environment() {
   [[ "${DOTFILES_BOOTSTRAP_DEV_CACHE:-1}" == 1 ]] || return 1
-  local root key directory
-  root="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles/dev-env"
-  key="$({ printf '%s\n' "$REPO_ROOT"; cksum flake.nix flake.lock; } | cksum)" || return 1
+  local root checkout key directory
+  checkout="$(printf '%s\n' "$REPO_ROOT" | cksum)" || return 1
+  key="$(cksum flake.nix flake.lock | cksum)" || return 1
+  root="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles/dev-env/${checkout%% *}"
   directory="$root/${key%% *}"
   if [[ ! -f "$directory/env.rc" || ! -e "$directory/profile" ]]; then
     rm -rf "$root"
@@ -158,9 +160,10 @@ run_dotfiles_setup() {
     forwarded_args=(install)
   fi
 
-  # Install reports the time spent before Python starts. Bash 5 gives a
-  # sub-second clock; older Bash, such as macOS 3.2, gives whole seconds.
-  export DOTFILES_BOOTSTRAP_STARTED_AT="${EPOCHREALTIME:-$(date +%s)}"
+  # Install reports the time spent before Python starts. Bash 5 has a
+  # sub-second clock built in; older Bash, such as macOS 3.2, asks date. Where
+  # date has no %N the value is not a number and install reports no startup.
+  export DOTFILES_BOOTSTRAP_STARTED_AT="${EPOCHREALTIME:-$(date +%s.%N)}"
   exec_in_dev_environment uv run --locked python -m dotfiles_setup "${forwarded_args[@]}"
 }
 

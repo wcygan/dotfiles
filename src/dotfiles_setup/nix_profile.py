@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+import hashlib
 import json
 import os
 import subprocess
@@ -9,6 +11,8 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlparse
+
+from dotfiles_setup.paths import UserPathContext
 
 Runner = Callable[..., subprocess.CompletedProcess[str]]
 
@@ -188,24 +192,116 @@ def profile_state(inventory: Sequence[ProfileElement], repo_root: Path) -> Profi
     return ProfileState.ABSENT
 
 
+def _flake_fingerprint(repo_root: Path) -> str | None:
+    """Identify the checkout and the two files that decide its default package.
+
+    flake.nix reads nothing else from the checkout, so with a complete
+    flake.lock these files fix the package's store path.
+    """
+
+    digest = hashlib.sha256(os.fsencode(repo_root.resolve()))
+    for name in ("flake.nix", "flake.lock"):
+        try:
+            content = (repo_root / name).read_bytes()
+        except OSError:
+            return None
+        digest.update(len(content).to_bytes(8, "big"))
+        digest.update(content)
+    return digest.hexdigest()
+
+
+def _record_path(environment: Mapping[str, str] | None) -> Path:
+    return UserPathContext.from_environment(environment).state_directory / "nix-profile.json"
+
+
+def _is_current(element: ProfileElement, record_path: Path, fingerprint: str | None) -> bool:
+    """Return whether the last upgrade already installed these flake files.
+
+    Every doubt answers no, which costs one ordinary upgrade.
+    """
+
+    if fingerprint is None or not element.store_paths:
+        return False
+    try:
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    return (
+        isinstance(record, dict)
+        and record.get("fingerprint") == fingerprint
+        and record.get("store_paths") == [str(path) for path in element.store_paths]
+        and all(path.exists() for path in element.store_paths)
+    )
+
+
+def _record_current(
+    repo_root: Path,
+    record_path: Path,
+    fingerprint: str | None,
+    runner: Runner,
+    environment: Mapping[str, str] | None,
+) -> None:
+    """Remember which store paths the profile holds for these flake files."""
+
+    if fingerprint is None or _flake_fingerprint(repo_root) != fingerprint:
+        return
+    try:
+        # An incomplete flake.lock lets Nix pick new inputs on every upgrade,
+        # so the flake files would not fix the result.
+        _run(
+            runner,
+            _nix_command(
+                "flake", "metadata", "--no-update-lock-file", "--json", str(repo_root.resolve())
+            ),
+            environment,
+        )
+        inventory = list_profile_elements(runner=runner, environment=environment)
+    except NixProfileError:
+        return
+    element = select_current_checkout_profile(inventory, repo_root, active_only=True)
+    if element is None or not element.store_paths:
+        return
+    record = {
+        "fingerprint": fingerprint,
+        "store_paths": [str(path) for path in element.store_paths],
+    }
+    temporary = record_path.with_name(f"{record_path.name}.{os.getpid()}")
+    with contextlib.suppress(OSError):
+        record_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        temporary.write_text(json.dumps(record), encoding="utf-8")
+        temporary.replace(record_path)
+
+
 def ensure_profile(
     repo_root: Path,
     *,
     runner: Runner = subprocess.run,
     environment: Mapping[str, str] | None = None,
+    skip_when_current: bool = False,
 ) -> str:
+    """Add or upgrade this checkout's profile element.
+
+    Install passes ``skip_when_current`` so an unchanged flake costs nothing.
+    The explicit profile command always upgrades, which is how to force one.
+    """
+
     inventory = list_profile_elements(runner=runner, environment=environment)
     state = profile_state(inventory, repo_root)
     action = PROFILE_ACTIONS[state]
+    fingerprint = _flake_fingerprint(repo_root)
+    record_path = _record_path(environment)
 
     if action is ProfileAction.UPGRADE:
         element = select_current_checkout_profile(inventory, repo_root, active_only=True)
         assert element is not None
+        if skip_when_current and _is_current(element, record_path, fingerprint):
+            return f"Nix profile element is current: {element.name}"
         _run(
             runner,
             _nix_command("profile", "upgrade", element.name, "--no-write-lock-file"),
             environment,
         )
+        _record_current(repo_root, record_path, fingerprint, runner, environment)
         return f"Upgraded Nix profile element: {element.name}"
 
     if action is ProfileAction.BLOCKED:
@@ -230,4 +326,5 @@ def ensure_profile(
         ),
         environment,
     )
+    _record_current(repo_root, record_path, fingerprint, runner, environment)
     return f"Added Nix profile from: {flake_reference}"

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -291,3 +292,165 @@ def test_profile_actions_are_total() -> None:
 
     assert set(PROFILE_ACTIONS) == set(ProfileState)
     assert set(PROFILE_ACTIONS.values()) == set(ProfileAction)
+
+
+class Checkout:
+    """A checkout with flake files, a profile element for it, and an isolated home."""
+
+    def __init__(self, root: Path, name: str = "checkout") -> None:
+        self.repo = root / name
+        self.repo.mkdir()
+        (self.repo / "flake.nix").write_text("{ }\n", encoding="utf-8")
+        (self.repo / "flake.lock").write_text("{}\n", encoding="utf-8")
+        self.output = root / "store" / "system-packages"
+        self.output.mkdir(parents=True, exist_ok=True)
+        self.environment = {"HOME": str(root / "home")}
+        self.runner = RecordingRunner(
+            {
+                "version": 3,
+                "elements": {
+                    "dotfiles": {
+                        "originalUrl": f"git+{self.repo.as_uri()}",
+                        "active": True,
+                        "storePaths": [str(self.output)],
+                    }
+                },
+            }
+        )
+
+    def ensure(self) -> str:
+        """Run the profile step the way install does."""
+
+        self.runner.calls.clear()
+        return ensure_profile(
+            self.repo,
+            runner=self.runner,
+            environment=self.environment,
+            skip_when_current=True,
+        )
+
+    def upgrades(self) -> int:
+        return sum("upgrade" in call for call in self.runner.calls)
+
+
+def test_unchanged_flake_files_skip_the_second_upgrade(tmp_path: Path) -> None:
+    checkout = Checkout(tmp_path)
+
+    assert checkout.ensure() == "Upgraded Nix profile element: dotfiles"
+    assert checkout.upgrades() == 1
+
+    assert checkout.ensure() == "Nix profile element is current: dotfiles"
+    assert [call[-2:] for call in checkout.runner.calls] == [["list", "--json"]]
+
+
+@pytest.mark.parametrize("changed", ["flake.nix", "flake.lock"])
+def test_changed_flake_file_is_upgraded(tmp_path: Path, changed: str) -> None:
+    checkout = Checkout(tmp_path)
+    checkout.ensure()
+
+    (checkout.repo / changed).write_text("changed\n", encoding="utf-8")
+
+    assert checkout.ensure() == "Upgraded Nix profile element: dotfiles"
+    assert checkout.upgrades() == 1
+
+
+def test_another_checkout_with_the_same_flake_files_is_upgraded(tmp_path: Path) -> None:
+    first = Checkout(tmp_path, "first")
+    first.ensure()
+    second = Checkout(tmp_path, "second")
+
+    assert second.ensure() == "Upgraded Nix profile element: dotfiles"
+    assert second.upgrades() == 1
+
+
+def test_collected_output_is_upgraded(tmp_path: Path) -> None:
+    checkout = Checkout(tmp_path)
+    checkout.ensure()
+
+    shutil.rmtree(checkout.output)
+
+    assert checkout.ensure() == "Upgraded Nix profile element: dotfiles"
+    assert checkout.upgrades() == 1
+
+
+def test_profile_changed_outside_setup_is_upgraded(tmp_path: Path) -> None:
+    checkout = Checkout(tmp_path)
+    checkout.ensure()
+
+    other = tmp_path / "store" / "other-packages"
+    other.mkdir()
+    checkout.runner.profile_payload["elements"]["dotfiles"]["storePaths"] = [str(other)]  # type: ignore[index]
+
+    assert checkout.ensure() == "Upgraded Nix profile element: dotfiles"
+    assert checkout.upgrades() == 1
+
+
+def test_incomplete_lock_file_is_upgraded_every_time(tmp_path: Path) -> None:
+    checkout = Checkout(tmp_path)
+    recording = checkout.runner
+
+    def runner(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        if "metadata" in args:
+            assert "--no-update-lock-file" in args
+            raise subprocess.CalledProcessError(1, args, stderr="requires lock file changes")
+        return recording(args, **kwargs)
+
+    for _ in range(2):
+        recording.calls.clear()
+        message = ensure_profile(checkout.repo, runner=runner, environment=checkout.environment)
+        assert message == "Upgraded Nix profile element: dotfiles"
+        assert checkout.upgrades() == 1
+
+
+def test_explicit_profile_command_always_upgrades(tmp_path: Path) -> None:
+    checkout = Checkout(tmp_path)
+    checkout.ensure()
+    assert checkout.ensure() == "Nix profile element is current: dotfiles"
+
+    checkout.runner.calls.clear()
+    message = ensure_profile(
+        checkout.repo, runner=checkout.runner, environment=checkout.environment
+    )
+
+    assert message == "Upgraded Nix profile element: dotfiles"
+    assert checkout.upgrades() == 1
+
+
+def test_missing_lock_file_is_upgraded_every_time(tmp_path: Path) -> None:
+    checkout = Checkout(tmp_path)
+    (checkout.repo / "flake.lock").unlink()
+
+    for _ in range(2):
+        assert checkout.ensure() == "Upgraded Nix profile element: dotfiles"
+        assert checkout.upgrades() == 1
+
+
+def test_unreadable_record_is_upgraded(tmp_path: Path) -> None:
+    checkout = Checkout(tmp_path)
+    checkout.ensure()
+
+    record = tmp_path / "home/.local/state/dotfiles/nix-profile.json"
+    assert record.is_file()
+    record.write_text("not json", encoding="utf-8")
+
+    assert checkout.ensure() == "Upgraded Nix profile element: dotfiles"
+    assert checkout.ensure() == "Nix profile element is current: dotfiles"
+
+
+def test_added_profile_is_current_on_the_next_run(tmp_path: Path) -> None:
+    checkout = Checkout(tmp_path)
+    elements = checkout.runner.profile_payload["elements"]
+    checkout.runner.profile_payload = {"version": 3, "elements": {}}
+    recording = checkout.runner
+
+    def runner(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        result = recording(args, **kwargs)
+        if "add" in args:
+            recording.profile_payload = {"version": 3, "elements": elements}
+        return result
+
+    message = ensure_profile(checkout.repo, runner=runner, environment=checkout.environment)
+    assert message.startswith("Added Nix profile from: ")
+
+    assert checkout.ensure() == "Nix profile element is current: dotfiles"
+    assert not any("--write-lock-file" in call for call in recording.calls)

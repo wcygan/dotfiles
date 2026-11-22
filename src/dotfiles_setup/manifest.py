@@ -502,10 +502,18 @@ class OperationJournal:
             raise ManifestError(f"invalid recovery entry: {error}") from error
 
     def transition(self, state: str | OperationState) -> None:
-        """Record the next operation state, rejecting illegal movement."""
+        """Record the next operation state, rejecting illegal movement.
+
+        A failed journal promises that nothing needs recovery, and recovery
+        ignores it. A failure reported while earlier entries are still applied
+        is therefore recorded as recovery-needed.
+        """
 
         try:
-            target = advance_operation(self.state, state)
+            requested = coerce_operation_state(state)
+            if requested is OperationState.FAILED and self.pending_entries:
+                requested = OperationState.RECOVERY_NEEDED
+            target = advance_operation(self.state, requested)
         except LifecycleError as error:
             raise ManifestError(str(error)) from error
         self.data["state"] = target.value

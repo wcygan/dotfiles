@@ -328,6 +328,54 @@ def test_recovery_accepts_a_missing_parent_planned_by_directory_records(
     assert Path(file_entry["stage_path"]).is_file()
 
 
+def test_a_rolled_back_batch_keeps_recovery_for_an_earlier_applied_batch(
+    tmp_path: Path,
+) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    destination = home / ".npmrc"
+    destination.write_text("original\n")
+    values = {
+        **_environment(home),
+        "XDG_STATE_HOME": str(tmp_path / "state"),
+    }
+    journal = OperationJournal("link", Path.cwd(), environ=values)
+    journal.transition("applying")
+    execute_mutations(
+        (
+            FileMutation(
+                destination=destination,
+                visible_destination=destination,
+                source="npmrc",
+                contents=b"managed\n",
+            ),
+        ),
+        journal=journal,
+        authority_roots=(home,),
+    )
+
+    outside = tmp_path / "outside" / "file"
+    with pytest.raises(mutations_module.MutationExecutionError) as failure:
+        execute_mutations(
+            (
+                FileMutation(
+                    destination=outside,
+                    visible_destination=outside,
+                    source="npmrc",
+                    contents=b"never written\n",
+                ),
+            ),
+            journal=journal,
+            authority_roots=(home,),
+        )
+
+    assert failure.value.restored
+    assert not outside.parent.exists()
+    assert journal.state == "recovery-needed"
+    assert run_recovery(environ=values, apply=True, yes=True, output=lambda _: None) == 0
+    assert destination.read_bytes() == b"original\n"
+
+
 def test_recovery_restores_a_file_when_applied_checkpoint_is_interrupted(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

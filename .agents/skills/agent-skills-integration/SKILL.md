@@ -10,15 +10,34 @@ description: "Maintain the pinned agent-skills provider/consumer integration. Us
 Preserve one explicit boundary for reusable skills:
 
 ```text
-wcygan/agent-skills       dotfiles                     GitHub CLI / Codex
-source and validation -> exact consumer lock       -> shared machine-local user copies
-                           supported orchestration     and tracking state
+wcygan/agent-skills       dotfiles                     shared user copies
+source and validation -> exact consumer lock       -> installed by the provider's
+`just install`             supported orchestration     `just install`, or by GitHub CLI
 ```
 
 Success means reusable skill source remains in `wcygan/agent-skills`, this
-repository consumes one reviewed commit through `agent-skills.lock.toml`, and
-GitHub CLI installs and reports the complete Codex shared user catalog at that
-exact commit.
+repository records one commit in `agent-skills.lock.toml`, and
+`./bootstrap.sh agent-skills --check` reports the complete Codex shared user
+catalog at that exact commit.
+
+## Two installers, one audit
+
+- **Routine, on a machine with the provider checkout:** `just install` in
+  `agent-skills` commits the catalog, copies it from the checkout into the
+  shared directory with the `github-*` source metadata GitHub CLI writes,
+  archives retired provider skills, sets the pin here, commits only
+  `agent-skills.lock.toml`, and pushes both repositories in the background.
+  It does not use this repository's mutation lock or journal, and it does not
+  update GitHub CLI's `~/.agents/.skill-lock.json`.
+- **Fresh machine or recovery:** `./bootstrap.sh agent-skills` installs the
+  pinned catalog through GitHub CLI. A full catalog install took 106 seconds
+  when measured on 2026-11-21, which is why it is no longer the routine path.
+- **Audit of either:** `./bootstrap.sh agent-skills --check`. It accepts the
+  provider-installed copies because it checks the listed source, pin, paths,
+  file contents, and source attestation, not who wrote them.
+
+The Invariants and Workflow below govern the GitHub CLI installer and the
+check. They do not forbid the provider's installer.
 
 ## Ownership Contract
 
@@ -38,8 +57,9 @@ exact commit.
 - Pin a full lowercase 40-character commit SHA. Mutable branches, tags, and
   abbreviated SHAs are not an installation contract.
 - Invoke `gh skill install` with `--dir <resolved shared user directory> --all
-  --pin`. Keep catalog discovery and installation in GitHub CLI instead of
-  adding a second clone, copy, vendoring, or synchronization implementation.
+  --pin`. Inside this repository, keep catalog discovery and installation in
+  GitHub CLI; do not add a clone, copy, vendoring, or synchronization
+  implementation here. The provider's `just install` is the one other writer.
 - Keep installation explicit through `./bootstrap.sh agent-skills`; the default
   dotfiles install does not mutate the global skill catalog.
 - Serialize and journal installation as a dotfiles mutation. Keep
@@ -80,9 +100,11 @@ exact commit.
 4. Make the change only in the owning layer. A provider-source change does not
    belong in dotfiles, and a consumer pin or setup-policy change does not belong
    in the provider repository.
-5. For a pin advance, use the reviewed provider commit's full SHA, update only
-   `agent-skills.lock.toml`, run the explicit installer, then run the read-only
-   check. Inspect removed or renamed skills before cleanup. Run the supported `--prune`
+5. For a pin advance on a machine with the provider checkout, run
+   `just install` there and stop: it pins, installs, and commits the lock. For
+   a pin advance without that checkout, use the reviewed provider commit's
+   full SHA, update only `agent-skills.lock.toml`, run the explicit installer,
+   then run the read-only check. Inspect removed or renamed skills before cleanup. Run the supported `--prune`
    operation when removal is authorized; a full reset requires explicit scope.
 6. For integration code changes, preserve the root `bootstrap.sh` entry point,
    mutation journal, recovery behavior, and metadata-based verification; add

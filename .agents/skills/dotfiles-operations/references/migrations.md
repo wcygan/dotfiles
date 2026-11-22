@@ -4,6 +4,23 @@ Read this reference before changing compatibility guarantees, restoring retired
 behavior, or replacing a setup boundary. Add an entry when a breaking change is
 intentional, alongside focused migration tests.
 
+## 2026-11-21 — The provider's `just install` becomes the routine skill installer
+
+GitHub CLI is no longer the only writer of `~/.agents/skills` and of
+`agent-skills.lock.toml`. `just install` in the `agent-skills` checkout copies
+the catalog from that checkout, writes the `github-*` source metadata GitHub
+CLI writes, archives retired provider skills, and commits and pushes the lock
+here on every run. A full `gh skill install` of the catalog took 106 seconds
+and each `./bootstrap.sh` call about 3.6 seconds of `nix develop` start-up; the
+provider's installer finishes in about 0.25 seconds.
+
+No code in this repository changed. `./bootstrap.sh agent-skills` remains the
+installer for a machine without the provider checkout and for recovery, and
+`./bootstrap.sh agent-skills --check` audits either installer's result. The
+provider's installer bypasses this repository's mutation lock and journal and
+leaves `~/.agents/.skill-lock.json` stale, so `gh skill update` no longer
+reflects what is installed.
+
 ## 2026-11-10 — Load agent instructions in Claude Code from AGENTS.md
 
 The managed inventory links `config/agents/AGENTS.md` to `~/.claude/CLAUDE.md`

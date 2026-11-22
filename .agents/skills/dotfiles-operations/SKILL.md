@@ -75,8 +75,9 @@ work when appropriate:
 - Dotfiles-local skill design: use `$brainstorm-skills`.
 - Reusable/global skill source, catalog pin, installation, verification,
   collision, or recovery: use `$agent-skills-integration`. Keep source in the
-  authoritative `agent-skills` repository and consume it here through the
-  pinned GitHub CLI integration.
+  authoritative `agent-skills` repository. Its `just install` is the routine
+  installer and pin writer; the pinned GitHub CLI integration here serves a
+  fresh machine, recovery, and the read-only check.
 
 ## Standard Workflow
 

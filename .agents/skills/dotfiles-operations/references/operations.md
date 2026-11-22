@@ -45,8 +45,14 @@ installation, verification, collision, stale-skill, or recovery decision. It
 defines the authoritative provider/consumer/runtime boundary and pin-advance
 workflow.
 
-Install or reconcile the external `agent-skills` collection for Codex's shared
-user scope through the supported root entry point:
+On a machine that has the `agent-skills` checkout, routine installs and pin
+advances happen there with `just install`, which also commits
+`agent-skills.lock.toml` in this repository; do not repeat them here. Run the
+check below to audit the result.
+
+On a fresh machine, or to recover, install or reconcile the external
+`agent-skills` collection for Codex's shared user scope through the supported
+root entry point:
 
 ```bash
 ./bootstrap.sh agent-skills

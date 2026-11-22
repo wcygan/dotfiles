@@ -249,6 +249,8 @@
               python313
               self.packages.${pkgs.stdenv.hostPlatform.system}.default.uv
               fish
+              # The Fish configuration under test loads the direnv hook.
+              direnv
               git
               gnumake
               shellcheck

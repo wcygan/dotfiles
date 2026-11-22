@@ -6,7 +6,7 @@
 | Setup runtime | `nix develop` plus locked `uv run` | same | CLI tests |
 | Configuration paths | home and XDG-aware | home and XDG-aware | link tests |
 | Shell handoff | opt-in only | opt-in only | `make test-shell` |
-| Cross-platform acceptance | local macOS check when affected | Ubuntu/Fedora driver | `make test-docker` |
+| Cross-platform acceptance | local macOS check when affected | Ubuntu/Fedora driver | `make test-docker`; `make test-linux` for quick Linux evidence from macOS |
 
 Inspect the earliest platform-specific failure before changing a later symptom.
 Use `make test-pre` first, then the narrowest applicable suite. A container

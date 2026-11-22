@@ -23,14 +23,17 @@ user / Make target
 bootstrap.sh
   - establishes the Nix boundary
   - handles explicit Nix-install handoff
-  - enters nix develop without rewriting flake.lock
+  - enters the dev environment without rewriting flake.lock: a saved
+    `nix print-dev-env` result under ${XDG_CACHE_HOME:-~/.cache}/dotfiles/dev-env
+    (keyed by checkout path, flake.nix, and flake.lock), else nix develop
+  - `--run <command>` runs any command there; Make targets use it
         |
         v
 uv run --locked python -m dotfiles_setup <command>
         |
         +--> cli.py: parsing and command routing
         +--> installer.py: mutation lock, journal, workflow boundaries, and terminal states
-        +--> nix_profile.py: exact checkout profile add/upgrade/inspection
+        +--> nix_profile.py: exact checkout profile add/upgrade/inspection; skips an upgrade when the flake files and store paths match its `nix-profile.json` record
         +--> paths.py: centralized HOME/XDG/CODEX and platform path resolution
         +--> links.py: managed destination inventory and config plans
         +--> cleanup.py: managed uninstall plans
@@ -45,7 +48,7 @@ uv run --locked python -m dotfiles_setup <command>
 The default install sequence is serial:
 
 ```text
-preflight/recovery check -> mutation lock -> profile -> links -> rustup
+preflight/recovery check -> mutation lock -> profile (add, upgrade, or skip) -> links -> rustup
     -> optional shell handoff -> strict verification -> journal completion
 ```
 

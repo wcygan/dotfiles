@@ -13,6 +13,7 @@ Validation layers:
 - `make test-pre`: locked Ruff and pytest.
 - `make test-local`: ephemeral-HOME-focused pytest.
 - `make test-shell`: shell-handoff pytest.
+- `make test-linux`: quick Linux evidence from macOS; tests plus install, doctor, verify, and smoke in an Ubuntu container (`DOCKER_CASE=fedora` for Fedora).
 - `make test-docker`: Python Ubuntu/Fedora driver.
 - `make test`: all non-Docker tests.
 

@@ -12,6 +12,15 @@
 The default command runs `install`: profile, managed links, pinned Rust tools,
 then strict verification. It does not edit Bash or zsh startup files.
 
+The profile step adds the checkout's element when it is absent and upgrades it
+otherwise, except that `install` skips `nix profile upgrade` when the checkout
+path, `flake.nix`, and `flake.lock` are unchanged since the last successful add
+or upgrade and the element still holds the recorded store paths, which must
+exist on disk. It then reports `Nix profile element is current: <name>`. The
+record is `${XDG_STATE_HOME:-~/.local/state}/dotfiles/nix-profile.json`; any
+doubt about it costs one ordinary upgrade. `./bootstrap.sh profile` always
+performs the upgrade; use it to force one.
+
 ### macOS without Nix
 
 Run `./bootstrap.sh`. The bootstrapper opens the Determinate macOS package and
@@ -114,7 +123,24 @@ The command does not purge foreign or stale skills.
 ./bootstrap.sh verify      # strict and read-only; PASS/FAIL
 ./bootstrap.sh recover     # read-only recovery inspection
 nix profile list --json    # profile identity and store outputs
+./bootstrap.sh --run <command>  # run a command in the dev environment
 ```
+
+Make targets and `bootstrap.sh` enter the dev environment from a saved copy in
+`${XDG_CACHE_HOME:-~/.cache}/dotfiles/dev-env`, keyed by the checkout path and
+the contents of `flake.nix` and `flake.lock`. It is rebuilt when either file
+changes or its Nix profile is collected, and `nix develop` is used when it
+cannot be used. `DOTFILES_BOOTSTRAP_DEV_CACHE=0` skips it for one command. If
+it is suspected stale, delete that directory.
+
+A full `install` ends with an `Install took ...` line, and each journal
+operation records `duration_ms`; read these before guessing where time goes.
+The line includes a startup figure only when `bootstrap.sh` exported a
+sub-second `DOTFILES_BOOTSTRAP_STARTED_AT` (`${EPOCHREALTIME:-$(date +%s.%N)}`);
+otherwise it omits startup. Commands that go through `run_mutation` (`profile`,
+`rustup`, `link`, `shell-handoff`, `uninstall`, `git-user`, `agent-skills`,
+`nightly-schedule`) record `duration_ms` on their journal entry and print no
+timing line.
 
 Interpret failures from the earliest violated boundary:
 
@@ -162,6 +188,10 @@ authorization:
 ```bash
 ./bootstrap.sh recover --apply --yes
 ```
+
+A late install step that fails before staging anything leaves the journal
+`recovery-needed` when an earlier step is still applied. The next install is
+refused until `./bootstrap.sh recover` runs.
 
 Recovery is intentionally conservative. If a current destination or backup no
 longer matches the journal, stop for manual intervention. Nix profile changes
@@ -274,11 +304,11 @@ through an intentional dependency/runtime update and verify with
 | --- | --- |
 | Skill or docs only | frontmatter/link check; `make test-pre`; docs build when docs change |
 | Python setup behavior | focused pytest; `make test-pre`; strict verify when applicable |
-| Managed links or cleanup | focused pytest; `make test-local`; `make test-pre` |
+| Managed links or cleanup | focused pytest; `make test-local`; `make test-pre` (includes the crash-point sweep in `tests/test_crash_sweep.py`) |
 | Shell handoff or Fish | focused pytest; `make test-shell`; `make test-syntax` |
 | Nix package or system declaration | `make test-pre`; `make test-eval`; profile/verify when installed |
-| Cross-platform bootstrap | prior gates plus `make test-docker`; relevant macOS evidence |
-| Docker or CI policy | focused policy tests; YAML parse; `make test-docker` |
+| Cross-platform bootstrap | prior gates plus `make test-linux` (quick Linux evidence from macOS) or `make test-docker`; relevant macOS evidence |
+| Docker or CI policy | focused policy tests; YAML parse; `make test-linux` or `make test-docker` |
 | Documentation | `make docs-build` |
 | Broad setup/recovery change | all non-Docker gates, Docker matrix, explicit recovery tests, live read-only verify |
 
@@ -295,7 +325,7 @@ the handoff.
 - locked Ruff/pytest and syntax validation;
 - native Linux install twice to prove idempotency, followed by strict verify;
 - all-system flake evaluation without building;
-- Ubuntu/Fedora Docker acceptance with separate BuildKit cache scopes;
+- Ubuntu/Fedora Docker acceptance, where each build is the check and CI caches only the `base` and `prewarm` stages with `actions/cache`;
 - an always-run summary that fails unless every required job succeeded.
 
 Each job uses explicit runners, timeouts, least-privilege permissions, pinned
@@ -318,8 +348,9 @@ verify, then deletes the VM. Pass flags to the runner directly, for example
 
 Local acceptance cleans up after itself. `tests/macos_e2e.py` removes its temp
 tree, `tests/macos_vm_e2e.py` deletes its VM and verifies that deletion, and
-`tests/docker_matrix.py` removes each built image after its smoke test. Pass
-`--keep` to retain a temp tree, VM, or image for debugging. `--prune-cache`
+`tests/docker_matrix.py` exports nothing: a passing build is the check, so no
+image remains. Pass `--keep` to retain a temp tree or VM, or to load the
+tagged image `nixdotfiles:test-<distro>` for debugging. `--prune-cache`
 additionally prunes the shared Docker build cache.
 
 ### Upstream freshness

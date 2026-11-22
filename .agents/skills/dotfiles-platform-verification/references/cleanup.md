@@ -10,8 +10,8 @@ images are retained deliberately; they are not run-owned.
 | `/tmp/dotfiles-macos-e2e-*` temp tree | macOS host journey | yes, in `finally` | only with `--keep` |
 | Tart VM `dotfiles-e2e-*` | Tart journey | yes, `tart stop` + `tart delete`, then verified with `tart list` | only with `--keep` |
 | Tart VM log `/tmp/dotfiles-e2e-*.log` | Tart journey | yes, on success | kept on failure or `--keep` |
-| Docker container | Docker matrix | yes, `docker run --rm` | never |
-| Docker image `nixdotfiles:test-<distro>` | Docker matrix | yes, `docker image rm -f`, including after failure | only with `--keep` |
+| Docker container | none; checks are build steps | n/a | never |
+| Docker image `nixdotfiles:test-<distro>` | Docker matrix | never created | only with `--keep`, which loads it |
 | Docker build cache | shared | no | yes; `--prune-cache` is opt-in and global |
 | Docker base layers | shared | no | yes |
 | Tart base `tahoe-base` | shared | no | yes |
@@ -56,11 +56,11 @@ reclaims, not verification cleanup.
 
 ## Failure Cleanup
 
-The scripts clean in `finally`, including after a failed install or smoke test.
+The macOS scripts clean in `finally`, including after a failed install or smoke test.
 Still verify:
 
 - If a Tart VM remains, run `tart delete <vm>` and rerun the journey.
-- If a Docker image remains, run `docker image rm -f <tag>`.
+- If a `--keep` Docker image remains, run `docker image rm -f <tag>`.
 - If a host temp tree remains, remove the printed path.
 - Keep the failed run's log. The cleanup proof and the failure evidence are
   separate; do not delete the log to make the cleanup check pass.
@@ -81,8 +81,7 @@ roots; this skill does not provide that isolation.
 ## Disk Notes
 
 - `tahoe-base` is tens of GB, and a macOS VM needs roughly 50 GB of free disk.
-- Docker test images are about 11 GB each; both are about 22.5 GB.
-- Keeping images (`--keep`) makes reruns fast; the default Docker cleanup frees
-  them.
+- A `--keep` image is large; remove it with `docker image rm -f <tag>` when done.
+- The Docker build cache holds the stage layers that make reruns fast.
 - The Tart OCI cache and Docker build cache are the large shared caches. Reclaim
   them manually only when their reuse cost is not worth the space.

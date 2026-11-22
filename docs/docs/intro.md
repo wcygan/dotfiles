@@ -17,15 +17,18 @@ cd dotfiles
 ./bootstrap.sh
 ```
 
-The bootstrapper loads Nix, enters the default development shell, and invokes
-the locked Python CLI:
+The bootstrapper loads Nix, enters the default development shell (from a saved
+copy when one is current), and invokes the locked Python CLI. Without the saved
+copy it runs:
 
 ```bash
 nix develop --no-write-lock-file .#default --command uv run --locked python -m dotfiles_setup install
 ```
 
-By default, installation upgrades or adds the repository Nix profile, links
-managed configuration, prepares Rust tooling, and runs verification. Existing
+By default, installation adds the repository Nix profile element, or upgrades
+it when `flake.nix`, `flake.lock`, or the checkout path changed since the last
+successful add or upgrade (otherwise it reports the element as current;
+`./bootstrap.sh profile` always upgrades). It then links managed configuration, prepares Rust tooling, and runs verification. Existing
 configuration files are backed up before they are replaced by managed links.
 Interactive Bash and zsh handoff to Fish is deliberately opt-in:
 
@@ -163,8 +166,12 @@ make uninstall-dry           # Preview managed-link removal
 ```
 
 Each setup target has a direct `./bootstrap.sh <command>` equivalent. The
-bridge consistently executes `nix develop` and `uv run --locked`; use it rather
-than calling project modules from an arbitrary host Python.
+bridge consistently enters the Nix dev environment and runs `uv run --locked`;
+use it rather than calling project modules from an arbitrary host Python.
+`./bootstrap.sh --run <command>` runs any command in that environment. The
+environment is saved under `${XDG_CACHE_HOME:-~/.cache}/dotfiles/dev-env`; set
+`DOTFILES_BOOTSTRAP_DEV_CACHE=0` to skip it, or delete that directory if it
+seems stale.
 
 ### Run Tests
 
@@ -172,6 +179,7 @@ than calling project modules from an arbitrary host Python.
 make test-pre    # Locked Ruff and pytest checks
 make test-local  # Ephemeral-HOME-focused pytest
 make test-shell  # Shell-handoff pytest
+make test-linux  # Quick Linux evidence from macOS: tests, install, doctor, verify in Ubuntu
 make test-docker # Python Ubuntu/Fedora driver
 make test        # Alias for make test-pre
 ```

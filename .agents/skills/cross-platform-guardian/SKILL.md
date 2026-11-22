@@ -31,8 +31,8 @@ without hard-coded machine paths or untested platform assumptions.
 3. Resolve HOME, XDG, CODEX, and platform paths through `paths.py`. Keep the
    managed destination inventory in `links.py`.
 4. Run `make test-pre`, then the focused suite: `make test-local` for links,
-   `make test-shell` for handoff, and `make test-docker` for Ubuntu/Fedora
-   acceptance when the blast radius is cross-platform.
+   `make test-shell` for handoff, `make test-linux` for quick Linux evidence from
+   macOS, and `make test-docker` for Ubuntu/Fedora acceptance when the blast radius is cross-platform.
 5. Report platform evidence, skipped checks, and the rollback path. Nix package
    regressions roll back with `nix profile rollback`; managed links preserve
    timestamped backups.

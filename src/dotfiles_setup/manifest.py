@@ -608,8 +608,17 @@ class OperationJournal:
         self._write()
         return len(entries) - 1
 
-    def record_operation(self, name: str, status: str) -> None:
+    def record_operation(
+        self,
+        name: str,
+        status: str,
+        *,
+        duration_ms: int | None = None,
+    ) -> None:
         operations = self.data["operations"]
         assert isinstance(operations, list)
-        operations.append({"name": name, "status": status})
+        operation: dict[str, Any] = {"name": name, "status": status}
+        if duration_ms is not None:
+            operation["duration_ms"] = duration_ms
+        operations.append(operation)
         self._write()

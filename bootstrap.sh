@@ -100,6 +100,9 @@ run_dotfiles_setup() {
 
   cd "$REPO_ROOT"
   unset VIRTUAL_ENV
+  # Install reports the time spent before Python starts. Bash 5 gives a
+  # sub-second clock; older Bash, such as macOS 3.2, gives whole seconds.
+  export DOTFILES_BOOTSTRAP_STARTED_AT="${EPOCHREALTIME:-$(date +%s)}"
   exec nix \
     --extra-experimental-features "nix-command flakes" \
     develop --no-write-lock-file .#default \

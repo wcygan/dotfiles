@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,6 +23,8 @@ Operation = Callable[[], object]
 Output = Callable[[str], None]
 
 _TERMINAL_FAILURE_STATES = {"failed", "recovery-needed"}
+_BOOTSTRAP_STARTED_AT = "DOTFILES_BOOTSTRAP_STARTED_AT"
+_LONGEST_PLAUSIBLE_STARTUP_SECONDS = 24 * 60 * 60
 
 
 @dataclass(frozen=True)
@@ -32,15 +35,17 @@ class OperationResult:
     succeeded: bool
     detail: str
     skipped: bool = False
+    seconds: float | None = None
 
 
 def _run_operation(name: str, operation: Operation) -> OperationResult:
+    started = time.monotonic()
     try:
         result = operation()
     except Exception as error:  # noqa: BLE001 - workflow boundary records operation failures
-        return OperationResult(name, False, str(error))
+        return OperationResult(name, False, str(error), seconds=time.monotonic() - started)
     detail = str(result) if result is not None else "complete"
-    return OperationResult(name, True, detail)
+    return OperationResult(name, True, detail, seconds=time.monotonic() - started)
 
 
 def _report(result: OperationResult, output: Output) -> None:
@@ -50,7 +55,46 @@ def _report(result: OperationResult, output: Output) -> None:
 
 def _record_result(journal: OperationJournal, result: OperationResult) -> None:
     status = "skipped" if result.skipped else "completed" if result.succeeded else "failed"
-    journal.record_operation(result.name, status)
+    duration_ms = None if result.seconds is None else round(result.seconds * 1000)
+    journal.record_operation(result.name, status, duration_ms=duration_ms)
+
+
+def _startup_seconds(environ: Mapping[str, str]) -> tuple[float, bool] | None:
+    """Return the time since bootstrap.sh started and whether its clock was sub-second."""
+
+    raw = environ.get(_BOOTSTRAP_STARTED_AT, "").replace(",", ".")
+    try:
+        elapsed = time.time() - float(raw)
+    except ValueError:
+        return None
+    if not 0 <= elapsed < _LONGEST_PLAUSIBLE_STARTUP_SECONDS:
+        return None
+    if "." in raw:
+        return elapsed, True
+    # A whole-second start time was truncated, so the true wait is up to one
+    # second shorter; report the middle of that range.
+    return max(0.0, elapsed - 0.5), False
+
+
+def _timing_summary(
+    results: list[OperationResult],
+    startup: tuple[float, bool] | None,
+    workflow_seconds: float,
+) -> str:
+    """Render where one install spent its time."""
+
+    parts: list[str] = []
+    total = workflow_seconds
+    if startup is not None:
+        seconds, exact = startup
+        total += seconds
+        parts.append(f"startup {seconds:.1f}s" if exact else f"startup ~{seconds:.0f}s")
+    parts.extend(
+        f"{result.name} {result.seconds:.1f}s"
+        for result in results
+        if result.seconds is not None
+    )
+    return f"Install took {total:.1f}s: {', '.join(parts)}"
 
 
 def _checkpoint_failure(
@@ -103,14 +147,16 @@ def _run_verification(
     environ: Mapping[str, str],
     output: Output,
 ) -> tuple[OperationResult, int]:
+    started = time.monotonic()
     try:
         exit_code = run_verify(repo_root, environ=environ, output=output)
     except Exception as error:  # noqa: BLE001 - verification boundary records failures
-        result = OperationResult("verify", False, str(error))
+        result = OperationResult("verify", False, str(error), seconds=time.monotonic() - started)
         _report(result, output)
         return result, 1
     detail = "complete" if exit_code == 0 else f"exit {exit_code}"
-    return OperationResult("verify", exit_code == 0, detail), exit_code
+    seconds = time.monotonic() - started
+    return OperationResult("verify", exit_code == 0, detail, seconds=seconds), exit_code
 
 
 def run_mutation(
@@ -280,6 +326,8 @@ def run_install(
     """Run the production install workflow under one lock and journal."""
 
     values = os.environ if environ is None else environ
+    startup = _startup_seconds(values)
+    started = time.monotonic()
     journal: OperationJournal | None = None
     primary_error: Exception | None = None
     journal_errors: tuple[str, ...] = ()
@@ -297,6 +345,7 @@ def run_install(
                     environ=values,
                     output=output,
                 )
+                output(_timing_summary(results, startup, time.monotonic() - started))
                 if journal.state not in _TERMINAL_FAILURE_STATES:
                     mutation_failed = any(
                         not result.succeeded

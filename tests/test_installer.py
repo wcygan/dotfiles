@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import re
+import time
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
@@ -301,7 +303,8 @@ def test_verification_exception_records_failed_state(
 
     manifest = read_manifest(state_directory(values) / "current.json")
     assert manifest["state"] == "failed"
-    assert manifest["operations"][-1] == {"name": "verify", "status": "failed"}
+    verify = manifest["operations"][-1]
+    assert (verify["name"], verify["status"]) == ("verify", "failed")
     assert not (state_directory(values) / "recovery-needed.json").exists()
     assert "[FAIL] verify: verification unavailable" in output
 
@@ -561,3 +564,63 @@ def test_profile_failure_records_skipped_remembered_schedule(
         operation["name"] == "nightly-schedule" and operation["status"] == "skipped"
         for operation in operations
     )
+
+
+@pytest.mark.parametrize(
+    ("started_at", "startup"),
+    (
+        (lambda: f"{time.time() - 2:.6f}", r"startup 2\.0s, "),
+        (lambda: f"{time.time() - 2:.6f}".replace(".", ","), r"startup 2\.0s, "),
+        (lambda: str(int(time.time()) - 2), r"startup ~2s, "),
+        (lambda: "not a time", ""),
+        (lambda: str(time.time() + 60), ""),
+        (lambda: None, ""),
+    ),
+)
+def test_install_reports_and_records_where_time_went(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    started_at: Any,
+    startup: str,
+) -> None:
+    values = _environment(tmp_path / "home")
+    value = started_at()
+    if value is not None:
+        values["DOTFILES_BOOTSTRAP_STARTED_AT"] = value
+    _install_stubs(monkeypatch, [])
+    output: list[str] = []
+
+    assert run_install(tmp_path, environ=values, output=output.append) == 0
+
+    summary = output[-1]
+    assert summary.startswith("Install took ")
+    steps = summary.split(": ", 1)[1]
+    assert re.fullmatch(
+        startup + r"profile 0\.0s, links 0\.0s, rustup 0\.0s, verify 0\.0s",
+        steps,
+    )
+    operations = read_manifest(state_directory(values) / "current.json")["operations"]
+    assert [operation["name"] for operation in operations] == [
+        "profile",
+        "links",
+        "rustup",
+        "verify",
+    ]
+    assert all(isinstance(operation["duration_ms"], int) for operation in operations)
+
+
+def test_install_records_no_duration_for_a_skipped_step(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    values = _environment(tmp_path / "home")
+    _install_stubs(monkeypatch, [], profile_error=RuntimeError("profile unavailable"))
+    output: list[str] = []
+
+    assert run_install(tmp_path, environ=values, output=output.append) == 1
+
+    assert "links" not in output[-1]
+    operations = read_manifest(state_directory(values) / "current.json")["operations"]
+    skipped = [operation for operation in operations if operation["status"] == "skipped"]
+    assert skipped
+    assert all("duration_ms" not in operation for operation in skipped)

@@ -131,7 +131,12 @@ Make targets and `bootstrap.sh` enter the dev environment from a saved copy in
 the contents of `flake.nix` and `flake.lock`. It is rebuilt when either file
 changes or its Nix profile is collected, and `nix develop` is used when it
 cannot be used. `DOTFILES_BOOTSTRAP_DEV_CACHE=0` skips it for one command. If
-it is suspected stale, delete that directory.
+it is suspected stale, delete that directory. `DOTFILES_DEV_SHELL=checks`
+selects the flake's `checks` dev shell, which holds only what the tests and
+syntax checks run; CI's quality job uses it, and each dev shell is saved
+separately. CI's native and Docker install jobs skip their install steps when
+a change touches none of the paths listed in
+`.github/actions/install-inputs/action.yml`.
 
 A full `install` ends with an `Install took ...` line, and each journal
 operation records `duration_ms`; read these before guessing where time goes.

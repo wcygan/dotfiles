@@ -90,8 +90,10 @@ base would be faster.
 
 ## 3. Ubuntu container
 
-Builds the image, runs the Dockerfile's cold and warm installs plus doctor and
-verify, then runs the smoke command.
+Builds the Dockerfile's `acceptance` stage with `--output type=cacheonly`. The
+install, reinstall, `doctor`, `verify`, and smoke check are `RUN` steps, so a
+passing build is the check. Nothing is exported or run afterwards. `make
+test-linux` is the same build plus the test suite (`--target tests`).
 
 ```sh
 python3 tests/docker_matrix.py --case ubuntu | tee /tmp/dotfiles-ubuntu.log
@@ -114,31 +116,29 @@ python3 tests/docker_matrix.py | tee /tmp/dotfiles-linux.log
 Useful flags:
 
 ```sh
-python3 tests/docker_matrix.py --keep         # retain the built images
+python3 tests/docker_matrix.py --keep         # also load nixdotfiles:test-<distro>
+python3 tests/docker_matrix.py --target tests # also run the test suite
 python3 tests/docker_matrix.py --prune-cache  # global Docker build-cache prune
 python3 tests/docker_matrix.py --dry-run      # print commands only
 ```
 
 Success:
 
-- exit 0
-- the smoke command finds `fish`, `rg`, and `nvim`
+- exit 0 (the build passed)
+- the smoke `RUN` step finds `fish`, `rg`, and `nvim`
 - fish loads `nix-try`, `__direnv_export_eval`, and `NIX_CONFIG`
-- strict verify passes inside the container
+- strict verify passes in its `RUN` step
 
 Cleanup checks:
 
 ```sh
-docker ps -a --format '{{.Image}}' | grep nixdotfiles || echo "no containers"
 docker images --format '{{.Repository}}:{{.Tag}}' | grep nixdotfiles || echo "no test images"
 ```
 
-The default removes each built image after its smoke test. `--keep` retains the
-images (about 22.5 GB for both) so reruns are a cache hit. Containers are always
-removed by `docker run --rm`.
-
-Measured here: 6.9s for both cases with warm Docker layers and `--keep`. A cold
-build cache or a changed Dockerfile input is much slower.
+The default loads no image and runs no container. `--keep` loads the tagged
+image so you can debug inside it. Docker reuses unchanged stages; a cold build
+cache or a changed `flake.nix`, `flake.lock`, or `rust-toolchain.toml` is much
+slower (see `tests/DOCKER-TEST-GUIDE.md`).
 
 ## Evidence Checklist
 
@@ -160,6 +160,6 @@ build cache or a changed Dockerfile input is much slower.
   fails; remove the printed path before rerunning.
 - Tart run: the VM is stopped and deleted in `finally`; the script verifies
   `tart list`. If `cleanup failed` appears, run `tart delete <vm>` and rerun.
-- Docker run: the image is removed in `finally`, including after a failed build
-  or smoke test. If removal fails, run `docker image rm -f <tag>`.
+- Docker run: a failed `RUN` step fails the build and prints its log. Fix that
+  step and rerun; a loaded `--keep` image is removed with `docker image rm -f <tag>`.
 - Keep the log after a failure. It is the evidence for the next investigation.

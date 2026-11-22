@@ -113,7 +113,7 @@ skill rather than duplicating its checklist here.
 
 These need no approval: reading files and Git history; the Make targets
 `test-pre`, `test-local`, `test-shell`, `test-syntax`, `test-eval`,
-`test-docker`, `test-macos`, and `docs-build`; `./bootstrap.sh doctor`,
+`test-docker`, `test-linux`, `test-macos`, and `docs-build`; `./bootstrap.sh doctor`,
 `verify`, `recover` without `--apply`, and `agent-skills --check`; and any
 `--dry-run` preview.
 

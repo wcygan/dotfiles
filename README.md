@@ -11,15 +11,17 @@ cd dotfiles
 ```
 
 `bootstrap.sh` is the supported entry point. With Nix available, it enters the
-repository development shell and runs the locked Python CLI:
+repository development shell and runs the locked Python CLI. It reuses a saved
+copy of that shell (see [Dev environment cache](#dev-environment-cache)) and
+otherwise runs:
 
 ```bash
 nix develop --no-write-lock-file .#default --command uv run --locked python -m dotfiles_setup install
 ```
 
-The default install upgrades or adds this repository's active Nix profile,
-links the managed configuration, prepares Rust tooling, and verifies the
-result. Remove an inactive profile element for this checkout before you rerun
+The default install adds this repository's Nix profile element, or upgrades it
+when the flake changed (see [Install Flow](#install-flow)), links the managed
+configuration, prepares Rust tooling, and verifies the result. Remove an inactive profile element for this checkout before you rerun
 the install. It does **not** edit Bash or zsh startup files. Opt in to that
 behavior only when wanted:
 
@@ -42,7 +44,23 @@ Full documentation available at: https://wcygan.github.io/dotfiles/
 
 `./bootstrap.sh install` runs as journaled, reversible steps under one
 per-user lock. An interrupted step leaves a recovery manifest; `recover`
-finishes or reverses it.
+finishes or reverses it. Install ends with one line that shows where the time
+went, for example `Install took 4.2s: startup 0.3s, profile 2.1s, links 0.4s,
+rustup 0.2s, verify 1.2s`. Each step's `duration_ms` is also recorded in the
+journal's `operations`. Skipped steps have no duration. `bootstrap.sh` exports
+`${EPOCHREALTIME:-$(date +%s.%N)}` as the start time; when that value is not a
+sub-second number (macOS Bash 3.2 with a `date` that lacks `%N`), the line
+omits the startup figure. The other commands that run as journaled mutations
+(`profile`, `rustup`, `link`, `shell-handoff`, `uninstall`, `git-user`,
+`agent-skills`, `nightly-schedule`) record `duration_ms` on their journal
+entry and print no timing line.
+
+**Nix profile step.** `install` skips `nix profile upgrade` when the checkout
+path, `flake.nix`, and `flake.lock` are unchanged since the last successful add
+or upgrade and the profile element still holds the recorded store paths, which
+must exist on disk. It then reports `Nix profile element is current: <name>`.
+The record lives at `${XDG_STATE_HOME:-~/.local/state}/dotfiles/nix-profile.json`.
+`./bootstrap.sh profile` always performs the upgrade; use it to force one.
 
 ```mermaid
 flowchart TD
@@ -50,7 +68,7 @@ flowchart TD
     B --> C["Per-user mutation lock<br/>(locking.py)"]
     C --> D{"Interrupted<br/>operation pending?"}
     D -- "yes" --> E["Refuse: run ./bootstrap.sh recover"]
-    D -- "no" --> F["Nix profile<br/>upgrade/add active element"]
+    D -- "no" --> F["Nix profile<br/>add, upgrade, or skip if current"]
     F --> G["Link managed config<br/>(links.py)"]
     G --> H["Plan → stage → journal →<br/>atomic no-replace apply<br/>(mutations.py)"]
     H -- "any failure" --> I["Guarded rollback →<br/>recovery-needed manifest"]
@@ -321,7 +339,29 @@ make doctor                  # ./bootstrap.sh doctor
 make uninstall               # ./bootstrap.sh uninstall
 make uninstall-dry           # ./bootstrap.sh uninstall --dry-run
 ./bootstrap.sh recover       # inspect interrupted-operation recovery
+./bootstrap.sh --run <command>  # run any command in the dev environment
 ```
+
+Make targets enter the dev environment through `./bootstrap.sh --run`, so they
+share the saved environment below. `--run` needs a command and exits 2
+without one.
+
+### Dev environment cache
+
+`nix develop` costs about 3 seconds per entry even when nothing changed.
+`bootstrap.sh` therefore saves the `nix print-dev-env` result under
+`${XDG_CACHE_HOME:-~/.cache}/dotfiles/dev-env` and reuses it. On macOS this
+took `verify` from 3.4 s to 0.2 s.
+
+- The saved copy is keyed by the checkout path and the contents of `flake.nix`
+  and `flake.lock`. A change to either file rebuilds it and removes the older
+  copy. It is also rebuilt when its Nix profile has been garbage-collected.
+- If the saved environment cannot be built or used, `bootstrap.sh` runs
+  `nix develop` instead.
+- `DOTFILES_BOOTSTRAP_DEV_CACHE=0` skips the saved copy for one command.
+- If you suspect it is stale, delete the directory:
+  `rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles/dev-env"`. The next
+  command rebuilds it.
 
 `doctor` is advisory: it reports the host and development-shell environment as
 `PASS` or `WARN` without treating not-yet-installed state as an acceptance
@@ -374,8 +414,9 @@ and [Fedora release lifecycle](https://fedoraproject.org/wiki/User%3AJkurik/Fedo
 
 Pull-request CI calls the same repository targets used locally: locked quality
 and syntax checks, four-system flake evaluation, and the canonical Ubuntu/Fedora
-Docker driver. Docker builds use separate GitHub Actions cache scopes, load the
-resulting image, and run strict installation plus Fish/direnv runtime smoke.
+Docker driver. Each Docker build is the check: its Dockerfile runs strict installation
+and Fish/direnv runtime smoke as build steps, and nothing is exported. CI
+caches only the `base` and `prewarm` stages with `actions/cache`.
 Pytest JUnit reports are retained on both success and failure. Documentation
 changes build on pull requests, but Pages deployment is restricted to a push to
 `main`. Native macOS 15 arm64 acceptance runs weekly or manually in an isolated
@@ -413,6 +454,8 @@ make test-local    # ephemeral-HOME-focused pytest suite
 make test-shell    # shell-handoff pytest suite
 make test-syntax   # Bash and Fish parsing
 make test-eval     # all four flake systems, evaluation only
+make test-linux    # quick Linux evidence from macOS: tests, install twice,
+                   # doctor, verify, smoke in Ubuntu (DOCKER_CASE=fedora for Fedora)
 make test-docker   # Python Ubuntu/Fedora driver
 make test          # alias for make test-pre
 

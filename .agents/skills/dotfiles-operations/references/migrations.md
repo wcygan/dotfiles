@@ -4,6 +4,21 @@ Read this reference before changing compatibility guarantees, restoring retired
 behavior, or replacing a setup boundary. Add an entry when a breaking change is
 intentional, alongside focused migration tests.
 
+## 2026-11-22 — A clean failure after an applied batch ends recovery-needed
+
+An install whose late step fails before staging anything used to end the
+journal `failed`, even when an earlier step was still applied. Recovery ignores
+a `failed` journal, so those earlier changes could not be rolled back. The
+journal now ends `recovery-needed` in that case, as an apply-phase failure
+already did. The next install is refused until `./bootstrap.sh recover` runs.
+A failure with nothing applied still ends `failed`.
+
+Also new, not breaking: `./bootstrap.sh --run <command>`, a saved dev
+environment that Make targets use, `Install took ...` timing, and `duration_ms`
+on journal operations. `install` also skips `nix profile upgrade` when the
+checkout, `flake.nix`, and `flake.lock` are unchanged since the last successful
+add or upgrade; `./bootstrap.sh profile` always upgrades.
+
 ## 2026-11-21 — The provider's `just install` becomes the routine skill installer
 
 GitHub CLI is no longer the only writer of `~/.agents/skills` and of

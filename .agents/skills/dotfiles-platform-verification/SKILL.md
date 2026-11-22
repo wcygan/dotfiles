@@ -41,7 +41,7 @@ substitute a weaker check and call it a pass.
 |---|---|---|---|
 | macOS isolated host | `make test-macos` | exit 0, `macOS isolated acceptance passed`, 501 tests | temp tree removed |
 | macOS Tart VM | `make test-macos-vm` | exit 0, `macOS Tart acceptance passed`, 21 verify PASS | VM deleted and verified gone |
-| Ubuntu container | `python3 tests/docker_matrix.py --case ubuntu` | exit 0, smoke `verify` plus fish/rg/nvim | container removed by `--rm`; image removed unless `--keep` |
+| Ubuntu container | `python3 tests/docker_matrix.py --case ubuntu` | exit 0: the build passes, including its install, `doctor`, `verify`, and smoke `RUN` steps | no container or image; `--keep` loads the tagged image |
 | Fedora container | `python3 tests/docker_matrix.py --case fedora` | same as Ubuntu | same as Ubuntu |
 
 The scripts are the authoritative helpers. Do not reimplement their steps by

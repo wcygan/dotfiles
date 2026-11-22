@@ -31,11 +31,12 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
         with:
+          # GitHub throttled Magic Nix Cache on every run, so fetch straight
+          # from the binary cache with more parallel downloads.
           extra-conf: |
             experimental-features = nix-command flakes
-
-      - name: Configure Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7 # v15
+            max-substitution-jobs = 64
+            http-connections = 128
 
       - name: Run canonical syntax and quality checks
         env:
@@ -75,11 +76,12 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
         with:
+          # GitHub throttled Magic Nix Cache on every run, so fetch straight
+          # from the binary cache with more parallel downloads.
           extra-conf: |
             experimental-features = nix-command flakes
-
-      - name: Configure Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7 # v15
+            max-substitution-jobs = 64
+            http-connections = 128
 
       - name: Prove native bootstrap idempotency
         run: |
@@ -110,11 +112,12 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
         with:
+          # GitHub throttled Magic Nix Cache on every run, so fetch straight
+          # from the binary cache with more parallel downloads.
           extra-conf: |
             experimental-features = nix-command flakes
-
-      - name: Configure Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7 # v15
+            max-substitution-jobs = 64
+            http-connections = 128
 
       - name: Evaluate every declared system
         run: make test-eval

@@ -27,7 +27,6 @@ Run these after every journey:
 ls -d /tmp/dotfiles-macos-e2e-* 2>/dev/null || echo "no host temp trees"
 tart list | grep dotfiles-e2e || echo "no Tart e2e VMs"
 ls /tmp/dotfiles-e2e-*.log 2>/dev/null || echo "no Tart e2e logs"
-docker ps -a --format '{{.Image}}' | grep nixdotfiles || echo "no containers"
 docker images --format '{{.Repository}}:{{.Tag}}' | grep nixdotfiles || echo "no test images"
 ```
 
@@ -36,9 +35,9 @@ Interpretation:
 - Host tree absent: pass.
 - Tart e2e VM absent: pass. The persistent `tahoe-base` and any pre-existing
   `tahoe-base-e2e-test` are not this run's artifacts.
-- Docker containers absent: pass.
-- Docker images absent: pass for the default cleanup. Present only with
-  `--keep`; say so in the handoff.
+- Docker images absent: pass for the default run, which builds without
+  exporting an image and starts no container. Present only with `--keep`; say
+  so in the handoff.
 - `git status --short`: only unrelated user work.
 
 ## What Never to Delete

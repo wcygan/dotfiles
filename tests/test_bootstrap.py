@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
@@ -77,6 +79,25 @@ def test_existing_nix_executes_locked_install(command_bin: Path, tmp_path: Path)
         "dotfiles_setup",
         "install",
     ]
+
+
+def test_start_time_is_exported_with_a_sub_second_clock(
+    command_bin: Path,
+    tmp_path: Path,
+) -> None:
+    write_executable(
+        command_bin / "nix",
+        'printf "%s\n" "$DOTFILES_BOOTSTRAP_STARTED_AT" > "$BOOTSTRAP_CAPTURE"',
+    )
+    before = time.time()
+
+    result = run_bootstrap(command_bin, tmp_path, "verify")
+
+    after = time.time()
+    assert result.returncode == 0
+    started_at = (tmp_path / "capture").read_text().strip()
+    assert re.fullmatch(r"[0-9]+[.,][0-9]+", started_at)
+    assert before <= float(started_at.replace(",", ".")) <= after
 
 
 def test_locked_flake_failure_stops_before_python(command_bin: Path, tmp_path: Path) -> None:
@@ -294,14 +315,26 @@ def test_changed_flake_input_rebuilds_the_dev_environment(
     (checkout / changed).write_text("second\n")
 
     assert len(run_checkout(checkout, command_bin, tmp_path)) == 2
-    assert len(list((tmp_path / "cache" / "dotfiles" / "dev-env").iterdir())) == 1
+    assert len(list((tmp_path / "cache" / "dotfiles" / "dev-env").glob("*/*"))) == 1
+
+
+def test_each_checkout_keeps_its_own_dev_environment(
+    checkout: Path, command_bin: Path, tmp_path: Path
+) -> None:
+    other = tmp_path / "other-checkout"
+    shutil.copytree(checkout, other)
+
+    run_checkout(checkout, command_bin, tmp_path)
+    run_checkout(other, command_bin, tmp_path)
+
+    assert len(run_checkout(checkout, command_bin, tmp_path)) == 2
 
 
 def test_collected_dev_environment_is_rebuilt(
     checkout: Path, command_bin: Path, tmp_path: Path
 ) -> None:
     run_checkout(checkout, command_bin, tmp_path)
-    (profile,) = (tmp_path / "cache" / "dotfiles" / "dev-env").glob("*/profile")
+    (profile,) = (tmp_path / "cache" / "dotfiles" / "dev-env").glob("*/*/profile")
     profile.unlink()
 
     assert len(run_checkout(checkout, command_bin, tmp_path)) == 2

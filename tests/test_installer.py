@@ -68,7 +68,43 @@ def test_direct_mutation_success_records_one_operation(tmp_path: Path) -> None:
 
     manifest = read_manifest(state_directory(values) / "completed.json")
     assert manifest["state"] == "completed"
-    assert manifest["operations"] == [{"name": "example", "status": "completed"}]
+    (operation,) = manifest["operations"]
+    assert (operation["name"], operation["status"]) == ("example", "completed")
+
+
+@pytest.mark.parametrize(
+    ("fails", "state", "status"),
+    ((False, "completed", "completed"), (True, "recovery-needed", "failed")),
+)
+def test_direct_mutation_records_how_long_it_took(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    fails: bool,
+    state: str,
+    status: str,
+) -> None:
+    values = _environment(tmp_path / "home")
+    readings = [100.0]
+    monkeypatch.setattr(
+        installer_module.time,
+        "monotonic",
+        lambda: readings.pop() if len(readings) > 1 else readings[0],
+    )
+    output: list[str] = []
+
+    def operation(_journal: OperationJournal) -> None:
+        readings[0] = 101.25
+        if fails:
+            raise RuntimeError("injected failure")
+
+    code = run_mutation("example", tmp_path, operation, environ=values, output=output.append)
+
+    assert code == int(fails)
+    assert all("took" not in line for line in output)
+    manifest = read_manifest(state_directory(values) / f"{state}.json")
+    assert manifest["operations"] == [
+        {"name": "example", "status": status, "duration_ms": 1250}
+    ]
 
 
 def test_direct_mutation_failure_creates_recovery_needed_state(tmp_path: Path) -> None:
@@ -81,7 +117,8 @@ def test_direct_mutation_failure_creates_recovery_needed_state(tmp_path: Path) -
 
     manifest = read_manifest(state_directory(values) / "recovery-needed.json")
     assert manifest["state"] == "recovery-needed"
-    assert manifest["operations"] == [{"name": "example", "status": "failed"}]
+    (operation,) = manifest["operations"]
+    assert (operation["name"], operation["status"]) == ("example", "failed")
 
 
 def test_direct_mutation_checkpoints_failure_before_releasing_lock(
@@ -104,7 +141,7 @@ def test_direct_mutation_checkpoints_failure_before_releasing_lock(
             events.append(f"journal-{state}")
             self.state = state
 
-        def record_operation(self, name: str, status: str) -> None:
+        def record_operation(self, name: str, status: str, **_kwargs: object) -> None:
             events.append(f"journal-{name}-{status}")
 
     def fail(_journal: object) -> None:
@@ -147,7 +184,7 @@ def test_direct_mutation_reports_primary_and_journal_failures(
             events.append(f"journal-{state}")
             self.state = state
 
-        def record_operation(self, _name: str, _status: str) -> None:
+        def record_operation(self, _name: str, _status: str, **_kwargs: object) -> None:
             events.append("journal-record-failed")
             raise RuntimeError("journal storage failed")
 
@@ -571,7 +608,9 @@ def test_profile_failure_records_skipped_remembered_schedule(
     (
         (lambda: f"{time.time() - 2:.6f}", r"startup 2\.0s, "),
         (lambda: f"{time.time() - 2:.6f}".replace(".", ","), r"startup 2\.0s, "),
-        (lambda: str(int(time.time()) - 2), r"startup ~2s, "),
+        (lambda: str(int(time.time()) - 2), ""),
+        (lambda: f"{int(time.time()) - 2}.N", ""),
+        (lambda: f"{int(time.time()) - 2}.%N", ""),
         (lambda: "not a time", ""),
         (lambda: str(time.time() + 60), ""),
         (lambda: None, ""),

@@ -5,6 +5,7 @@ import os
 import platform
 import shutil
 import subprocess
+import time
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,61 +29,62 @@ CASES = (
 )
 
 
-def build_command(case: DockerCase, *, environ: dict[str, str] | None = None) -> list[str]:
-    values = os.environ if environ is None else environ
+TARGETS = ("acceptance", "tests")
+
+
+def build_command(
+    case: DockerCase,
+    *,
+    target: str = "acceptance",
+    keep: bool = False,
+    cache_from: Path | None = None,
+    cache_to: Path | None = None,
+) -> list[str]:
+    """Build one Dockerfile stage; the checks are the stage's RUN steps.
+
+    Nothing is exported unless ``keep`` asks for the image: exporting the
+    multi-gigabyte result took longer than the checks themselves.
+    """
+
     command = [
         "docker",
         "buildx",
         "build",
-        "--load",
         "--progress=plain",
         "-f",
         str(REPO_ROOT / case.dockerfile),
-        "-t",
-        case.image_tag,
-        str(REPO_ROOT),
+        "--target",
+        target,
     ]
-    if values.get("GITHUB_ACTIONS") == "true":
-        scope = f"dotfiles-{case.name}"
-        command[4:4] = [
-            "--cache-from",
-            f"type=gha,scope={scope}",
-            "--cache-to",
-            f"type=gha,mode=max,scope={scope}",
-        ]
+    if cache_from is not None:
+        command += ["--cache-from", f"type=local,src={cache_from}"]
+    if cache_to is not None:
+        command += ["--cache-to", f"type=local,dest={cache_to},mode=max,compression=zstd"]
+    command += ["--load", "-t", case.image_tag] if keep else ["--output", "type=cacheonly"]
+    command.append(str(REPO_ROOT))
     return command
 
 
-def smoke_command(case: DockerCase) -> list[str]:
-    check = " && ".join(
-        (
-            "set -eu",
-            'test "$(id -un)" = tester',
-            "test -d /home/tester/app",
-            "test -f config/fish/config.fish",
-            "test -f config/fish/conf.d/10-nix.fish",
-            "test -x bootstrap.sh",
-            "bash -n bootstrap.sh",
-            "./bootstrap.sh verify",
-            "command -v fish",
-            "command -v rg",
-            "command -v nvim",
-            "fish --private --interactive --command "
-            "'functions -q nix-try; and functions -q __direnv_export_eval; "
-            "and set -q NIX_CONFIG'",
-        )
-    )
-    return [
-        "docker",
-        "run",
-        "--rm",
-        "-e",
-        f"TERM={os.environ.get('TERM', 'xterm-256color')}",
-        case.image_tag,
-        "/bin/bash",
-        "-lc",
-        check,
-    ]
+def build_commands(
+    case: DockerCase,
+    *,
+    target: str = "acceptance",
+    keep: bool = False,
+    layer_cache: Path | None = None,
+) -> list[list[str]]:
+    """Return the builds for one case, seeding an empty layer cache first.
+
+    The layer cache holds only the stages that depend on the locked inputs, so
+    CI can key it on those files and reuse it when anything else changes.
+    """
+
+    if layer_cache is None:
+        return [build_command(case, target=target, keep=keep)]
+    commands = []
+    if not layer_cache.joinpath("index.json").is_file():
+        commands.append(build_command(case, target="prewarm", cache_to=layer_cache))
+    commands.append(build_command(case, target=target, keep=keep, cache_from=layer_cache))
+    return commands
 
 
 def docker_environment(
@@ -102,22 +104,6 @@ def run(command: Sequence[str]) -> None:
     subprocess.run(command, cwd=REPO_ROOT, env=docker_environment(), check=True)
 
 
-def remove_image(tag: str, *, dry_run: bool) -> None:
-    command = ["docker", "image", "rm", "-f", tag]
-    print("+", " ".join(command))
-    if dry_run:
-        return
-    result = subprocess.run(
-        command,
-        cwd=REPO_ROOT,
-        env=docker_environment(),
-        text=True,
-        capture_output=True,
-    )
-    if result.returncode != 0:
-        print(f"  (no image to remove: {tag})")
-
-
 def prune_cache(*, dry_run: bool) -> None:
     command = ["docker", "builder", "prune", "-f"]
     print("+", " ".join(command))
@@ -127,7 +113,7 @@ def prune_cache(*, dry_run: bool) -> None:
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build and smoke-test Ubuntu and Fedora test images."
+        description="Run the Ubuntu and Fedora install checks as Docker builds."
     )
     parser.add_argument(
         "--dry-run", action="store_true", help="print commands without invoking Docker"
@@ -138,9 +124,21 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="run only one distro case (used by the CI matrix)",
     )
     parser.add_argument(
+        "--target",
+        choices=TARGETS,
+        default="acceptance",
+        help="acceptance: install twice, doctor, verify, smoke. tests: also the test suite",
+    )
+    parser.add_argument(
         "--keep",
         action="store_true",
-        help="keep the built images instead of removing them",
+        help="also load the built image as nixdotfiles:test-<distro> for debugging",
+    )
+    parser.add_argument(
+        "--layer-cache",
+        type=Path,
+        default=os.environ.get("DOCKER_LAYER_CACHE") or None,
+        help="directory for the locked-input layers (CI restores and saves it)",
     )
     parser.add_argument(
         "--prune-cache",
@@ -161,15 +159,15 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     selected = tuple(case for case in CASES if args.case in {None, case.name})
     for case in selected:
-        commands = (build_command(case), smoke_command(case))
-        try:
-            for command in commands:
-                print("+", " ".join(command))
-                if not args.dry_run:
-                    run(command)
-        finally:
-            if not args.keep:
-                remove_image(case.image_tag, dry_run=args.dry_run)
+        started = time.monotonic()
+        for command in build_commands(
+            case, target=args.target, keep=args.keep, layer_cache=args.layer_cache
+        ):
+            print("+", " ".join(command), flush=True)
+            if not args.dry_run:
+                run(command)
+        if not args.dry_run:
+            print(f"{case.name} {args.target}: passed in {time.monotonic() - started:.0f}s")
     if args.prune_cache:
         prune_cache(dry_run=args.dry_run)
     return 0

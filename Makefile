@@ -8,7 +8,7 @@ UV_RUN := $(NIX_DEV) uv run --locked
 .PHONY: \
 	help install profile install-packages agent-skills agent-skills-check link link-dry git-user rustup setup-rustup-components \
 	setup-shell-handoff shell-handoff uninstall uninstall-dry verify doctor \
-	test test-pre test-local test-shell test-docker docker-test docker-fedora docker-ubuntu test-macos test-macos-vm \
+	test test-pre test-local test-shell test-docker test-linux docker-test docker-fedora docker-ubuntu test-macos test-macos-vm \
 	test-syntax test-eval docs-build latest update clean docs quickstart
 
 help:
@@ -36,7 +36,8 @@ help:
 	@echo "  make test                    - Run the locked Python test suite in the Nix dev shell"
 	@echo "  make test-syntax             - Parse shell and workflow-owned source files"
 	@echo "  make test-eval               - Evaluate all four flake systems without building"
-	@echo "  make test-docker             - Build and clean up Ubuntu and Fedora validation images"
+	@echo "  make test-linux              - Tests, install twice, doctor, verify in an Ubuntu container"
+	@echo "  make test-docker             - Install twice, doctor, verify on Ubuntu and Fedora"
 	@echo "  make test-macos              - Run install twice in an isolated macOS HOME"
 	@echo "  make test-macos-vm           - Run install twice in an ephemeral Tart macOS VM"
 	@echo "  make docs-build              - Install and build documentation reproducibly"
@@ -109,6 +110,10 @@ test-eval:
 test-docker:
 	@python3 tests/docker_matrix.py $(if $(DOCKER_CASE),--case $(DOCKER_CASE),)
 
+# Linux evidence from any host with Docker. DOCKER_CASE=fedora selects Fedora.
+test-linux:
+	@python3 tests/docker_matrix.py --target tests --case $(or $(DOCKER_CASE),ubuntu)
+
 test-macos:
 	@python3 tests/macos_e2e.py
 
@@ -118,11 +123,11 @@ test-macos-vm:
 docker-test: test-docker
 
 docker-ubuntu:
-	@docker build -f Dockerfile.ubuntu -t nixdotfiles:test-ubuntu .
+	@docker build -f Dockerfile.ubuntu --target acceptance -t nixdotfiles:test-ubuntu .
 	@docker run --rm -it nixdotfiles:test-ubuntu /bin/bash
 
 docker-fedora:
-	@docker build -f Dockerfile.fedora -t nixdotfiles:test-fedora .
+	@docker build -f Dockerfile.fedora --target acceptance -t nixdotfiles:test-fedora .
 	@docker run --rm -it nixdotfiles:test-fedora /bin/bash
 
 latest:

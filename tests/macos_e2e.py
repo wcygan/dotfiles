@@ -79,6 +79,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             run(["make", "test-pre"], environment=environment)
         run(["./bootstrap.sh", "install"], environment=environment)
         run(["./bootstrap.sh", "install"], environment=environment)
+        # A reinstall skips an unchanged profile; this runs the real upgrade.
+        run(["./bootstrap.sh", "profile"], environment=environment)
         run(["./bootstrap.sh", "doctor"], environment=environment)
         run(["./bootstrap.sh", "verify"], environment=environment)
         run(

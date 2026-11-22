@@ -3,25 +3,73 @@
 ## Quick Start
 
 ```bash
-# Run the Python Ubuntu/Fedora test driver from the repository root
+# Does this work on Linux? Run from the repository root on any host with Docker.
+make test-linux
+
+# The CI acceptance check on both distros
 make test-docker
 ```
 
-The Docker target is an acceptance check for the locked Python setup CLI. It
-does not open an interactive container and it is intentionally separate from
-the local `make test` suite.
+| Command | Distro | What it proves |
+|---------|--------|----------------|
+| `make test-linux` | Ubuntu; `DOCKER_CASE=fedora` for Fedora | First install, second install, `doctor`, `verify`, the login-shell smoke check, then `make test-syntax test-pre` |
+| `make test-docker` | Ubuntu and Fedora; `DOCKER_CASE` selects one | Everything above except the test suite |
 
-## What Gets Tested Automatically
+Neither command opens an interactive container or leaves an image behind.
 
-The Python driver checks the supported bootstrap and setup behavior on Ubuntu
-and Fedora. Use `make test-pre` for locked Ruff and pytest checks, `make
-test-local` for ephemeral-HOME-focused pytest, and `make test-shell` for the
-shell-handoff pytest suite.
+## How It Works
+
+Each check is a `RUN` step in `Dockerfile.ubuntu` or `Dockerfile.fedora`, so a
+check passes when the build passes. The stages build on each other:
+
+| Stage | Contents | Rebuilt when |
+|-------|----------|--------------|
+| `base` | Distro packages, the `tester` user, the pinned Nix fixture | The Dockerfile changes |
+| `prewarm` | Nix closure of the profile and dev shell, pinned Rust toolchain | `flake.nix`, `flake.lock`, or `rust-toolchain.toml` changes |
+| `acceptance` | Install, reinstall, `doctor`, `verify`, smoke check | `bootstrap.sh`, `src/`, `config/`, `pyproject.toml`, or `uv.lock` changes |
+| `tests` | `make test-syntax test-pre` | Any file in the build context changes |
+
+Docker reuses every stage whose inputs are unchanged. A run that changes
+nothing finishes in about a second and proves nothing new; a change under
+`src/` reruns the install checks and the tests but not the downloads.
+
+Measured on an Apple silicon Mac (`linux/arm64`, Ubuntu unless noted):
+
+| Run | Time |
+|-----|------|
+| `DOCKER_CASE=ubuntu make test-docker`, nothing cached | 211 s, of which `prewarm` is 189 s |
+| `DOCKER_CASE=fedora make test-docker`, nothing cached | 162 s, of which `prewarm` is 126 s |
+| `make test-linux` after a change under `src/` | 36 s: 7 s install checks, 29 s tests |
+| `make test-linux` with nothing changed | 1 s |
+
+`docker builder prune` discards the `prewarm` stage, and the next run downloads
+it again.
+
+The `prewarm` stage means the per-change install finds its Nix store paths and
+Rust toolchain already present. The scheduled freshness workflow builds with
+`--build-arg INSTALL_BASE=base`, which skips that stage so the install
+downloads everything itself.
+
+## Driver Options
+
+```bash
+python3 tests/docker_matrix.py --case fedora     # one distro
+python3 tests/docker_matrix.py --target tests    # also run the test suite
+python3 tests/docker_matrix.py --keep            # also load nixdotfiles:test-<distro>
+python3 tests/docker_matrix.py --dry-run         # print commands only
+```
+
+`--layer-cache DIR` (or `DOCKER_LAYER_CACHE`) reads the `base` and `prewarm`
+stages from a directory and fills it when it is empty. CI uses it with
+`actions/cache`; it needs a `docker-container` Buildx builder, so leave it
+unset locally.
 
 ## Manual Container Debugging
 
-When the driver fails, inspect the platform Dockerfile selected by the driver
-and reproduce the failing command with `./bootstrap.sh`. On Linux, a missing
+When the driver fails, the build output ends with the failing step. To explore
+the installed result, `make docker-ubuntu` or `make docker-fedora` builds the
+`acceptance` stage and opens a shell in it. Reproduce the failing command with
+`./bootstrap.sh`. On Linux, a missing
 Nix installation requires the explicit bootstrap authorization:
 
 ```bash
@@ -112,6 +160,6 @@ find ~/.config/fish -type f -name "*.fish" | sort
 
 ## Expected Output Summary
 
-`make test-docker` returns the Python driver's pass/fail result for both
-platforms. It may download Nix and container images, so run it after the faster
-local suites have passed.
+Each command prints one line per distro, such as `ubuntu tests: passed in 36s`,
+and exits non-zero at the first failing step. The first run downloads the
+container images, the Nix closure, and the Rust toolchain.

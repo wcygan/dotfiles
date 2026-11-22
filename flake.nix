@@ -216,6 +216,8 @@
                 # Runtime for uv-managed binary wheels such as DuckDB.
                 stdenv.cc.cc.lib
               ];
+              # The checks shell reuses this exact uv without the whole profile.
+              passthru = { inherit uv; };
             };
         }
       );
@@ -236,6 +238,24 @@
               export SSL_CERT_DIR="''${SSL_CERT_DIR-${self.packages.${pkgs.stdenv.hostPlatform.system}.default}/etc/ssl/certs}"
               echo "🐠 Dotfiles development environment"
               echo "Run: make test-pre"
+            '';
+          };
+
+          # Only what the test suite and syntax checks run, so CI does not
+          # download the whole profile for them. DOTFILES_DEV_SHELL=checks
+          # makes bootstrap.sh use it.
+          checks = pkgs.mkShell {
+            packages = with pkgs; [
+              python313
+              self.packages.${pkgs.stdenv.hostPlatform.system}.default.uv
+              fish
+              git
+              gnumake
+              shellcheck
+            ];
+            shellHook = ''
+              export NIX_SSL_CERT_FILE="''${NIX_SSL_CERT_FILE-${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt}"
+              export SSL_CERT_FILE="''${SSL_CERT_FILE-${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt}"
             '';
           };
         }

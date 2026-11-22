@@ -10,6 +10,8 @@ install_nix=false
 assume_yes=false
 run_command=false
 forwarded_args=()
+# The flake dev shell to enter. "checks" holds only what the tests need.
+dev_shell="${DOTFILES_DEV_SHELL:-default}"
 
 parse_bootstrap_arguments() {
   while (($#)); do
@@ -105,20 +107,20 @@ ensure_nix_available() {
 #
 # `nix develop` spends seconds per entry even when nothing changed. The
 # environment depends only on flake.nix and flake.lock, so each checkout keeps
-# one saved copy for the current content of those files. Its Nix profile keeps
+# one saved copy per dev shell for the current content of those files. Its Nix profile keeps
 # the store paths alive.
 cached_dev_environment() {
   [[ "${DOTFILES_BOOTSTRAP_DEV_CACHE:-1}" == 1 ]] || return 1
   local root checkout key directory
   checkout="$(printf '%s\n' "$REPO_ROOT" | cksum)" || return 1
   key="$(cksum flake.nix flake.lock | cksum)" || return 1
-  root="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles/dev-env/${checkout%% *}"
+  root="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles/dev-env/${checkout%% *}/$dev_shell"
   directory="$root/${key%% *}"
   if [[ ! -f "$directory/env.rc" || ! -e "$directory/profile" ]]; then
     rm -rf "$root"
     mkdir -p "$directory" || return 1
     nix --extra-experimental-features "nix-command flakes" \
-      print-dev-env --no-write-lock-file --profile "$directory/profile" .#default \
+      print-dev-env --no-write-lock-file --profile "$directory/profile" ".#$dev_shell" \
       >"$directory/env.rc.$$" || return 1
     mv "$directory/env.rc.$$" "$directory/env.rc" || return 1
   fi
@@ -151,7 +153,7 @@ exec_in_dev_environment() {
 
   exec nix \
     --extra-experimental-features "nix-command flakes" \
-    develop --no-write-lock-file .#default \
+    develop --no-write-lock-file ".#$dev_shell" \
     --command "$@"
 }
 

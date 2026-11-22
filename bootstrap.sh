@@ -8,6 +8,7 @@ DETERMINATE_INSTALL_URL="https://install.determinate.systems/nix"
 # This script establishes the Nix boundary. Python owns the setup workflow.
 install_nix=false
 assume_yes=false
+run_command=false
 forwarded_args=()
 
 parse_bootstrap_arguments() {
@@ -15,6 +16,13 @@ parse_bootstrap_arguments() {
     case "$1" in
       --install-nix) install_nix=true ;;
       --yes) assume_yes=true ;;
+      # Run the remaining arguments as a command inside the dev environment.
+      --run)
+        run_command=true
+        shift
+        forwarded_args+=("$@")
+        break
+        ;;
       --)
         shift
         forwarded_args+=("$@")
@@ -93,20 +101,67 @@ ensure_nix_available() {
   fi
 }
 
+# Print the path of a reusable copy of the dev shell environment, or fail.
+#
+# `nix develop` spends seconds per entry even when nothing changed. The
+# environment depends only on flake.nix and flake.lock, so one saved copy per
+# content of those files is reused. Its Nix profile keeps the store paths alive.
+cached_dev_environment() {
+  [[ "${DOTFILES_BOOTSTRAP_DEV_CACHE:-1}" == 1 ]] || return 1
+  local root key directory
+  root="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles/dev-env"
+  key="$({ printf '%s\n' "$REPO_ROOT"; cksum flake.nix flake.lock; } | cksum)" || return 1
+  directory="$root/${key%% *}"
+  if [[ ! -f "$directory/env.rc" || ! -e "$directory/profile" ]]; then
+    rm -rf "$root"
+    mkdir -p "$directory" || return 1
+    nix --extra-experimental-features "nix-command flakes" \
+      print-dev-env --no-write-lock-file --profile "$directory/profile" .#default \
+      >"$directory/env.rc.$$" || return 1
+    mv "$directory/env.rc.$$" "$directory/env.rc" || return 1
+  fi
+  printf '%s\n' "$directory/env.rc"
+}
+
+# Replace this process with a command running inside the dev environment.
+exec_in_dev_environment() {
+  cd "$REPO_ROOT"
+  unset VIRTUAL_ENV
+
+  local environment dev_bash
+  if environment="$(cached_dev_environment)"; then
+    # The saved environment needs the Bash it was built for; macOS Bash 3.2
+    # cannot parse it.
+    dev_bash="$(sed -n "s/^BASH='\(.*\)'\$/\1/p" "$environment" | head -n 1)"
+    if [[ -x "$dev_bash" ]]; then
+      # Sourcing points the temporary directory at a build directory that
+      # only `nix develop` creates, so keep the caller's.
+      exec "$dev_bash" -c '
+        environment=$1; shift
+        restore=$(declare -p TMPDIR TMP TEMP TEMPDIR NIX_BUILD_TOP 2>/dev/null || true)
+        source "$environment"
+        unset TMPDIR TMP TEMP TEMPDIR NIX_BUILD_TOP
+        eval "$restore"
+        exec "$@"
+      ' bash "$environment" "$@"
+    fi
+  fi
+
+  exec nix \
+    --extra-experimental-features "nix-command flakes" \
+    develop --no-write-lock-file .#default \
+    --command "$@"
+}
+
 run_dotfiles_setup() {
   if ((${#forwarded_args[@]} == 0)); then
     forwarded_args=(install)
   fi
 
-  cd "$REPO_ROOT"
-  unset VIRTUAL_ENV
   # Install reports the time spent before Python starts. Bash 5 gives a
   # sub-second clock; older Bash, such as macOS 3.2, gives whole seconds.
   export DOTFILES_BOOTSTRAP_STARTED_AT="${EPOCHREALTIME:-$(date +%s)}"
-  exec nix \
-    --extra-experimental-features "nix-command flakes" \
-    develop --no-write-lock-file .#default \
-    --command uv run --locked python -m dotfiles_setup "${forwarded_args[@]}"
+  exec_in_dev_environment uv run --locked python -m dotfiles_setup "${forwarded_args[@]}"
 }
 
 main() {
@@ -118,6 +173,13 @@ main() {
   fi
   load_nix_profile
   ensure_nix_available
+  if [[ "$run_command" == true ]]; then
+    if ((${#forwarded_args[@]} == 0)); then
+      echo "--run needs a command." >&2
+      exit 2
+    fi
+    exec_in_dev_environment "${forwarded_args[@]}"
+  fi
   run_dotfiles_setup
 }
 

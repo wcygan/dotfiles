@@ -86,7 +86,10 @@ def test_nix_consumers_do_not_write_the_committed_lock() -> None:
     profile = REPO_ROOT.joinpath("src/dotfiles_setup/nix_profile.py").read_text()
 
     assert "develop --no-write-lock-file .#default" in bootstrap
-    assert "develop --no-write-lock-file .\\#default" in makefile
+    assert "print-dev-env --no-write-lock-file" in bootstrap
+    # Make enters the dev environment only through bootstrap.sh.
+    assert "NIX_DEV := $(BOOTSTRAP) --run\n" in makefile
+    assert " develop " not in makefile
     assert profile.count('"--no-write-lock-file"') == 2
     assert "flake update --refresh" in makefile
     update_recipe = makefile.split("update:", 1)[1].split("\n\n", 1)[0]

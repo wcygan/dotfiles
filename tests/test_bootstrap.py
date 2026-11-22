@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -23,9 +24,15 @@ def command_bin(tmp_path: Path) -> Path:
 
 
 def bootstrap_environment(command_bin: Path, tmp_path: Path) -> dict[str, str]:
+    inherited = {
+        name: value
+        for name, value in os.environ.items()
+        if name != "DOTFILES_BOOTSTRAP_DEV_CACHE"
+    }
     return {
-        **os.environ,
+        **inherited,
         "HOME": str(tmp_path / "home"),
+        "XDG_CACHE_HOME": str(tmp_path / "cache"),
         "PATH": f"{command_bin}:/usr/bin:/bin",
         "BOOTSTRAP_CAPTURE": str(tmp_path / "capture"),
         "DOTFILES_BOOTSTRAP_SKIP_PROFILE": "1",
@@ -188,3 +195,164 @@ def test_python_cli_runs_from_repo_without_virtual_environment(
         f"cwd={REPO_ROOT}",
         "virtual_env=unset",
     ]
+
+
+# Stands in for Nix: `print-dev-env` writes a small environment and its profile,
+# and every call is logged so tests can see which Nix commands ran.
+CACHING_NIX = """
+printf '%s\\n' "$*" >> "$NIX_LOG"
+case " $* " in
+  *" print-dev-env "*)
+    previous=""
+    for argument in "$@"; do
+      if [ "$previous" = --profile ]; then : > "$argument"; fi
+      previous=$argument
+    done
+    printf "BASH='%s'\\nexport TMPDIR=''\\nexport FROM_DEV_ENV=yes\\n" "$DEV_BASH"
+    ;;
+esac
+"""
+RECORDING_UV = """
+{
+  printf '%s\\n' "$@"
+  printf 'dev=%s\\ntmp=%s\\n' "${FROM_DEV_ENV-}" "${TMPDIR-}"
+} > "$BOOTSTRAP_CAPTURE"
+"""
+
+
+@pytest.fixture
+def checkout(command_bin: Path, tmp_path: Path) -> Path:
+    """A throwaway checkout whose flake files a test may change."""
+
+    root = tmp_path / "checkout"
+    root.mkdir()
+    shutil.copy2(BOOTSTRAP, root / "bootstrap.sh")
+    (root / "flake.nix").write_text("first flake\n")
+    (root / "flake.lock").write_text("first lock\n")
+    write_executable(command_bin / "nix", CACHING_NIX)
+    write_executable(command_bin / "uv", RECORDING_UV)
+    return root
+
+
+def run_checkout(
+    checkout: Path,
+    command_bin: Path,
+    tmp_path: Path,
+    *,
+    arguments: tuple[str, ...] = ("verify",),
+    **overrides: str,
+) -> list[str]:
+    """Run the checkout's bootstrap and return the Nix commands run so far."""
+
+    bash = shutil.which("bash")
+    assert bash is not None
+    environment = {
+        **bootstrap_environment(command_bin, tmp_path),
+        "NIX_LOG": str(tmp_path / "nix-log"),
+        "DEV_BASH": bash,
+        "TMPDIR": str(tmp_path),
+        **overrides,
+    }
+    result = subprocess.run(
+        [str(checkout / "bootstrap.sh"), *arguments],
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    return (tmp_path / "nix-log").read_text().splitlines()
+
+
+def test_dev_environment_is_built_once_and_reused(
+    checkout: Path, command_bin: Path, tmp_path: Path
+) -> None:
+    first = run_checkout(checkout, command_bin, tmp_path)
+    second = run_checkout(checkout, command_bin, tmp_path)
+
+    assert len(first) == 1
+    assert " print-dev-env --no-write-lock-file --profile " in first[0]
+    assert second == first
+    assert (tmp_path / "capture").read_text().splitlines() == [
+        "run",
+        "--locked",
+        "python",
+        "-m",
+        "dotfiles_setup",
+        "verify",
+        "dev=yes",
+        f"tmp={tmp_path}",
+    ]
+
+
+@pytest.mark.parametrize("changed", ("flake.nix", "flake.lock"))
+def test_changed_flake_input_rebuilds_the_dev_environment(
+    checkout: Path, command_bin: Path, tmp_path: Path, changed: str
+) -> None:
+    run_checkout(checkout, command_bin, tmp_path)
+    (checkout / changed).write_text("second\n")
+
+    assert len(run_checkout(checkout, command_bin, tmp_path)) == 2
+    assert len(list((tmp_path / "cache" / "dotfiles" / "dev-env").iterdir())) == 1
+
+
+def test_collected_dev_environment_is_rebuilt(
+    checkout: Path, command_bin: Path, tmp_path: Path
+) -> None:
+    run_checkout(checkout, command_bin, tmp_path)
+    (profile,) = (tmp_path / "cache" / "dotfiles" / "dev-env").glob("*/profile")
+    profile.unlink()
+
+    assert len(run_checkout(checkout, command_bin, tmp_path)) == 2
+
+
+def test_dev_environment_cache_can_be_turned_off(
+    checkout: Path, command_bin: Path, tmp_path: Path
+) -> None:
+    (log,) = run_checkout(checkout, command_bin, tmp_path, DOTFILES_BOOTSTRAP_DEV_CACHE="0")
+
+    assert " develop --no-write-lock-file .#default --command uv run --locked " in log
+    assert not (tmp_path / "cache").exists()
+
+
+def test_unusable_dev_environment_falls_back_to_nix_develop(
+    checkout: Path, command_bin: Path, tmp_path: Path
+) -> None:
+    log = run_checkout(checkout, command_bin, tmp_path, DEV_BASH="/nonexistent/bash")
+
+    assert [line.split()[3] for line in log] == ["print-dev-env", "develop"]
+
+
+def test_run_executes_a_command_in_the_dev_environment(
+    checkout: Path, command_bin: Path, tmp_path: Path
+) -> None:
+    (log,) = run_checkout(
+        checkout, command_bin, tmp_path, arguments=("--run", "uv", "lock", "--check")
+    )
+
+    assert " print-dev-env " in log
+    assert (tmp_path / "capture").read_text().splitlines()[:3] == ["lock", "--check", "dev=yes"]
+
+
+def test_run_falls_back_to_nix_develop(
+    checkout: Path, command_bin: Path, tmp_path: Path
+) -> None:
+    (log,) = run_checkout(
+        checkout,
+        command_bin,
+        tmp_path,
+        arguments=("--run", "uv", "lock", "--check"),
+        DOTFILES_BOOTSTRAP_DEV_CACHE="0",
+    )
+
+    assert log.endswith(" develop --no-write-lock-file .#default --command uv lock --check")
+
+
+def test_run_without_a_command_is_rejected(command_bin: Path, tmp_path: Path) -> None:
+    write_executable(command_bin / "nix", "exit 0")
+
+    result = run_bootstrap(command_bin, tmp_path, "--run")
+
+    assert result.returncode == 2
+    assert "--run needs a command." in result.stderr

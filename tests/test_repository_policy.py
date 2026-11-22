@@ -85,7 +85,7 @@ def test_nix_consumers_do_not_write_the_committed_lock() -> None:
     makefile = REPO_ROOT.joinpath("Makefile").read_text()
     profile = REPO_ROOT.joinpath("src/dotfiles_setup/nix_profile.py").read_text()
 
-    assert "develop --no-write-lock-file .#default" in bootstrap
+    assert 'develop --no-write-lock-file ".#$dev_shell"' in bootstrap
     assert "print-dev-env --no-write-lock-file" in bootstrap
     # Make enters the dev environment only through bootstrap.sh.
     assert "NIX_DEV := $(BOOTSTRAP) --run\n" in makefile
@@ -105,7 +105,12 @@ def test_github_actions_are_pinned_to_full_release_shas() -> None:
     action = re.compile(r"uses:\s+[^@\s]+@([0-9a-f]{40})\s+#\s+v\S+$")
 
     for path in REPO_ROOT.joinpath(".github/workflows").glob("*.yml"):
-        uses = [line.strip() for line in path.read_text().splitlines() if "uses:" in line]
+        uses = [
+            line.strip()
+            for line in path.read_text().splitlines()
+            # An action in this repository is fixed by the commit that runs it.
+            if "uses:" in line and "uses: ./.github/actions/" not in line
+        ]
         assert uses, f"workflow has no actions: {path}"
         assert all(action.search(line) for line in uses), (
             f"mutable or undocumented action in {path}"
@@ -328,3 +333,32 @@ def test_distro_dockerfiles_differ_only_in_the_base_packages() -> None:
     assert ubuntu.count(marker) == fedora.count(marker) == 1
     assert ubuntu.split(marker)[1] == fedora.split(marker)[1]
     assert ubuntu.split("FROM ubuntu:")[0] == fedora.split("FROM fedora:")[0]
+
+
+def test_install_checks_run_for_every_file_an_install_reads() -> None:
+    """The install jobs skip a change only when it touches none of their inputs."""
+
+    action = REPO_ROOT.joinpath(".github/actions/install-inputs/action.yml").read_text()
+    listed = action.split('git diff --quiet "$BASE" HEAD --', 1)[1].split("; then", 1)[0]
+    watched = set(listed.split())
+    watched.discard("\\")
+
+    copied: set[str] = set()
+    for distro in ("ubuntu", "fedora"):
+        dockerfile = REPO_ROOT.joinpath(f"Dockerfile.{distro}").read_text()
+        acceptance = dockerfile.split(" AS acceptance", 1)[1].split("\nFROM ", 1)[0]
+        for line in acceptance.splitlines():
+            if line.startswith("COPY "):
+                copied.update(word for word in line.split()[1:-1] if not word.startswith("--"))
+        watched_dockerfile = f"Dockerfile.{distro}"
+        assert watched_dockerfile in watched
+    # README.md is copied only because pyproject.toml names it; it changes no install.
+    assert copied - {"README.md"} <= watched
+    assert {"bootstrap.sh", "src", "config", "flake.nix", "flake.lock", ".github"} <= watched
+
+    workflow = REPO_ROOT.joinpath(".github/workflows/ci.yml").read_text()
+    for job in ("bootstrap", "docker-matrix"):
+        section = workflow.split(f"\n  {job}:\n", 1)[1].split("\n  summary:\n", 1)[0]
+        assert "uses: ./.github/actions/install-inputs" in section
+    quality = workflow.split("\n  quality:\n", 1)[1].split("\n  bootstrap:\n", 1)[0]
+    assert "install-inputs" not in quality

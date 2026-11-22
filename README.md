@@ -359,6 +359,9 @@ took `verify` from 3.4 s to 0.2 s.
 - If the saved environment cannot be built or used, `bootstrap.sh` runs
   `nix develop` instead.
 - `DOTFILES_BOOTSTRAP_DEV_CACHE=0` skips the saved copy for one command.
+- `DOTFILES_DEV_SHELL=checks` enters the flake's `checks` dev shell, which holds
+  only what the test suite and syntax checks run. Each dev shell is saved
+  separately. Setup commands need the default shell.
 - If you suspect it is stale, delete the directory:
   `rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles/dev-env"`. The next
   command rebuilds it.
@@ -417,6 +420,9 @@ and syntax checks, four-system flake evaluation, and the canonical Ubuntu/Fedora
 Docker driver. Each Docker build is the check: its Dockerfile runs strict installation
 and Fish/direnv runtime smoke as build steps, and nothing is exported. CI
 caches only the `base` and `prewarm` stages with `actions/cache`.
+The quality job runs in the `checks` dev shell. The native and Docker install
+jobs skip their install steps when a change touches none of the files an
+install reads; `.github/actions/install-inputs` holds that list.
 Pytest JUnit reports are retained on both success and failure. Documentation
 changes build on pull requests, but Pages deployment is restricted to a push to
 `main`. Native macOS 15 arm64 acceptance runs weekly or manually in an isolated

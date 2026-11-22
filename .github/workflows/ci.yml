@@ -25,6 +25,9 @@ jobs:
     name: Locked quality
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      # The tests need Python, uv, Fish, Git and Make, not the whole profile.
+      DOTFILES_DEV_SHELL: checks
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -73,7 +76,14 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # A change to docs, tests or a skill pin cannot affect an install, so
+      # the remaining steps are skipped for it and the job passes at once.
+      - name: Check whether install inputs changed
+        id: inputs
+        uses: ./.github/actions/install-inputs
+
       - name: Install Nix
+        if: steps.inputs.outputs.changed == 'true'
         uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
         with:
           # GitHub throttled Magic Nix Cache on every run, so fetch straight
@@ -84,6 +94,7 @@ jobs:
             http-connections = 128
 
       - name: Prove native bootstrap idempotency
+        if: steps.inputs.outputs.changed == 'true'
         run: |
           ./bootstrap.sh doctor
           ./bootstrap.sh install
@@ -143,7 +154,14 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # A change to docs, tests or a skill pin cannot affect an install, so
+      # the remaining steps are skipped for it and the job passes at once.
+      - name: Check whether install inputs changed
+        id: inputs
+        uses: ./.github/actions/install-inputs
+
       - name: Configure Docker Buildx
+        if: steps.inputs.outputs.changed == 'true'
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
           # The runner is discarded; removing the builder only costs time.
@@ -152,12 +170,14 @@ jobs:
       # The slow layers depend only on these files, so a change anywhere else
       # restores them instead of downloading the Nix closure and Rust again.
       - name: Restore the locked-input layers
+        if: steps.inputs.outputs.changed == 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/docker-layers
           key: docker-layers-${{ matrix.distro }}-${{ hashFiles(format('Dockerfile.{0}', matrix.distro), 'flake.nix', 'flake.lock', 'rust-toolchain.toml') }}
 
       - name: Build and run canonical distro acceptance
+        if: steps.inputs.outputs.changed == 'true'
         env:
           DOCKER_CASE: ${{ matrix.distro }}
           DOCKER_LAYER_CACHE: ${{ runner.temp }}/docker-layers

@@ -15,39 +15,24 @@ echo ""
 
 # Validate TOML syntax
 echo "1. Validating TOML syntax..."
-if STARSHIP_CONFIG="$CONFIG_FILE" starship config &>/dev/null; then
+if python3 -c 'import sys, tomllib; tomllib.load(open(sys.argv[1], "rb"))' "$CONFIG_FILE"; then
     echo "   ✅ TOML syntax valid"
 else
     echo "   ❌ TOML syntax invalid"
-    STARSHIP_CONFIG="$CONFIG_FILE" starship config
     exit 1
 fi
 
 # Print configuration
 echo ""
 echo "2. Configuration summary:"
-STARSHIP_CONFIG="$CONFIG_FILE" starship print-config | head -n 20
+STARSHIP_CONFIG="$CONFIG_FILE" starship print-config | sed -n '1,20p'
 echo "   ... (truncated)"
 
-# Test module detection
+# Render the configured prompt in the current directory
 echo ""
-echo "3. Testing module detection..."
-
-# Test git module (if in git repo)
-if git rev-parse --git-dir &>/dev/null; then
-    echo "   Testing git_branch:"
-    STARSHIP_CONFIG="$CONFIG_FILE" starship module git_branch
-    echo "   Testing git_status:"
-    STARSHIP_CONFIG="$CONFIG_FILE" starship module git_status
-fi
-
-# Test directory module
-echo "   Testing directory:"
-STARSHIP_CONFIG="$CONFIG_FILE" starship module directory
-
-# Test character module
-echo "   Testing character:"
-STARSHIP_CONFIG="$CONFIG_FILE" starship module character
+echo "3. Rendered prompt:"
+STARSHIP_CONFIG="$CONFIG_FILE" starship prompt
+echo ""
 
 # Explain prompt
 echo ""
@@ -57,7 +42,7 @@ STARSHIP_CONFIG="$CONFIG_FILE" starship explain
 # Performance check
 echo ""
 echo "5. Performance timings:"
-STARSHIP_CONFIG="$CONFIG_FILE" starship timings | head -n 15
+STARSHIP_CONFIG="$CONFIG_FILE" starship timings | sed -n '1,15p'
 echo "   ... (truncated)"
 
 echo ""

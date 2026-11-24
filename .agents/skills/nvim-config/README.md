@@ -4,7 +4,7 @@ Agent skill for configuring Neovim with Lua-based init files, plugin management,
 
 ## Overview
 
-This skill enables Codex to intelligently configure your Neovim editor. Your dotfiles repository has an empty `config/nvim/` directory ready for configuration, which will be symlinked to `~/.config/nvim/` (XDG standard location).
+The repository owns a modular Neovim configuration. Start at [config/nvim/init.lua](../../../config/nvim/init.lua) and follow the imports for the setting, shortcut, or plugin you want to change.
 
 ## Skill Activation
 
@@ -55,37 +55,12 @@ config/nvim/
 
 ## Quick Start
 
-### Option 1: Automated Setup
-
-Run the bootstrap script to create a complete configuration:
-
-```bash
-.agents/skills/nvim-config/scripts/setup-nvim.sh
-```
-
-This creates:
-- Modular Lua configuration structure
-- lazy.nvim plugin manager
-- Basic plugins (colorscheme, treesitter)
-- Essential keymaps and options
-
-### Option 2: Manual Setup with Codex
-
-Simply ask Codex:
-
-- "Set up a basic Neovim configuration"
-- "Create a modular Neovim config with LSP"
-- "Initialize my Neovim configuration"
-
-Codex will create the appropriate structure and files.
+Ask for the behavior you want, such as “Bind a key to save the current buffer”
+or “Use two-space indentation.” The [skill](SKILL.md) identifies the owning Lua
+module. The bundled setup script scaffolds a new configuration and can replace
+existing files if you confirm an overwrite.
 
 ## Example Usage
-
-### Initial Setup
-
-**You:** "Set up my Neovim configuration with lazy.nvim and LSP support"
-
-**Codex:** Creates init.lua, config modules, plugin specs, and LSP configuration.
 
 ### Add Plugin
 
@@ -173,14 +148,6 @@ The skill knows how to configure these common plugins:
 - rust-tools (Rust)
 - go.nvim (Go)
 - typescript-tools (TypeScript)
-
-## Current State
-
-**Configuration:** Empty (ready for initial setup)
-
-**Location:** `config/nvim/` (will be symlinked to `~/.config/nvim/`)
-
-**Recommended approach:** Modern Lua-based configuration with modular structure
 
 ## Configuration Patterns
 

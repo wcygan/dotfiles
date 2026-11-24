@@ -50,8 +50,8 @@ nix profile list --json
 - `bootstrap.sh` is the only root setup entry point. Profile installation and
   upgrade use `./bootstrap.sh profile`; normal consumers keep committed locks
   unchanged.
-- `make update` is the explicit all-input update path. It is the only normal
-  workflow here that changes `flake.lock`; use `$nix-update` before running it.
+- [nix-update](../nix-update/SKILL.md) owns input changes. Its lock-only
+  workflow prepares a review. `make update` also applies the host profile.
 - `nix profile rollback` is the recovery path for an already-applied profile
   generation. It is a user-state mutation and requires explicit authority.
 - Read the actual flake input when its branch, package version, or supported
@@ -77,9 +77,9 @@ nix profile list --json
 
 ### Input update
 
-Use `$nix-update`. It owns the lock diff, package-version comparison, and
-validation sequence. Run `make update` only for an explicit update request;
-then verify the profile and confirm no unrelated lockfile changed.
+Follow [nix-update](../nix-update/SKILL.md) for the requested revision,
+package comparison, and validation. Apply a profile only when the user
+authorizes that host change.
 
 ### Diagnosis
 
@@ -97,9 +97,11 @@ work also requires Docker and affected-platform evidence. Before finishing:
 
 ```bash
 git diff --check
-git diff --exit-code -- flake.lock uv.lock
 git status --short
 ```
+
+Compare lockfiles with their state at the start. A package-list edit preserves
+them. An input update should show only the intended changes to `flake.lock`.
 
 Report the files changed, lockfile intent, commands and results, platform
 evidence, profile/recovery state, rollback path, and commit/push status.

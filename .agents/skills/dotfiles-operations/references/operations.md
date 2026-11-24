@@ -231,18 +231,11 @@ Do not modify `flake.lock` merely to change the package list.
 
 ### Update nixpkgs
 
-Use `$nix-update` and the explicit update target:
-
-```bash
-make update
-make test-pre
-make test-eval
-./bootstrap.sh verify
-```
-
-`make update` intentionally changes `flake.lock` and then updates the profile.
-Ordinary develop, profile, test, and CI consumers must retain
-`--no-write-lock-file` behavior.
+Use [nix-update](../../nix-update/SKILL.md) for lockfile-only updates, version
+comparisons, and validation. When the user authorizes updating all inputs and
+applying them, `make update` changes `flake.lock` and then updates the profile.
+Run `./bootstrap.sh verify` after application. Ordinary develop, profile, test,
+and CI consumers must retain `--no-write-lock-file` behavior.
 
 The selected nixpkgs branch must continue supporting all four declared
 systems, including Intel macOS. A successful Linux build is not proof of that

@@ -141,10 +141,14 @@ shared relative directory. Installation uses `gh skill install --all --pin
 --dir "$HOME/.agents/skills"` to verify source, version, pin, scope, and path
 metadata. Existing same-name skills from another source or location stop the
 operation. The explicit directory keeps the destination independent of GitHub
-CLI host defaults. Author changes in the `agent-skills` repository, advance the
-tracked pin intentionally, and rerun the command. GitHub CLI does not prune
-files or skill directories removed upstream, so inspect retired skills when
-the pin advances.
+CLI host defaults. A pinned reinstall uses the existing lock.
+
+To publish local skill edits, run `just check-full` and the approved
+`just install --wait` in the sibling `agent-skills` repository. The installer
+commits the catalog, installs it locally, updates the dotfiles pin, and waits
+for both pushes. Audit the result here with `./bootstrap.sh agent-skills --check`.
+See the [integration skill](.agents/skills/agent-skills-integration/SKILL.md)
+for pin advances and for reconciling retired skills on other hosts.
 
 Other Codex state is managed narrowly:
 `config/codex/config.toml` is a portable template copied to

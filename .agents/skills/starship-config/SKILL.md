@@ -47,11 +47,8 @@ truncate_to_repo = true
 Available presets: `nerd-font-symbols`, `pure-preset`, `pastel-powerline`, `tokyo-night`, `gruvbox-rainbow`
 
 ```bash
-# Preview preset
-starship preset <preset-name> -o - | less
-
-# Apply preset
-starship preset <preset-name> -o ~/.config/starship.toml
+# Preview a preset before selecting sections for config/starship.toml
+starship preset nerd-font-symbols
 ```
 
 #### Custom Module Configuration
@@ -156,20 +153,15 @@ scan_timeout = 30  # ms, default is 30
 scan_timeout = 10
 ```
 
-### 4. Testing Configuration
+### 4. Verify the tracked configuration
 
-```bash
-# Validate TOML syntax
-starship config
+From the repository root, parse the TOML and render the prompt with the file
+you edited. Choose a directory and command status that exercise the changed
+module.
 
-# Explain current config
-starship explain
-
-# Print configuration value
-starship print-config
-
-# Test in isolation
-env STARSHIP_CONFIG=./test-config.toml fish
+```sh
+python3 -c 'import tomllib; tomllib.load(open("config/starship.toml", "rb"))'
+STARSHIP_CONFIG="$PWD/config/starship.toml" starship prompt
 ```
 
 ### 5. Troubleshooting
@@ -193,47 +185,15 @@ env STARSHIP_CONFIG=./test-config.toml fish
 **Config not loading:**
 - Check config path: `echo $STARSHIP_CONFIG` (should be unset or correct path)
 - Verify symlink: `ls -la ~/.config/starship.toml`
-- Validate TOML: `starship config`
+- Parse and render the tracked file using the checks above.
 
-### 6. Integration with Dotfiles
+### 6. Finish the change
 
-**When modifying:**
-1. Edit `config/starship.toml`
-2. Test with `exec fish -l`
-3. Verify symlink active: `ls -la ~/.config/starship.toml`
-4. Commit to git if satisfied
-
-**When creating new:**
-1. Write to `config/starship.toml`
-2. Ensure `src/dotfiles_setup/links.py` manages the Starship symlink
-3. Verify link in `~/.config/starship.toml`
-4. Add to README if new setup step required
-
-### 7. Output Format
-
-When generating configs:
-
-**Use Edit tool** for existing configs:
-- Modify specific sections
-- Preserve user customizations
-- Add/update modules
-
-**Use Write tool** for new configs:
-- Complete working configuration
-- Include comments explaining sections
-- Follow TOML formatting
-
-**Include testing steps:**
-```bash
-# Reload shell
-exec fish -l
-
-# Verify prompt renders
-starship explain
-
-# Check performance
-starship timings
-```
+Report which module changed and which prompt output you checked. If the prompt
+rendered from the tracked file differs from the running shell, inspect the
+Fish initialization and the resolved host link. For a link repair, follow
+[dotfiles-operations](../dotfiles-operations/SKILL.md). Commit only when the
+user has authorized a commit.
 
 ## Module Priority Guide
 

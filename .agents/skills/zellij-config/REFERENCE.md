@@ -555,9 +555,11 @@ themes {
 ## Useful Commands
 
 ```bash
-# Setup
-zellij setup --dump-config > ~/.config/zellij/config.kdl
-zellij setup --check
+# Read the installed defaults
+zellij setup --dump-config
+
+# Validate the tracked configuration from the repository root
+zellij --config-dir config/zellij --config config/zellij/config.kdl setup --check
 
 # Launch with options
 zellij --layout custom

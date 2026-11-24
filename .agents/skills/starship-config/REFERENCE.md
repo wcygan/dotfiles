@@ -149,10 +149,8 @@ disabled = true
 ### Starting from Preset
 
 ```bash
-# Export preset as base
-starship preset nerd-font-symbols -o config/starship.toml
-
-# Then customize sections
+# Preview the preset, then copy the requested sections into config/starship.toml
+starship preset nerd-font-symbols
 ```
 
 ### Hybrid Approach
@@ -275,7 +273,7 @@ starship timings
 starship explain
 
 # Validate config
-starship config
+python3 -c 'import tomllib; tomllib.load(open("config/starship.toml", "rb"))'
 ```
 
 ### Module Testing
@@ -432,7 +430,7 @@ echo $STARSHIP_CONFIG  # Should be empty (uses default)
 ls -la ~/.config/starship.toml  # Should exist
 
 # Validate syntax
-starship config
+python3 -c 'import tomllib; tomllib.load(open("config/starship.toml", "rb"))'
 
 # Force reload
 exec fish -l

@@ -11,11 +11,13 @@ Modify configuration files in this dotfiles repository through the specialized p
 
 Success means the change follows the correct local conventions, preserves macOS, Ubuntu, and Fedora compatibility, and has a narrow verification command.
 
-Stop when the requested config change is applied or the user has clarified which tool owns an ambiguous request.
+After the user identifies the tool for an ambiguous request, continue with the
+edit and verify the requested behavior.
 
 ## Route Map
 
 - `fish-shell-config`: `config/fish/`, including `config.fish`, functions, abbreviations, prompts, and environment variables.
+- Git aliases invoked as `git <name>` belong in the `[alias]` section of [config/git/config](../../../config/git/config).
 - `ghostty-config`: `config/ghostty/`, including themes, fonts, keybindings, and performance settings.
 - `lazygit-config`: lazygit's `config.yml`, delta integration, themes, and keybindings. The repository tracks no lazygit config yet; add one under `config/lazygit/` with a managed-link inventory entry before relying on it.
 - `nvim-config`: `config/nvim/`, including `init.lua`, plugins, LSP settings, and keymaps.
@@ -29,14 +31,15 @@ Stop when the requested config change is applied or the user has clarified which
 
 1. Read the user's requested config change from the prompt.
 2. Identify the affected config area from the route map.
-3. Open the matching `.agents/skills/<skill-name>/SKILL.md` before editing.
+3. Open the focused skill when the route names one. For a Git alias, inspect the existing aliases in the tracked Git config.
 4. Use multiple specialized skills when the change spans multiple config areas.
 5. Include `cross-platform-guardian` when paths, shell startup, installed tools, file linking, or platform conditionals are involved.
 6. Ask one concise clarifying question only when the owning tool cannot be inferred.
 
 ## Examples
 
-- "add git alias for git log --oneline": use `fish-shell-config`.
+- “Make `git brief` run `git log --oneline`” belongs in the Git config.
+- “Make `brief` expand to `git log --oneline` in Fish” belongs in `fish-shell-config`.
 - "change terminal font to JetBrains Mono": use `ghostty-config`.
 - "add keybinding for split pane": clarify which tool if the prompt does not say Ghostty, Zellij, Neovim, or Zed.
 - "update lazygit to use delta pager": use `lazygit-config`.

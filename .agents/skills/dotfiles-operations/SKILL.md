@@ -100,10 +100,11 @@ work when appropriate:
    when changing a cross-file invariant.
 5. Run the narrow validation first, then expand according to the matrix in the
    operations reference.
-6. Confirm relevant lockfiles and tracked inputs did not change unexpectedly:
+6. Compare lockfile diffs with the starting worktree. A lockfile change must
+   match the requested update. Check all repository locks and tracked inputs:
 
    ```bash
-   git diff --exit-code -- flake.lock uv.lock
+   git diff HEAD -- flake.lock uv.lock rust-toolchain.toml agent-skills.lock.toml
    git diff --check
    git status --short
    ```

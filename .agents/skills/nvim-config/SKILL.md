@@ -14,7 +14,8 @@ This dotfiles repository has a **symlinked** Neovim configuration:
 - Symlinked to: `~/.config/nvim/` (XDG standard)
 - **All changes are applied globally** to the Neovim installation
 
-**Current state:** Configuration directory exists but is empty (ready for initial setup)
+Start at [config/nvim/init.lua](../../../config/nvim/init.lua) and follow its
+imports to the module that owns the requested behavior.
 
 ## Neovim Configuration Structure
 
@@ -441,39 +442,12 @@ return {
 
 ## Workflow Instructions
 
-### Initial Setup (Empty Configuration)
-
-**Create minimal init.lua:**
-```lua
--- config/nvim/init.lua
-vim.g.mapleader = " "
-vim.opt.number = true
-vim.opt.relativenumber = true
-vim.opt.expandtab = true
-vim.opt.shiftwidth = 4
-vim.opt.tabstop = 4
-```
-
-**Or create full modular structure:**
-1. Create `init.lua` with module imports
-2. Create `lua/config/` directory with options, keymaps, autocmds
-3. Create `lua/plugins/` directory for plugin specs
-4. Set up lazy.nvim plugin manager
-
 ### Modifying Existing Configuration
 
-**Always start by reading:**
-```
-Read config/nvim/init.lua
-Read config/nvim/lua/config/options.lua
-Read config/nvim/lua/config/keymaps.lua
-```
-
-**Use Edit tool for precise changes:**
-1. Read current configuration
-2. Identify exact section to modify
-3. Use Edit to replace specific content
-4. Preserve Lua syntax and structure
+For a shortcut, inspect the existing [keymaps](../../../config/nvim/lua/config/keymaps.lua)
+and check bindings in the requested mode. For an editor setting, inspect the
+[options module](../../../config/nvim/lua/config/options.lua). For a plugin,
+follow the imports from [lazy.nvim setup](../../../config/nvim/lua/config/lazy.lua).
 
 ### Adding Plugins
 
@@ -681,8 +655,8 @@ ls -la ~/.config/nvim    # Should point to dotfiles/config/nvim
 
 **Current Configuration:**
 - Location: `config/nvim/` (symlinked to `~/.config/nvim/`)
-- State: Empty (ready for initial setup)
-- Format: Lua-based (recommended)
+- Entry point: `config/nvim/init.lua`
+- Format: Lua modules
 
 **Standard Init Structure:**
 ```

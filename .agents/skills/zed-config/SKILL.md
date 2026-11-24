@@ -1,6 +1,6 @@
 ---
 name: zed-config
-description: "Zed editor configuration expert. Assists with settings.json, keymap.json, tasks.json, AI/agent panel setup, LLM provider configuration, language server tuning, themes, fonts, appearance, git integration, tool permissions, rules files, and MCP servers. Knows Zed's JSON config format, context system for keybindings, task variables, and agent profiles. Use when configuring Zed, setting up keybindings, adding LLM providers, customizing appearance, configuring language servers, setting up tasks, or troubleshooting Zed settings. Keywords: zed, zed editor, settings.json, keymap.json, tasks.json, keybinding, theme, font, appearance, agent panel, LLM provider, language server, LSP, formatter, linter, git panel, tool permissions, MCP, rules, inline assistant, task runner"
+description: Change or troubleshoot Zed settings, keybindings, tasks, language servers, appearance, and agent providers in this dotfiles repository.
 ---
 
 # Zed Editor Configuration Expert
@@ -9,10 +9,10 @@ You are an expert on configuring the Zed editor. You provide accurate, up-to-dat
 
 ## Key Principles
 
-1. **Always use valid JSON** - Zed config files are strict JSON (no comments, no trailing commas)
-2. **Settings location**: `~/.config/zed/settings.json` (macOS/Linux), `~\AppData\Roaming\Zed\settings.json` (Windows)
-3. **Keymap location**: `~/.config/zed/keymap.json` (macOS/Linux)
-4. **Tasks location**: `~/.config/zed/tasks.json` (global) or `.zed/tasks.json` (project)
+1. Zed reads settings and keymaps as JSON with comments (JSONC). Preserve existing comments and use a JSONC-aware parser when checking the edit.
+2. Edit [config/zed/settings.json](../../../config/zed/settings.json) for user settings.
+3. Edit [config/zed/keymap.json](../../../config/zed/keymap.json) for user shortcuts.
+4. Use `config/zed/tasks.json` for dotfiles-managed tasks or the target project's `.zed/tasks.json` for tasks specific to that project.
 5. **API keys are stored in OS keychain**, not in settings files
 6. **Commands**: Use `zed: open settings`, `zed: open keymap`, `zed: open tasks` from the command palette
 
@@ -34,7 +34,7 @@ Load the appropriate reference file(s) based on what the user is asking about:
 
 1. Identify which area of Zed the user needs help with
 2. Load the relevant reference file(s)
-3. Provide the exact JSON configuration with correct nesting
+3. For a change request, edit the owning file and check the requested setting or shortcut in context. For a how-to question, show the relevant JSONC fragment.
 4. Mention the command palette action to open the relevant config file
 5. Note any caveats (e.g., requires restart, needs extension installed)
 
@@ -46,7 +46,7 @@ Load the appropriate reference file(s) based on what the user is asking about:
 - Tasks: `zed: open tasks` (global) or `zed: open project tasks` (project)
 
 ### Config file structure
-```json
+```jsonc
 // settings.json - top-level keys
 {
   "theme": {},
@@ -63,7 +63,7 @@ Load the appropriate reference file(s) based on what the user is asking about:
 ```
 
 ### Keymap file structure
-```json
+```jsonc
 // keymap.json - array of binding groups
 [
   {

@@ -33,34 +33,16 @@ repository-operation contract with a focused configuration or provider skill.
 
 ## Agent skills: ownership and flow
 
-- `wcygan/agent-skills` owns reusable skill source and provider-side validation.
-  Edit reusable skills there, not in installed copies or this repository.
-- Dotfiles owns project-specific skills in `.agents/skills/**` and the consumer
-  integration. `agent-skills.lock.toml` pins the provider repository and full
-  commit SHA, plus the agent and portable shared user directory. Dotfiles does
-  not vendor the reusable catalog.
-- The shared Codex user scope (`~/.agents/skills` with the current lock) has
-  two installers. On a machine with an `agent-skills` checkout beside this
-  one, `just install` in that checkout is the routine one: it copies the
-  catalog from the checkout, writes the same source metadata GitHub CLI
-  writes, archives retired skills, advances `agent-skills.lock.toml` here,
-  and commits and pushes only that file. On a machine without that checkout,
-  and for recovery, `./bootstrap.sh agent-skills` installs the pinned catalog
-  through GitHub CLI. Installed copies and tracking state are machine-local,
-  not source of truth.
-
-To update a reusable skill, change it in the provider repository and run
-`just install` there; do not advance the lock by hand or follow it with
-`./bootstrap.sh agent-skills`, which would download again what is already
-installed. `./bootstrap.sh agent-skills` is mutating and is not part of the
-default install. Use `./bootstrap.sh agent-skills --check` for read-only
-verification of either installer's result. Do not assume a pin update
-authorizes pruning or a full reset through the bootstrap command.
-
-For collision handling, stale copies, recovery, and verification, follow
-[$agent-skills-integration](.agents/skills/agent-skills-integration/SKILL.md)
-and the [pinned skills runbook](.agents/skills/dotfiles-operations/references/operations.md#pinned-global-agent-skills).
-Keep `$dotfiles-operations` active for repository operations.
+- Edit reusable skills in `wcygan/agent-skills` and project-only skills in
+  `.agents/skills/**`. Dotfiles owns the exact consumer pin and integration.
+- To install changes from a sibling provider checkout, get approval for
+  `just install` there. It installs the catalog, updates the dotfiles pin,
+  and commits and pushes in both repositories. For a pinned reinstall, follow
+  [$agent-skills-integration](.agents/skills/agent-skills-integration/SKILL.md)
+  and the [pinned skills runbook](.agents/skills/dotfiles-operations/references/operations.md#pinned-global-agent-skills).
+- Audit either installation with the read-only
+  `./bootstrap.sh agent-skills --check`. Get explicit approval for pruning,
+  a full reset, or recovery apply.
 
 ## Writing and repeated UI text
 
@@ -89,8 +71,8 @@ skill rather than duplicating its checklist here.
   or Docker results do not establish macOS compatibility.
 - Normal consumers preserve committed lockfiles. Only an explicit update task
   may change `flake.lock`, `uv.lock`, `rust-toolchain.toml`, or
-  `agent-skills.lock.toml`. The provider's `just install` is such a task for
-  `agent-skills.lock.toml`: it commits the lock on every run.
+  `agent-skills.lock.toml`. An approved provider install commits a changed
+  agent-skills pin.
 - Secrets, credentials, Git identity values, and mutable application state stay
   machine-local. Repository paths and behavior remain portable across machines.
 - Breaking changes require focused tests and an entry in

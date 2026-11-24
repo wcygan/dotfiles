@@ -1,0 +1,86 @@
+name: Docker CI experiment
+
+on:
+  push:
+    branches: [codex/ci-throughput-trial]
+
+permissions:
+  contents: read
+
+jobs:
+  sample:
+    name: ${{ matrix.distro }} ${{ matrix.mode }} ${{ matrix.sample }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {distro: ubuntu, mode: archive, sample: 1}
+          - {distro: ubuntu, mode: direct, sample: 1}
+          - {distro: fedora, mode: archive, sample: 1}
+          - {distro: fedora, mode: direct, sample: 1}
+          - {distro: ubuntu, mode: direct, sample: 2}
+          - {distro: ubuntu, mode: archive, sample: 2}
+          - {distro: fedora, mode: direct, sample: 2}
+          - {distro: fedora, mode: archive, sample: 2}
+          - {distro: ubuntu, mode: archive, sample: 3}
+          - {distro: ubuntu, mode: direct, sample: 3}
+          - {distro: fedora, mode: archive, sample: 3}
+          - {distro: fedora, mode: direct, sample: 3}
+          - {distro: ubuntu, mode: direct, sample: 4}
+          - {distro: ubuntu, mode: archive, sample: 4}
+          - {distro: fedora, mode: direct, sample: 4}
+          - {distro: fedora, mode: archive, sample: 4}
+          - {distro: ubuntu, mode: archive, sample: 5}
+          - {distro: ubuntu, mode: direct, sample: 5}
+          - {distro: fedora, mode: archive, sample: 5}
+          - {distro: fedora, mode: direct, sample: 5}
+          - {distro: ubuntu, mode: no-export, sample: 1}
+          - {distro: fedora, mode: no-export, sample: 1}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Configure archive builder
+        if: matrix.mode != 'direct'
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          cleanup: false
+
+      - name: Restore existing archive
+        if: matrix.mode == 'archive'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/docker-layers
+          key: docker-layers-${{ matrix.distro }}-${{ hashFiles(format('Dockerfile.{0}', matrix.distro), 'flake.nix', 'flake.lock', 'rust-toolchain.toml') }}
+          fail-on-cache-miss: true
+
+      - name: Prove distro acceptance with archive
+        if: matrix.mode == 'archive'
+        env:
+          DOCKER_CASE: ${{ matrix.distro }}
+          DOCKER_LAYER_CACHE: ${{ runner.temp }}/docker-layers
+        run: make test-docker
+
+      - name: Prove distro acceptance with direct substitution
+        if: matrix.mode == 'direct'
+        env:
+          DOCKER_CASE: ${{ matrix.distro }}
+          ACCEPTANCE_NIX_CONFIG: |
+            max-substitution-jobs = 64
+            http-connections = 128
+        run: |
+          docker buildx build --progress=plain --output type=cacheonly \
+            -f "Dockerfile.$DOCKER_CASE.trial" --target acceptance \
+            --build-arg INSTALL_BASE=base --build-arg ACCEPTANCE_NIX_CONFIG .
+
+      - name: Prove the canonical cache-miss path
+        if: matrix.mode == 'no-export'
+        env:
+          DOCKER_CASE: ${{ matrix.distro }}
+          DOCKER_LAYER_CACHE: ''
+        run: make test-docker
+
+      - name: Verify tracked inputs are unchanged
+        if: always()
+        run: git diff --exit-code

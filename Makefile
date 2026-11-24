@@ -2,7 +2,8 @@
 # Run `make help` for available commands.
 
 BOOTSTRAP := ./bootstrap.sh
-NIX_DEV := $(BOOTSTRAP) --run
+DOTFILES_DEV_SHELL ?= checks
+NIX_DEV := DOTFILES_DEV_SHELL="$(DOTFILES_DEV_SHELL)" $(BOOTSTRAP) --run
 UV_RUN := $(NIX_DEV) uv run --locked
 
 .PHONY: \

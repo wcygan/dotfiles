@@ -49,6 +49,8 @@ RUN nix --extra-experimental-features "nix-command flakes" \
 
 FROM ${INSTALL_BASE} AS acceptance
 
+ARG ACCEPTANCE_NIX_CONFIG
+
 COPY --chown=tester:tester bootstrap.sh flake.nix flake.lock pyproject.toml uv.lock rust-toolchain.toml README.md ./
 COPY --chown=tester:tester src ./src
 COPY --chown=tester:tester config ./config
@@ -56,7 +58,7 @@ COPY --chown=tester:tester config ./config
 # First install into a home that setup has never touched. With the prewarm
 # base, the Nix store paths and the Rust toolchain are already fetched; the
 # weekly freshness build uses INSTALL_BASE=base to install from nothing.
-RUN ./bootstrap.sh install
+RUN NIX_CONFIG="${ACCEPTANCE_NIX_CONFIG:-${NIX_CONFIG:-}}" ./bootstrap.sh install
 
 # The same setup operation must be idempotent.
 RUN ./bootstrap.sh install && ./bootstrap.sh profile && ./bootstrap.sh doctor && ./bootstrap.sh verify

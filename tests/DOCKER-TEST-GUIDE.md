@@ -6,8 +6,11 @@
 # Does this work on Linux? Run from the repository root on any host with Docker.
 make test-linux
 
-# The CI acceptance check on both distros
+# The acceptance check on both distros, with local layer reuse
 make test-docker
+
+# Fetch dependencies during the first install, as CI does without an archive
+DOCKER_SKIP_PREWARM=1 make test-docker
 ```
 
 | Command | Distro | What it proves |
@@ -45,10 +48,11 @@ Measured on an Apple silicon Mac (`linux/arm64`, Ubuntu unless noted):
 `docker builder prune` discards the `prewarm` stage, and the next run downloads
 it again.
 
-The `prewarm` stage means the per-change install finds its Nix store paths and
-Rust toolchain already present. The scheduled freshness workflow builds with
-`--build-arg INSTALL_BASE=base`, which skips that stage so the install
-downloads everything itself.
+The `prewarm` stage lets local installs reuse the Nix store paths and Rust
+toolchain. CI uses a shared archive for Ubuntu when available. Fedora and
+Ubuntu cache misses outside the default branch set `DOCKER_SKIP_PREWARM=1` to
+fetch pinned dependencies during the first install. The scheduled freshness
+workflow also skips prewarm and tests with the current container tags.
 
 ## Driver Options
 

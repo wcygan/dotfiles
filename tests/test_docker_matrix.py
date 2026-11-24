@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from tests.docker_matrix import (
     CASES,
     build_command,
@@ -87,11 +89,30 @@ def test_dry_run_can_select_one_ci_case(capsys, monkeypatch) -> None:
 def test_layer_cache_directory_comes_from_the_ci_environment(
     capsys, monkeypatch, tmp_path: Path
 ) -> None:
+    monkeypatch.delenv("DOCKER_SKIP_PREWARM", raising=False)
     monkeypatch.setenv("DOCKER_LAYER_CACHE", str(tmp_path))
     assert main(["--dry-run", "--case", "ubuntu"]) == 0
     output = capsys.readouterr().out
     assert f"--cache-to type=local,dest={tmp_path}" in output
     assert f"--cache-from type=local,src={tmp_path}" in output
+
+
+def test_ci_install_fetches_dependencies_without_prewarm(capsys, monkeypatch) -> None:
+    monkeypatch.setenv("DOCKER_SKIP_PREWARM", "1")
+    monkeypatch.delenv("DOCKER_LAYER_CACHE", raising=False)
+
+    assert main(["--dry-run", "--case", "fedora"]) == 0
+    output = capsys.readouterr().out
+    assert "--target acceptance --build-arg INSTALL_BASE=base" in output
+    assert "ACCEPTANCE_NIX_CONFIG=max-substitution-jobs = 64\nhttp-connections = 128" in output
+    assert "--cache-from" not in output and "--cache-to" not in output
+
+
+def test_skip_prewarm_rejects_a_prewarm_cache(capsys, tmp_path: Path) -> None:
+    with pytest.raises(SystemExit, match="2"):
+        main(["--dry-run", "--skip-prewarm", "--layer-cache", str(tmp_path)])
+
+    assert "--skip-prewarm cannot be combined with a layer cache" in capsys.readouterr().err
 
 
 def test_darwin_docker_environment_restores_host_helper_paths() -> None:

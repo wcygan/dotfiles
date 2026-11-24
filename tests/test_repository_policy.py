@@ -143,7 +143,7 @@ def test_floating_images_are_confined_to_freshness_workflow() -> None:
     assert "schedule:" in freshness
     assert "workflow_dispatch:" in freshness
     assert "docker build --pull" in freshness
-    # The scheduled build is the one that installs with nothing fetched ahead.
+    # The scheduled build also installs with nothing fetched ahead.
     assert "--build-arg INSTALL_BASE=base --target acceptance" in freshness
     assert "s/@sha256:[0-9a-f]{64}//g" in freshness
     assert "docker run --rm" in freshness
@@ -239,7 +239,7 @@ def test_all_system_evaluation_and_macos_acceptance_are_explicit() -> None:
     assert "git diff --exit-code" in macos
 
 
-def test_reproducible_docker_acceptance_is_cached_and_runtime_checked() -> None:
+def test_reproducible_docker_acceptance_shares_only_the_ubuntu_archive() -> None:
     driver = REPO_ROOT.joinpath("tests/docker_matrix.py").read_text()
     makefile = REPO_ROOT.joinpath("Makefile").read_text()
     dockerignore = REPO_ROOT.joinpath(".dockerignore").read_text()
@@ -252,15 +252,27 @@ def test_reproducible_docker_acceptance_is_cached_and_runtime_checked() -> None:
         *REPO_ROOT.joinpath(".github/workflows").glob("*.yml"),
     ]
     assert all("docker-test-commands.fish" not in path.read_text() for path in acceptance_sources)
-    # CI never exports the image; it restores only the locked-input layers.
     assert '"type=cacheonly"' in driver
     assert "type=gha" not in driver
-    assert "actions/cache@" in ci
-    assert "DOCKER_LAYER_CACHE: ${{ runner.temp }}/docker-layers" in ci
     assert (
-        "hashFiles(format('Dockerfile.{0}', matrix.distro), "
-        "'flake.nix', 'flake.lock', 'rust-toolchain.toml')"
+        "SEED_DOCKER_CACHE: ${{ matrix.distro == 'ubuntu' && "
+        "github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}"
     ) in ci
+    restore = ci.split("Restore Ubuntu's locked-input layers", 1)[1].split("- name:", 1)[0]
+    assert "if: steps.inputs.outputs.changed == 'true' && matrix.distro == 'ubuntu'" in restore
+    assert "actions/cache/restore@" in restore
+    assert (
+        "DOCKER_LAYER_CACHE: ${{ (steps.layers.outputs.cache-hit == 'true' "
+        "|| env.SEED_DOCKER_CACHE == 'true') && format('{0}/docker-layers', runner.temp) || '' }}"
+    ) in ci
+    assert 'if [[ -z "$DOCKER_LAYER_CACHE" ]]; then\n            export DOCKER_SKIP_PREWARM=1' in ci
+    save = ci.split("Save Ubuntu's locked-input layers", 1)[1].split("\n  summary:", 1)[0]
+    assert (
+        "if: steps.inputs.outputs.changed == 'true' && env.SEED_DOCKER_CACHE == 'true' "
+        "&& steps.layers.outputs.cache-hit != 'true'"
+    ) in save
+    assert "actions/cache/save@" in save
+    assert "key: ${{ steps.layers.outputs.cache-primary-key }}" in save
     assert "python3 tests/docker_matrix.py" in makefile
     assert "python3 tests/docker_matrix.py --target tests" in makefile
     assert dockerignore.startswith("**\n")
@@ -304,7 +316,7 @@ def test_docker_acceptance_proves_install_reinstall_and_the_installed_result() -
         assert acceptance.startswith("FROM ${INSTALL_BASE} AS acceptance\n")
         runs = [line for line in acceptance.splitlines() if line.startswith("RUN ")]
         assert runs[:2] == [
-            "RUN ./bootstrap.sh install",
+            'RUN NIX_CONFIG="${ACCEPTANCE_NIX_CONFIG:-${NIX_CONFIG:-}}" ./bootstrap.sh install',
             "RUN ./bootstrap.sh install && ./bootstrap.sh profile"
             " && ./bootstrap.sh doctor && ./bootstrap.sh verify",
         ]

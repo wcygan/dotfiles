@@ -323,7 +323,10 @@ the handoff.
 - locked Ruff/pytest and syntax validation;
 - native Linux install twice to prove idempotency, followed by strict verify;
 - all-system flake evaluation without building;
-- Ubuntu/Fedora Docker acceptance, where each build is the check and CI caches only the `base` and `prewarm` stages with `actions/cache`;
+- Ubuntu/Fedora Docker acceptance. Fedora fetches pinned dependencies during
+  the first install. Ubuntu uses an exact archive shared by the default branch
+  and fetches directly on a cache miss outside that branch. Local builds keep
+  the reusable prewarm layer;
 - an always-run summary that fails unless every required job succeeded.
 
 Each job uses explicit runners, timeouts, least-privilege permissions, pinned

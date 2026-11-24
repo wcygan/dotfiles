@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 import platform
+import shlex
 import shutil
 import subprocess
 import time
@@ -37,6 +38,7 @@ def build_command(
     *,
     target: str = "acceptance",
     keep: bool = False,
+    skip_prewarm: bool = False,
     cache_from: Path | None = None,
     cache_to: Path | None = None,
 ) -> list[str]:
@@ -56,6 +58,13 @@ def build_command(
         "--target",
         target,
     ]
+    if skip_prewarm:
+        command += [
+            "--build-arg",
+            "INSTALL_BASE=base",
+            "--build-arg",
+            "ACCEPTANCE_NIX_CONFIG=max-substitution-jobs = 64\nhttp-connections = 128",
+        ]
     if cache_from is not None:
         command += ["--cache-from", f"type=local,src={cache_from}"]
     if cache_to is not None:
@@ -71,6 +80,7 @@ def build_commands(
     target: str = "acceptance",
     keep: bool = False,
     layer_cache: Path | None = None,
+    skip_prewarm: bool = False,
 ) -> list[list[str]]:
     """Return the builds for one case, seeding an empty layer cache first.
 
@@ -79,7 +89,7 @@ def build_commands(
     """
 
     if layer_cache is None:
-        return [build_command(case, target=target, keep=keep)]
+        return [build_command(case, target=target, keep=keep, skip_prewarm=skip_prewarm)]
     commands = []
     if not layer_cache.joinpath("index.json").is_file():
         commands.append(build_command(case, target="prewarm", cache_to=layer_cache))
@@ -135,17 +145,26 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="also load the built image as nixdotfiles:test-<distro> for debugging",
     )
     parser.add_argument(
+        "--skip-prewarm",
+        action="store_true",
+        default=os.environ.get("DOCKER_SKIP_PREWARM") == "1",
+        help="fetch dependencies directly during the first install, as CI does",
+    )
+    parser.add_argument(
         "--layer-cache",
         type=Path,
         default=os.environ.get("DOCKER_LAYER_CACHE") or None,
-        help="directory for the locked-input layers (CI restores and saves it)",
+        help="directory for importing and exporting the locked-input layers",
     )
     parser.add_argument(
         "--prune-cache",
         action="store_true",
         help="also prune the global Docker build cache (affects other projects)",
     )
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.skip_prewarm and args.layer_cache is not None:
+        parser.error("--skip-prewarm cannot be combined with a layer cache")
+    return args
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -161,9 +180,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     for case in selected:
         started = time.monotonic()
         for command in build_commands(
-            case, target=args.target, keep=args.keep, layer_cache=args.layer_cache
+            case,
+            target=args.target,
+            keep=args.keep,
+            layer_cache=args.layer_cache,
+            skip_prewarm=args.skip_prewarm,
         ):
-            print("+", " ".join(command), flush=True)
+            print("+", shlex.join(command), flush=True)
             if not args.dry_run:
                 run(command)
         if not args.dry_run:

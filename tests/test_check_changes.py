@@ -57,3 +57,19 @@ def test_classifier_changes_select_every_check(tmp_path):
     (tmp_path / "scripts").mkdir()
     (tmp_path / "scripts/check_changes.py").touch()
     assert set(classify(tmp_path, "--base", "HEAD")) == FULL
+
+
+def test_config_routing_distinguishes_app_content_from_link_inventory(monkeypatch):
+    monkeypatch.syspath_prepend(str(SCRIPT.parent))
+    from check_changes import classify
+
+    assert classify("config/zed/settings.json", "M") == {"config"}
+    assert classify("config/zed/settings.json", "D") == FULL
+    assert classify("config/zed/settings.json", "T") == FULL
+    assert classify("config/git/config", "M") >= {"config", "quality", "native"}
+    assert classify("config/fish/config.fish", "M") == {"shell", "ubuntu", "fedora"}
+    assert classify("scripts/config_checks.py", "M") == FULL
+    assert classify(".agents/skills/starship-config/scripts/test-config.sh", "M") == {
+        "quality",
+        "config",
+    }

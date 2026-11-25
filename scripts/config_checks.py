@@ -1,6 +1,7 @@
 """Validate the editable config files whose formats have a pinned checker."""
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -24,7 +25,6 @@ def check_kind(path):
 
 
 def validate(path):
-    import json
     import tomllib
 
     kind = check_kind(str(path))
@@ -56,10 +56,19 @@ def validate(path):
     subprocess.run(command, check=True, stdout=subprocess.DEVNULL)
 
 
+def selected_paths(reasons):
+    if all(check_kind(path) and Path(path).is_file() for path in reasons):
+        return reasons
+    return []
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("paths", nargs="*")
+    parser.add_argument("--selection", type=Path)
     args = parser.parse_args()
+    if args.selection:
+        args.paths = selected_paths(json.loads(args.selection.read_text()))
     paths = args.paths or [
         os.fsdecode(p)
         for p in subprocess.check_output(["git", "ls-files", "-z", "config"]).split(b"\0")

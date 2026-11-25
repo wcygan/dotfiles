@@ -216,8 +216,8 @@
                 # Runtime for uv-managed binary wheels such as DuckDB.
                 stdenv.cc.cc.lib
               ];
-              # The checks shell reuses this exact uv without the whole profile.
-              passthru = { inherit uv; };
+              # Validation shells use the same binaries as the installed profile.
+              passthru = { inherit uv bun; };
             };
         }
       );
@@ -239,6 +239,16 @@
               echo "🐠 Dotfiles development environment"
               echo "Run: make test-pre"
             '';
+          };
+
+          config-checks = pkgs.mkShell {
+            packages = with pkgs; [
+              python313
+              git
+              neovim
+              starship
+              self.packages.${pkgs.stdenv.hostPlatform.system}.default.bun
+            ];
           };
 
           # Only what the test suite and syntax checks run, so CI does not

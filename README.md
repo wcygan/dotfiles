@@ -419,14 +419,25 @@ updates for human review; no automatic merge is configured. Platform refreshes
 are evaluated against the official [Ubuntu release lifecycle](https://wiki.ubuntu.com/Releases)
 and [Fedora release lifecycle](https://fedoraproject.org/wiki/User%3AJkurik/Fedora_Release_Life_Cycle).
 
-Pull-request CI calls the same repository targets used locally: locked quality
-and syntax checks, four-system flake evaluation, and the canonical Ubuntu/Fedora
-Docker driver. Each Docker build is the check: its Dockerfile runs strict installation
-and Fish/direnv runtime smoke as build steps, and nothing is exported. CI
-caches only the `base` and `prewarm` stages with `actions/cache`.
-The quality job runs in the `checks` dev shell. The native and Docker install
-jobs skip their install steps when a change touches none of the files an
-install reads; `.github/actions/install-inputs` holds that list.
+Run `make check-plan` to see which checks a local change selects and why.
+`make check-changed` runs them, including checks for staged, unstaged, and
+untracked files. Both compare with the merge base of `origin/main`.
+An unknown path or missing comparison selects the full suite.
+
+CI provisions Nix once per fresh native runner. A runner with a working daemon
+uses it immediately. Locked quality checks and four-system flake evaluation
+share the same runner and Nix store. Application config checks use a smaller
+shell containing the pinned parsers. Ubuntu and Fedora acceptance images
+already contain Nix. Ubuntu can restore the default branch's locked-input
+archive. Fedora and cold Ubuntu branch builds download directly.
+
+CI can reuse a successful default-branch check for matching inputs, runner
+image, and architecture for seven days. The job summary links the evidence.
+A cache miss runs the check. Manual CI always runs the full suite. Set the
+repository Actions variable `CI_FORCE_FULL=true` to force it on pushes and
+pull requests too. Reinstall checks the pinned Rust toolchain locally and
+runs the Rust installer again if the component inventory or a required tool is missing.
+
 Pytest JUnit reports are retained on both success and failure. Documentation
 changes build on pull requests, but Pages deployment is restricted to a push to
 `main`. Native macOS 15 arm64 acceptance runs weekly or manually in an isolated

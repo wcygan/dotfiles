@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 import zipfile
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from check_changes import git, plan
@@ -21,6 +22,7 @@ COMMON = (
     "flake.lock",
     "rust-toolchain.toml",
     "pyproject.toml",
+    "README.md",
     "uv.lock",
     "Makefile",
     ".github",
@@ -30,10 +32,11 @@ COMMON = (
 
 def fingerprint(job):
     paths = list(COMMON)
-    if job == "evaluation":
-        paths = ["flake.nix", "flake.lock", "Makefile", ".github", "scripts"]
+    if job == "quality":
+        # Locked tests can inspect repository policy and fixtures anywhere in the tree.
+        paths = []
     if job in ("ubuntu", "fedora"):
-        paths += ["Dockerfile." + job, ".dockerignore", "tests/docker_matrix.py", "README.md"]
+        paths += ["Dockerfile." + job, ".dockerignore", "tests/docker_matrix.py"]
     image = [os.environ.get(key) for key in ("ImageOS", "ImageVersion", "RUNNER_ARCH")]
     if not all(image):
         return None
@@ -73,6 +76,9 @@ def receipt(job, key):
     for artifact in artifacts["artifacts"]:
         if artifact["name"] != name or artifact["expired"]:
             continue
+        created = datetime.fromisoformat(artifact["created_at"].replace("Z", "+00:00"))
+        if datetime.now(UTC) - created > timedelta(days=7):
+            continue
         run_id = artifact["workflow_run"]["id"]
         run = json.loads(api(f"repos/{repo}/actions/runs/{run_id}"))
         if (
@@ -98,6 +104,8 @@ def main(job):
     key = fingerprint(job)
     selection = plan(base, "HEAD")
     reason = selection["checks"].get(job)
+    if job == "quality":
+        reason = reason or selection["checks"].get("evaluation")
     prior = None
     if not reason and key:
         try:
@@ -110,6 +118,11 @@ def main(job):
             zipfile.BadZipFile,
         ) as error:
             print(f"Prior evidence unavailable ({type(error).__name__})")
+    full = os.environ.get("FORCE_FULL") != "false"
+    skip = bool(prior and not full)
+    if job == "quality":
+        paths = [] if full else selection["checks"].get("config", [])
+        (Path(os.environ["RUNNER_TEMP"]) / "config-paths.json").write_text(json.dumps(paths))
     path = Path(os.environ["RUNNER_TEMP"]) / "receipt.json"
     path.write_text(
         json.dumps(
@@ -117,12 +130,15 @@ def main(job):
         )
     )
     with open(os.environ["GITHUB_OUTPUT"], "a") as out:
-        for check in ("quality", "docs", "config", "shell"):
-            print(f"{check}={str(check in selection['checks']).lower()}", file=out)
+        for check in ("docs", "config", "shell"):
+            print(f"{check}={str(full or check in selection['checks']).lower()}", file=out)
         print(f"key={key or ''}", file=out)
-        print(f"reuse={'true' if prior else 'false'}", file=out)
+        print(f"skip={str(skip).lower()}", file=out)
+
     with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
-        decision = f"Matching evidence: {prior}" if prior else "Run current acceptance"
+        decision = f"Reused {prior}" if skip else "Run current checks"
+        if prior and full:
+            decision += f" (reference run; eligible evidence: {prior})"
         print(f"### {job}\n{decision}\n\nComparison and routing reasons\n", file=summary)
         # Indented JSON prevents paths from introducing markup.
         for line in json.dumps(selection, indent=2, sort_keys=True).splitlines():

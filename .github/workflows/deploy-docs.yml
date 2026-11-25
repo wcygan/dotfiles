@@ -9,13 +9,6 @@ on:
       - 'AGENTS.md'
       - 'Makefile'
       - '.github/workflows/deploy-docs.yml'
-  pull_request:
-    paths:
-      - 'docs/**'
-      - 'README.md'
-      - 'AGENTS.md'
-      - 'Makefile'
-      - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
 
 permissions:

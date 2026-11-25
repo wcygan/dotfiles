@@ -329,6 +329,12 @@ the handoff.
   the reusable prewarm layer;
 - an always-run summary that fails unless every required job succeeded.
 
+Use `make check-plan` to inspect the comparison and `make check-changed` to
+run its local checks. CI runs full acceptance on manual dispatch. On pushes
+and pull requests, a job can reuse a matching receipt from a successful
+default-branch CI push for seven days. Its summary records the source run.
+Set `CI_FORCE_FULL=true` in repository Actions variables to force fresh checks.
+
 Each job uses explicit runners, timeouts, least-privilege permissions, pinned
 actions, safe diagnostics, and a final tracked-input diff check. Keep local
 Make targets canonical so CI and developer acceptance cannot drift apart.

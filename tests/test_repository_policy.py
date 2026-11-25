@@ -201,7 +201,9 @@ def test_ci_uses_canonical_commands_reports_and_strict_summary() -> None:
 def test_docs_build_on_pull_requests_and_deploy_only_from_main_push() -> None:
     workflow = REPO_ROOT.joinpath(".github/workflows/deploy-docs.yml").read_text()
 
-    assert "pull_request:" in workflow
+    ci = REPO_ROOT.joinpath(".github/workflows/ci.yml").read_text()
+    assert "pull_request:" in ci and "make docs-build" in ci
+    assert "pull_request:" not in workflow
     for path in ("docs/**", "README.md", "AGENTS.md", "Makefile"):
         assert path in workflow
     assert "make docs-build" in workflow
@@ -256,7 +258,7 @@ def test_reproducible_docker_acceptance_shares_only_the_ubuntu_archive() -> None
         "github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}"
     ) in ci
     restore = ci.split("Restore Ubuntu's locked-input layers", 1)[1].split("- name:", 1)[0]
-    assert "if: matrix.distro == 'ubuntu'" in restore
+    assert "if: steps.inputs.outputs.skip != 'true' && matrix.distro == 'ubuntu'" in restore
     assert "actions/cache/restore@" in restore
     assert (
         "DOCKER_LAYER_CACHE: ${{ (steps.layers.outputs.cache-hit == 'true' "
@@ -265,7 +267,7 @@ def test_reproducible_docker_acceptance_shares_only_the_ubuntu_archive() -> None
     assert 'if [[ -z "$DOCKER_LAYER_CACHE" ]]; then\n            export DOCKER_SKIP_PREWARM=1' in ci
     save = ci.split("Save Ubuntu's locked-input layers", 1)[1].split("\n  summary:", 1)[0]
     assert (
-        "if: env.SEED_DOCKER_CACHE == 'true' "
+        "if: steps.inputs.outputs.skip != 'true' && env.SEED_DOCKER_CACHE == 'true' "
         "&& steps.layers.outputs.cache-hit != 'true'"
     ) in save
     assert "actions/cache/save@" in save
@@ -345,10 +347,14 @@ def test_distro_dockerfiles_differ_only_in_the_base_packages() -> None:
     assert ubuntu.split("FROM ubuntu:")[0] == fedora.split("FROM fedora:")[0]
 
 
-def test_shadow_runs_acceptance_even_when_prior_evidence_exists() -> None:
+def test_manual_runs_force_reference_checks_and_reused_results_cannot_seed_receipts() -> None:
     workflow = REPO_ROOT.joinpath(".github/workflows/ci.yml").read_text()
+    assert "github.event_name == 'workflow_dispatch' || vars.CI_FORCE_FULL == 'true'" in workflow
     assert workflow.count("Compare install evidence") == 3
-    assert workflow.count("Publish successful default-branch receipt") == 3
-    assert "outputs.reuse" not in workflow
-    assert workflow.count("if: steps.checkout.outputs.ready != 'true'") == 2
+    assert workflow.count("if: success() && steps.inputs.outputs.skip != 'true'") == 3
     assert workflow.count("uses: ./.github/actions/prepare-shadow") == 3
+    # A historical checkout may remove local actions before GitHub runs their post hooks.
+    assert workflow.count("uses: DeterminateSystems/nix-installer-action@") == 2
+    for title in ("Run canonical syntax and quality checks", "Prove native bootstrap idempotency",
+                  "Build and run canonical distro acceptance"):
+        assert f"- name: {title}\n        if: steps.inputs.outputs.skip != 'true'" in workflow

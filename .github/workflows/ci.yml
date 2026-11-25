@@ -50,7 +50,7 @@ jobs:
 
       - name: Install Nix
         if: (steps.inputs.outputs.skip != 'true' || steps.inputs.outputs.config == 'true' || steps.inputs.outputs.shell == 'true') && steps.checkout.outputs.ready != 'true'
-        uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
+        uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
         with:
           # GitHub throttled Magic Nix Cache on every run, so fetch straight
           # from the binary cache with more parallel downloads.
@@ -149,7 +149,7 @@ jobs:
 
       - name: Install Nix
         if: steps.inputs.outputs.skip != 'true' && steps.checkout.outputs.ready != 'true'
-        uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
+        uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
         with:
           # GitHub throttled Magic Nix Cache on every run, so fetch straight
           # from the binary cache with more parallel downloads.

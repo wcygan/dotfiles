@@ -248,26 +248,6 @@ def _install_results(
             _report(result, output)
         _record_result(journal, result)
 
-    profile = _run_operation(
-        "profile",
-        lambda: ensure_profile(repo_root, environment=environ, skip_when_current=True),
-    )
-    add(profile)
-    if not profile.succeeded:
-        add(OperationResult("links", False, "profile failed", skipped=True))
-        add(OperationResult("rustup", False, "profile failed", skipped=True))
-        if shell_handoff:
-            add(OperationResult("shell-handoff", False, "profile failed", skipped=True))
-        if schedule_requested:
-            add(OperationResult("nightly-schedule", False, "profile failed", skipped=True))
-        verification, verification_exit = _run_verification(
-            repo_root,
-            environ=environ,
-            output=output,
-        )
-        add(verification, report=False)
-        return results, 1 if verification_exit == 0 else verification_exit
-
     def install_links() -> None:
         link_config(
             repo_root,
@@ -276,58 +256,42 @@ def _install_results(
             journal=journal,
         )
 
-    links = _run_operation("links", install_links)
-    add(links)
-    if links.succeeded:
-        rustup = _run_operation(
-            "rustup",
-            lambda: setup_rustup(repo_root, environment=environ),
-        )
-    else:
-        rustup = OperationResult("rustup", False, "links failed", skipped=True)
-    add(rustup)
-
-    mutation_failed = not links.succeeded or not rustup.succeeded
+    operations: list[tuple[str, Operation]] = [
+        ("profile", lambda: ensure_profile(repo_root, environment=environ, skip_when_current=True)),
+        ("links", install_links),
+        ("rustup", lambda: setup_rustup(repo_root, environment=environ)),
+    ]
     if shell_handoff:
-        if mutation_failed:
-            handoff = OperationResult(
-                "shell-handoff",
-                False,
-                "required setup operation failed",
-                skipped=True,
-            )
-        else:
-            handoff = _run_operation(
-                "shell-handoff",
-                lambda: configure_shell_handoff(
-                    home=context.home,
-                    shell=environ.get("SHELL", ""),
-                    journal=journal,
-                ),
-            )
-        add(handoff)
-        mutation_failed = mutation_failed or not handoff.succeeded
-
+        operations.append(("shell-handoff", lambda: configure_shell_handoff(
+            home=context.home, shell=environ.get("SHELL", ""), journal=journal
+        )))
     if schedule_requested:
         from dotfiles_setup.nightly_schedule import configure
 
-        if mutation_failed:
-            add(OperationResult("nightly-schedule", False, "required setup failed", skipped=True))
-        else:
-            scheduled = _run_operation(
-                "nightly-schedule",
-                lambda: configure(repo_root, journal, enabled=True, environ=environ),
-            )
-            add(scheduled)
-            mutation_failed = mutation_failed or not scheduled.succeeded
+        operations.append(("nightly-schedule", lambda: configure(
+            repo_root, journal, enabled=True, environ=environ
+        )))
 
-    verification, _verification_exit = _run_verification(
-        repo_root,
-        environ=environ,
-        output=output,
-    )
+    failed = None
+    for name, operation in operations:
+        if failed is None:
+            result = _run_operation(name, operation)
+            if not result.succeeded:
+                failed = name
+        else:
+            reason = "required setup failed"
+            if failed == "profile" or (failed == "links" and name == "rustup"):
+                reason = f"{failed} failed"
+            elif name == "shell-handoff":
+                reason = "required setup operation failed"
+            result = OperationResult(name, False, reason, skipped=True)
+        add(result)
+
+    verification, verification_exit = _run_verification(repo_root, environ=environ, output=output)
     add(verification, report=False)
-    return results, 1 if mutation_failed or not verification.succeeded else 0
+    if failed == "profile" and verification_exit:
+        return results, verification_exit
+    return results, int(failed is not None or not verification.succeeded)
 
 
 def run_install(

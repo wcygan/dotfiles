@@ -38,12 +38,16 @@ def validate(path):
         json.loads(path.read_text())
         return
     elif kind == "jsonc":
-        command = [
-            "bun",
-            "-e",
-            "Bun.JSONC.parse(await Bun.file(process.argv[1]).text())",
-            str(path),
-        ]
+        import rapidjson
+
+        with path.open() as stream:
+            rapidjson.load(
+                stream,
+                allow_nan=False,
+                number_mode=rapidjson.NM_NATIVE,
+                parse_mode=rapidjson.PM_COMMENTS | rapidjson.PM_TRAILING_COMMAS,
+            )
+        return
     elif kind == "lua":
         # Compile the file without launching a plugin manager or contacting a server.
         command = ["nvim", "--clean", "--headless", "-l", "-", str(path)]

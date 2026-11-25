@@ -216,8 +216,8 @@
                 # Runtime for uv-managed binary wheels such as DuckDB.
                 stdenv.cc.cc.lib
               ];
-              # Validation shells use the same binaries as the installed profile.
-              passthru = { inherit uv bun; };
+              # The checks shell reuses this exact uv without the whole profile.
+              passthru = { inherit uv; };
             };
         }
       );
@@ -243,11 +243,10 @@
 
           config-checks = pkgs.mkShell {
             packages = with pkgs; [
-              python313
+              (python313.withPackages (ps: [ ps.python-rapidjson ]))
               git
               neovim
               starship
-              self.packages.${pkgs.stdenv.hostPlatform.system}.default.bun
             ];
           };
 

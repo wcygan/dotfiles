@@ -73,6 +73,9 @@ jobs:
         run: |
           export DOTFILES_DEV_SHELL=config-checks
           if grep -q 'config-checks = ' flake.nix; then
+            if [[ -f tests/test_jsonc_config.py ]]; then
+              ./bootstrap.sh --run python3 -m unittest tests.test_jsonc_config
+            fi
             ./bootstrap.sh --run python3 scripts/config_checks.py --selection "$RUNNER_TEMP/config-paths.json"
           else
             DOTFILES_DEV_SHELL=default ./bootstrap.sh --run python3 scripts/config_checks.py

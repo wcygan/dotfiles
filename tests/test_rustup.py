@@ -335,3 +335,63 @@ def test_rustup_cli_reports_failure(
 
     assert cli.main(["rustup"]) == 1
     assert "component unavailable" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("drift", [None, "component", "broken-link", "docs", "stdlib"])
+def test_repeat_install_requires_complete_live_toolchain(tmp_path, drift):
+    write_toolchain(tmp_path)
+    rustup = "/profile/bin/rustup"
+    target = "aarch64-apple-darwin"
+    root = tmp_path / f"1.97.1-{target}"
+    for name in (
+        "cargo",
+        "cargo-clippy",
+        "clippy-driver",
+        "rustc",
+        "rustdoc",
+        "rustfmt",
+        "rust-analyzer",
+    ):
+        executable(root / "bin" / name)
+    binary = root / "bin/rust-analyzer"
+    docs = root / "share/doc/rust/html/index.html"
+    std = root / f"lib/rustlib/{target}/lib/libstd-check.rlib"
+    for path in (docs, std):
+        path.parent.mkdir(parents=True)
+        path.touch()
+    components = ["rust-analyzer", "rust-std", "rustc", "rustfmt", "rust-docs", "clippy", "cargo"]
+    if drift == "component":
+        components.remove("clippy")
+    elif drift == "broken-link":
+        rustfmt = root / "bin/rustfmt"
+        rustfmt.unlink()
+        rustfmt.symlink_to("absent")
+    elif drift == "docs":
+        docs.unlink()
+    elif drift == "stdlib":
+        std.unlink()
+    lookup = (rustup, "which", "--toolchain", "1.97.1", "rust-analyzer")
+    probe = (rustup, "component", "list", "--installed", "--toolchain", "1.97.1")
+    install = (
+        rustup,
+        "toolchain",
+        "install",
+        "1.97.1",
+        "--profile",
+        "default",
+        "--component",
+        "rust-analyzer",
+        "--no-self-update",
+    )
+    calls = FakeRunner(
+        {
+            lookup: completed(lookup, stdout=str(binary)),
+            probe: completed(probe, stdout="\n".join(f"{c}-{target}" for c in components)),
+            install: completed(install),
+        }
+    )
+    setup_rustup(
+        tmp_path, which=lambda _: rustup, run=calls, environment={}, skip_when_current=True
+    )
+    commands = [tuple(cmd) for cmd, _ in calls.calls]
+    assert commands == ([lookup, probe, install, lookup] if drift else [lookup, probe])

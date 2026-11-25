@@ -259,7 +259,7 @@ def _install_results(
     operations: list[tuple[str, Operation]] = [
         ("profile", lambda: ensure_profile(repo_root, environment=environ, skip_when_current=True)),
         ("links", install_links),
-        ("rustup", lambda: setup_rustup(repo_root, environment=environ)),
+        ("rustup", lambda: setup_rustup(repo_root, environment=environ, skip_when_current=True)),
     ]
     if shell_handoff:
         operations.append(("shell-handoff", lambda: configure_shell_handoff(

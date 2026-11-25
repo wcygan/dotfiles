@@ -76,12 +76,55 @@ def load_rust_toolchain(repo_root: Path) -> RustToolchain:
     return RustToolchain(channel, profile, tuple(components))
 
 
+def _current_default_toolchain(
+    rustup: Path, selected: RustToolchain, run: CommandRunner, environment: Mapping[str, str]
+) -> Path | None:
+    """Recognize the repository's default profile through the exact rustup toolchain."""
+    if selected.profile != "default" or selected.components != ("rust-analyzer",):
+        return None
+    # 'which' and 'component list' inspect an explicitly named toolchain. Neither
+    # downloads the channel manifest or consults the project's active override.
+    try:
+        binary = resolve_rust_analyzer(rustup, selected, run=run, environment=environment)
+    except RustupError:
+        return None
+    toolchain = binary.parent.parent
+    prefix = selected.channel + "-"
+    if not toolchain.name.startswith(prefix):
+        return None
+    target = toolchain.name[len(prefix) :]
+    required = {"cargo", "clippy", "rust-analyzer", "rust-docs", "rust-std", "rustc", "rustfmt"}
+    result = _run(
+        run,
+        (str(rustup), "component", "list", "--installed", "--toolchain", selected.channel),
+        environment,
+    )
+    if result.returncode or not {f"{name}-{target}" for name in required}.issubset(
+        result.stdout.splitlines()
+    ):
+        return None
+    commands = ("cargo", "cargo-clippy", "clippy-driver", "rustc", "rustdoc", "rustfmt")
+    if not all(
+        (binary.parent / name).is_file() and os.access(binary.parent / name, os.X_OK)
+        for name in commands
+    ):
+        return None
+    if not (toolchain / "share/doc/rust/html/index.html").is_file():
+        return None
+    if not any(
+        p.is_file() for p in (toolchain / "lib/rustlib" / target / "lib").glob("libstd-*.rlib")
+    ):
+        return None
+    return binary
+
+
 def setup_rustup(
     repo_root: Path,
     *,
     run: CommandRunner = subprocess.run,
     profile_loader: ProfileLoader | None = None,
     which: CommandLocator | None = None,
+    skip_when_current: bool = False,
     environment: Mapping[str, str] | None = None,
 ) -> RustupResult:
     """Install the exact pinned toolchain without changing the global default."""
@@ -99,6 +142,10 @@ def setup_rustup(
         )
     selected = load_rust_toolchain(repo_root)
     command_environment = _command_environment(environment)
+    if skip_when_current:
+        current = _current_default_toolchain(Path(rustup), selected, run, command_environment)
+        if current is not None:
+            return RustupResult(selected.channel, current)
     install = (
         rustup,
         "toolchain",

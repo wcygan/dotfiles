@@ -38,6 +38,8 @@ def classify(path, status):
         return {"quality"}
     if path == "AGENTS.md":
         return {"quality", "docs"}
+    if path == "tests/test_jsonc_config.py":
+        return {"config", "quality"}
     if path.startswith("tests/test_") and path.endswith(".py"):
         return {"quality"}
     if path.startswith("config/") and status == "M":
@@ -134,6 +136,19 @@ def main():
                 env = dict(os.environ)
                 if check == "config":
                     env["DOTFILES_DEV_SHELL"] = "config-checks"
+                    subprocess.run(
+                        [
+                            "./bootstrap.sh",
+                            "--run",
+                            "python3",
+                            "-m",
+                            "unittest",
+                            "tests.test_jsonc_config",
+                        ],
+                        cwd=ROOT,
+                        env=env,
+                        check=True,
+                    )
                     reasons = result["checks"][check]
                     command.extend(selected_paths(reasons))
                 subprocess.run(command, cwd=ROOT, env=env, check=True)

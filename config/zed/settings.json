@@ -5,7 +5,7 @@
 //
 // To see all of Zed's default settings without changing your
 // custom settings, run `zed: open default settings` from the
-// command palette
+// command palette.
 {
   "disable_ai": true,
   "cli_default_open_behavior": "new_window",

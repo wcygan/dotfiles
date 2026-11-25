@@ -10,6 +10,7 @@ import zipfile
 from pathlib import Path
 
 from check_changes import git, plan
+from config_checks import check_kind
 
 # Config contents are exercised by acceptance (including Linux login-shell startup).
 COMMON = (
@@ -29,6 +30,8 @@ COMMON = (
 
 def fingerprint(job):
     paths = list(COMMON)
+    if job == "evaluation":
+        paths = ["flake.nix", "flake.lock", "Makefile", ".github", "scripts"]
     if job in ("ubuntu", "fedora"):
         paths += ["Dockerfile." + job, ".dockerignore", "tests/docker_matrix.py", "README.md"]
     image = [os.environ.get(key) for key in ("ImageOS", "ImageVersion", "RUNNER_ARCH")]
@@ -36,7 +39,23 @@ def fingerprint(job):
         return None
     # Workflow revision covers the actual command even when replaying an older checkout.
     workflow = git("rev-parse", os.environ["GITHUB_SHA"] + ":.github/workflows/ci.yml").strip()
-    files = git("ls-tree", "-rz", "HEAD", "--", *paths)
+    entries = []
+    for record in git("ls-tree", "-rz", "HEAD", "--", *paths).split(b"\0"):
+        if not record:
+            continue
+        metadata, path = record.split(b"\t", 1)
+        mode, _, _ = metadata.split()
+        # Acceptance verifies these links and their inventory. Application syntax
+        # is checked separately. Keep modes, names and symlink targets in the key.
+        if mode in (b"100644", b"100755") and check_kind(os.fsdecode(path)) in {
+            "lua",
+            "json",
+            "jsonc",
+            "toml",
+        }:
+            record = mode + b"\t" + path
+        entries.append(record)
+    files = b"\0".join(entries)
     return hashlib.sha256(
         b"\0".join([workflow, files, job.encode(), json.dumps(image).encode()])
     ).hexdigest()
@@ -49,24 +68,26 @@ def api(endpoint):
 def receipt(job, key):
     repo = os.environ["GITHUB_REPOSITORY"]
     branch = os.environ["DEFAULT_BRANCH"]
-    runs = json.loads(
-        api(
-            f"repos/{repo}/actions/workflows/ci.yml/runs?branch={branch}&event=push&status=success&per_page=10"
-        )
-    )
-    for run in runs["workflow_runs"]:
-        if run["head_repository"]["full_name"] != repo or run["head_branch"] != branch:
+    name = f"evidence-{job}-{key}"
+    artifacts = json.loads(api(f"repos/{repo}/actions/artifacts?name={name}&per_page=30"))
+    for artifact in artifacts["artifacts"]:
+        if artifact["name"] != name or artifact["expired"]:
             continue
-        name = f"evidence-{job}-{key}"
-        endpoint = f"repos/{repo}/actions/runs/{run['id']}/artifacts?name={name}"
-        for artifact in json.loads(api(endpoint))["artifacts"]:
-            if artifact["name"] != name or artifact["expired"]:
-                continue
-            payload = api(f"repos/{repo}/actions/artifacts/{artifact['id']}/zip")
-            with zipfile.ZipFile(io.BytesIO(payload)) as archive:
-                data = json.loads(archive.read("receipt.json"))
-            if data == {"job": job, "fingerprint": key, "sha": run["head_sha"]}:
-                return run["html_url"]
+        run_id = artifact["workflow_run"]["id"]
+        run = json.loads(api(f"repos/{repo}/actions/runs/{run_id}"))
+        if (
+            run["head_repository"]["full_name"] != repo
+            or run["head_branch"] != branch
+            or run["event"] != "push"
+            or run["conclusion"] != "success"
+            or run["path"] != ".github/workflows/ci.yml"
+        ):
+            continue
+        payload = api(f"repos/{repo}/actions/artifacts/{artifact['id']}/zip")
+        with zipfile.ZipFile(io.BytesIO(payload)) as archive:
+            data = json.loads(archive.read("receipt.json"))
+        if data == {"job": job, "fingerprint": key, "sha": run["head_sha"]}:
+            return run["html_url"]
     return None
 
 
@@ -96,6 +117,8 @@ def main(job):
         )
     )
     with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+        for check in ("quality", "docs", "config", "shell"):
+            print(f"{check}={str(check in selection['checks']).lower()}", file=out)
         print(f"key={key or ''}", file=out)
         print(f"reuse={'true' if prior else 'false'}", file=out)
     with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:

@@ -7,8 +7,10 @@ import platform
 import subprocess
 from pathlib import Path
 
+from config_checks import check_kind
+
 ROOT = Path.cwd()
-FULL = {"quality", "evaluation", "native", "ubuntu", "fedora", "docs"}
+FULL = {"quality", "evaluation", "native", "ubuntu", "fedora", "docs", "config"}
 SETUP = {"quality", "native", "ubuntu", "fedora"}
 
 
@@ -37,8 +39,8 @@ def classify(path, status):
     if path.startswith("config/") and status == "M":
         if path.startswith("config/fish/") or path == "config/shell-nix.sh":
             return {"shell", "ubuntu", "fedora"}
-        if path == "config/starship.toml":
-            return {"starship"}
+        if check_kind(path):
+            return {"config"}
     if path in {"Dockerfile.ubuntu", "Dockerfile.fedora"}:
         return {"quality", path.split(".")[1]}
     return FULL
@@ -102,7 +104,7 @@ def main():
         commands = {
             "quality": ["make", "test-syntax", "test-pre"],
             "shell": ["make", "test-syntax", "test-shell"],
-            "starship": ["make", "test-starship"],
+            "config": ["./bootstrap.sh", "--run", "python3", "scripts/config_checks.py"],
             "evaluation": ["make", "test-eval"],
             "docs": ["make", "docs-build"],
             "native": ["make", "test-macos"]
@@ -113,6 +115,10 @@ def main():
         }
         for check, command in commands.items():
             if check in result["checks"]:
+                if check == "config":
+                    reasons = result["checks"][check]
+                    if all(check_kind(path) and Path(path).is_file() for path in reasons):
+                        command.extend(reasons)
                 subprocess.run(command, cwd=ROOT, check=True)
 
 

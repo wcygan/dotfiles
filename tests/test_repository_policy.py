@@ -347,8 +347,8 @@ def test_distro_dockerfiles_differ_only_in_the_base_packages() -> None:
 
 def test_shadow_runs_acceptance_even_when_prior_evidence_exists() -> None:
     workflow = REPO_ROOT.joinpath(".github/workflows/ci.yml").read_text()
-    assert workflow.count("Compare install evidence") == 2
-    assert workflow.count("Publish successful default-branch receipt") == 2
+    assert workflow.count("Compare install evidence") == 3
+    assert workflow.count("Publish successful default-branch receipt") == 3
     assert "outputs.reuse" not in workflow
-    assert workflow.count("uses: ./.github/actions/ensure-nix") == 2
+    assert workflow.count("if: steps.checkout.outputs.ready != 'true'") == 2
     assert workflow.count("uses: ./.github/actions/prepare-shadow") == 3

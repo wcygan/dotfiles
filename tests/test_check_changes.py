@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/check_changes.py"
-FULL = {"quality", "evaluation", "native", "ubuntu", "fedora", "docs"}
+FULL = {"quality", "evaluation", "native", "ubuntu", "fedora", "docs", "config"}
 
 
 def classify(repo, *args):

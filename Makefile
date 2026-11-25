@@ -16,6 +16,8 @@ help:
 	@echo "Nix Dotfiles Management"
 	@echo ""
 	@echo "Setup:"
+	@echo "  make check-plan              - Show checks selected for local changes"
+	@echo "  make check-changed           - Run checks selected for local changes"
 	@echo "  make install                 - Install profile, links, Rust tools, and verify"
 	@echo "  make profile                 - Install or upgrade the Nix package profile"
 	@echo "  make agent-skills            - Install the pinned shared Codex user skill catalog"
@@ -162,10 +164,7 @@ nightly-disable:
 nightly-status:
 	@$(BOOTSTRAP) nightly-schedule status
 
-.PHONY: check-plan check-changed test-starship
-test-starship:
-	@$(UV_RUN) pytest tests/test_starship_config.py
-
+.PHONY: check-plan check-changed
 check-plan:
 	@python3 scripts/check_changes.py
 

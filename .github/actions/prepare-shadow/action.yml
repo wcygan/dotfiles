@@ -1,15 +1,29 @@
 name: Prepare shadow comparison
 description: Preserve the workflow's classifier before selecting the checkout under test
+outputs:
+  ready:
+    description: A usable Nix daemon was already provisioned
+    value: ${{ steps.daemon.outputs.ready }}
 runs:
   using: composite
   steps:
+    - name: Probe the Nix daemon
+      id: daemon
+      shell: bash
+      run: |
+        nix_bin=$(command -v nix || true)
+        if [[ -z "$nix_bin" ]]; then nix_bin=/nix/var/nix/profiles/default/bin/nix; fi
+        if [[ -x "$nix_bin" ]] && "$nix_bin" --extra-experimental-features nix-command store ping --store daemon; then
+          dirname "$nix_bin" >> "$GITHUB_PATH"
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
+        fi
     - shell: bash
       env:
         SHADOW_HEAD: ${{ github.event.inputs.shadow_head }}
       run: |
         set -eu
         mkdir -p "$RUNNER_TEMP/dotfiles-ci"
-        cp scripts/{check_changes,ci_evidence}.py "$RUNNER_TEMP/dotfiles-ci/"
+        cp scripts/{check_changes,ci_evidence,config_checks}.py "$RUNNER_TEMP/dotfiles-ci/"
         if [[ -n "$SHADOW_HEAD" ]]; then
           [[ "$SHADOW_HEAD" =~ ^[0-9a-f]{40}$ ]]
           git merge-base --is-ancestor "$SHADOW_HEAD" "$GITHUB_SHA"

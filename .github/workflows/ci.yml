@@ -3,21 +3,21 @@ name: CI
 on:
   push:
     branches: [main, master]
-    paths-ignore:
-      - 'README.md'
-      - 'docs/**'
   pull_request:
     branches: [main, master]
-    paths-ignore:
-      - 'README.md'
-      - 'docs/**'
   workflow_dispatch:
+    inputs:
+      shadow_head:
+        description: Historical commit to exercise with the full reference suite
+        required: false
+        type: string
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -30,16 +30,10 @@ jobs:
       DOTFILES_DEV_SHELL: checks
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
         with:
-          # GitHub throttled Magic Nix Cache on every run, so fetch straight
-          # from the binary cache with more parallel downloads.
-          extra-conf: |
-            experimental-features = nix-command flakes
-            max-substitution-jobs = 64
-            http-connections = 128
+          fetch-depth: 0
+      - uses: ./.github/actions/ensure-nix
+      - uses: ./.github/actions/prepare-shadow
 
       - name: Run canonical syntax and quality checks
         env:
@@ -48,6 +42,15 @@ jobs:
           mkdir -p reports
           make test-syntax
           make test-pre
+
+      - name: Evaluate all four systems with the provisioned daemon
+        run: make test-eval
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - name: Build reference documentation
+        run: make docs-build
 
       - name: Upload pytest report
         if: always()
@@ -75,26 +78,22 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      # A change to docs, tests or a skill pin cannot affect an install, so
-      # the remaining steps are skipped for it and the job passes at once.
-      - name: Check whether install inputs changed
-        id: inputs
-        uses: ./.github/actions/install-inputs
-
-      - name: Install Nix
-        if: steps.inputs.outputs.changed == 'true'
-        uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
         with:
-          # GitHub throttled Magic Nix Cache on every run, so fetch straight
-          # from the binary cache with more parallel downloads.
-          extra-conf: |
-            experimental-features = nix-command flakes
-            max-substitution-jobs = 64
-            http-connections = 128
+          fetch-depth: 0
+      - uses: ./.github/actions/ensure-nix
+      - uses: ./.github/actions/prepare-shadow
+
+      - name: Compare install evidence
+        id: inputs
+        env:
+          COMPARE_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ github.token }}
+          SHADOW_HEAD: ${{ inputs.shadow_head }}
+          JOB: native
+        run: python3 "$RUNNER_TEMP/dotfiles-ci/ci_evidence.py" "$JOB"
 
       - name: Prove native bootstrap idempotency
-        if: steps.inputs.outputs.changed == 'true'
         run: |
           ./bootstrap.sh doctor
           ./bootstrap.sh install
@@ -113,35 +112,14 @@ jobs:
         if: always()
         run: git diff --exit-code
 
-  flake-eval:
-    name: Four-system flake evaluation
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
+      - name: Publish successful default-branch receipt
+        if: success() && steps.inputs.outputs.key != '' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          # GitHub throttled Magic Nix Cache on every run, so fetch straight
-          # from the binary cache with more parallel downloads.
-          extra-conf: |
-            experimental-features = nix-command flakes
-            max-substitution-jobs = 64
-            http-connections = 128
-
-      - name: Evaluate every declared system
-        run: make test-eval
-
-      - name: Safe Nix failure diagnostics
-        if: failure()
-        run: |
-          df -h / /nix || true
-          nix store info || true
-
-      - name: Verify tracked inputs are unchanged
-        if: always()
-        run: git diff --exit-code
+          name: evidence-native-${{ steps.inputs.outputs.key }}
+          path: ${{ runner.temp }}/receipt.json
+          retention-days: 7
+          if-no-files-found: error
 
   docker-matrix:
     name: Docker ${{ matrix.distro }}
@@ -155,31 +133,37 @@ jobs:
         distro: [ubuntu, fedora]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/prepare-shadow
 
-      # A change to docs, tests or a skill pin cannot affect an install, so
-      # the remaining steps are skipped for it and the job passes at once.
-      - name: Check whether install inputs changed
+      - name: Compare install evidence
         id: inputs
-        uses: ./.github/actions/install-inputs
+        env:
+          COMPARE_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ github.token }}
+          SHADOW_HEAD: ${{ inputs.shadow_head }}
+          JOB: ${{ matrix.distro }}
+        run: python3 "$RUNNER_TEMP/dotfiles-ci/ci_evidence.py" "$JOB"
 
       # Archive restores are faster for Ubuntu. Fedora and Ubuntu cache
       # misses outside the default branch fetch directly during the install.
       - name: Restore Ubuntu's locked-input layers
         id: layers
-        if: steps.inputs.outputs.changed == 'true' && matrix.distro == 'ubuntu'
+        if: matrix.distro == 'ubuntu'
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/docker-layers
           key: docker-layers-${{ matrix.distro }}-${{ hashFiles(format('Dockerfile.{0}', matrix.distro), 'flake.nix', 'flake.lock', 'rust-toolchain.toml') }}
 
       - name: Configure Docker Buildx for the Ubuntu archive
-        if: steps.inputs.outputs.changed == 'true' && (steps.layers.outputs.cache-hit == 'true' || env.SEED_DOCKER_CACHE == 'true')
+        if: (steps.layers.outputs.cache-hit == 'true' || env.SEED_DOCKER_CACHE == 'true')
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
           cleanup: false
 
       - name: Build and run canonical distro acceptance
-        if: steps.inputs.outputs.changed == 'true'
         env:
           DOCKER_CASE: ${{ matrix.distro }}
           DOCKER_LAYER_CACHE: ${{ (steps.layers.outputs.cache-hit == 'true' || env.SEED_DOCKER_CACHE == 'true') && format('{0}/docker-layers', runner.temp) || '' }}
@@ -201,22 +185,30 @@ jobs:
         run: git diff --exit-code
 
       - name: Save Ubuntu's locked-input layers
-        if: steps.inputs.outputs.changed == 'true' && env.SEED_DOCKER_CACHE == 'true' && steps.layers.outputs.cache-hit != 'true'
+        if: env.SEED_DOCKER_CACHE == 'true' && steps.layers.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/docker-layers
           key: ${{ steps.layers.outputs.cache-primary-key }}
 
+      - name: Publish successful default-branch receipt
+        if: success() && steps.inputs.outputs.key != '' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: evidence-${{ matrix.distro }}-${{ steps.inputs.outputs.key }}
+          path: ${{ runner.temp }}/receipt.json
+          retention-days: 7
+          if-no-files-found: error
+
   summary:
     name: CI summary
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    needs: [quality, bootstrap, flake-eval, docker-matrix]
+    needs: [quality, bootstrap, docker-matrix]
     if: always()
     steps:
       - name: Require every validation job to pass
         run: |
           test "${{ needs.quality.result }}" = success
           test "${{ needs.bootstrap.result }}" = success
-          test "${{ needs.flake-eval.result }}" = success
           test "${{ needs.docker-matrix.result }}" = success

@@ -1,0 +1,17 @@
+name: Prepare shadow comparison
+description: Preserve the workflow's classifier before selecting the checkout under test
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        SHADOW_HEAD: ${{ github.event.inputs.shadow_head }}
+      run: |
+        set -eu
+        mkdir -p "$RUNNER_TEMP/dotfiles-ci"
+        cp scripts/{check_changes,ci_evidence}.py "$RUNNER_TEMP/dotfiles-ci/"
+        if [[ -n "$SHADOW_HEAD" ]]; then
+          [[ "$SHADOW_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          git merge-base --is-ancestor "$SHADOW_HEAD" "$GITHUB_SHA"
+          git checkout --quiet --detach "$SHADOW_HEAD"
+        fi

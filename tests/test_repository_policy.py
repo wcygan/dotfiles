@@ -188,11 +188,11 @@ def test_ci_uses_canonical_commands_reports_and_strict_summary() -> None:
         assert f"          ./bootstrap.sh {step}\n" in ci
     # The summary requires every job, so a job cannot be added and forgotten.
     jobs = re.findall(r"^  ([a-z-]+):$", ci.split("\njobs:\n", 1)[1], re.MULTILINE)
-    assert jobs == ["quality", "bootstrap", "flake-eval", "docker-matrix", "summary"]
+    assert jobs == ["quality", "bootstrap", "docker-matrix", "summary"]
     assert f"needs: [{', '.join(jobs[:-1])}]" in ci
     for job in jobs[:-1]:
         assert f'test "${{{{ needs.{job}.result }}}}" = success' in ci
-    assert "make docs-build" not in ci
+    assert "make docs-build" in ci
     assert ci.count("git diff --exit-code") == len(jobs) - 1
     # CI enters the dev environment only through make and bootstrap.sh.
     assert "nix develop" not in ci
@@ -211,13 +211,10 @@ def test_docs_build_on_pull_requests_and_deploy_only_from_main_push() -> None:
     assert "id-token: write" in workflow
 
 
-def test_ci_skips_documentation_only_changes() -> None:
+def test_shadow_includes_documentation_only_changes() -> None:
     ci = REPO_ROOT.joinpath(".github/workflows/ci.yml").read_text()
 
-    assert ci.count("paths-ignore:") == 2
-    for path in ("README.md", "docs/**"):
-        assert path in ci
-    assert "AGENTS.md" not in ci
+    assert "paths-ignore:" not in ci
 
 
 def test_all_system_evaluation_and_macos_acceptance_are_explicit() -> None:
@@ -259,7 +256,7 @@ def test_reproducible_docker_acceptance_shares_only_the_ubuntu_archive() -> None
         "github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}"
     ) in ci
     restore = ci.split("Restore Ubuntu's locked-input layers", 1)[1].split("- name:", 1)[0]
-    assert "if: steps.inputs.outputs.changed == 'true' && matrix.distro == 'ubuntu'" in restore
+    assert "if: matrix.distro == 'ubuntu'" in restore
     assert "actions/cache/restore@" in restore
     assert (
         "DOCKER_LAYER_CACHE: ${{ (steps.layers.outputs.cache-hit == 'true' "
@@ -268,7 +265,7 @@ def test_reproducible_docker_acceptance_shares_only_the_ubuntu_archive() -> None
     assert 'if [[ -z "$DOCKER_LAYER_CACHE" ]]; then\n            export DOCKER_SKIP_PREWARM=1' in ci
     save = ci.split("Save Ubuntu's locked-input layers", 1)[1].split("\n  summary:", 1)[0]
     assert (
-        "if: steps.inputs.outputs.changed == 'true' && env.SEED_DOCKER_CACHE == 'true' "
+        "if: env.SEED_DOCKER_CACHE == 'true' "
         "&& steps.layers.outputs.cache-hit != 'true'"
     ) in save
     assert "actions/cache/save@" in save
@@ -348,30 +345,10 @@ def test_distro_dockerfiles_differ_only_in_the_base_packages() -> None:
     assert ubuntu.split("FROM ubuntu:")[0] == fedora.split("FROM fedora:")[0]
 
 
-def test_install_checks_run_for_every_file_an_install_reads() -> None:
-    """The install jobs skip a change only when it touches none of their inputs."""
-
-    action = REPO_ROOT.joinpath(".github/actions/install-inputs/action.yml").read_text()
-    listed = action.split('git diff --quiet "$BASE" HEAD --', 1)[1].split("; then", 1)[0]
-    watched = set(listed.split())
-    watched.discard("\\")
-
-    copied: set[str] = set()
-    for distro in ("ubuntu", "fedora"):
-        dockerfile = REPO_ROOT.joinpath(f"Dockerfile.{distro}").read_text()
-        acceptance = dockerfile.split(" AS acceptance", 1)[1].split("\nFROM ", 1)[0]
-        for line in acceptance.splitlines():
-            if line.startswith("COPY "):
-                copied.update(word for word in line.split()[1:-1] if not word.startswith("--"))
-        watched_dockerfile = f"Dockerfile.{distro}"
-        assert watched_dockerfile in watched
-    # README.md is copied only because pyproject.toml names it; it changes no install.
-    assert copied - {"README.md"} <= watched
-    assert {"bootstrap.sh", "src", "config", "flake.nix", "flake.lock", ".github"} <= watched
-
+def test_shadow_runs_acceptance_even_when_prior_evidence_exists() -> None:
     workflow = REPO_ROOT.joinpath(".github/workflows/ci.yml").read_text()
-    for job in ("bootstrap", "docker-matrix"):
-        section = workflow.split(f"\n  {job}:\n", 1)[1].split("\n  summary:\n", 1)[0]
-        assert "uses: ./.github/actions/install-inputs" in section
-    quality = workflow.split("\n  quality:\n", 1)[1].split("\n  bootstrap:\n", 1)[0]
-    assert "install-inputs" not in quality
+    assert workflow.count("Compare install evidence") == 2
+    assert workflow.count("Publish successful default-branch receipt") == 2
+    assert "outputs.reuse" not in workflow
+    assert workflow.count("uses: ./.github/actions/ensure-nix") == 2
+    assert workflow.count("uses: ./.github/actions/prepare-shadow") == 3

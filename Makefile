@@ -161,3 +161,13 @@ nightly-disable:
 
 nightly-status:
 	@$(BOOTSTRAP) nightly-schedule status
+
+.PHONY: check-plan check-changed test-starship
+test-starship:
+	@$(UV_RUN) pytest tests/test_starship_config.py
+
+check-plan:
+	@python3 scripts/check_changes.py
+
+check-changed:
+	@python3 scripts/check_changes.py --run
